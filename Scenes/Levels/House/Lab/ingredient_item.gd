@@ -3,12 +3,14 @@
 ## Dropped anywhere else an unused piece goes back into its crate (and the
 ## cash comes back); a ground piece goes back to its station's tray.
 ##
-## Dependencies: Grabbable, IngredientData, IngredientCrate, PlaceholderMesh3D, Pools autoload
+## Dependencies: Grabbable, IngredientData, IngredientCrate, InteractionQuery, PlaceholderMesh3D, Pools autoload
 class_name IngredientItem
 extends Grabbable
 
 const RAW_SIZE: float = 0.12
 const POWDER_SIZE: Vector3 = Vector3(0.12, 0.06, 0.12)
+## A worked piece dropped nowhere looks this far (meters) for a free slot.
+const RETURN_SEARCH_RADIUS: float = 2.5
 
 var data: IngredientData = null
 var is_processed: bool = false
@@ -40,10 +42,15 @@ func get_grab_center() -> Vector3:
 	return _body.global_position
 
 
-## Nowhere to go: an unused piece returns to its crate; worked pieces stay
-## where they were let go (never destroyed, the work is not lost).
+## Nowhere to go: an unused piece returns to its crate; a worked piece goes
+## into the nearest free station slot that takes it (its own tray was taken)
+## or, with none in reach, stays where it was let go — never destroyed, the
+## work is not lost, and it never hangs in the air out of reach.
 func _on_released_nowhere() -> void:
 	if not step_accuracies.is_empty():
+		var nearby_socket: ItemSocket = InteractionQuery.find_socket_within(get_tree(), self, global_position, RETURN_SEARCH_RADIUS)
+		if nearby_socket != null:
+			nearby_socket.insert(self)
 		return
 	if crate != null and is_instance_valid(crate):
 		crate.take_back(self)

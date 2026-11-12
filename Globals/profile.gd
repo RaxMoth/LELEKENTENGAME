@@ -21,6 +21,8 @@ var achievements: AchievementTracker
 var daily_rewards: DailyRewards
 var energy: Energy
 var operation: OperationProgress
+## The player's guns and ammo (armory terminal, front garden).
+var armory: ArmoryProgress
 
 var _modules: Array[ProfileModule] = []
 
@@ -53,7 +55,8 @@ func _create_modules() -> void:
 	daily_rewards = DailyRewards.new(config)
 	energy = Energy.new(config)
 	operation = OperationProgress.new(config)
-	_modules = [meta, wallet, inventory, levels, upgrades, stats, achievements, daily_rewards, energy, operation]
+	armory = ArmoryProgress.new(config)
+	_modules = [meta, wallet, inventory, levels, upgrades, stats, achievements, daily_rewards, energy, operation, armory]
 
 
 ## Grants a reward dictionary. Ids matching a CurrencyData go to the wallet,

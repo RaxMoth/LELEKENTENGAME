@@ -31,5 +31,16 @@ func show_status(time_text: String, is_night: bool, cash: int, reputation: int, 
 	_details_label.text = "%s $%s   %s %d\n%s %d/%d   %s %d\n%s" % [
 		tr("Cash"), NumberFormat.compact(cash), tr("Rep"), reputation,
 		tr("Stash"), stash_units, stash_capacity, tr("Heat"), roundi(heat),
-		"   ".join(front_lines),
+		_pair_lines(front_lines),
 	]
+
+
+## The first line (the 3-day cycle: raid countdown or wave) gets its own row;
+## the fronts' lines go two per row to keep the panel narrow on a wrist.
+func _pair_lines(lines: PackedStringArray) -> String:
+	if lines.is_empty():
+		return ""
+	var rows: PackedStringArray = PackedStringArray([lines[0]])
+	for line_index: int in range(1, lines.size(), 2):
+		rows.append("   ".join(lines.slice(line_index, line_index + 2)))
+	return "\n".join(rows)

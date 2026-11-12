@@ -4,13 +4,18 @@
 ## and lost when a front says so (the front door breaking): the stash is
 ## lost and repairs cost cash; upgrades and banked cash stay.
 ##
+## Shifts run in 3-day cycles (HouseCycle): days 1-3 only bring customers;
+## when night falls on day 3 the police raid the house in waves, time stops
+## and the shift is won once every wave is beaten (not at dawn). Then the
+## next cycle of selling begins, ending in a harder raid.
+##
 ## This script only runs the shift: time, wages, winning and losing, the
 ## wrist status and announcements. Every front is its own scene and script
 ## (a HouseFront), found through Types.GROUP_HOUSE_FRONT and handed a
 ## HouseContext at setup — so the defense, customer and house sides can be
 ## developed without touching each other's files.
 ##
-## Dependencies: LevelBase, HouseFront, HouseContext, Operation, DayCycle,
+## Dependencies: LevelBase, HouseFront, HouseContext, HouseCycle, Operation, DayCycle,
 ##               Worker, WristStatus, XRPlayerRig, Profile, Audio, Events,
 ##               Platform, Types autoloads, Palette, SfxSynth
 class_name HouseLevel
@@ -22,6 +27,8 @@ const ANNOUNCE_DISTANCE: float = 3.0
 const REPAIR_COST_SHARE: float = 0.2
 ## Seconds between wrist status refreshes.
 const WRIST_REFRESH_SECONDS: float = 0.25
+## Seconds the "raid beaten" announcement shows before the shift's results.
+const RAID_CLEARED_HOLD_SECONDS: float = 2.5
 
 @export_group("Rendering")
 ## Bloom is a full-screen pass per eye: too expensive on standalone headsets and phones.
@@ -35,6 +42,7 @@ var _seconds_until_wrist_refresh: float = 0.0
 
 @onready var operation: Operation = %Operation
 @onready var day_cycle: DayCycle = %DayCycle
+@onready var cycle: HouseCycle = %HouseCycle
 @onready var _wrist_status: WristStatus = %WristStatus
 @onready var _travel_spots: Node3D = %TravelSpots
 @onready var _world_environment: WorldEnvironment = %WorldEnvironment
@@ -52,7 +60,7 @@ func _on_level_setup() -> void:
 		spots.append(spot as Node3D)
 	rig.locomotion.travel_spots = spots
 	_wrist_status.attach_to(rig.get_wrist_anchor())
-	context = HouseContext.new(self, rig, operation, day_cycle)
+	context = HouseContext.new(self, rig, operation, day_cycle, cycle)
 	for node: Node in get_tree().get_nodes_in_group(Types.GROUP_HOUSE_FRONT):
 		var front: HouseFront = node as HouseFront
 		if front != null and is_ancestor_of(front):
@@ -63,6 +71,11 @@ func _on_level_setup() -> void:
 		front.score_earned.connect(add_score)
 		front.shift_lost.connect(_on_shift_lost)
 		front.setup(context)
+	cycle.setup(context, _fronts)
+	cycle.raid_started.connect(_on_raid_started)
+	cycle.wave_started.connect(_on_raid_wave_started)
+	cycle.wave_cleared.connect(_on_raid_wave_cleared)
+	cycle.raid_cleared.connect(_on_raid_cleared)
 	day_cycle.nightfall.connect(_on_nightfall)
 	Events.upgrade_purchased.connect(func(_upgrade_id: StringName, _level: int) -> void: apply_upgrades())
 	_last_paid_hour = floori(day_cycle.clock.get_hour())
@@ -71,22 +84,24 @@ func _on_level_setup() -> void:
 
 
 func _on_level_started() -> void:
-	announce(tr("Day %d") % Profile.operation.day_number)
+	announce(cycle.get_day_announcement(), Palette.WARNING if cycle.is_raid_day() else Palette.TEXT, 2.0)
 	for front: HouseFront in _fronts:
 		front.on_shift_started()
 
 
 func _level_process(delta: float) -> void:
-	day_cycle.advance(delta)
-	operation.cool_heat(delta)
-	_pay_wages_on_the_hour()
+	# The raid night has no clock: it lasts until the last wave is beaten.
+	if not cycle.is_raid_active():
+		day_cycle.advance(delta)
+		operation.cool_heat(delta)
+		_pay_wages_on_the_hour()
 	for front: HouseFront in _fronts:
 		front.process_shift(delta)
 	_seconds_until_wrist_refresh -= delta
 	if _seconds_until_wrist_refresh <= 0.0:
 		_seconds_until_wrist_refresh = WRIST_REFRESH_SECONDS
 		_refresh_wrist()
-	if day_cycle.clock.is_shift_over():
+	if day_cycle.clock.is_shift_over() and not cycle.is_raid_active():
 		win()
 
 
@@ -94,6 +109,8 @@ func _on_level_finished(result: LevelResult) -> void:
 	for front: HouseFront in _fronts:
 		front.finish_shift(result)
 	if result.is_won():
+		if cycle.phase == HouseCycle.Phase.CLEARED:
+			operation.clear_heat()
 		Profile.operation.complete_day()
 	else:
 		# The house was overrun: the stock is gone and the door needs fixing.
@@ -153,6 +170,30 @@ func _on_nightfall() -> void:
 	Audio.play_sfx(SfxSynth.get_preset(&"explosion"), 0.0, -14.0)
 	for front: HouseFront in _fronts:
 		front.on_nightfall()
+	if cycle.is_raid_day():
+		cycle.start_raid()
+
+
+func _on_raid_started(raid_number: int, wave_count: int) -> void:
+	_warn(tr("Police raid %d! %d waves incoming") % [raid_number, wave_count])
+
+
+func _on_raid_wave_started(wave: RaidWave, wave_count: int) -> void:
+	announce(tr("Wave %d of %d") % [wave.wave_index + 1, wave_count], Palette.DANGER)
+
+
+func _on_raid_wave_cleared(wave: RaidWave, wave_count: int) -> void:
+	if wave.wave_index + 1 < wave_count:
+		announce(tr("Wave beaten — next one is coming"), Palette.SUCCESS)
+
+
+## The last wave is down: let the announcement land, then the shift is won.
+func _on_raid_cleared(_raid_number: int) -> void:
+	announce(tr("Raid beaten! Back to business"), Palette.SUCCESS, RAID_CLEARED_HOLD_SECONDS)
+	Audio.play_sfx(SfxSynth.get_preset(&"coin"))
+	await get_tree().create_timer(RAID_CLEARED_HOLD_SECONDS, false).timeout
+	if is_playing():
+		win()
 
 
 ## Crew are paid every in-game hour; unpaid crew strike until the next payday.
@@ -166,7 +207,7 @@ func _pay_wages_on_the_hour() -> void:
 
 
 func _refresh_wrist() -> void:
-	var front_lines: PackedStringArray = PackedStringArray()
+	var front_lines: PackedStringArray = PackedStringArray([cycle.get_status_line()])
 	for front: HouseFront in _fronts:
 		var line: String = front.get_status_line()
 		if not line.is_empty():

@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="WeaponData" format=3]
+
+[ext_resource type="Script" path="res://Scripts/Resources/weapon_data.gd" id="script"]
+
+[resource]
+script = ExtResource("script")
+id = &"smg"
+display_name = "SMG"
+description = "Sprays fast, light rounds. Armor eats a lot of each hit."
+cost = 350
+damage = 14.0
+fire_interval_seconds = 0.1
+range_meters = 25.0
+pierces_armor = false
+recoil = 0
+has_unlimited_ammo = false
+starting_ammo = 90
+ammo_pack_size = 90
+ammo_pack_cost = 40
+max_ammo = 360

@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="WeaponData" format=3]
+
+[ext_resource type="Script" path="res://Scripts/Resources/weapon_data.gd" id="script"]
+
+[resource]
+script = ExtResource("script")
+id = &"pistol"
+display_name = "Pistol"
+description = "Your old sidearm. Weak, but it never runs dry."
+cost = 0
+damage = 20.0
+fire_interval_seconds = 0.3
+range_meters = 30.0
+pierces_armor = false
+recoil = 0
+has_unlimited_ammo = true
+starting_ammo = 0
+ammo_pack_size = 1
+ammo_pack_cost = 0
+max_ammo = 1

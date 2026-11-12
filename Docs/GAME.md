@@ -12,7 +12,7 @@ The working title in the project is still **Porchlight VR**
 **Pillars:** one house, three fronts · pressure never stops · hands-on
 first, management later · everything is an upgrade · co-op by design.
 
-> **Status: first playable.** One shift (a day and a night) with all three
+> **Status: first playable.** The 3-day cycle (selling days, the raid night) with all three
 > fronts, the economy, the five upgrade branches and hired crew is built and
 > covered by the unit and smoke tests in the flat simulator. The OpenXR path
 > (headset rendering, tracked hands, grip / trigger / sticks, haptics)
@@ -20,37 +20,60 @@ first, management later · everything is an upgrade · co-op by design.
 > tune reach, sizes and comfort on device. Co-op and the meta layer are not
 > built yet (see the end).
 
-## A shift
+## The loop: three days of selling, then the raid
 
-1. **Craft** in the lab: grab ingredients from the crates, grind, cook and
-   press them.
-2. **Sell** at the back window: set your price, sell or decline.
-3. Earn **cash** and **reputation**; every sale also adds **heat**.
-4. **Upgrade** at the office: production, sales, defense, workforce, house.
-5. **Survive** the attackers walking up the garden to the front door.
+The game runs in **3-day cycles** (`HouseCycle`, tuned by
+`Ressources/Raids/police_raids.tres`):
 
-A shift runs from 07:00 to the next dawn (5 min of day, 4 min of night by
-default — `DayCycle` on `House.tscn`). Customers and attackers come all the
-time; day and night change what comes and how hard:
+1. **Days 1–3 — build up.** Only customers come; nobody attacks.
+   **Craft** in the lab (grab ingredients, grind, cook, press), **sell** at
+   the back window, earn **cash** and **reputation** — every sale also adds
+   **heat**. Spend it: **guns and ammo** at the armory terminal in the
+   front room, **towers** on the garden tiles, **upgrades** at the office.
+2. **Night 3 — the raid.** Your sales got you noticed. When night falls on
+   day 3 the back window closes, the clock stops and the police storm the
+   house in **waves** (cops, later SWAT). Close and **bolt the front door**,
+   then hold it with your guns and towers. A wave ends when every officer is
+   down; a short break follows, then the next.
+3. **Raid beaten → next cycle.** The shift is won, the heat drops to 0 and
+   the next three days of selling begin. Every raid is harder than the one
+   before (more waves, more cops, SWAT from raid 2, tougher officers), and
+   the heat you have when the raid starts adds cops to its last wave —
+   bribes at the office make the raid smaller.
 
-| | Day | Night |
+The wrist status and the announcement at the start of each day say where
+you are in the cycle ("Raid in 2 days", "Raid tonight", "Wave 2/3 · 4 left").
+
+A shift is one day: 07:00 to the next dawn (5 min of day, 4 min of night by
+default — `DayCycle` on `House.tscn`); the raid night has no clock and lasts
+until the last wave is beaten.
+
+| | Day | Night (days 1–2, day 3 until dusk) | Night 3 |
+|---|---|---|---|
+| Customers | Many regulars, hagglers, bulk buyers | Fewer, richer: connoisseurs, VIPs (after "VIP Access") | None — the window is closed |
+| Attackers | None | None | The police raid, in waves |
+
+| Raid | Waves | Officers |
 |---|---|---|
-| Customers | Many regulars, hagglers, bulk buyers | Fewer, richer: connoisseurs, VIPs (after "VIP Access") |
-| Attackers | Junkies, the odd police patrol | More junkies, mafia crews (after 10 reputation), the boss wave at 01:00 |
-| Always | Heat from sales sends police raids at 50 and 80 heat | |
+| 1 (night 3) | 2 | 3 then 4 cops |
+| 2 (night 6) | 3 | 4–6 cops per wave, SWAT from wave 2 |
+| 3 (night 9) | 4 | 5–8 cops, 2 SWAT every wave, +30% health |
+| every heat point | | up to 4 extra cops in the last wave at full heat |
 
-**Win:** reach dawn — the day counter goes up and the shift's earnings are
-the score. **Lose:** the front door breaks — the stash is lost and repairs
-cost 20% of your cash, but upgrades, crew and banked cash stay, and you
-replay that day.
+**Win:** reach dawn on a selling day, or beat every wave of the raid — the
+day counter goes up and the shift's earnings are the score. **Lose:** the
+front door breaks — the stash is lost and repairs cost 20% of your cash, but
+upgrades, guns, crew and banked cash stay, and you replay that day (a lost
+raid is fought again).
 
 ## Controls
 
 | | Headset | Flat simulator (no headset) |
 |---|---|---|
 | Grab / let go | Grip (at the hand, or along the beam) | Click an item / click where to put it |
-| Use (station buttons, screens, build) | Dominant-hand trigger | Click |
-| Blaster | Off-hand trigger (from the front room) | Right-click, or click an attacker |
+| Use (station buttons, screens, build, door bolt) | Dominant-hand trigger | Click |
+| Fire your gun | Off-hand trigger (from the front room or porch) | Right-click, or click an attacker |
+| Front door | Grip a handle, swing the door open or shut | Click a handle |
 | Move | Off-hand stick forward: aim a teleport, release to jump (or smooth movement in Settings) | WASD / arrows; 1–4 jump to lab, front, window, office |
 | Turn | Dominant-hand stick: 30° snaps (or smooth turning) | Drag |
 | Pause | Menu or B / Y | Esc |
@@ -107,15 +130,41 @@ money on the table. Prices also change how many people come
 ### Front garden (outside, in front of the door)
 
 Three lanes run from the gate to the front door. Defend from the **front
-room**: shoot through the windows with the blaster and build on garden
-tiles (pick a card on the board above the gate, then point at a tile).
+room** or the **porch**: shoot through the windows with the gun in your
+hand and build on garden tiles (pick a card on the board above the gate,
+then point at a tile). Towers can be built on selling days to prepare.
 
-| Attacker | Behavior | Comes because |
+| Raider | Behavior | Comes |
 |---|---|---|
-| Junkie | Fast, weak; grabs stock at the door and runs | Always; more with a full stash |
-| Cop | Slow, armored (6 off every hit) | Patrols; raids when heat crosses 50 / 80 |
-| Mafia goon | Tough, light armor | At night once you have 10 reputation |
-| Mafia boss | Huge; towers and guards do only 40% damage | 01:00 every night, with three goons |
+| Cop | Slow, armored (6 off every hit) | Every raid wave |
+| SWAT | Tougher, heavy armor (12 off every hit) — bring armor-piercing rounds | From the 2nd wave of raid 2, every wave after |
+
+Junkies (thieves), mafia goons and the boss stay in the project
+(`Garden/*.tscn`, used by tests and showcases) but no longer come on their
+own; the raid is police only.
+
+### The front door
+
+The door between the front room and the porch swings on a hinge. Grip a
+handle (inside or outside) and pull or push; let go nearly shut and it
+latches. While it stands open (from 60°) the doorway is walkable, so you can
+step onto the porch and back. Each side has a **bolt** (press it with the
+trigger): it locks only a shut door, and a bolted door doesn't open.
+In a raid the door's state matters — raiders hit an **open** door 3× and an
+**unbolted** one 1.5× as hard as a bolted one.
+
+### Armory (front room, back wall)
+
+A terminal sells guns and ammo; the gun you buy goes straight into your
+hand, and you can switch between guns you own. The pistol is free and never
+runs dry, so you are never unarmed. "Better Blaster" adds damage to every gun.
+
+| Gun | Cost | Damage | Shots/s | Range | Ammo (box) |
+|---|---|---|---|---|---|
+| Pistol | free | 20 | 3.3 | 30 m | unlimited |
+| SMG | $350 | 14 | 10 | 25 m | 90 for $40 (max 360) |
+| Shotgun | $500 | 90 | 1.2 | 12 m | 16 for $40 (max 64) |
+| Rifle | $800 | 60, pierces armor | 1.8 | 40 m | 20 for $50 (max 100) |
 
 | Tower | Cost | Good against |
 |---|---|---|
@@ -123,8 +172,8 @@ tiles (pick a card on the board above the gate, then point at a tile).
 | Heavy gun | $260 (unlock) | Cops (slow, strong, pierces armor) |
 | Barricade | $80 | Holds anything in its lane |
 
-No single answer works: junkies swarm, cops shrug off light bolts, the boss
-mostly needs your blaster.
+No single answer works: cops come in numbers, SWAT shrug off light bolts
+and the SMG, and the shotgun only reaches the door.
 
 ### Office (inside, east)
 
@@ -159,10 +208,14 @@ These are the defaults this build uses; all are easy to change.
   destroyed and repairs cost 20% of cash; upgrades, crew and banked cash
   stay (`house_level.gd`, `REPAIR_COST_SHARE`).
 - **Heat** is the link between sales and police (per-unit heat on each
-  product, raids at thresholds, cooling over time, bribes).
+  product, more cops in the raid at the end of the cycle, cooling over time,
+  bribes; reset to 0 after a beaten raid).
+- **The cycle:** 3 days of selling, the raid on night 3, endless with a
+  harder raid each cycle (`Ressources/Raids/police_raids.tres`). Guns are
+  bought, not upgraded; the free pistol keeps the player armed.
 - **Tone:** stylized (the existing palette and placeholder art).
 - **First playable size:** 3 products, 4 ingredients, 5 customer types,
-  4 attackers, 3 towers, 16 upgrades.
+  2 raid officers (cop, SWAT), 4 guns, 3 towers, 16 upgrades.
 - **Platform:** both — Meta Quest (standalone) and PC VR (SteamVR).
 
 ## Running it
@@ -211,11 +264,13 @@ Scenes/Levels/House/House.tscn                inherits LevelBase; house_level.gd
     ├── Stage
     │   ├── Operation          the shared house state: stash, heat, cash flow, prices, recipes, upgrade effects
     │   ├── DayCycle           DayClock + sun / sky / lamps; StateChart Day -> Night
+    │   ├── HouseCycle         Cycle/HouseCycle.tscn: the 3-day cycle; StateChart Selling -> Raid { WaveBreak <-> WaveActive } -> Cleared
     │   ├── HouseShell         walls / doors / windows / floor built from a few numbers
-    │   ├── FrontGarden        DEFENSE   Garden/FrontGarden.tscn: lanes, door, towers, build board, guards, AttackerDirector
+    │   ├── FrontGarden        DEFENSE   Garden/FrontGarden.tscn: lanes, swinging / bolting door, porch, towers, build board, guards, raid waves, firing guns
     │   ├── SalesWindow        CUSTOMERS Sales/SalesWindow.tscn: window, queue, board, dealers, CustomerFlow
     │   ├── Lab                HOUSE     Lab/Lab.tscn: crates, grinder, cooker, press, crafters, recipes
     │   ├── Office             HOUSE     Office/Office.tscn: upgrade board, bribes
+    │   ├── Armory             DEFENSE   Armory/Armory.tscn: terminal for guns and ammo
     │   ├── StashShelf         one bag per unit in stock
     │   ├── WalkableArea       floor rectangles the player may stand on
     │   ├── TravelSpots        lab, front, window, office (flat keys 1-4)
@@ -228,14 +283,17 @@ Scenes/Levels/House/House.tscn                inherits LevelBase; house_level.gd
 |---|---|
 | `HouseFront` / `HouseContext` | The front contract: setup with the context, hooks the level calls, signals back (announce, warn, score, lose) |
 | `Operation` | One node every front reads and writes — the only shared state, and the natural place to replicate for co-op |
-| `HouseLevel` | Runs the shift: time, wages for `Types.GROUP_CREW`, win at dawn, lose on `shift_lost`, wrist status from the fronts' status lines |
+| `HouseLevel` | Runs the shift: time, wages for `Types.GROUP_CREW`, win at dawn (or when the raid is beaten), lose on `shift_lost`, wrist status from the cycle and the fronts. status lines |
+| `HouseCycle` | The 3-day cycle: raid day, raid waves (`RaidPlanner` → `RaidWave`), tells the fronts through the raid hooks, closes the window during a raid |
 | `Grabbable`, `ItemSocket`, `PointerButton`, `InteractionQuery` (`Scripts/XR/`) | Physics-free hand interaction: grab at the hand or along the beam, drop into sockets, press 3D buttons |
 | `XRLocomotion` | Teleport, smooth movement, snap / smooth turning, flat WASD and travel spots; never leaves the `WalkableArea` |
 | `Workstation` | StateChart Idle ⇄ Running; `TimingGauge` skill check; grinder / cooker / press by `step` |
 | `Customer`, `CustomerFlow`, `SalesWindow`, `SalesBoard` | Pooled customers with StateChart Walking ⇄ Waiting → Leaving; the window runs the sale rules (`SalesMath`) |
-| `LaneBoard`, `LaneEnemy`, `Turret`, `LaneDefender`, `FrontDoor`, `AttackerDirector` | Lane math defense; attackers are pooled with StateChart Alive { Advancing ⇄ Attacking } → Dead |
+| `LaneBoard`, `LaneEnemy`, `Turret`, `LaneDefender`, `AttackerDirector` | Lane math defense; raid officers are pooled with StateChart Alive { Advancing ⇄ Attacking } → Dead |
+| `FrontDoor`, `HingeHandle` | The door: StateChart Closed { Unlocked ⇄ Locked } ⇄ Open; grab-and-swing handles, bolts on both sides, opens the doorway in the `WalkableArea` |
+| `Armory`, `WeaponData`, `WeaponLoadout`, `Profile.armory` | Guns and ammo: bought at the terminal, fired by the FrontGarden |
 | `Worker` | StateChart Absent → Working ⇄ Striking; lives in its front's scene |
-| Pure logic (`Scripts/Game/`) | `TimingGauge`, `QualityMath`, `Stash`, `SalesMath`, `CustomerOrder`, `HeatMeter`, `DayClock` — unit-tested |
+| Pure logic (`Scripts/Game/`) | `TimingGauge`, `QualityMath`, `Stash`, `SalesMath`, `CustomerOrder`, `HeatMeter`, `DayClock`, `RaidPlanner`, `WeaponLoadout` — unit-tested |
 
 All numbers are data: ingredients, recipes, customer types and towers in
 `Ressources/`, upgrades in one catalog per area (`Ressources/Upgrades/<Area>/`),

@@ -32,6 +32,12 @@ func _run() -> void:
 	# Detach from get_tree().current_scene so SceneManager can swap scenes without freeing the test.
 	get_tree().current_scene = null
 	await frames(10)
+	# The checks expect default comfort settings (snap turning, teleport);
+	# the developer's own preferences come back at the end.
+	var saved_settings: Dictionary[StringName, Variant] = {}
+	for setting_key: StringName in Settings.DEFAULTS:
+		saved_settings[setting_key] = Settings.get_value(setting_key)
+	Settings.reset_to_defaults()
 	Profile.reset_progress()
 	await _test_save_roundtrip()
 	await _test_menus()
@@ -40,10 +46,13 @@ func _run() -> void:
 	for level_index: int in config.levels.size():
 		await _test_level(config.levels[level_index], level_index % 2 == 0)
 	await _test_house(config.find_level(HOUSE_LEVEL_ID))
+	await _test_house_raid(config.find_level(HOUSE_LEVEL_ID))
 	print("\n==== SMOKE TEST: %d checks, %d failures ====" % [_checks, _failures.size()])
 	for failure: String in _failures:
 		print("  FAIL: " + failure)
 	Profile.reset_progress()
+	for setting_key: StringName in saved_settings:
+		Settings.set_value(setting_key, saved_settings[setting_key])
 	get_tree().quit(1 if not _failures.is_empty() else 0)
 
 
@@ -147,6 +156,43 @@ func _test_house(level_data: LevelData) -> void:
 	await DefenseSmokeChecks.run(self, level)
 	await HouseSmokeChecks.run_end(self, level)
 	check(await wait_until(func() -> bool: return not (get_tree().current_scene is LevelBase) and not SceneManager.is_transitioning), "left the house to the menu")
+	await frames(5)
+
+
+## The raid night of a 3-day cycle, start to finish: night falls on day 3,
+## the raid starts by itself, every wave is beaten, the shift is won and the
+## next cycle begins at day 1 with the police heat gone.
+func _test_house_raid(level_data: LevelData) -> void:
+	if level_data == null:
+		return
+	Profile.operation.day_number = 3
+	LevelBase.start_level(level_data)
+	if not await _wait_for_scene(level_data.scene_path):
+		check(false, "house loads for the raid")
+		return
+	var level: HouseLevel = get_tree().current_scene as HouseLevel
+	check(await wait_until(func() -> bool: return level.is_playing()), "the raid day starts playing")
+	(level.get_front(SalesWindow) as SalesWindow).flow.is_active = false
+	var garden: FrontGarden = level.get_front(FrontGarden) as FrontGarden
+	level.operation.add_heat(40.0)
+	level.day_cycle.advance(level.day_cycle.day_seconds)
+	check(await wait_until(func() -> bool: return level.cycle.is_raid_active()), "night falls on day 3 and the raid starts by itself")
+	var clock_before: float = level.day_cycle.clock.elapsed_seconds
+	await frames(30)
+	check(is_equal_approx(level.day_cycle.clock.elapsed_seconds, clock_before), "the clock stops during the raid")
+	for wave_number: int in range(1, level.cycle.get_wave_count() + 1):
+		level.cycle.skip_wave_break()
+		await wait_until(func() -> bool: return level.cycle.is_wave_active() and garden.director.get_pending_spawn_count() == 0)
+		for raider: LaneEnemy in garden.board.get_enemies().duplicate():
+			raider.take_hit(1000000.0)
+		await wait_until(func() -> bool: return not level.cycle.is_wave_active())
+	check(await wait_until(func() -> bool: return level.cycle.phase == HouseCycle.Phase.CLEARED), "every wave beaten ends the raid")
+	check(await wait_until(func() -> bool: return UI.has_open_popup() and level.phase == LevelBase.Phase.FINISHED), "a beaten raid wins the shift")
+	check(Profile.operation.day_number == 4 and level.cycle.get_day_in_cycle() == 1, "the next cycle of selling begins at day 1")
+	check(level.operation.heat.value == 0.0, "the police heat is gone after the raid")
+	await frames(30)
+	UI.close_top_popup()
+	check(await wait_until(func() -> bool: return not (get_tree().current_scene is LevelBase) and not SceneManager.is_transitioning), "left the house after the raid")
 	await frames(5)
 
 # ============================================

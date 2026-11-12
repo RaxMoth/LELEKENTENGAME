@@ -3,6 +3,12 @@
 [ext_resource type="Script" path="res://Scenes/Levels/House/Garden/front_door.gd" id="door"]
 [ext_resource type="Script" path="res://Scripts/Utils/placeholder_mesh_3d.gd" id="mesh"]
 [ext_resource type="Script" path="res://Scripts/Components/health_component.gd" id="health"]
+[ext_resource type="Script" path="res://Scripts/XR/hinge_handle.gd" id="handle"]
+[ext_resource type="Script" path="res://Scripts/XR/pointer_button.gd" id="button"]
+[ext_resource type="Script" path="res://addons/godot_state_charts/state_chart.gd" id="chart"]
+[ext_resource type="Script" path="res://addons/godot_state_charts/compound_state.gd" id="compound"]
+[ext_resource type="Script" path="res://addons/godot_state_charts/atomic_state.gd" id="atomic"]
+[ext_resource type="Script" path="res://addons/godot_state_charts/transition.gd" id="transition"]
 
 [sub_resource type="BoxMesh" id="bar_mesh"]
 size = Vector3(1.2, 0.08, 0.02)
@@ -10,10 +16,15 @@ size = Vector3(1.2, 0.08, 0.02)
 [node name="FrontDoor" type="Node3D"]
 script = ExtResource("door")
 
-[node name="Panel" type="Node3D" parent="."]
+[node name="Hinge" type="Node3D" parent="."]
 unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.55, 0, 0)
 
-[node name="Leaf" type="MeshInstance3D" parent="Panel"]
+[node name="Panel" type="Node3D" parent="Hinge"]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.55, 0, 0)
+
+[node name="Leaf" type="MeshInstance3D" parent="Hinge/Panel"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.05, 0)
 cast_shadow = 0
 script = ExtResource("mesh")
@@ -21,7 +32,7 @@ shape_kind = 1
 size = Vector3(1.1, 2.1, 0.08)
 color = Color(0.3569, 0.3922, 0.4824, 1)
 
-[node name="BraceTop" type="MeshInstance3D" parent="Panel"]
+[node name="BraceTop" type="MeshInstance3D" parent="Hinge/Panel"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.6, -0.05)
 cast_shadow = 0
 script = ExtResource("mesh")
@@ -29,7 +40,7 @@ shape_kind = 1
 size = Vector3(1.14, 0.12, 0.04)
 color = Color(0.1804, 0.2118, 0.2941, 1)
 
-[node name="BraceBottom" type="MeshInstance3D" parent="Panel"]
+[node name="BraceBottom" type="MeshInstance3D" parent="Hinge/Panel"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.45, -0.05)
 cast_shadow = 0
 script = ExtResource("mesh")
@@ -37,13 +48,47 @@ shape_kind = 1
 size = Vector3(1.14, 0.12, 0.04)
 color = Color(0.1804, 0.2118, 0.2941, 1)
 
-[node name="Knob" type="MeshInstance3D" parent="Panel"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.38, 1.0, -0.07)
+[node name="OutsideHandle" type="Node3D" parent="Hinge/Panel"]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.4, 1.0, -0.1)
+script = ExtResource("handle")
+grab_radius = 0.1
+
+[node name="Knob" type="MeshInstance3D" parent="Hinge/Panel/OutsideHandle"]
 cast_shadow = 0
 script = ExtResource("mesh")
 size = Vector3(0.07, 0.07, 0.07)
 color = Color(0.9608, 0.7216, 0.2549, 1)
 glow = 0.3
+
+[node name="InsideHandle" type="Node3D" parent="Hinge/Panel"]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.4, 1.0, 0.1)
+script = ExtResource("handle")
+grab_radius = 0.1
+
+[node name="Knob" type="MeshInstance3D" parent="Hinge/Panel/InsideHandle"]
+cast_shadow = 0
+script = ExtResource("mesh")
+size = Vector3(0.07, 0.07, 0.07)
+color = Color(0.9608, 0.7216, 0.2549, 1)
+glow = 0.3
+
+[node name="OutsideLock" type="Node3D" parent="Hinge/Panel"]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, 0.4, 1.3, -0.04)
+script = ExtResource("button")
+press_radius = 0.06
+caption = "Unbolted"
+color = Color(0.9608, 0.7216, 0.2549, 1)
+
+[node name="InsideLock" type="Node3D" parent="Hinge/Panel"]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 0.4, 1.3, 0.04)
+script = ExtResource("button")
+press_radius = 0.06
+caption = "Unbolted"
+color = Color(0.9608, 0.7216, 0.2549, 1)
 
 [node name="BarBack" type="MeshInstance3D" parent="."]
 unique_name_in_owner = true
@@ -61,3 +106,53 @@ cast_shadow = 0
 unique_name_in_owner = true
 script = ExtResource("health")
 max_health = 600.0
+
+[node name="DoorChart" type="Node" parent="."]
+unique_name_in_owner = true
+script = ExtResource("chart")
+
+[node name="Root" type="Node" parent="DoorChart"]
+script = ExtResource("compound")
+initial_state = NodePath("Closed")
+
+[node name="Closed" type="Node" parent="DoorChart/Root"]
+script = ExtResource("compound")
+initial_state = NodePath("Unlocked")
+
+[node name="Unlocked" type="Node" parent="DoorChart/Root/Closed"]
+script = ExtResource("atomic")
+
+[node name="ToLocked" type="Node" parent="DoorChart/Root/Closed/Unlocked"]
+script = ExtResource("transition")
+to = NodePath("../../Locked")
+event = &"door_locked"
+delay_in_seconds = "0.0"
+
+[node name="ToOpen" type="Node" parent="DoorChart/Root/Closed/Unlocked"]
+script = ExtResource("transition")
+to = NodePath("../../../Open")
+event = &"door_opened"
+delay_in_seconds = "0.0"
+
+[node name="Locked" type="Node" parent="DoorChart/Root/Closed"]
+script = ExtResource("atomic")
+
+[node name="ToUnlocked" type="Node" parent="DoorChart/Root/Closed/Locked"]
+script = ExtResource("transition")
+to = NodePath("../../Unlocked")
+event = &"door_unlocked"
+delay_in_seconds = "0.0"
+
+[node name="Open" type="Node" parent="DoorChart/Root"]
+script = ExtResource("atomic")
+
+[node name="ToClosed" type="Node" parent="DoorChart/Root/Open"]
+script = ExtResource("transition")
+to = NodePath("../../Closed")
+event = &"door_closed"
+delay_in_seconds = "0.0"
+
+[connection signal="state_entered" from="DoorChart/Root/Closed" to="." method="_on_closed_state_entered"]
+[connection signal="state_entered" from="DoorChart/Root/Closed/Unlocked" to="." method="_on_unlocked_state_entered"]
+[connection signal="state_entered" from="DoorChart/Root/Closed/Locked" to="." method="_on_locked_state_entered"]
+[connection signal="state_entered" from="DoorChart/Root/Open" to="." method="_on_open_state_entered"]

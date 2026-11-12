@@ -32,6 +32,11 @@ SHOT_RESOLUTION=$WIDE shot level_4_office level=house showcase=house spot=4 fram
 SHOT_RESOLUTION=$WIDE shot level_5_night level=house showcase=house_night spot=2 frames=200
 SHOT_RESOLUTION=$WIDE shot level_6_pause level=house showcase=house spot=2 frames=120 pause=1 world_ui=1
 shot level_7_portrait level=house showcase=house spot=2 frames=200
+# The 3-day cycle: the armory terminal, the front door (inside, bolts and
+# handles), and the raid night with cops and SWAT in the garden.
+SHOT_RESOLUTION=$WIDE shot level_8_armory level=house showcase=house stand=-3,-3.3 look=-3,1.4,-2.1 frames=120
+SHOT_RESOLUTION=$WIDE shot level_9_door level=house showcase=house stand=0.3,-3.7 look=0,1.1,-5 frames=120
+SHOT_RESOLUTION=$WIDE shot level_10_raid level=house showcase=house_raid spot=2 frames=200
 "$TOOLS_DIR/godot.sh" --headless --script "$TOOLS_DIR/contact_sheet.gd" -- "$OUT_DIR/sheet_menus.png" 5 360 640 \
 	"$OUT_DIR"/0*.png >/dev/null 2>&1
 "$TOOLS_DIR/godot.sh" --headless --script "$TOOLS_DIR/contact_sheet.gd" -- "$OUT_DIR/sheet_levels.png" 3 640 360 \

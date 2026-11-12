@@ -71,7 +71,16 @@ func finish_shift(_result: LevelResult) -> void:
 	clear_queue()
 
 
+## Sirens in the street: everyone waiting at the window runs off (no
+## reputation lost — it isn't the player's fault), and none come until the
+## raid is over (CustomerFlow asks the context).
+func on_raid_started(_raid_number: int, _wave_count: int) -> void:
+	clear_queue()
+
+
 func get_status_line() -> String:
+	if not context.allows_customers():
+		return tr("Window closed")
 	return tr("Queue %d/%d") % [get_queue_size(), get_capacity()]
 
 # ============================================
@@ -131,6 +140,9 @@ func sell_to_front() -> SalesMath.Verdict:
 	var front: Customer = get_front_customer()
 	if front == null or not can_fill_front():
 		Audio.play_ui(Audio.UI_ERROR)
+		if front != null:
+			# Say why nothing happened: the stash lacks this product at this quality.
+			FloatingText3D.spawn(tr("Not enough %s in stock") % tr(front.order.recipe.display_name), global_position + Vector3(0.0, 1.9, 0.2), Palette.WARNING, Global.get_world_root())
 		return SalesMath.Verdict.REFUSE
 	var tier: int = operation.get_deliverable_tier(front.order)
 	var asked_price: int = operation.get_price(front.order.recipe)

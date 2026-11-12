@@ -199,3 +199,47 @@ Your blaster hits 8 harder.,Your blaster hits 8 harder.,Dein Blaster trifft 8 st
 Put in a raw ingredient,Put in a raw ingredient,Rohe Zutat einlegen
 Add ground ingredients,Add ground ingredients,Gemahlene Zutaten hinzufügen
 Put in a cooked batch,Put in a cooked batch,Gekochte Charge einlegen
+Armory,Armory,Waffenkammer
+Pistol,Pistol,Pistole
+SMG,SMG,MP
+Shotgun,Shotgun,Schrotflinte
+Rifle,Rifle,Gewehr
+"Your old sidearm. Weak, but it never runs dry.","Your old sidearm. Weak, but it never runs dry.","Deine alte Dienstwaffe. Schwach, aber die Munition geht nie aus."
+"Sprays fast, light rounds. Armor eats a lot of each hit.","Sprays fast, light rounds. Armor eats a lot of each hit.","Schnelle, leichte Schüsse. Panzerung schluckt viel von jedem Treffer."
+One heavy blast at short range. Stops anyone near the door.,One heavy blast at short range. Stops anyone near the door.,Ein schwerer Schuss auf kurze Distanz. Stoppt jeden an der Tür.
+Long reach and armor-piercing rounds. The answer to SWAT.,Long reach and armor-piercing rounds. The answer to SWAT.,Große Reichweite und panzerbrechende Munition. Die Antwort auf das SEK.
+%d rounds,%d rounds,%d Schuss
+%s ammo,%s ammo,Munition: %s
+%s bought,%s bought,%s gekauft
++%d rounds · %d / %d carried,+%d rounds · %d / %d carried,+%d Schuss · %d / %d dabei
+Close and lock the front door!,Close and lock the front door!,Haustür schließen und abschließen!
+Close the door first,Close the door first,Erst die Tür schließen
+Damage %d · %.1f shots/s · Range %d m,Damage %d · %.1f shots/s · Range %d m,Schaden %d · %.1f Schuss/s · Reichweite %d m
+Door %d%% %s,Door %d%% %s,Tür %d%% %s
+Equip,Equip,Ausrüsten
+In hand,In hand,In der Hand
+In hand: %s · %s,In hand: %s · %s,In der Hand: %s · %s
+Not enough %s in stock,Not enough %s in stock,Nicht genug %s auf Lager
+Out of ammo,Out of ammo,Keine Munition
+"Pick a tower, click a tile · Right-click: your gun","Pick a tower, click a tile · Right-click: your gun","Turm wählen, Feld anklicken · Rechtsklick: deine Waffe"
+"Pick a tower, point at a tile, pull the trigger · Other hand: your gun","Pick a tower, point at a tile, pull the trigger · Other hand: your gun","Turm wählen, auf ein Feld zeigen, Abzug drücken · Andere Hand: deine Waffe"
+Pierces armor,Pierces armor,Panzerbrechend
+Police raid %d! %d waves incoming,Police raid %d! %d waves incoming,Razzia %d! %d Wellen im Anmarsch
+Police raid tonight,Police raid tonight,Heute Nacht kommt die Razzia
+Queue %d/%d,Queue %d/%d,Schlange %d/%d
+Raid beaten! Back to business,Raid beaten! Back to business,Razzia abgewehrt! Zurück ans Geschäft
+Raid beaten,Raid beaten,Razzia abgewehrt
+Raid in %d days,Raid in %d days,Razzia in %d Tagen
+Raid tomorrow night,Raid tomorrow night,Razzia morgen Nacht
+Raid tonight,Raid tonight,Razzia heute Nacht
+Unbolted,Unbolted,Entriegelt
+Bolted,Bolted,Verriegelt
+Wave %d of %d,Wave %d of %d,Welle %d von %d
+Wave %d/%d in %ds,Wave %d/%d in %ds,Welle %d/%d in %ds
+Wave %d/%d · %d left,Wave %d/%d · %d left,Welle %d/%d · noch %d
+Wave beaten — next one is coming,Wave beaten — next one is coming,Welle abgewehrt – die nächste kommt
+Window closed,Window closed,Fenster zu
+locked,locked,verriegelt
+open,open,offen
+unlocked,unlocked,entriegelt
+unlimited ammo,unlimited ammo,unbegrenzte Munition

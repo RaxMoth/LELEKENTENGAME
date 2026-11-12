@@ -62,6 +62,7 @@ Profile.inventory.add_item(&"revive") / consume_item() / has_item()
 Profile.levels.get_stars(id) / get_best_score(id) / is_unlocked(level) / get_total_stars()
 Profile.upgrades.get_level(id) / get_value(upgrade) / purchase(upgrade) / is_owned(id)   # needs required_reputation
 Profile.operation.day_number / reputation / add_reputation(n) / get_price(id, default)
+Profile.armory.loadout.owns(weapon) / get_ammo(weapon) / equip(weapon) / get_equipped(catalog) / try_fire(weapon)
 Profile.stats.increment(Types.STAT_X) / record_max(id, value)
 Profile.achievements.is_unlocked(id) / get_progress_ratio(achievement)
 Profile.daily_rewards.can_claim() / claim()
@@ -182,6 +183,7 @@ Details and setup: [GAME.md](GAME.md).
 | `WalkableArea` | Node3D | Floor rectangles the player may stand on; `contains()`, `clamp_move()` |
 | `Grabbable` / `ItemSocket` | Node3D | Items a hand or the flat cursor picks up and drops into sockets; sockets decide what they accept (`accept_rule`) and signal `item_inserted` |
 | `PointerButton` | Node3D | A 3D button pressed by the pointer ray |
+| `HingeHandle` | Grabbable | A handle on a hinged leaf (door, gate): reports the angle the hand pulls it to; a flat click asks to toggle |
 | `InteractionQuery` | static | Finds grab targets, sockets and buttons by sphere math (no physics) |
 | `XRPointer` | Node3D | Ray along -Z. Clicks `WorldScreen`s itself; game code reads `ray_origin` / `ray_direction` and reports hits with `set_world_hit_distance()` |
 | `WorldScreen` | Node3D | Shows a Control scene (`content_scene`) or an existing viewport (`attach_viewport`) on a panel in the world and forwards pointer input as mouse events |
@@ -248,6 +250,8 @@ goes through `Operation`. See `Scenes/Levels/House/README.md`.
 var garden: FrontGarden = house_level.get_front(FrontGarden) as FrontGarden
 context.operation.stash / heat / get_cash() / spend_cash(n, reason) / complete_sale(order, price)
 context.operation.get_upgrade_value(Types.UPGRADE_BATCH) / get_unlocked_recipes() / bribe()
+context.allows_customers() / is_raid_active() / cycle.get_day_in_cycle() / cycle.is_raid_day()
+RaidPlanner.build_raid(raid_data, raid_number, heat_ratio) -> Array[RaidWave]
 warning_requested.emit(tr("Police raid!"))     # from any front; score_earned / shift_lost likewise
 window.spawn_customer(order) / get_front_customer() / sell_to_front() / accept_counter()   # SalesWindow
 window.flow.spawn_customer() / is_active                                                   # CustomerFlow

@@ -18,6 +18,8 @@
 [ext_resource type="PackedScene" path="res://Scenes/Levels/House/Garden/FrontGarden.tscn" id="front_garden_scene"]
 [ext_resource type="PackedScene" path="res://Scenes/Levels/House/Lab/Lab.tscn" id="lab_scene"]
 [ext_resource type="PackedScene" path="res://Scenes/Levels/House/Office/Office.tscn" id="office_scene"]
+[ext_resource type="PackedScene" path="res://Scenes/Levels/House/Cycle/HouseCycle.tscn" id="house_cycle_scene"]
+[ext_resource type="PackedScene" path="res://Scenes/Levels/House/Armory/Armory.tscn" id="armory_scene"]
 
 [sub_resource type="ProceduralSkyMaterial" id="sky_material"]
 sky_top_color = Color(0.051, 0.0627, 0.0902, 1)
@@ -50,7 +52,7 @@ fog_depth_begin = 14.0
 fog_depth_end = 40.0
 
 [sub_resource type="QuadMesh" id="wrist_quad"]
-size = Vector2(0.17, 0.1)
+size = Vector2(0.26, 0.125)
 
 [node name="House" instance=ExtResource("base")]
 script = ExtResource("level")
@@ -59,6 +61,7 @@ show_intro_countdown = false
 
 [node name="XRPlayerRig" parent="World"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -1.2)
+flat_wrist_half_size = Vector2(0.13, 0.0625)
 
 [node name="Announcer" parent="World"]
 pixel_size = 0.0035
@@ -96,6 +99,9 @@ delay_in_seconds = "0.0"
 [node name="Night" type="Node" parent="World/Stage/DayCycle/CycleChart/Root"]
 script = ExtResource("atomic")
 
+[node name="HouseCycle" parent="World/Stage" instance=ExtResource("house_cycle_scene")]
+unique_name_in_owner = true
+
 [node name="WorldEnvironment" type="WorldEnvironment" parent="World/Stage"]
 unique_name_in_owner = true
 environment = SubResource("environment")
@@ -126,6 +132,9 @@ unique_name_in_owner = true
 unique_name_in_owner = true
 
 [node name="Office" parent="World/Stage" instance=ExtResource("office_scene")]
+unique_name_in_owner = true
+
+[node name="Armory" parent="World/Stage" instance=ExtResource("armory_scene")]
 unique_name_in_owner = true
 
 [node name="SalesWindow" parent="World/Stage" instance=ExtResource("sales_window")]
@@ -350,7 +359,7 @@ cast_shadow = 0
 
 [node name="TimeLabel" type="Label3D" parent="World/Stage/WristStatus"]
 unique_name_in_owner = true
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.028, 0.002)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.044, 0.002)
 pixel_size = 0.0004
 no_depth_test = true
 render_priority = 6
@@ -363,7 +372,7 @@ outline_size = 8
 
 [node name="DetailsLabel" type="Label3D" parent="World/Stage/WristStatus"]
 unique_name_in_owner = true
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.012, 0.002)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.028, 0.002)
 pixel_size = 0.0004
 no_depth_test = true
 render_priority = 6
@@ -371,7 +380,8 @@ outline_render_priority = 5
 modulate = Color(0.9333, 0.9451, 0.9686, 1)
 outline_modulate = Color(0.051, 0.0627, 0.0902, 0.9)
 text = "Cash $0   Rep 0"
-font_size = 36
+font_size = 32
+vertical_alignment = 0
 outline_size = 8
 
 [connection signal="state_entered" from="World/Stage/DayCycle/CycleChart/Root/Night" to="World/Stage/DayCycle" method="_on_night_state_entered"]

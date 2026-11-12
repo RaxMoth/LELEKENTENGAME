@@ -6,26 +6,29 @@ the same files.
 
 | Area | Scene + script | Data | Upgrades | Smoke checks |
 |---|---|---|---|---|
-| **Defense** (tower defense in the front garden) | `Garden/FrontGarden.tscn` · `front_garden.gd` (+ `attacker_director.gd`, attackers, towers, door, build board) | `Ressources/Towers/`, attacker exports in `Garden/*.tscn`, `AttackerDirector` exports | `Ressources/Upgrades/Defense/` | `Tests/Smoke/defense_checks.gd` |
+| **Defense** (tower defense in the front garden, the door, the armory) | `Garden/FrontGarden.tscn` · `front_garden.gd` (+ `attacker_director.gd`, attackers, towers, door, build board), `Armory/Armory.tscn` | `Ressources/Towers/`, `Ressources/Weapons/`, attacker exports in `Garden/*.tscn` | `Ressources/Upgrades/Defense/` | `Tests/Smoke/defense_checks.gd` |
 | **Customers** (back window and yard) | `Sales/SalesWindow.tscn` · `sales_window.gd` (+ `customer_flow.gd`, customers, sales board) | `Ressources/Customers/`, `CustomerFlow` exports | `Ressources/Upgrades/Sales/` | `Tests/Smoke/sales_checks.gd` |
-| **House** (lab, office, stash, crew, the shift) | `House.tscn` · `house_level.gd`, `Lab/Lab.tscn`, `Office/Office.tscn`, `Workers/`, `operation.gd`, `day_cycle.gd`, `house_shell.gd` | `Ressources/Ingredients/`, `Ressources/Recipes/`, `Lab.tscn` recipes | `Ressources/Upgrades/Lab/`, `Ressources/Upgrades/House/` | `Tests/Smoke/lab_checks.gd`, `house_checks.gd` |
+| **House** (lab, office, stash, crew, the shift, the 3-day cycle) | `House.tscn` · `house_level.gd`, `Cycle/HouseCycle.tscn`, `Lab/Lab.tscn`, `Office/Office.tscn`, `Workers/`, `operation.gd`, `day_cycle.gd`, `house_shell.gd` | `Ressources/Ingredients/`, `Ressources/Recipes/`, `Lab.tscn` recipes | `Ressources/Upgrades/Lab/`, `Ressources/Upgrades/House/` | `Tests/Smoke/lab_checks.gd`, `house_checks.gd` |
 
 Each area folder has its own README with the details.
 
 ## The contract
 
-Every front (`FrontGarden`, `SalesWindow`, `Lab`, `Office`) extends
+Every front (`FrontGarden`, `SalesWindow`, `Lab`, `Office`, `Armory`) extends
 **`HouseFront`** and is its own scene, instanced once in `House.tscn`.
 
 - At setup it receives a **`HouseContext`**: `level` (is a shift
   running?), `rig` (the player: pointers, signals, haptics), `operation`
-  (shared state) and `day_cycle` (time, day / night).
+  (shared state), `day_cycle` (time, day / night) and `cycle` (the 3-day
+  cycle: `allows_customers()`, `is_raid_active()`).
 - It talks back only through `HouseFront`'s signals:
   `announcement_requested`, `warning_requested`, `score_earned`,
   `shift_lost`.
 - The House level calls its hooks: `setup`, `on_shift_started`,
   `process_shift` (→ `_shift_process`, `_refresh_displays`),
-  `on_nightfall`, `apply_upgrades`, `finish_shift`, `get_status_line`.
+  `on_nightfall`, `apply_upgrades`, `finish_shift`, `get_status_line`, and
+  through `HouseCycle` the raid hooks `on_raid_started`,
+  `on_raid_wave_started(RaidWave)`, `get_raiders_left`, `on_raid_cleared`.
 - **Fronts never reference each other.** Everything shared goes through
   **`Operation`** (stash, heat, cash, prices, recipes, upgrade values).
   Crew live inside their front's scene; the House pays everyone in

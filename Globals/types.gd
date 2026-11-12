@@ -163,6 +163,12 @@ const EVENT_TARGET_IN_RANGE: StringName = &"target_in_range"
 const EVENT_TARGET_OUT_OF_RANGE: StringName = &"target_out_of_range"
 const EVENT_DIED: StringName = &"died"
 const EVENT_RESPAWN: StringName = &"respawn"
+# --- Defense: the front door (Garden/FrontDoor.tscn) ---
+## The door swung open / fell shut and latched / was bolted / was unbolted.
+const EVENT_DOOR_OPENED: StringName = &"door_opened"
+const EVENT_DOOR_CLOSED: StringName = &"door_closed"
+const EVENT_DOOR_LOCKED: StringName = &"door_locked"
+const EVENT_DOOR_UNLOCKED: StringName = &"door_unlocked"
 
 # --- Sales: customers (Sales/Customer.tscn) ---
 ## A customer starts walking to a spot / reached it / was served or gave up.
@@ -183,6 +189,12 @@ const EVENT_WAGE_MISSED: StringName = &"wage_missed"
 ## Day/night cycle of the house.
 const EVENT_NIGHTFALL: StringName = &"nightfall"
 const EVENT_DAYBREAK: StringName = &"daybreak"
+## The 3-day cycle (Cycle/HouseCycle.tscn): the raid night begins, a wave
+## starts / is beaten, every wave of the raid is beaten.
+const EVENT_RAID_START: StringName = &"raid_start"
+const EVENT_WAVE_START: StringName = &"wave_start"
+const EVENT_WAVE_CLEARED: StringName = &"wave_cleared"
+const EVENT_RAID_CLEARED: StringName = &"raid_cleared"
 
 # ============================================
 # DUCK-TYPED HOOKS (optional methods nodes may implement)

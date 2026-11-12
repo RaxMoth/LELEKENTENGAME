@@ -1,0 +1,68 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://Scenes/Levels/House/Cycle/house_cycle.gd" id="cycle"]
+[ext_resource type="Resource" path="res://Ressources/Raids/police_raids.tres" id="raid_data"]
+[ext_resource type="Script" path="res://addons/godot_state_charts/state_chart.gd" id="chart"]
+[ext_resource type="Script" path="res://addons/godot_state_charts/compound_state.gd" id="compound"]
+[ext_resource type="Script" path="res://addons/godot_state_charts/atomic_state.gd" id="atomic"]
+[ext_resource type="Script" path="res://addons/godot_state_charts/transition.gd" id="transition"]
+
+[node name="HouseCycle" type="Node"]
+script = ExtResource("cycle")
+raid_data = ExtResource("raid_data")
+
+[node name="CycleChart" type="Node" parent="."]
+unique_name_in_owner = true
+script = ExtResource("chart")
+
+[node name="Root" type="Node" parent="CycleChart"]
+script = ExtResource("compound")
+initial_state = NodePath("Selling")
+
+[node name="Selling" type="Node" parent="CycleChart/Root"]
+script = ExtResource("atomic")
+
+[node name="ToRaid" type="Node" parent="CycleChart/Root/Selling"]
+script = ExtResource("transition")
+to = NodePath("../../Raid")
+event = &"raid_start"
+delay_in_seconds = "0.0"
+
+[node name="Raid" type="Node" parent="CycleChart/Root"]
+script = ExtResource("compound")
+initial_state = NodePath("WaveBreak")
+
+[node name="WaveBreak" type="Node" parent="CycleChart/Root/Raid"]
+script = ExtResource("atomic")
+
+[node name="ToWave" type="Node" parent="CycleChart/Root/Raid/WaveBreak"]
+script = ExtResource("transition")
+to = NodePath("../../WaveActive")
+event = &"wave_start"
+delay_in_seconds = "0.0"
+
+[node name="ToCleared" type="Node" parent="CycleChart/Root/Raid/WaveBreak"]
+script = ExtResource("transition")
+to = NodePath("../../../Cleared")
+event = &"raid_cleared"
+delay_in_seconds = "0.0"
+
+[node name="WaveActive" type="Node" parent="CycleChart/Root/Raid"]
+script = ExtResource("atomic")
+
+[node name="ToBreak" type="Node" parent="CycleChart/Root/Raid/WaveActive"]
+script = ExtResource("transition")
+to = NodePath("../../WaveBreak")
+event = &"wave_cleared"
+delay_in_seconds = "0.0"
+
+[node name="Cleared" type="Node" parent="CycleChart/Root"]
+script = ExtResource("atomic")
+
+[connection signal="state_entered" from="CycleChart/Root/Selling" to="." method="_on_selling_state_entered"]
+[connection signal="state_entered" from="CycleChart/Root/Raid" to="." method="_on_raid_state_entered"]
+[connection signal="state_entered" from="CycleChart/Root/Raid/WaveBreak" to="." method="_on_wave_break_state_entered"]
+[connection signal="state_processing" from="CycleChart/Root/Raid/WaveBreak" to="." method="_on_wave_break_state_processing"]
+[connection signal="state_entered" from="CycleChart/Root/Raid/WaveActive" to="." method="_on_wave_active_state_entered"]
+[connection signal="state_processing" from="CycleChart/Root/Raid/WaveActive" to="." method="_on_wave_active_state_processing"]
+[connection signal="state_entered" from="CycleChart/Root/Cleared" to="." method="_on_cleared_state_entered"]

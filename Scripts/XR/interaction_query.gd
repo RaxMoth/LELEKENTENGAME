@@ -62,6 +62,22 @@ static func find_socket_near(tree: SceneTree, item: Grabbable, point: Vector3) -
 	return nearest
 
 
+## Nearest free socket that takes [param item] within [param radius] of
+## [param point], ignoring snap radii (where a dropped item can go back to).
+static func find_socket_within(tree: SceneTree, item: Grabbable, point: Vector3, radius: float) -> ItemSocket:
+	var nearest: ItemSocket = null
+	var nearest_distance: float = radius
+	for node: Node in tree.get_nodes_in_group(Types.GROUP_ITEM_SOCKET):
+		var socket: ItemSocket = node as ItemSocket
+		if socket == null or not socket.can_accept(item):
+			continue
+		var distance: float = point.distance_to(socket.global_position)
+		if distance <= nearest_distance:
+			nearest_distance = distance
+			nearest = socket
+	return nearest
+
+
 ## Nearest socket taking [param item] whose snap sphere a ray passes through.
 static func find_socket_on_ray(tree: SceneTree, item: Grabbable, ray_origin: Vector3, ray_direction: Vector3, max_distance: float) -> ItemSocket:
 	var nearest: ItemSocket = null

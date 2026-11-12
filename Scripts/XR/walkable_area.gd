@@ -13,6 +13,21 @@ extends Node3D
 @export var floor_height: float = 0.0
 
 
+## Opens up a floor rectangle at runtime (an open door's threshold).
+func add_region(region: Rect2) -> void:
+	if not regions.has(region):
+		regions.append(region)
+
+
+## Closes a rectangle added with add_region() again.
+func remove_region(region: Rect2) -> void:
+	regions.erase(region)
+
+
+func has_region(region: Rect2) -> bool:
+	return regions.has(region)
+
+
 func contains(world_position: Vector3) -> bool:
 	return contains_point(regions, Vector2(world_position.x, world_position.z))
 

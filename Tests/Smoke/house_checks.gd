@@ -37,10 +37,12 @@ static func run_end(test: SmokeTest, level: HouseLevel) -> void:
 	day_cycle.advance(day_cycle.day_seconds)
 	await test.frames(3)
 	test.check(day_cycle.is_night() and nights[0] == 1, "the day turns into night")
+	test.check(not level.cycle.is_raid_active() and level.cycle.allows_customers(), "the night of a selling day brings no raid")
+	await _check_raid_waves(test, level)
 	var operation: Operation = level.operation
 	operation.add_product(operation.recipes[0], 2, 3)
 	(level.get_front(FrontGarden) as FrontGarden).door.health_component.damage(1000000.0)
-	test.check(await test.wait_until(func() -> bool: return UI.has_open_popup() and level.phase == LevelBase.Phase.FINISHED), "a broken door ends the shift")
+	test.check(await test.wait_until(func() -> bool: return UI.has_open_popup() and level.phase == LevelBase.Phase.FINISHED), "a broken door ends the shift (mid-raid)")
 	test.check(operation.stash.get_total() == 0, "losing the door loses the stash")
 	await test.frames(30)
 	UI.close_top_popup()
@@ -84,6 +86,36 @@ static func _check_crew_wages(test: SmokeTest, level: HouseLevel) -> void:
 	test.check(not hired.pay_wage() and not hired.is_working(), "unpaid crew go on strike")
 	Profile.wallet.add(Types.CURRENCY_CASH, cash, false)
 	test.check(hired.pay_wage() and hired.is_working(), "paid crew get back to work")
+
+
+## Day 3 of the cycle: the raid starts, the window closes, the first wave
+## comes and is beaten, the second wave comes (the caller then loses the door).
+static func _check_raid_waves(test: SmokeTest, level: HouseLevel) -> void:
+	var cycle: HouseCycle = level.cycle
+	var garden: FrontGarden = level.get_front(FrontGarden) as FrontGarden
+	var window: SalesWindow = level.get_front(SalesWindow) as SalesWindow
+	for enemy: LaneEnemy in garden.board.get_enemies().duplicate():
+		enemy.take_hit(1000000.0)
+	Profile.operation.day_number = cycle.get_days_per_cycle()
+	test.check(cycle.is_raid_day() and cycle.get_day_in_cycle() == cycle.get_days_per_cycle(), "day 3 of the cycle is the raid day")
+	window.flow.is_active = true
+	cycle.start_raid()
+	await test.frames(2)
+	test.check(cycle.is_raid_active() and not cycle.allows_customers() and window.get_queue_size() == 0, "the raid starts and the back window closes")
+	window.flow.step(60.0)
+	window.flow.is_active = false
+	test.check(window.get_queue_size() == 0, "no customers come during a raid")
+	test.check(cycle.get_wave_count() == 2 and not cycle.is_wave_active(), "the first raid has two waves and a moment to prepare")
+	garden.director.is_active = true
+	cycle.skip_wave_break()
+	test.check(await test.wait_until(func() -> bool: return cycle.is_wave_active()), "the first wave starts")
+	await test.wait_until(func() -> bool: return garden.director.get_pending_spawn_count() == 0)
+	test.check(garden.director.get_raiders_left() == 3, "the first wave brings three cops")
+	for raider: LaneEnemy in garden.board.get_enemies().duplicate():
+		raider.take_hit(1000000.0)
+	test.check(await test.wait_until(func() -> bool: return not cycle.is_wave_active() and cycle.is_raid_active()), "beating every officer ends the wave, the raid goes on")
+	cycle.skip_wave_break()
+	test.check(await test.wait_until(func() -> bool: return cycle.is_wave_active() and cycle.get_wave_number() == 2), "the next wave follows")
 
 
 ## Without a headset the controller callbacks are the only way to run the XR input mapping.
