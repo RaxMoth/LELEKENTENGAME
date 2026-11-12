@@ -1,0 +1,200 @@
+[gd_resource type="Resource" script_class="VoiceData" format=3]
+
+[ext_resource type="Script" path="res://Scripts/Resources/voice_data.gd" id="voice_script"]
+[ext_resource type="Script" path="res://Scripts/Resources/voice_line_data.gd" id="line_script"]
+[ext_resource type="AudioStream" path="res://Assets/Audio/Voices/oma/hello_01.wav" id="stream_0"]
+[ext_resource type="AudioStream" path="res://Assets/Audio/Voices/oma/hello_02.wav" id="stream_1"]
+[ext_resource type="AudioStream" path="res://Assets/Audio/Voices/oma/hello_03.wav" id="stream_2"]
+[ext_resource type="AudioStream" path="res://Assets/Audio/Voices/oma/hello_04.wav" id="stream_3"]
+[ext_resource type="AudioStream" path="res://Assets/Audio/Voices/oma/hello_05.wav" id="stream_4"]
+[ext_resource type="AudioStream" path="res://Assets/Audio/Voices/oma/smalltalk_01.wav" id="stream_5"]
+[ext_resource type="AudioStream" path="res://Assets/Audio/Voices/oma/smalltalk_02.wav" id="stream_6"]
+[ext_resource type="AudioStream" path="res://Assets/Audio/Voices/oma/smalltalk_03.wav" id="stream_7"]
+[ext_resource type="AudioStream" path="res://Assets/Audio/Voices/oma/smalltalk_04.wav" id="stream_8"]
+[ext_resource type="AudioStream" path="res://Assets/Audio/Voices/oma/smalltalk_05.wav" id="stream_9"]
+[ext_resource type="AudioStream" path="res://Assets/Audio/Voices/oma/smalltalk_06.wav" id="stream_10"]
+[ext_resource type="AudioStream" path="res://Assets/Audio/Voices/oma/smalltalk_07.wav" id="stream_11"]
+[ext_resource type="AudioStream" path="res://Assets/Audio/Voices/oma/pitch_yes_01.wav" id="stream_12"]
+[ext_resource type="AudioStream" path="res://Assets/Audio/Voices/oma/pitch_yes_02.wav" id="stream_13"]
+[ext_resource type="AudioStream" path="res://Assets/Audio/Voices/oma/pitch_yes_03.wav" id="stream_14"]
+[ext_resource type="AudioStream" path="res://Assets/Audio/Voices/oma/pitch_no_01.wav" id="stream_15"]
+[ext_resource type="AudioStream" path="res://Assets/Audio/Voices/oma/pitch_no_02.wav" id="stream_16"]
+[ext_resource type="AudioStream" path="res://Assets/Audio/Voices/oma/pitch_no_03.wav" id="stream_17"]
+[ext_resource type="AudioStream" path="res://Assets/Audio/Voices/oma/bye_01.wav" id="stream_18"]
+[ext_resource type="AudioStream" path="res://Assets/Audio/Voices/oma/bye_02.wav" id="stream_19"]
+[ext_resource type="AudioStream" path="res://Assets/Audio/Voices/oma/bye_03.wav" id="stream_20"]
+[ext_resource type="AudioStream" path="res://Assets/Audio/Voices/oma/bye_04.wav" id="stream_21"]
+[ext_resource type="AudioStream" path="res://Assets/Audio/Voices/oma/ambient_01.wav" id="stream_22"]
+[ext_resource type="AudioStream" path="res://Assets/Audio/Voices/oma/ambient_02.wav" id="stream_23"]
+[ext_resource type="AudioStream" path="res://Assets/Audio/Voices/oma/ambient_03.wav" id="stream_24"]
+[ext_resource type="AudioStream" path="res://Assets/Audio/Voices/oma/ambient_04.wav" id="stream_25"]
+[ext_resource type="AudioStream" path="res://Assets/Audio/Voices/oma/ambient_05.wav" id="stream_26"]
+
+[sub_resource type="Resource" id="line_0"]
+script = ExtResource("line_script")
+category = &"hello"
+text = "Was guckst du? Bin ich Kino?"
+stream = ExtResource("stream_0")
+
+[sub_resource type="Resource" id="line_1"]
+script = ExtResource("line_script")
+category = &"hello"
+text = "Moin. Wetter heute, ne?"
+stream = ExtResource("stream_1")
+
+[sub_resource type="Resource" id="line_2"]
+script = ExtResource("line_script")
+category = &"hello"
+text = "Hallo? Kennen wir uns?"
+stream = ExtResource("stream_2")
+
+[sub_resource type="Resource" id="line_3"]
+script = ExtResource("line_script")
+category = &"hello"
+text = "Ja bitte, was gibt's?"
+stream = ExtResource("stream_3")
+
+[sub_resource type="Resource" id="line_4"]
+script = ExtResource("line_script")
+category = &"hello"
+text = "Junger Mann, helfen Sie mir mal über die Straße?"
+stream = ExtResource("stream_4")
+
+[sub_resource type="Resource" id="line_5"]
+script = ExtResource("line_script")
+category = &"smalltalk"
+text = "Der Bus kommt schon wieder nicht."
+stream = ExtResource("stream_5")
+
+[sub_resource type="Resource" id="line_6"]
+script = ExtResource("line_script")
+category = &"smalltalk"
+text = "Mein WLAN ist weg. Das Internet ist für uns alle Neuland."
+stream = ExtResource("stream_6")
+
+[sub_resource type="Resource" id="line_7"]
+script = ExtResource("line_script")
+category = &"smalltalk"
+text = "Ich hab Rücken. Schon seit Jahren."
+stream = ExtResource("stream_7")
+
+[sub_resource type="Resource" id="line_8"]
+script = ExtResource("line_script")
+category = &"smalltalk"
+text = "Heute ist so ein Tag, wo nichts klappt. Wie jeden Tag."
+stream = ExtResource("stream_8")
+
+[sub_resource type="Resource" id="line_9"]
+script = ExtResource("line_script")
+category = &"smalltalk"
+text = "Wer das hört, ist doof."
+stream = ExtResource("stream_9")
+
+[sub_resource type="Resource" id="line_10"]
+script = ExtResource("line_script")
+category = &"smalltalk"
+text = "Wie geil ist das denn bitte, die Sonne scheint!"
+stream = ExtResource("stream_10")
+
+[sub_resource type="Resource" id="line_11"]
+script = ExtResource("line_script")
+category = &"smalltalk"
+text = "Früher war mehr Lametta."
+stream = ExtResource("stream_11")
+
+[sub_resource type="Resource" id="line_12"]
+script = ExtResource("line_script")
+category = &"pitch_yes"
+text = "Hm. Warum eigentlich nicht? Ich komm nachher vorbei."
+stream = ExtResource("stream_12")
+
+[sub_resource type="Resource" id="line_13"]
+script = ExtResource("line_script")
+category = &"pitch_yes"
+text = "Psst, nicht so laut! Ja, ich komm zum Fenster."
+stream = ExtResource("stream_13")
+
+[sub_resource type="Resource" id="line_14"]
+script = ExtResource("line_script")
+category = &"pitch_yes"
+text = "Sag das doch gleich, Digga. Bin unterwegs."
+stream = ExtResource("stream_14")
+
+[sub_resource type="Resource" id="line_15"]
+script = ExtResource("line_script")
+category = &"pitch_no"
+text = "Nee, ich bin clean. Seit gestern."
+stream = ExtResource("stream_15")
+
+[sub_resource type="Resource" id="line_16"]
+script = ExtResource("line_script")
+category = &"pitch_no"
+text = "Junge, ich ruf gleich die Polizei. Spaß. Aber nee."
+stream = ExtResource("stream_16")
+
+[sub_resource type="Resource" id="line_17"]
+script = ExtResource("line_script")
+category = &"pitch_no"
+text = "Ich hab nur Kleingeld für den Bus."
+stream = ExtResource("stream_17")
+
+[sub_resource type="Resource" id="line_18"]
+script = ExtResource("line_script")
+category = &"bye"
+text = "Ciao Kakao!"
+stream = ExtResource("stream_18")
+
+[sub_resource type="Resource" id="line_19"]
+script = ExtResource("line_script")
+category = &"bye"
+text = "Tschüssikowski!"
+stream = ExtResource("stream_19")
+
+[sub_resource type="Resource" id="line_20"]
+script = ExtResource("line_script")
+category = &"bye"
+text = "Hau rein!"
+stream = ExtResource("stream_20")
+
+[sub_resource type="Resource" id="line_21"]
+script = ExtResource("line_script")
+category = &"bye"
+text = "Bis später, Attentäter!"
+stream = ExtResource("stream_21")
+
+[sub_resource type="Resource" id="line_22"]
+script = ExtResource("line_script")
+category = &"ambient"
+text = "Alter, ist das hier eine Gegend."
+stream = ExtResource("stream_22")
+
+[sub_resource type="Resource" id="line_23"]
+script = ExtResource("line_script")
+category = &"ambient"
+text = "Wo hab ich nur mein Handy hingelegt?"
+stream = ExtResource("stream_23")
+
+[sub_resource type="Resource" id="line_24"]
+script = ExtResource("line_script")
+category = &"ambient"
+text = "Ich brauch erstmal einen Kaffee."
+stream = ExtResource("stream_24")
+
+[sub_resource type="Resource" id="line_25"]
+script = ExtResource("line_script")
+category = &"ambient"
+text = "Was ein Montag. Obwohl Dienstag ist."
+stream = ExtResource("stream_25")
+
+[sub_resource type="Resource" id="line_26"]
+script = ExtResource("line_script")
+category = &"ambient"
+text = "Hat jemand meinen Hund gesehen?"
+stream = ExtResource("stream_26")
+
+[resource]
+script = ExtResource("voice_script")
+id = &"oma"
+display_name = "Oma"
+volume_db = 1
+lines = Array[ExtResource("line_script")]([SubResource("line_0"), SubResource("line_1"), SubResource("line_2"), SubResource("line_3"), SubResource("line_4"), SubResource("line_5"), SubResource("line_6"), SubResource("line_7"), SubResource("line_8"), SubResource("line_9"), SubResource("line_10"), SubResource("line_11"), SubResource("line_12"), SubResource("line_13"), SubResource("line_14"), SubResource("line_15"), SubResource("line_16"), SubResource("line_17"), SubResource("line_18"), SubResource("line_19"), SubResource("line_20"), SubResource("line_21"), SubResource("line_22"), SubResource("line_23"), SubResource("line_24"), SubResource("line_25"), SubResource("line_26")])

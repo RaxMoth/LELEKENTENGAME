@@ -1,6 +1,7 @@
 [gd_resource type="Resource" script_class="CustomerTypeData" format=3]
 
 [ext_resource type="Script" path="res://Scripts/Resources/customer_type_data.gd" id="script"]
+[ext_resource type="Resource" path="res://Ressources/Voices/kennerin.tres" id="voice"]
 
 [resource]
 script = ExtResource("script")
@@ -16,3 +17,4 @@ reputation_loss = 2
 day_weight = 1.0
 night_weight = 2.0
 min_reputation = 15
+voice = ExtResource("voice")

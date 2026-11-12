@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="TownData" format=3]
+
+[ext_resource type="Script" path="res://Scripts/Resources/town_data.gd" id="town"]
+[ext_resource type="Script" path="res://Scripts/Resources/voice_data.gd" id="voice"]
+[ext_resource type="Resource" path="res://Ressources/Voices/kumpel.tres" id="kumpel"]
+[ext_resource type="Resource" path="res://Ressources/Voices/brocken.tres" id="brocken"]
+[ext_resource type="Resource" path="res://Ressources/Voices/influencerin.tres" id="influencerin"]
+[ext_resource type="Resource" path="res://Ressources/Voices/oma.tres" id="oma"]
+[ext_resource type="Resource" path="res://Ressources/Dialogue/street_talk.tres" id="street_talk"]
+
+[resource]
+script = ExtResource("town")
+pedestrian_voices = Array[ExtResource("voice")]([ExtResource("kumpel"), ExtResource("brocken"), ExtResource("influencerin"), ExtResource("oma")])
+dialogue = ExtResource("street_talk")

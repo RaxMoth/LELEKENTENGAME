@@ -144,10 +144,16 @@ static func _check_armory(test: SmokeTest, level: HouseLevel) -> void:
 	await test.frames(3)
 	var screen: WorldScreen = armory.get_screen()
 	var board: ArmoryBoard = armory.get_board()
-	var cash_before: int = operation.get_cash()
+	# Count what the armory charges (a dealer may sell at the window meanwhile).
+	var weapon_spending: Array[int] = [0]
+	var on_spent: Callable = func(amount: int, reason: String) -> void:
+		if reason == "weapons":
+			weapon_spending[0] += amount
+	operation.cash_spent.connect(on_spent)
 	rig.tap_world_point(screen.pixel_to_world(board.get_row("weapon", &"smg").get_buy_button().get_global_rect().get_center()))
 	await test.frames(3)
-	test.check(Profile.armory.loadout.owns(smg) and garden.get_equipped_weapon() == smg and operation.get_cash() == cash_before - smg.cost, "buying the SMG at the armory pays for it and puts it in hand")
+	operation.cash_spent.disconnect(on_spent)
+	test.check(Profile.armory.loadout.owns(smg) and garden.get_equipped_weapon() == smg and weapon_spending[0] == smg.cost, "buying the SMG at the armory pays for it and puts it in hand")
 	var ammo_before: int = Profile.armory.loadout.get_ammo(smg)
 	# Make room for one box, then buy it on the board.
 	for shot: int in smg.ammo_pack_size:
@@ -202,7 +208,9 @@ static func _check_front_door(test: SmokeTest, level: HouseLevel) -> void:
 	test.check(reached_garden and walkable.contains(rig.get_feet_position()) and garden.is_in_defense_zone(), "the player walks on out into the garden and can defend from there")
 	var obstacle: Vector3 = garden.yard.get_obstacle_circles()[0]
 	test.check(not walkable.contains(Vector3(obstacle.x, 0.0, obstacle.y)), "trees, rocks and the car in the garden can't be walked into")
-	test.check(not walkable.contains(Vector3(0.0, 0.0, garden.yard.bounds.position.y - 1.0)), "the garden ends at its fence")
+	var fence_z: float = garden.yard.bounds.position.y
+	test.check(not walkable.contains(Vector3(-8.0, 0.0, fence_z)) and walkable.clamp_move(Vector3(-8.0, 0.0, fence_z + 0.5), Vector3(-8.0, 0.0, fence_z + 0.2)).z > fence_z, "the garden's fence can't be walked through")
+	test.check(walkable.contains(Vector3(door.global_position.x, 0.0, fence_z)), "the gate in the fence leads out into the street")
 	_place_player(rig, Vector3(0.0, 0.0, -5.8), 0.0)
 	rig.tap_world_point(door.get_outside_handle().get_grab_center())
 	test.check(await test.wait_until(func() -> bool: return not door.is_open()), "the outside handle swings it shut")

@@ -2,7 +2,7 @@
 ## so selling is a decision: what they want, how much, how good, what they
 ## pay, whether they haggle and how long they wait.
 ##
-## Dependencies: CustomerOrder, RecipeData
+## Dependencies: CustomerOrder, RecipeData, VoiceData
 class_name CustomerTypeData
 extends Resource
 
@@ -23,6 +23,8 @@ extends Resource
 @export var reputation_loss: int = 1
 ## Workers (dealers) may serve this type.
 @export var dealer_can_serve: bool = true
+## How they sound at the window (greeting, thanks, complaints).
+@export var voice: VoiceData
 
 @export_group("Arrival")
 ## Relative chance among the types that may show up, by day and by night.

@@ -1,0 +1,81 @@
+voices	category	text
+@kunden	greet	Ey Digga, was geht?
+@kunden	greet	Moin Meister, läuft bei dir?
+@kunden	greet	Servus! Dein Lieblingskunde ist wieder da.
+@kunden	greet	Na, alles fit im Schritt?
+kennerin	greet	Guten Tag. Ich hoffe, die Ware ist heute nicht wieder so rustikal.
+influencerin	greet	Hey Leute, und herzlich willkommen zu meinem Einkauf!
+brocken	greet	Ich brauch viel. Sehr viel. Frag nicht.
+@kunden	order	Gib mal was Feines, aber keine Lauch-Qualität.
+@kunden	order	Ich nehm das Übliche, ich hab heut noch was vor.
+@kunden	order	Was ist das für 1 Angebot heute? Zeig mal.
+@kunden	happy	Ehrenmann! Wirklich.
+@kunden	happy	Läuft bei dir, Digga!
+@kunden	happy	Gönn dir! Ich komm wieder.
+@kunden	happy	Sheesh, das ist ja Premium.
+kumpel	happy	Ich hab fertig. Bis morgen!
+kennerin	happy	Exquisit. Wirklich, sehr exquisit.
+influencerin	happy	Das kommt sofort in meine Story! Link in Bio!
+brocken	happy	Passt. Mein Cousin wird sich freuen.
+schnaeppchen	happy	Ha! Schnäppchen! Ich bin so gut.
+@kunden	angry	Bist du komplett lost? So teuer?
+@kunden	angry	Digga, das ist Wucher. Ehrenlos.
+@kunden	angry	Alter, ich bin doch kein Goldesel.
+@kunden	angry	Für den Preis? Nee, da bin ich raus.
+schnaeppchen	haggle	Komm, mach Bruderpreis.
+schnaeppchen	haggle	Geht da noch was? Ich bin Stammkundin.
+schnaeppchen	haggle	Ich geb dir die Hälfte und einen Döner.
+schnaeppchen	haggle	Zehn Prozent Rabatt, weil ich so nett bin?
+@kunden	impatient	Digga, ich wart hier schon ewig.
+@kunden	impatient	Wird das heute noch was?
+@kunden	impatient	Bruder, mein Döner wird kalt.
+@kunden	sent_away	Wie, du schickst mich weg? Krass.
+@kunden	sent_away	Okay, dann eben nicht, du Lappen.
+@kunden	sent_away	Wow. Hätte ich nicht von dir gedacht.
+@leute	hello	Was guckst du? Bin ich Kino?
+@leute	hello	Moin. Wetter heute, ne?
+@leute	hello	Hallo? Kennen wir uns?
+@leute	hello	Ja bitte, was gibt's?
+oma	hello	Junger Mann, helfen Sie mir mal über die Straße?
+@leute	smalltalk	Der Bus kommt schon wieder nicht.
+@leute	smalltalk	Mein WLAN ist weg. Das Internet ist für uns alle Neuland.
+@leute	smalltalk	Ich hab Rücken. Schon seit Jahren.
+@leute	smalltalk	Heute ist so ein Tag, wo nichts klappt. Wie jeden Tag.
+@leute	smalltalk	Wer das hört, ist doof.
+@leute	smalltalk	Wie geil ist das denn bitte, die Sonne scheint!
+oma	smalltalk	Früher war mehr Lametta.
+@leute	pitch_yes	Hm. Warum eigentlich nicht? Ich komm nachher vorbei.
+@leute	pitch_yes	Psst, nicht so laut! Ja, ich komm zum Fenster.
+@leute	pitch_yes	Sag das doch gleich, Digga. Bin unterwegs.
+@leute	pitch_no	Nee, ich bin clean. Seit gestern.
+@leute	pitch_no	Junge, ich ruf gleich die Polizei. Spaß. Aber nee.
+@leute	pitch_no	Ich hab nur Kleingeld für den Bus.
+@leute	bye	Ciao Kakao!
+@leute	bye	Tschüssikowski!
+@leute	bye	Hau rein!
+@leute	bye	Bis später, Attentäter!
+@leute	ambient	Alter, ist das hier eine Gegend.
+@leute	ambient	Wo hab ich nur mein Handy hingelegt?
+@leute	ambient	Ich brauch erstmal einen Kaffee.
+@leute	ambient	Was ein Montag. Obwohl Dienstag ist.
+@leute	ambient	Hat jemand meinen Hund gesehen?
+polizist	raid	Polizei! Aufmachen, sofort!
+polizist	raid	Hier spricht die Polizei. Das Haus ist umstellt!
+polizist	raid	Zugriff, Zugriff, Zugriff!
+polizist	raid	Wir haben einen Durchsuchungsbefehl. Und Hunger.
+polizist	advance	Vorrücken, Leute!
+polizist	advance	Los, los, los!
+polizist	advance	Ich geh vor, ihr deckt mich. Oder so.
+polizist	cover	Deckung!
+polizist	cover	Der schießt ja wirklich!
+polizist	cover	Ich bin zu alt für diesen Mist.
+polizist	hit	Au! Das gibt eine Anzeige!
+polizist	hit	Mein Knie! Ich hatte doch Urlaub beantragt!
+polizist	hit	Autsch! Dafür gibt's ein Formular!
+polizist	down	Sagt meiner Frau, die Spülmaschine ist noch voll.
+polizist	down	Ich hab Rücken.
+polizist	down	Das war's mit dem Feierabendbier.
+polizist	down	Ich will zu meiner Mama.
+polizist	ram	Ramme nach vorne!
+polizist	ram	Klopf, klopf! Wer ist da? Die Ramme!
+polizist	ram	Eins, zwei, und rein!

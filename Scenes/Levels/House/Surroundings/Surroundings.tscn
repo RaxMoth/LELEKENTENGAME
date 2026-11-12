@@ -26,10 +26,10 @@
 [node name="Surroundings" type="Node3D"]
 
 [node name="Lawn" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.04, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.04, -8)
 cast_shadow = 0
 script = ExtResource("ground_plane")
-size = Vector2(90, 90)
+size = Vector2(32, 38)
 ground_material = ExtResource("lawn_material")
 fallback_color = Color(0.0824, 0.1059, 0.1569, 1)
 patch_darkening = 0.45
@@ -63,14 +63,14 @@ cast_shadow = 0
 script = ExtResource("scatter")
 scatter_mesh = ExtResource("SmallTrees_mesh")
 scatter_material = ExtResource("SmallTrees_material")
-placements = Array[Vector4]([Vector4(6.7, -7.6, 1.2, 200), Vector4(-3.6, -21.5, 1.35, 30), Vector4(8.8, -1, 1.25, 110), Vector4(7.6, 11, 1.2, 300)])
+placements = Array[Vector4]([Vector4(6.7, -7.6, 1.2, 200), Vector4(-3.6, -21.5, 1.35, 30), Vector4(8.8, -1, 1.25, 110), Vector4(7.6, 9.6, 1.2, 300)])
 
 [node name="WideTrees" type="MultiMeshInstance3D" parent="Plants"]
 cast_shadow = 0
 script = ExtResource("scatter")
 scatter_mesh = ExtResource("WideTrees_mesh")
 scatter_material = ExtResource("WideTrees_material")
-placements = Array[Vector4]([Vector4(8, -15, 1.15, 80), Vector4(-9, 1.5, 1.1, 170), Vector4(-1.5, 18.5, 1.3, 15)])
+placements = Array[Vector4]([Vector4(8, -15, 1.15, 80), Vector4(-9, 1.5, 1.1, 170), Vector4(-1.5, 8.5, 1.3, 15)])
 
 [node name="Nettles" type="MultiMeshInstance3D" parent="Plants"]
 cast_shadow = 0
@@ -91,14 +91,14 @@ cast_shadow = 0
 script = ExtResource("scatter")
 scatter_mesh = ExtResource("TallGrass_mesh")
 scatter_material = ExtResource("TallGrass_material")
-placements = Array[Vector4]([Vector4(-2.75, -6.9, 1.7, 0), Vector4(-2.8, -8.4, 1.5, 60), Vector4(-2.7, -10.1, 1.8, 120), Vector4(-2.85, -11.7, 1.6, 200), Vector4(2.75, -6.4, 1.6, 30), Vector4(2.8, -8.9, 1.8, 100), Vector4(2.7, -10.6, 1.5, 160), Vector4(2.85, -12, 1.7, 250), Vector4(-2.95, -13.8, 1.9, 40), Vector4(2.95, -13.75, 1.8, 300), Vector4(-6.6, -9.9, 1.6, 10), Vector4(6.4, -8, 1.7, 80), Vector4(-5.8, 7.8, 1.8, 140), Vector4(4.9, 8.6, 1.6, 220), Vector4(4.6, 12.5, 1.9, 280), Vector4(-6.2, 12.9, 1.7, 20)])
+placements = Array[Vector4]([Vector4(-2.75, -6.9, 1.7, 0), Vector4(-2.8, -8.4, 1.5, 60), Vector4(-2.7, -10.1, 1.8, 120), Vector4(-2.85, -11.7, 1.6, 200), Vector4(2.75, -6.4, 1.6, 30), Vector4(2.8, -8.9, 1.8, 100), Vector4(2.7, -10.6, 1.5, 160), Vector4(2.85, -12, 1.7, 250), Vector4(-2.95, -13.8, 1.9, 40), Vector4(2.95, -13.75, 1.8, 300), Vector4(-6.6, -9.9, 1.6, 10), Vector4(6.4, -8, 1.7, 80), Vector4(-5.8, 7.8, 1.8, 140), Vector4(4.9, 8.6, 1.6, 220), Vector4(4.6, 9.5, 1.9, 280), Vector4(-6.2, 9.9, 1.7, 20)])
 
 [node name="ShortGrass" type="MultiMeshInstance3D" parent="Plants"]
 cast_shadow = 0
 script = ExtResource("scatter")
 scatter_mesh = ExtResource("ShortGrass_mesh")
 scatter_material = ExtResource("ShortGrass_material")
-placements = Array[Vector4]([Vector4(-2.65, -7.6, 1.8, 20), Vector4(2.65, -9.6, 1.9, 140), Vector4(-2.7, -11, 2, 260), Vector4(2.7, -11.3, 1.8, 330), Vector4(-5.4, -4.4, 1.9, 70), Vector4(5.4, -3, 2, 190), Vector4(1.8, 5.5, 1.8, 110), Vector4(-4.8, 5.6, 2, 300), Vector4(-0.8, 13.6, 2.1, 50), Vector4(3.4, 13.2, 1.8, 170)])
+placements = Array[Vector4]([Vector4(-2.65, -7.6, 1.8, 20), Vector4(2.65, -9.6, 1.9, 140), Vector4(-2.7, -11, 2, 260), Vector4(2.7, -11.3, 1.8, 330), Vector4(-5.4, -4.4, 1.9, 70), Vector4(5.4, -3, 2, 190), Vector4(1.8, 5.5, 1.8, 110), Vector4(-4.8, 5.6, 2, 300), Vector4(-0.8, 10.2, 2.1, 50), Vector4(3.4, 10.4, 1.8, 170)])
 
 [node name="Junk" type="Node3D" parent="."]
 

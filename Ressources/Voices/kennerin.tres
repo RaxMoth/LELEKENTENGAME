@@ -1,0 +1,172 @@
+[gd_resource type="Resource" script_class="VoiceData" format=3]
+
+[ext_resource type="Script" path="res://Scripts/Resources/voice_data.gd" id="voice_script"]
+[ext_resource type="Script" path="res://Scripts/Resources/voice_line_data.gd" id="line_script"]
+[ext_resource type="AudioStream" path="res://Assets/Audio/Voices/kennerin/greet_01.wav" id="stream_0"]
+[ext_resource type="AudioStream" path="res://Assets/Audio/Voices/kennerin/greet_02.wav" id="stream_1"]
+[ext_resource type="AudioStream" path="res://Assets/Audio/Voices/kennerin/greet_03.wav" id="stream_2"]
+[ext_resource type="AudioStream" path="res://Assets/Audio/Voices/kennerin/greet_04.wav" id="stream_3"]
+[ext_resource type="AudioStream" path="res://Assets/Audio/Voices/kennerin/greet_05.wav" id="stream_4"]
+[ext_resource type="AudioStream" path="res://Assets/Audio/Voices/kennerin/order_01.wav" id="stream_5"]
+[ext_resource type="AudioStream" path="res://Assets/Audio/Voices/kennerin/order_02.wav" id="stream_6"]
+[ext_resource type="AudioStream" path="res://Assets/Audio/Voices/kennerin/order_03.wav" id="stream_7"]
+[ext_resource type="AudioStream" path="res://Assets/Audio/Voices/kennerin/happy_01.wav" id="stream_8"]
+[ext_resource type="AudioStream" path="res://Assets/Audio/Voices/kennerin/happy_02.wav" id="stream_9"]
+[ext_resource type="AudioStream" path="res://Assets/Audio/Voices/kennerin/happy_03.wav" id="stream_10"]
+[ext_resource type="AudioStream" path="res://Assets/Audio/Voices/kennerin/happy_04.wav" id="stream_11"]
+[ext_resource type="AudioStream" path="res://Assets/Audio/Voices/kennerin/happy_05.wav" id="stream_12"]
+[ext_resource type="AudioStream" path="res://Assets/Audio/Voices/kennerin/angry_01.wav" id="stream_13"]
+[ext_resource type="AudioStream" path="res://Assets/Audio/Voices/kennerin/angry_02.wav" id="stream_14"]
+[ext_resource type="AudioStream" path="res://Assets/Audio/Voices/kennerin/angry_03.wav" id="stream_15"]
+[ext_resource type="AudioStream" path="res://Assets/Audio/Voices/kennerin/angry_04.wav" id="stream_16"]
+[ext_resource type="AudioStream" path="res://Assets/Audio/Voices/kennerin/impatient_01.wav" id="stream_17"]
+[ext_resource type="AudioStream" path="res://Assets/Audio/Voices/kennerin/impatient_02.wav" id="stream_18"]
+[ext_resource type="AudioStream" path="res://Assets/Audio/Voices/kennerin/impatient_03.wav" id="stream_19"]
+[ext_resource type="AudioStream" path="res://Assets/Audio/Voices/kennerin/sent_away_01.wav" id="stream_20"]
+[ext_resource type="AudioStream" path="res://Assets/Audio/Voices/kennerin/sent_away_02.wav" id="stream_21"]
+[ext_resource type="AudioStream" path="res://Assets/Audio/Voices/kennerin/sent_away_03.wav" id="stream_22"]
+
+[sub_resource type="Resource" id="line_0"]
+script = ExtResource("line_script")
+category = &"greet"
+text = "Ey Digga, was geht?"
+stream = ExtResource("stream_0")
+
+[sub_resource type="Resource" id="line_1"]
+script = ExtResource("line_script")
+category = &"greet"
+text = "Moin Meister, läuft bei dir?"
+stream = ExtResource("stream_1")
+
+[sub_resource type="Resource" id="line_2"]
+script = ExtResource("line_script")
+category = &"greet"
+text = "Servus! Dein Lieblingskunde ist wieder da."
+stream = ExtResource("stream_2")
+
+[sub_resource type="Resource" id="line_3"]
+script = ExtResource("line_script")
+category = &"greet"
+text = "Na, alles fit im Schritt?"
+stream = ExtResource("stream_3")
+
+[sub_resource type="Resource" id="line_4"]
+script = ExtResource("line_script")
+category = &"greet"
+text = "Guten Tag. Ich hoffe, die Ware ist heute nicht wieder so rustikal."
+stream = ExtResource("stream_4")
+
+[sub_resource type="Resource" id="line_5"]
+script = ExtResource("line_script")
+category = &"order"
+text = "Gib mal was Feines, aber keine Lauch-Qualität."
+stream = ExtResource("stream_5")
+
+[sub_resource type="Resource" id="line_6"]
+script = ExtResource("line_script")
+category = &"order"
+text = "Ich nehm das Übliche, ich hab heut noch was vor."
+stream = ExtResource("stream_6")
+
+[sub_resource type="Resource" id="line_7"]
+script = ExtResource("line_script")
+category = &"order"
+text = "Was ist das für 1 Angebot heute? Zeig mal."
+stream = ExtResource("stream_7")
+
+[sub_resource type="Resource" id="line_8"]
+script = ExtResource("line_script")
+category = &"happy"
+text = "Ehrenmann! Wirklich."
+stream = ExtResource("stream_8")
+
+[sub_resource type="Resource" id="line_9"]
+script = ExtResource("line_script")
+category = &"happy"
+text = "Läuft bei dir, Digga!"
+stream = ExtResource("stream_9")
+
+[sub_resource type="Resource" id="line_10"]
+script = ExtResource("line_script")
+category = &"happy"
+text = "Gönn dir! Ich komm wieder."
+stream = ExtResource("stream_10")
+
+[sub_resource type="Resource" id="line_11"]
+script = ExtResource("line_script")
+category = &"happy"
+text = "Sheesh, das ist ja Premium."
+stream = ExtResource("stream_11")
+
+[sub_resource type="Resource" id="line_12"]
+script = ExtResource("line_script")
+category = &"happy"
+text = "Exquisit. Wirklich, sehr exquisit."
+stream = ExtResource("stream_12")
+
+[sub_resource type="Resource" id="line_13"]
+script = ExtResource("line_script")
+category = &"angry"
+text = "Bist du komplett lost? So teuer?"
+stream = ExtResource("stream_13")
+
+[sub_resource type="Resource" id="line_14"]
+script = ExtResource("line_script")
+category = &"angry"
+text = "Digga, das ist Wucher. Ehrenlos."
+stream = ExtResource("stream_14")
+
+[sub_resource type="Resource" id="line_15"]
+script = ExtResource("line_script")
+category = &"angry"
+text = "Alter, ich bin doch kein Goldesel."
+stream = ExtResource("stream_15")
+
+[sub_resource type="Resource" id="line_16"]
+script = ExtResource("line_script")
+category = &"angry"
+text = "Für den Preis? Nee, da bin ich raus."
+stream = ExtResource("stream_16")
+
+[sub_resource type="Resource" id="line_17"]
+script = ExtResource("line_script")
+category = &"impatient"
+text = "Digga, ich wart hier schon ewig."
+stream = ExtResource("stream_17")
+
+[sub_resource type="Resource" id="line_18"]
+script = ExtResource("line_script")
+category = &"impatient"
+text = "Wird das heute noch was?"
+stream = ExtResource("stream_18")
+
+[sub_resource type="Resource" id="line_19"]
+script = ExtResource("line_script")
+category = &"impatient"
+text = "Bruder, mein Döner wird kalt."
+stream = ExtResource("stream_19")
+
+[sub_resource type="Resource" id="line_20"]
+script = ExtResource("line_script")
+category = &"sent_away"
+text = "Wie, du schickst mich weg? Krass."
+stream = ExtResource("stream_20")
+
+[sub_resource type="Resource" id="line_21"]
+script = ExtResource("line_script")
+category = &"sent_away"
+text = "Okay, dann eben nicht, du Lappen."
+stream = ExtResource("stream_21")
+
+[sub_resource type="Resource" id="line_22"]
+script = ExtResource("line_script")
+category = &"sent_away"
+text = "Wow. Hätte ich nicht von dir gedacht."
+stream = ExtResource("stream_22")
+
+[resource]
+script = ExtResource("voice_script")
+id = &"kennerin"
+display_name = "Kennerin"
+volume_db = 0
+lines = Array[ExtResource("line_script")]([SubResource("line_0"), SubResource("line_1"), SubResource("line_2"), SubResource("line_3"), SubResource("line_4"), SubResource("line_5"), SubResource("line_6"), SubResource("line_7"), SubResource("line_8"), SubResource("line_9"), SubResource("line_10"), SubResource("line_11"), SubResource("line_12"), SubResource("line_13"), SubResource("line_14"), SubResource("line_15"), SubResource("line_16"), SubResource("line_17"), SubResource("line_18"), SubResource("line_19"), SubResource("line_20"), SubResource("line_21"), SubResource("line_22")])

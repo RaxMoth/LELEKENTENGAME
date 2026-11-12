@@ -2,6 +2,8 @@
 
 [ext_resource type="Script" path="res://Scenes/Levels/House/Garden/raider.gd" id="raider"]
 [ext_resource type="Script" path="res://Scenes/Levels/House/Garden/raider_body.gd" id="body"]
+[ext_resource type="Script" path="res://Scripts/Components/npc_voice.gd" id="voice_component"]
+[ext_resource type="Resource" path="res://Ressources/Voices/polizist.tres" id="police_voice"]
 [ext_resource type="Script" path="res://Scripts/Utils/blob_shadow_3d.gd" id="shadow"]
 [ext_resource type="Script" path="res://Scripts/Components/health_component.gd" id="health"]
 [ext_resource type="Script" path="res://Scripts/Components/hit_flash_3d_component.gd" id="flash"]
@@ -20,6 +22,13 @@ unique_name_in_owner = true
 
 [node name="RaiderBody" type="Node3D" parent="Visual"]
 script = ExtResource("body")
+
+[node name="Voice" type="Node3D" parent="."]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.75, 0)
+script = ExtResource("voice_component")
+voice = ExtResource("police_voice")
+chatter_cooldown_seconds = 6.0
 
 [node name="Shadow" type="MeshInstance3D" parent="."]
 script = ExtResource("shadow")

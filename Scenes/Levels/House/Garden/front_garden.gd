@@ -93,9 +93,11 @@ func _on_setup() -> void:
 	if context.rig.walkable_area != null:
 		context.rig.walkable_area.add_region(porch_region)
 		# The garden: out of the front door, across the yard up to its fence,
-		# around its trees, rocks and the car.
+		# around its trees, rocks and the car — and out through the gate
+		# into the street (the town around makes the rest walkable).
 		context.rig.walkable_area.add_region(get_garden_region())
 		context.rig.walkable_area.add_blockers(yard.get_obstacle_circles())
+		context.rig.walkable_area.add_rect_blockers(yard.get_fence_blockers())
 	director.setup(context, yard)
 	for turret_node: Node in _turret_root.get_children():
 		var turret: HouseTurret = turret_node as HouseTurret

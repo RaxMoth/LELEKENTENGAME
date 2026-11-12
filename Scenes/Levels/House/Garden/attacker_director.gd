@@ -121,4 +121,7 @@ func _step_pending_spawns(delta: float) -> void:
 		pending["delay"] = float(pending["delay"]) - delta
 		if float(pending["delay"]) <= 0.0:
 			_pending_spawns.remove_at(spawn_index)
-			spawn_raider(pending["scene"] as PackedScene, float(pending["health"]), pending["squad"] as RaidSquad, int(pending["spot"]))
+			var raider: Raider = spawn_raider(pending["scene"] as PackedScene, float(pending["health"]), pending["squad"] as RaidSquad, int(pending["spot"]))
+			# The first officer of a wave announces it.
+			if raider != null and int(pending["spot"]) == 0:
+				raider.shout_raid_call()

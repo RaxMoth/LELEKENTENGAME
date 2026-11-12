@@ -10,14 +10,18 @@
 ## respawn (pool reuse).
 ##
 ## Dependencies: Yard, RaidSquad, FrontDoor, YardNavigation, HealthComponent,
-##               HitFlash3DComponent, Pools, Profile, Events, Audio, Types
-##               autoloads, SfxSynth
+##               HitFlash3DComponent, NpcVoice, VoiceLineData, Pools, Profile,
+##               Events, Audio, Types autoloads, SfxSynth
 class_name Raider
 extends Node3D
 
 signal defeated(raider: Raider)
 
 const DEATH_SECONDS: float = 0.25
+## Chance an officer cries out when hit / calls taking cover (chatter is
+## rationed on top, so a raid never becomes a wall of voices).
+const HIT_LINE_CHANCE: float = 0.5
+const COVER_LINE_CHANCE: float = 0.35
 ## Damage a hit always does, however thick the armor.
 const MIN_HIT_DAMAGE: float = 1.0
 ## Arrived when this close to the destination (meters).
@@ -88,6 +92,8 @@ var _tween: Tween
 @onready var hit_flash_component: HitFlash3DComponent = %HitFlash3DComponent
 @onready var state_chart: StateChart = %StateChart
 @onready var _visual: Node3D = %Visual
+## The officer's voice (shouts in a raid).
+@onready var voice: NpcVoice = %Voice
 ## The bodies under Visual (one per officer; a ram team has two).
 var _bodies: Array[RaiderBody] = []
 
@@ -143,6 +149,8 @@ func take_hit(amount: float, source: Node = null, from_tower: bool = false, pier
 	if not pierces_armor:
 		damage -= armor
 	health_component.damage(maxf(MIN_HIT_DAMAGE, damage), source)
+	if not health_component.is_dead and randf() < HIT_LINE_CHANCE:
+		voice.say(VoiceLineData.HIT)
 
 
 ## Center of the sphere shots aim at (lower while crouching in cover).
@@ -155,8 +163,14 @@ func get_hit_center() -> Vector3:
 func on_squad_rush() -> void:
 	if not is_alive():
 		return
+	voice.say(VoiceLineData.ADVANCE)
 	is_staged = false
 	_head_for_door()
+
+
+## The call that opens a raid ("Polizei! Aufmachen!"), always heard.
+func shout_raid_call() -> void:
+	voice.say(VoiceLineData.RAID, true)
 
 
 ## Stops it where it stands (end of the shift, staged scenes) or lets it go again.
@@ -187,12 +201,14 @@ func _on_pool_spawned() -> void:
 	_is_frozen = false
 	_last_direction = Vector2.ZERO
 	_seconds_since_hit = SUPPRESSION_SECONDS
+	voice.reset()
 	if _has_been_used:
 		state_chart.send_event(Types.EVENT_RESPAWN)
 	_has_been_used = true
 
 
 func _on_pool_despawned() -> void:
+	voice.reset()
 	_yard = null
 	squad = null
 
@@ -229,6 +245,8 @@ func _on_in_cover_state_entered() -> void:
 	_is_in_motion = false
 	_set_crouched(not is_battering_ram)
 	_seconds_until_move = randf_range(cover_seconds.x, cover_seconds.y)
+	if randf() < COVER_LINE_CHANCE:
+		voice.say(VoiceLineData.COVER)
 	_face_toward(_yard.get_door_point() if _yard != null else Vector2.ZERO, 1.0)
 
 
@@ -251,6 +269,8 @@ func _on_attacking_state_entered() -> void:
 	_is_in_motion = false
 	_set_crouched(false)
 	_seconds_until_hit = hit_interval_seconds * 0.5
+	if is_battering_ram:
+		voice.say(VoiceLineData.RAM)
 	_face_toward(_yard.get_door_point() if _yard != null else Vector2.ZERO, 1.0)
 
 
@@ -281,6 +301,7 @@ func _on_dead_state_entered() -> void:
 	Profile.stats.increment(Types.STAT_ENEMIES_DEFEATED)
 	Events.enemy_defeated.emit(self)
 	defeated.emit(self)
+	voice.say_last_words(VoiceLineData.DOWN)
 	Audio.play_sfx_at(SfxSynth.get_preset(&"pop"), global_position, 0.15)
 	if _tween != null:
 		_tween.kill()

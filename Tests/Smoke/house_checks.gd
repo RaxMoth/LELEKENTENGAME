@@ -14,7 +14,11 @@ static func run_start(test: SmokeTest, level: HouseLevel) -> void:
 	var walkable: WalkableArea = rig.walkable_area
 	test.check(not rig.is_xr_active and walkable != null, "rig runs the flat simulator with a walkable area")
 	test.check(walkable.contains(rig.get_feet_position()), "the player starts on a walkable floor")
-	test.check(walkable.contains(Vector3(0.0, 0.0, -9.0)) and not walkable.contains(Vector3(0.0, 0.0, -40.0)), "the garden outside is walkable up to its fence")
+	test.check(walkable.contains(Vector3(0.0, 0.0, -9.0)) and walkable.contains(Vector3(0.0, 0.0, -35.0)), "the garden and the street beyond its gate are walkable")
+	var town: Town = level.get_front(Town) as Town
+	var building: Rect2 = town.layout.building_footprints[0]
+	test.check(not walkable.contains(Vector3(building.get_center().x, 0.0, building.get_center().y)), "the town's buildings can't be walked into")
+	test.check(not walkable.contains(Vector3(town.layout.bounds.position.x - 3.0, 0.0, 0.0)), "the town ends beyond its outer streets")
 	test.check(not walkable.contains(Vector3(0.0, 0.0, -5.0)), "a shut front door keeps the player inside")
 	rig.locomotion.travel_to_spot(0)
 	var lab_spot: Vector3 = rig.locomotion.travel_spots[0].global_position
