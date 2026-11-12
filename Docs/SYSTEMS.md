@@ -55,6 +55,11 @@ SaveManager.request_save()   # debounced 1 s
 SaveManager.save_now()       # also runs automatically on app pause / quit
 ```
 
+Development builds start every launch fresh: they skip loading the save
+while `Settings.KEY_FRESH_START_IN_DEV` is on (default; "Fresh Start Every
+Launch" in the settings popup, shown only in debug builds). Exported release
+builds always load it.
+
 ### Profile
 ```gdscript
 Profile.wallet.add(Types.CURRENCY_CASH, 50) / spend() / can_afford() / get_amount()   # add(..., false) for refunds
@@ -115,6 +120,23 @@ set meta `no_juice` on a button to opt out.
 New popup: a scene with root `Control` (script `extends BasePopup`), children
 `%Backdrop` (ColorRect) and `CenterContainer/%Panel` (PanelContainer). Override
 `_on_opened(data)` and call `close(result)`. Copy `ConfirmPopup` as a starter.
+
+### Coop (two players)
+```gdscript
+Coop.host()                      # opens UDP 7777, announces on the LAN, asks the router (UPnP)
+Coop.join("203.0.113.5:7777")    # or a game from Coop.found_games (start_discovery())
+Coop.is_host() / is_client() / is_online() / leave()
+```
+The host's level is the world. A guest's `HouseLevel` is a mirror: its
+`HouseCoopSync` shows the host's snapshots and forwards the guest's hand
+input (`XRPlayerRig.forwards_hand_input`), which the host runs through a
+`HandInteractor` on a `RemotePlayer`. To stream a new spawned scene, add it
+to `HouseCoopSync.STREAMED_SCENES` (append only) and optionally give it
+`get_net_state()` / `apply_net_state(state)`; a scene node joins
+`Types.GROUP_NET_NODE` with the same two methods. In-world boards need
+nothing: the host sends each board's look (`ControlMirror`) when it changes.
+A front that reacts to the guest's gun trigger listens to
+`HouseContext.guest_fired`. Test: `Tools/coop_test.sh`.
 
 ### SceneManager
 ```gdscript

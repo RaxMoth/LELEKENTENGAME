@@ -58,6 +58,22 @@ func _on_released_nowhere() -> void:
 		Pools.despawn(self)
 
 
+## Co-op: what the other player needs to draw this piece.
+func get_net_state() -> Array:
+	return [data.resource_path if data != null else "", is_processed]
+
+
+## Co-op client: look like the host's piece (no crate, no game logic).
+func apply_net_state(state: Array) -> void:
+	var data_path: String = str(state[0])
+	var processed: bool = bool(state[1])
+	if data_path.is_empty() or (data != null and data.resource_path == data_path and processed == is_processed):
+		return
+	data = load(data_path) as IngredientData
+	is_processed = processed
+	_apply_look()
+
+
 func _on_pool_spawned() -> void:
 	is_processed = false
 	step_accuracies.clear()

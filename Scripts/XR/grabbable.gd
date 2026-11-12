@@ -31,6 +31,7 @@ var home_socket: ItemSocket = null
 
 func _ready() -> void:
 	add_to_group(Types.GROUP_GRABBABLE)
+	add_to_group(Types.GROUP_NET_ENTITY)
 
 
 func _process(_delta: float) -> void:

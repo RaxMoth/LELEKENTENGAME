@@ -41,20 +41,16 @@ signal secondary_action_released(pointer: XRPointer)
 signal menu_pressed
 signal item_grabbed(item: Grabbable)
 signal item_placed(item: Grabbable, socket: ItemSocket)
+## Co-op client: a trigger or grip press (or a flat click, as the dominant
+## trigger) the host must carry out (see forwards_hand_input).
+signal hand_input_forwarded(hand: Types.Hand, action_name: StringName, is_pressed: bool)
 
 ## Command line user argument that forces the in-world popup screen without a
 ## headset: `godot -- world_ui=1`.
 const ARGUMENT_WORLD_UI: String = "world_ui=1"
 const HAPTIC_SECONDS: float = 0.06
-## A hand grabs things this close to its grip point (meters).
-const HAND_GRAB_REACH: float = 0.12
 ## Pointer grabs and button presses reach this far.
-const POINTER_REACH: float = 4.5
-## A grip let go sooner than this after picking something up was a click:
-## the hand keeps the item until the next grip click or trigger.
-const GRIP_CLICK_SECONDS: float = 0.35
-## _grip_grabbed_at_msec value of a hand whose item the grip didn't pick up.
-const NOT_GRIP_GRABBED: int = -1
+const POINTER_REACH: float = HandInteractor.POINTER_REACH
 ## Where the popup screen appears: this far ahead of the head and this much lower.
 const POPUP_DISTANCE: float = 1.9
 const POPUP_DROP: float = 0.15
@@ -71,10 +67,10 @@ const POPUP_DROP: float = 0.15
 @export var spectator_window_size: Vector2i = Vector2i(1280, 720)
 ## Eye height (meters above the floor) a seated player is lifted to while
 ## the "Standing View When Seated" comfort setting is on.
-@export var standing_eye_height: float = 1.65
+@export var standing_eye_height: float = 1.8
 
 @export_group("Flat simulator")
-@export var flat_eye_height: float = 1.7
+@export var flat_eye_height: float = 1.8
 @export var flat_pitch_degrees: float = -12.0
 ## Vertical field of view for wide and tall windows.
 @export var flat_fov_landscape: float = 70.0
@@ -91,6 +87,10 @@ const POPUP_DROP: float = 0.15
 
 ## True when a headset is driving the camera; false in the flat simulator.
 var is_xr_active: bool = false
+## Co-op client: trigger, grip and clicks don't act here but are emitted as
+## hand_input_forwarded for the host (which owns the world). Screens and
+## items are left alone locally; menus, walking and turning stay local.
+var forwards_hand_input: bool = false
 ## Where the player may stand (set by the level).
 var walkable_area: WalkableArea:
 	get:
@@ -102,14 +102,10 @@ var _xr_interface: XRInterface = null
 var _uses_world_space_ui: bool = false
 var _is_popup_shown: bool = false
 var _default_physics_ticks: int = 60
-var _held_items: Dictionary[Types.Hand, Grabbable] = {Types.Hand.LEFT: null, Types.Hand.RIGHT: null}
-## Grip buttons held down right now, per hand.
+## The hands' rules (grab, put in, buttons); the flat cursor has its own below.
+var _hands: HandInteractor = null
+## Grip buttons held down right now, per hand (arm-swing walking).
 var _grip_down: Dictionary[Types.Hand, bool] = {Types.Hand.LEFT: false, Types.Hand.RIGHT: false}
-## When each hand's grip picked up what it holds (Time ticks, ms), or
-## NOT_GRIP_GRABBED (the trigger took it: a grip release leaves it alone).
-var _grip_grabbed_at_msec: Dictionary[Types.Hand, int] = {Types.Hand.LEFT: NOT_GRIP_GRABBED, Types.Hand.RIGHT: NOT_GRIP_GRABBED}
-## The grip press already put the item down; its release must not act again.
-var _ignores_grip_release: Dictionary[Types.Hand, bool] = {Types.Hand.LEFT: false, Types.Hand.RIGHT: false}
 var _flat_held_item: Grabbable = null
 ## Meters the play space is raised for seated play (see StandingView).
 var _standing_lift: float = 0.0
@@ -145,6 +141,18 @@ var _flat_press_on_screen: bool = false
 func _ready() -> void:
 	# Pointers and the popup screen must keep working while the game is paused.
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	_hands = HandInteractor.new()
+	_hands.name = "Hands"
+	_hands.dominant_hand = dominant_hand
+	add_child(_hands)
+	_hands.setup({Types.Hand.LEFT: _left_hold_anchor, Types.Hand.RIGHT: _right_hold_anchor}, {Types.Hand.LEFT: _left_pointer, Types.Hand.RIGHT: _right_pointer})
+	_hands.primary_action_pressed.connect(primary_action_pressed.emit)
+	_hands.secondary_action_pressed.connect(secondary_action_pressed.emit)
+	_hands.primary_action_released.connect(primary_action_released.emit)
+	_hands.secondary_action_released.connect(secondary_action_released.emit)
+	_hands.item_grabbed.connect(item_grabbed.emit)
+	_hands.item_placed.connect(item_placed.emit)
+	_hands.pulse_requested.connect(func(hand: Types.Hand, strength: Types.HapticStrength) -> void: pulse(_get_pointer(hand), strength))
 	_default_physics_ticks = Engine.physics_ticks_per_second
 	_xr_interface = XRServer.find_interface(Types.XR_INTERFACE_OPENXR)
 	is_xr_active = _xr_interface != null and _xr_interface.is_initialized()
@@ -215,7 +223,12 @@ func _unhandled_input(event: InputEvent) -> void:
 			_flat_release()
 	elif button.button_index == MOUSE_BUTTON_RIGHT:
 		set_flat_cursor(button.position)
-		if not button.pressed:
+		if forwards_hand_input:
+			# A co-op guest's right mouse button is their gun trigger: the host
+			# fires it (held, for automatic guns).
+			var off_hand: Types.Hand = Types.Hand.LEFT if dominant_hand == Types.Hand.RIGHT else Types.Hand.RIGHT
+			hand_input_forwarded.emit(off_hand, Types.XR_ACTION_TRIGGER_CLICK, button.pressed)
+		elif not button.pressed:
 			secondary_action_released.emit(_flat_pointer)
 		elif not _flat_pointer.is_over_screen():
 			secondary_action_pressed.emit(_flat_pointer)
@@ -291,7 +304,7 @@ func is_grip_down(hand: Types.Hand) -> bool:
 
 ## True while [param hand] holds nothing.
 func is_hand_empty(hand: Types.Hand) -> bool:
-	return _held_items[hand] == null
+	return _hands.get_held_item(hand) == null
 
 
 ## A controller's transform in the play space (relative to this origin, so
@@ -308,8 +321,8 @@ func get_view_camera() -> Camera3D:
 ## True while the gun hand holds an item (the gun is put away meanwhile).
 func is_weapon_hand_busy() -> bool:
 	if is_xr_active:
-		return _held_items[_get_offhand()] != null
-	return _flat_held_item != null
+		return _hands.get_held_item(_get_offhand()) != null
+	return _flat_held_item != null or _hands.get_held_item(dominant_hand) != null
 
 
 ## The ray of a controller. It only follows a real hand inside a headset;
@@ -322,11 +335,13 @@ func get_hand_pointer(hand: Types.Hand) -> XRPointer:
 ## it to drive the VR hand path without a headset.
 func handle_controller_button(hand: Types.Hand, action_name: StringName, is_pressed: bool) -> void:
 	match action_name:
-		Types.XR_ACTION_TRIGGER_CLICK:
-			_on_trigger(hand, is_pressed)
-		Types.XR_ACTION_GRIP_CLICK:
-			_grip_down[hand] = is_pressed
-			_on_grip(hand, is_pressed)
+		Types.XR_ACTION_TRIGGER_CLICK, Types.XR_ACTION_GRIP_CLICK:
+			if action_name == Types.XR_ACTION_GRIP_CLICK:
+				_grip_down[hand] = is_pressed
+			if forwards_hand_input:
+				hand_input_forwarded.emit(hand, action_name, is_pressed)
+			else:
+				_hands.handle_button(hand, action_name, is_pressed)
 		Types.XR_ACTION_MENU_BUTTON, Types.XR_ACTION_SECONDARY_BUTTON:
 			if is_pressed:
 				menu_pressed.emit()
@@ -337,11 +352,30 @@ func handle_controller_button(hand: Types.Hand, action_name: StringName, is_pres
 
 ## Items currently held (by either hand or the flat cursor).
 func get_held_items() -> Array[Grabbable]:
-	var held: Array[Grabbable] = []
-	for item: Grabbable in [_held_items[Types.Hand.LEFT], _held_items[Types.Hand.RIGHT], _flat_held_item]:
-		if item != null:
-			held.append(item)
+	var held: Array[Grabbable] = _hands.get_held_items()
+	if _flat_held_item != null:
+		held.append(_flat_held_item)
 	return held
+
+
+## The hands' rules (co-op mirrors what the host says they hold).
+func get_hands() -> HandInteractor:
+	return _hands
+
+
+## Where [param hand] holds things right now: its controller in a headset,
+## in front of the camera in the flat simulator.
+func get_hold_anchor(hand: Types.Hand) -> Node3D:
+	if is_xr_active:
+		return _get_hold_anchor(hand)
+	return _flat_hold_anchor
+
+
+## Everything the host needs to act for this hand (co-op): where it holds
+## things and where its beam points — [hold transform, ray origin, ray direction].
+func get_hand_pose(hand: Types.Hand) -> Array:
+	var pointer: XRPointer = _get_pointer(hand) if is_xr_active else _flat_pointer
+	return [get_hold_anchor(hand).global_transform, pointer.ray_origin, pointer.ray_direction]
 
 
 ## Short controller rumble (phone vibration in the flat simulator). Honors the haptics setting.
@@ -481,111 +515,6 @@ func _match_physics_to_display() -> void:
 		Engine.physics_ticks_per_second = roundi(refresh_rate)
 
 
-## Dominant trigger: a screen, then (holding something) putting it down
-## where it goes, then a 3D button, then picking up what the hand or beam is
-## on, then the game's use action. The off-hand trigger is the gun: a
-## screen, a 3D button, or a shot — it never picks anything up.
-func _on_trigger(hand: Types.Hand, is_pressed: bool) -> void:
-	var pointer: XRPointer = _get_pointer(hand)
-	if not is_pressed:
-		pointer.release()
-		if hand == dominant_hand:
-			primary_action_released.emit(pointer)
-		else:
-			secondary_action_released.emit(pointer)
-		# Something fixed (a door handle) only moves while the trigger is held.
-		var held_item: Grabbable = _held_items[hand]
-		if hand == dominant_hand and held_item != null and held_item.is_fixed:
-			_put_down(hand)
-		return
-	if pointer.press() or get_tree().paused:
-		return
-	if hand != dominant_hand:
-		if not _press_button_on_ray(pointer):
-			secondary_action_pressed.emit(pointer)
-		return
-	if _held_items[hand] != null:
-		_put_down(hand)
-		return
-	if _press_button_on_ray(pointer) or _grab_with_hand(hand):
-		return
-	primary_action_pressed.emit(pointer)
-
-
-## Grip: press to pick up. Let go after holding to put the item down; a
-## quick click keeps it in the hand until the next grip click or trigger
-## (except something fixed, like a door handle, which is let go at once).
-func _on_grip(hand: Types.Hand, is_pressed: bool) -> void:
-	if is_pressed:
-		if get_tree().paused:
-			return
-		if _held_items[hand] != null:
-			_put_down(hand)
-			_ignores_grip_release[hand] = true
-		elif _grab_with_hand(hand):
-			_grip_grabbed_at_msec[hand] = Time.get_ticks_msec()
-		return
-	if _ignores_grip_release[hand]:
-		_ignores_grip_release[hand] = false
-		return
-	var held_item: Grabbable = _held_items[hand]
-	if held_item == null or get_tree().paused or _grip_grabbed_at_msec[hand] == NOT_GRIP_GRABBED:
-		return
-	var held_milliseconds: int = Time.get_ticks_msec() - _grip_grabbed_at_msec[hand]
-	if held_item.is_fixed or held_milliseconds >= roundi(GRIP_CLICK_SECONDS * 1000.0):
-		_put_down(hand)
-
-
-## Takes the item at the hand, or else under its beam (a crate hands out a
-## new one and charges for it). Returns true when the hand now holds it.
-func _grab_with_hand(hand: Types.Hand) -> bool:
-	if _held_items[hand] != null or get_tree().paused:
-		return false
-	var anchor: Node3D = _get_hold_anchor(hand)
-	var pointer: XRPointer = _get_pointer(hand)
-	var target: Node3D = InteractionQuery.find_grab_target_near(get_tree(), anchor.global_position, HAND_GRAB_REACH)
-	if target == null:
-		target = InteractionQuery.find_grab_target_on_ray(get_tree(), pointer.ray_origin, pointer.ray_direction, POINTER_REACH)
-	var item: Grabbable = InteractionQuery.take_from(target)
-	if item == null:
-		return false
-	item.attach_to(anchor)
-	_held_items[hand] = item
-	# The grip stamps its own grabs right after this; a trigger grab stays unstamped.
-	_grip_grabbed_at_msec[hand] = NOT_GRIP_GRABBED
-	pulse(pointer, Types.HapticStrength.LIGHT)
-	item_grabbed.emit(item)
-	return true
-
-
-## Lets go of what [param hand] holds: into the socket it would snap to
-## (the highlighted one), otherwise wherever a dropped item goes.
-func _put_down(hand: Types.Hand) -> void:
-	var item: Grabbable = _held_items[hand]
-	if item == null:
-		return
-	_held_items[hand] = null
-	var socket: ItemSocket = _find_drop_socket(hand, item)
-	if socket != null:
-		_place(item, socket)
-		pulse(_get_pointer(hand), Types.HapticStrength.MEDIUM)
-	else:
-		item.drop_nowhere()
-
-
-## Socket a held item would go into: the one next to it, or else the one
-## under the hand's beam (so the player can point instead of reaching).
-## Fixed things never go into sockets.
-func _find_drop_socket(hand: Types.Hand, item: Grabbable) -> ItemSocket:
-	if item.is_fixed:
-		return null
-	var socket: ItemSocket = InteractionQuery.find_socket_near(get_tree(), item, item.global_position)
-	if socket == null:
-		var pointer: XRPointer = _get_pointer(hand)
-		socket = InteractionQuery.find_socket_on_ray(get_tree(), item, pointer.ray_origin, pointer.ray_direction, POINTER_REACH)
-	return socket
-
-
 ## Puts the popup screen straight ahead of where the player looks right now.
 func _place_popup_in_view() -> void:
 	var head: Transform3D = get_head_transform()
@@ -601,45 +530,29 @@ func _place(item: Grabbable, socket: ItemSocket) -> void:
 	item_placed.emit(item, socket)
 
 
-func _press_button_on_ray(pointer: XRPointer) -> bool:
-	var button: PointerButton = InteractionQuery.find_button_on_ray(get_tree(), pointer.ray_origin, pointer.ray_direction, POINTER_REACH)
-	if button == null:
-		return false
-	if button.press():
-		pulse(pointer, Types.HapticStrength.LIGHT)
-	return true
-
-
-## Lights up the sockets each held item could go into right now.
+## Lights up the slot each held item would go into right now (blue), or
+## the slot it is aimed at but doesn't fit (red).
 func _update_socket_highlights() -> void:
-	_forget_lost_items()
-	var wanted: Array[ItemSocket] = []
-	for hand: Types.Hand in _held_items:
-		var item: Grabbable = _held_items[hand]
-		if item != null:
-			var socket: ItemSocket = _find_drop_socket(hand, item)
-			if socket != null:
-				wanted.append(socket)
-	if _flat_held_item != null:
-		var flat_socket: ItemSocket = InteractionQuery.find_socket_on_ray(get_tree(), _flat_held_item, _flat_pointer.ray_origin, _flat_pointer.ray_direction, POINTER_REACH)
-		if flat_socket != null:
-			wanted.append(flat_socket)
-	for socket: ItemSocket in _highlighted_sockets:
-		if is_instance_valid(socket) and not wanted.has(socket):
-			socket.set_highlighted(false)
-	for socket: ItemSocket in wanted:
-		socket.set_highlighted(true)
-	_highlighted_sockets = wanted
-
-
-## A held item that was pooled or freed elsewhere is no longer in a hand.
-func _forget_lost_items() -> void:
-	for hand: Types.Hand in _held_items:
-		var item: Grabbable = _held_items[hand]
-		if item != null and (not is_instance_valid(item) or Pools.is_in_pool(item) or item.holder == null):
-			_held_items[hand] = null
+	var wanted: Dictionary[ItemSocket, ItemSocket.Highlight] = {}
+	_hands.collect_highlights(wanted)
 	if _flat_held_item != null and (not is_instance_valid(_flat_held_item) or Pools.is_in_pool(_flat_held_item) or _flat_held_item.holder == null):
 		_flat_held_item = null
+	if _flat_held_item != null:
+		var origin: Vector3 = _flat_pointer.ray_origin
+		var direction: Vector3 = _flat_pointer.ray_direction
+		var flat_socket: ItemSocket = InteractionQuery.find_socket_on_ray(get_tree(), _flat_held_item, origin, direction, POINTER_REACH)
+		if flat_socket != null:
+			wanted[flat_socket] = ItemSocket.Highlight.FITS
+		else:
+			var refusing_flat_socket: ItemSocket = InteractionQuery.find_refusing_socket_on_ray(get_tree(), _flat_held_item, origin, direction, POINTER_REACH)
+			if refusing_flat_socket != null:
+				wanted[refusing_flat_socket] = ItemSocket.Highlight.REFUSES
+	for socket: ItemSocket in _highlighted_sockets:
+		if is_instance_valid(socket) and not wanted.has(socket):
+			socket.set_highlight(ItemSocket.Highlight.NONE)
+	for socket: ItemSocket in wanted:
+		socket.set_highlight(wanted[socket])
+	_highlighted_sockets.assign(wanted.keys())
 
 
 func _handle_thumbstick(hand: Types.Hand, action_name: StringName, value: Vector2) -> void:
@@ -688,8 +601,7 @@ func _on_xr_session_focussed() -> void:
 
 ## Button releases are lost while the system has focus: don't wait for them.
 func _forget_grip_state() -> void:
-	for hand: Types.Hand in _ignores_grip_release:
-		_ignores_grip_release[hand] = false
+	_hands.forget_grip_state()
 
 
 ## The player held the system button to recenter: measure their height again
@@ -756,7 +668,8 @@ func _flat_press() -> void:
 	_flat_is_pressed = true
 	_flat_is_dragging = false
 	_flat_press_position = _flat_cursor
-	_flat_press_on_screen = _flat_pointer.press()
+	# A co-op client's clicks (screens too) are carried out by the host.
+	_flat_press_on_screen = false if forwards_hand_input else _flat_pointer.press()
 
 
 ## A press that did not turn into a look-drag acts on release, like a tap.
@@ -775,6 +688,10 @@ func _flat_release() -> void:
 ## One click of the flat cursor: put down what it holds, press a button,
 ## pick something up, or hand the click to the game.
 func _flat_click() -> void:
+	if forwards_hand_input:
+		hand_input_forwarded.emit(dominant_hand, Types.XR_ACTION_TRIGGER_CLICK, true)
+		hand_input_forwarded.emit(dominant_hand, Types.XR_ACTION_TRIGGER_CLICK, false)
+		return
 	var origin: Vector3 = _flat_pointer.ray_origin
 	var direction: Vector3 = _flat_pointer.ray_direction
 	if _flat_held_item != null:
@@ -783,10 +700,13 @@ func _flat_click() -> void:
 		var socket: ItemSocket = InteractionQuery.find_socket_on_ray(get_tree(), item, origin, direction, POINTER_REACH)
 		if socket != null:
 			_place(item, socket)
-		else:
-			item.drop_nowhere()
+			return
+		var refusing_socket: ItemSocket = InteractionQuery.find_refusing_socket_on_ray(get_tree(), item, origin, direction, POINTER_REACH)
+		if refusing_socket != null:
+			refusing_socket.refuse(item)
+		item.drop_nowhere()
 		return
-	if _press_button_on_ray(_flat_pointer):
+	if _hands.press_button_on_ray(_flat_pointer, dominant_hand):
 		return
 	var item_to_take: Grabbable = InteractionQuery.take_from(InteractionQuery.find_grab_target_on_ray(get_tree(), origin, direction, POINTER_REACH))
 	if item_to_take != null:

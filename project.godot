@@ -40,6 +40,7 @@ Ads="*res://Globals/ads.gd"
 Store="*res://Globals/store.gd"
 UI="*res://Globals/UI/UI.tscn"
 SceneManager="*res://Globals/SceneManager/SceneManager.tscn"
+Coop="*res://Globals/coop.gd"
 Debug="*res://Globals/Debug/DebugOverlay.tscn"
 
 [debug]

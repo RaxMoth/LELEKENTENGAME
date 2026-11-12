@@ -32,6 +32,19 @@ func _on_released_nowhere() -> void:
 		nearby_socket.insert(self)
 
 
+## Co-op: what the other player needs to draw this batch.
+func get_net_state() -> Array:
+	return [recipe.resource_path if recipe != null else ""]
+
+
+## Co-op client: look like the host's batch (no game logic).
+func apply_net_state(state: Array) -> void:
+	var recipe_path: String = str(state[0])
+	if recipe_path.is_empty() or (recipe != null and recipe.resource_path == recipe_path):
+		return
+	setup(load(recipe_path) as RecipeData, [])
+
+
 func _on_pool_spawned() -> void:
 	recipe = null
 	step_accuracies.clear()

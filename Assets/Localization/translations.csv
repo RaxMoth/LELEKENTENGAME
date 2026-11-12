@@ -281,6 +281,57 @@ Recipe book,Recipe book,Rezeptbuch
 "%d / %d found","%d / %d found","%d / %d gefunden"
 Cook a new combination to fill in the book.,Cook a new combination to fill in the book.,"Koche eine neue Kombination, um das Buch zu füllen."
 "New recipe: %s","New recipe: %s","Neues Rezept: %s"
+Fresh Start Every Launch (development),Fresh Start Every Launch (development),Neustart bei jedem Start (Entwicklung)
+How to cook,How to cook,So wird gekocht
+"Trigger: point at an item and pull to pick it up, point at a slot and pull to put it in","Trigger: point at an item and pull to pick it up, point at a slot and pull to put it in","Abzug: auf etwas zeigen und drücken zum Aufnehmen, auf einen Platz zeigen und drücken zum Ablegen"
+Raw ingredient,Raw ingredient,Rohe Zutat
+dust,dust,Pulver
+Sugarsalt needs no grinding.,Sugarsalt needs no grinding.,Zuckersalz muss nicht gemahlen werden.
+2 or 3 ingredients,2 or 3 ingredients,2 oder 3 Zutaten
+batch,batch,Charge
+Which mix? The recipe book is on the left wall.,Which mix? The recipe book is on the left wall.,Welche Mischung? Das Rezeptbuch hängt an der linken Wand.
+product to sell,product to sell,Ware zum Verkaufen
+The press is behind you.,The press is behind you.,Die Presse steht hinter dir.
+"Every station is a skill check: press Stop while the needle is in the green. The closer to the middle, the better the product.","Every station is a skill check: press Stop while the needle is in the green. The closer to the middle, the better the product.","Jede Station ist ein Geschicklichkeitstest: Drück Stopp, solange die Nadel im Grünen ist. Je näher an der Mitte, desto besser die Ware."
+Press Stop when the needle is in the green,Press Stop when the needle is in the green,"Drück Stopp, wenn die Nadel im Grünen ist"
+Done: take the result,Done: take the result,Fertig: nimm das Ergebnis
+Put in a raw ingredient to grind,Put in a raw ingredient to grind,Leg eine rohe Zutat zum Mahlen hinein
+Put in ground ingredients (2 or 3),Put in ground ingredients (2 or 3),Leg gemahlene Zutaten hinein (2 oder 3)
+%d in: add the rest of the recipe,%d in: add the rest of the recipe,%d drin: leg den Rest des Rezepts dazu
+Busy: finish the skill check first,Busy: finish the skill check first,Belegt: erst den Test beenden
+Only raw ingredients go in the grinder,Only raw ingredients go in the grinder,In die Mühle kommen nur rohe Zutaten
+%s needs no grinding: take it to the cooker,%s needs no grinding: take it to the cooker,%s muss nicht gemahlen werden: ab in den Kocher
+Already ground: take it to the cooker,Already ground: take it to the cooker,Schon gemahlen: ab in den Kocher
+Batches go in the press,Batches go in the press,Chargen kommen in die Presse
+Grind it first,Grind it first,Erst mahlen
+No unlocked recipe uses this mix,No unlocked recipe uses this mix,Kein freigeschaltetes Rezept nutzt diese Mischung
+Only cooked batches go in the press,Only cooked batches go in the press,In die Presse kommen nur gekochte Chargen
+Play Together,Play Together,Zusammen spielen
+Host a Game,Host a Game,Spiel hosten
+Games on this Wi-Fi,Games on this Wi-Fi,Spiele in diesem WLAN
+Looking for games on this Wi-Fi,Looking for games on this Wi-Fi,Suche nach Spielen in diesem WLAN
+Or join by address (over the internet),Or join by address (over the internet),Oder per Adresse beitreten (übers Internet)
+e.g. 203.0.113.5:7777,e.g. 203.0.113.5:7777,z. B. 203.0.113.5:7777
+Join,Join,Beitreten
+Leave the Game,Leave the Game,Spiel verlassen
+Over the internet: asking your router,Over the internet: asking your router,Übers Internet: frage deinen Router
+"Play the same house with a friend: one hosts, the other joins.","Play the same house with a friend: one hosts, the other joins.","Spielt zu zweit im selben Haus: einer hostet, der andere tritt bei."
+You are hosting. Waiting for a friend to join.,You are hosting. Waiting for a friend to join.,"Du hostest. Warte darauf, dass jemand beitritt."
+%s is playing with you.,%s is playing with you.,%s spielt mit dir.
+Playing in %s's house.,Playing in %s's house.,Du spielst im Haus von %s.
+Same Wi-Fi: %s,Same Wi-Fi: %s,Gleiches WLAN: %s
+"Over the internet: your router didn't open port %d. Forward UDP %d to this device, or both join a VPN such as Tailscale.","Over the internet: your router didn't open port %d. Forward UDP %d to this device, or both join a VPN such as Tailscale.",Übers Internet: dein Router hat Port %d nicht geöffnet. Leite UDP %d an dieses Gerät weiter oder nutzt beide ein VPN wie Tailscale.
+Over the internet: %s,Over the internet: %s,Übers Internet: %s
+Join %s (%s),Join %s (%s),%s beitreten (%s)
+Connecting to %s,Connecting to %s,Verbinde mit %s
+Could not open port %d,Could not open port %d,Port %d konnte nicht geöffnet werden
+That address doesn't look right,That address doesn't look right,Diese Adresse sieht nicht richtig aus
+Could not connect to %s,Could not connect to %s,Keine Verbindung zu %s
+This game is a different version than the host's,This game is a different version than the host's,Dieses Spiel hat eine andere Version als das des Hosts
+Could not reach the host,Could not reach the host,Der Host ist nicht erreichbar
+The host left the game,The host left the game,Der Host hat das Spiel verlassen
+Host,Host,Host
+Player %d,Player %d,Spieler %d
 "Full auto: hold the trigger. Fast, light rounds that spread the longer you fire; armor eats a lot of each hit.","Full auto: hold the trigger. Fast, light rounds that spread the longer you fire; armor eats a lot of each hit.","Vollautomatisch: Abzug gedrückt halten. Schnelle, leichte Schüsse, die beim Dauerfeuer streuen; Panzerung schluckt viel."
 "Nine pellets in a wide cone. Devastating up close, weak beyond 15 m.","Nine pellets in a wide cone. Devastating up close, weak beyond 15 m.","Neun Schrotkugeln im weiten Kegel. Verheerend aus der Nähe, schwach über 15 m."
 "Dead accurate, armor-piercing rounds that go through one raider into the next. The answer to SWAT.","Dead accurate, armor-piercing rounds that go through one raider into the next. The answer to SWAT.","Absolut präzise, panzerbrechende Munition, die durch einen Angreifer in den nächsten geht. Die Antwort auf das SEK."

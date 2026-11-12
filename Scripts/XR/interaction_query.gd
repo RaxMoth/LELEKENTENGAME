@@ -93,6 +93,37 @@ static func find_socket_on_ray(tree: SceneTree, item: Grabbable, ray_origin: Vec
 	return nearest
 
 
+## Nearest free slot next to [param point] that refuses [param item] and
+## can say why (ItemSocket.explains_refusal_of), within its snap radius.
+static func find_refusing_socket_near(tree: SceneTree, item: Grabbable, point: Vector3) -> ItemSocket:
+	var nearest: ItemSocket = null
+	var nearest_distance: float = INF
+	for node: Node in tree.get_nodes_in_group(Types.GROUP_ITEM_SOCKET):
+		var socket: ItemSocket = node as ItemSocket
+		if socket == null or not socket.explains_refusal_of(item):
+			continue
+		var distance: float = point.distance_to(socket.global_position)
+		if distance <= socket.snap_radius and distance < nearest_distance:
+			nearest_distance = distance
+			nearest = socket
+	return nearest
+
+
+## Nearest slot refusing [param item] (with a reason) whose snap sphere a ray passes through.
+static func find_refusing_socket_on_ray(tree: SceneTree, item: Grabbable, ray_origin: Vector3, ray_direction: Vector3, max_distance: float) -> ItemSocket:
+	var nearest: ItemSocket = null
+	var nearest_distance: float = max_distance
+	for node: Node in tree.get_nodes_in_group(Types.GROUP_ITEM_SOCKET):
+		var socket: ItemSocket = node as ItemSocket
+		if socket == null or not socket.explains_refusal_of(item):
+			continue
+		var distance: float = RayMath.intersect_sphere(ray_origin, ray_direction, socket.global_position, socket.snap_radius)
+		if distance != RayMath.NO_HIT and distance < nearest_distance:
+			nearest_distance = distance
+			nearest = socket
+	return nearest
+
+
 ## Nearest 3D button a ray hits within [param max_distance].
 static func find_button_on_ray(tree: SceneTree, ray_origin: Vector3, ray_direction: Vector3, max_distance: float) -> PointerButton:
 	var nearest: PointerButton = null

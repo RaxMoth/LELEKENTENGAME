@@ -80,7 +80,7 @@ raid is fought again).
 | Run with your arms | Hold both grips (hands empty) and swing your arms like jogging: the harder you swing, the faster you run, toward where your hands point; footsteps and a light tap in both hands every stride | — |
 | Reposition | Off-hand stick forward: aim a teleport, release to jump | — |
 | Turn | Off-hand stick left / right: 30° snaps (or smooth turning) | Drag |
-| Seated play | "Standing View When Seated" (on by default) lifts a seated player to standing eye height; after sitting down or standing up, hold the headset's system button to recenter | — |
+| Seated play | "Standing View When Seated" (on by default) lifts a seated player to standing eye height (1.8 m); after sitting down or standing up, hold the headset's system button to recenter | — |
 | Admin (debug builds) | Terminal on the office wall | Same, or F3 |
 | Pause | Menu or B / Y | Esc |
 | Status | Look at your off-hand wrist | Lower left of the view |
@@ -115,6 +115,12 @@ the better.
 Quality = average step accuracy plus equipment → tiers **Cut, Street, Pure,
 Premium** (`QualityMath`). Customers care: each wants a minimum tier and
 pays more for better.
+
+A **"How to cook" poster** above the grinder and cooker shows the three
+steps and the skill check. Empty station slots show a white ring; while you
+hold something the ring it would go into turns blue, and a slot it doesn't
+fit turns red — let go there and the station says why ("Grind it first").
+Stop buttons only appear while a skill check runs.
 
 The **recipe book** on the wall above the crates lists every product as
 ingredients → product. Until you cook a product for the first time its row
@@ -375,11 +381,43 @@ raiders as exports on their scenes, the yard's obstacles on `Yard`, pacing on `A
   in-world screens plus the popup screen; the Security PC's small camera
   view renders only while someone looks at it.
 
+## Co-op (two players)
+
+Pause menu → **Play Together**. One player hosts, the other joins: a game
+on the same Wi-Fi shows up in the list (one click); over the internet the
+guest types the host's address with the keypad. The host's router is asked
+to open UDP port 7777 by itself (UPnP); when it refuses, forward UDP 7777 to
+the host's device by hand or put both players in a VPN such as Tailscale.
+
+- **The host's game is the world.** The guest's copy reloads as a mirror
+  (`HouseLevel.is_mirror`): nothing simulates there, it shows the host's
+  snapshots (`HouseCoopSync`, `NetEntities`).
+- **Same rules for both hands.** The guest's trigger, grip and clicks are
+  sent to the host with their hand pose and carried out by a
+  `HandInteractor` — the same class the host's own rig uses. Items the guest
+  holds are drawn right at the guest's hand, so holding never lags.
+- **Shared:** cash, stash, reputation, heat, upgrades, discovered recipes,
+  the time of day, the wrist status, the lab (items, stations, Stop
+  buttons), selling at the window, the front door (swing, bolts, health —
+  the doorway opens for both), shooting (the guest's gun trigger fires the
+  same gun with shared ammo; every tracer is shown to both), every in-world
+  board (sales, office, armory, build board: `ControlMirror` sends a board's
+  look when it changes), customers and raiders (as figures), announcements,
+  floating texts and the guest's rumbles. Each player sees the other's head,
+  hands, beam and name (`RemotePlayer`).
+- **Not shared yet:** sounds, the gun model in the guest's hand, raiders'
+  and customers' animations and health bars on the guest's side (they move
+  but are frozen pictures), more than two players.
+- The host's pause menu doesn't stop the world; the guest's copy never
+  writes the guest's own save (it reloads it after leaving).
+- Next after that: a relay server for players whose routers can't be
+  opened (strict NAT), and more than two players.
+- Test: `Tools/coop_test.sh` starts a host and a guest and plays a few steps.
+
 ## Not built yet / next steps
 
-- **Co-op (2–4 players):** the shared state already lives in `Operation`;
-  next is choosing a networking approach (Godot high-level multiplayer with
-  a host-authoritative `Operation`), avatars and drop-in.
+- **Co-op, part 3:** sounds, the guest's gun model, live raider / customer
+  animations on the guest's side; a relay for strict NAT; more players.
 - **Meta layer:** contracts, rival territory, random events, the campaign
   and bosses that change the world.
 - **Yard overview:** a tabletop miniature of the yard in the hall.

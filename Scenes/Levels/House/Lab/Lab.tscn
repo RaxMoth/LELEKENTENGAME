@@ -17,6 +17,7 @@
 [ext_resource type="Script" path="res://Scripts/XR/world_screen.gd" id="screen"]
 [ext_resource type="PackedScene" path="res://Scenes/Levels/House/Lab/RecipeBoard.tscn" id="recipe_board"]
 [ext_resource type="Script" path="res://Scripts/Utils/placeholder_mesh_3d.gd" id="mesh"]
+[ext_resource type="PackedScene" path="res://Scenes/Levels/House/Lab/LabGuideBoard.tscn" id="guide_board"]
 
 [node name="Lab" type="Node3D"]
 script = ExtResource("lab")
@@ -81,5 +82,24 @@ script = ExtResource("screen")
 content_scene = ExtResource("recipe_board")
 resolution = Vector2i(1400, 720)
 width_meters = 2.1
+is_interactive = false
+is_static = true
+
+[node name="GuidePoster" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.7, 2.12, -1.9)
+
+[node name="Frame" type="MeshInstance3D" parent="GuidePoster"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.012)
+script = ExtResource("mesh")
+shape_kind = 1
+size = Vector3(2.88, 0.85, 0.02)
+color = Color(0.051, 0.0627, 0.0902, 1)
+
+[node name="GuideScreen" type="Node3D" parent="GuidePoster"]
+unique_name_in_owner = true
+script = ExtResource("screen")
+content_scene = ExtResource("guide_board")
+resolution = Vector2i(1600, 440)
+width_meters = 2.8
 is_interactive = false
 is_static = true

@@ -54,10 +54,17 @@ layout_mode = 2
 text = "Resume"
 
 [node name="RestartButton" type="Button" parent="CenterContainer/Panel/Content" unique_id=77962512]
+unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 100)
 layout_mode = 2
 theme_type_variation = &"SecondaryButton"
 text = "Restart"
+
+[node name="CoopButton" type="Button" parent="CenterContainer/Panel/Content"]
+custom_minimum_size = Vector2(0, 100)
+layout_mode = 2
+theme_type_variation = &"SecondaryButton"
+text = "Play Together"
 
 [node name="SettingsButton" type="Button" parent="CenterContainer/Panel/Content" unique_id=1005146489]
 custom_minimum_size = Vector2(0, 100)
@@ -74,5 +81,6 @@ text = "Main Menu"
 
 [connection signal="pressed" from="CenterContainer/Panel/Content/ResumeButton" to="." method="_on_resume_button_pressed"]
 [connection signal="pressed" from="CenterContainer/Panel/Content/RestartButton" to="." method="_on_restart_button_pressed"]
+[connection signal="pressed" from="CenterContainer/Panel/Content/CoopButton" to="." method="_on_coop_button_pressed"]
 [connection signal="pressed" from="CenterContainer/Panel/Content/SettingsButton" to="." method="_on_settings_button_pressed"]
 [connection signal="pressed" from="CenterContainer/Panel/Content/MenuButton" to="." method="_on_menu_button_pressed"]

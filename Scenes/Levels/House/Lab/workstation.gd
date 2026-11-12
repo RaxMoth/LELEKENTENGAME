@@ -45,9 +45,14 @@ var _zone: MeshInstance3D = null
 
 
 func _ready() -> void:
+	add_to_group(Types.GROUP_NET_NODE)
 	for socket: ItemSocket in get_input_sockets():
 		socket.accept_rule = _accepts_input
+		socket.refusal_reason = _explain_refusal
+		socket.shows_empty_marker = true
 		socket.item_inserted.connect(func(_item: Grabbable) -> void: _try_start.call_deferred())
+		socket.item_removed.connect(func(_item: Grabbable) -> void: _update_idle_status.call_deferred())
+		socket.item_refused.connect(_on_input_refused)
 	# Only the station itself puts things on its output tray.
 	# Only the station puts things on its output tray (and takes its own back).
 	_output.accept_rule = func(item: Grabbable) -> bool: return item.home_socket == _output
@@ -89,6 +94,27 @@ func is_running() -> bool:
 func get_gauge() -> TimingGauge:
 	return _gauge
 
+
+## Co-op: how the station looks right now — [running, needle, zone center,
+## zone width, status text].
+func get_net_state() -> Array:
+	if _gauge == null:
+		return [false, 0.0, 0.5, 0.0, _status_label.text]
+	return [true, _gauge.get_needle(), _gauge.zone_center, _gauge.zone_width, _status_label.text]
+
+
+## Co-op client: show the host's station (its gauge, needle and status).
+func apply_net_state(state: Array) -> void:
+	var is_gauge_running: bool = bool(state[0])
+	_gauge_root.visible = is_gauge_running
+	_stop_button.visible = is_gauge_running
+	_stop_button.is_enabled = is_gauge_running
+	if is_gauge_running:
+		_needle.position.x = (float(state[1]) - 0.5) * GAUGE_LENGTH
+		_zone.scale.x = float(state[3]) * GAUGE_LENGTH
+		_zone.position.x = (float(state[2]) - 0.5) * GAUGE_LENGTH
+	_status_label.text = str(state[4])
+
 # ============================================
 # STATE CHART CALLBACKS (connected in Workstation.tscn)
 # ============================================
@@ -97,6 +123,8 @@ func _on_idle_state_entered() -> void:
 	_gauge = null
 	_active_recipe = null
 	_stop_button.is_enabled = false
+	# Only a running skill check has a button to press.
+	_stop_button.visible = false
 	_gauge_root.visible = false
 	_set_inputs_removable(true)
 	_update_idle_status()
@@ -110,9 +138,10 @@ func _on_running_state_entered() -> void:
 	_zone.scale.x = width * GAUGE_LENGTH
 	_zone.position.x = (_gauge.zone_center - 0.5) * GAUGE_LENGTH
 	_gauge_root.visible = true
+	_stop_button.visible = true
 	_stop_button.is_enabled = true
 	_set_inputs_removable(false)
-	_status_label.text = tr("Stop it in the green")
+	_status_label.text = tr(station_name) + "\n" + tr("Press Stop when the needle is in the green")
 	Audio.play_sfx_at(SfxSynth.get_preset(&"pop"), global_position, 0.1, -10.0)
 
 
@@ -257,15 +286,51 @@ func _update_idle_status() -> void:
 	if is_running():
 		return
 	if not _output.is_empty():
-		_status_label.text = tr("Take the result")
+		_status_label.text = tr(station_name) + "\n" + tr("Done: take the result")
 		return
+	var hint: String = ""
 	match step:
 		Types.CraftStep.PROCESS:
-			_status_label.text = tr(station_name) + "\n" + tr("Put in a raw ingredient")
+			hint = tr("Put in a raw ingredient to grind")
 		Types.CraftStep.COMBINE:
-			_status_label.text = tr(station_name) + "\n" + tr("Add ground ingredients")
+			var inside: int = _get_input_items().size()
+			if inside == 0:
+				hint = tr("Put in ground ingredients (2 or 3)")
+			else:
+				hint = tr("%d in: add the rest of the recipe") % inside
 		Types.CraftStep.PACKAGE:
-			_status_label.text = tr(station_name) + "\n" + tr("Put in a cooked batch")
+			hint = tr("Put in a cooked batch")
+	_status_label.text = tr(station_name) + "\n" + hint
+
+
+## Why [param item] can't go into this station right now (shown to the player).
+func _explain_refusal(item: Grabbable) -> String:
+	if is_running():
+		return tr("Busy: finish the skill check first")
+	var ingredient: IngredientItem = item as IngredientItem
+	match step:
+		Types.CraftStep.PROCESS:
+			if ingredient == null:
+				return tr("Only raw ingredients go in the grinder")
+			if not ingredient.data.needs_processing:
+				return tr("%s needs no grinding: take it to the cooker") % tr(ingredient.data.display_name)
+			return tr("Already ground: take it to the cooker")
+		Types.CraftStep.COMBINE:
+			if ingredient == null:
+				return tr("Batches go in the press")
+			if not ingredient.is_processed:
+				return tr("Grind it first")
+			return tr("No unlocked recipe uses this mix")
+		Types.CraftStep.PACKAGE:
+			return tr("Only cooked batches go in the press")
+	return ""
+
+
+func _on_input_refused(item: Grabbable, reason: String) -> void:
+	if reason.is_empty():
+		return
+	FloatingText3D.spawn(reason, item.global_position + Vector3(0.0, 0.2, 0.0), Palette.DANGER, Global.get_world_root())
+	Audio.play_ui(Audio.UI_ERROR)
 
 
 func _describe_accuracy(accuracy: float) -> String:

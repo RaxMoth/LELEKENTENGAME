@@ -37,6 +37,8 @@ var _has_been_used: bool = false
 
 
 func _ready() -> void:
+	# Co-op: the host streams customers to the other player (as figures).
+	add_to_group(Types.GROUP_NET_ENTITY)
 	_patience_back.material_override = PlaceholderMesh3D.get_shared_material(Palette.BACKGROUND, 0.0, true)
 
 

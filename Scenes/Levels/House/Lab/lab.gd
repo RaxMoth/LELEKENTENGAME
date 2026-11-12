@@ -15,6 +15,7 @@ extends HouseFront
 
 @onready var _crafters: Node3D = %Crafters
 @onready var _recipe_screen: WorldScreen = %RecipeScreen
+@onready var _guide_screen: WorldScreen = %GuideScreen
 
 
 func _on_setup() -> void:
@@ -28,6 +29,8 @@ func _on_setup() -> void:
 		(crafter as Worker).operation = context.operation
 	get_station(&"Cooker").batch_cooked.connect(_on_batch_cooked)
 	_refresh_recipe_book()
+	# The how-to poster never changes: draw it once its text is laid out.
+	_guide_screen.request_redraw.call_deferred()
 
 
 func apply_upgrades() -> void:
@@ -57,6 +60,12 @@ func _on_batch_cooked(recipe: RecipeData) -> void:
 	if Profile.operation.discover_recipe(recipe.id):
 		announcement_requested.emit(tr("New recipe: %s") % tr(recipe.display_name), Palette.TEXT)
 		_refresh_recipe_book()
+
+
+## Redraws the recipe book from the saved discoveries (co-op guests call it
+## when the host's discoveries arrive).
+func refresh_recipe_book() -> void:
+	_refresh_recipe_book()
 
 
 func _refresh_recipe_book() -> void:

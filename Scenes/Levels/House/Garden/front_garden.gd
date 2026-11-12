@@ -46,6 +46,14 @@ var _held_trigger_pointer: XRPointer = null
 var _shots_in_burst: int = 0
 var _seconds_since_shot: float = 0.0
 var _random: RandomNumberGenerator = RandomNumberGenerator.new()
+## Co-op: the other player's own trigger — same gun and ammo, own pace,
+## own burst spread, held for automatic guns (HouseContext.guest_fired).
+var _guest_trigger_pointer: XRPointer = null
+var _guest_feet: Vector3 = Vector3.ZERO
+var _guest_recoil: Callable = Callable()
+var _guest_weapon_cooldown: float = 0.0
+var _guest_shots_in_burst: int = 0
+var _guest_seconds_since_shot: float = 0.0
 var _turrets: Array[HouseTurret] = []
 ## Gun models by weapon id, made once and swapped when another gun is equipped.
 var _gun_models: Dictionary[StringName, GunModel] = {}
@@ -70,6 +78,8 @@ func _on_setup() -> void:
 		_stop_trigger()
 		turret_seat.set_firing(false, false))
 	context.rig.primary_action_released.connect(func(_pointer: XRPointer) -> void: turret_seat.set_firing(false, true))
+	context.guest_fired.connect(_on_guest_fired)
+	context.guest_trigger_released.connect(func() -> void: _guest_trigger_pointer = null)
 	_random.randomize()
 	yard.raider_defeated.connect(func(raider: Raider) -> void: score_earned.emit(raider.score_value))
 	door.broken.connect(_on_door_broken)
@@ -92,6 +102,8 @@ func _on_setup() -> void:
 func _shift_process(delta: float) -> void:
 	_weapon_cooldown = maxf(0.0, _weapon_cooldown - delta)
 	_seconds_since_shot += delta
+	_guest_weapon_cooldown = maxf(0.0, _guest_weapon_cooldown - delta)
+	_guest_seconds_since_shot += delta
 	_step_trigger()
 	director.step(delta)
 	for turret: HouseTurret in _turrets:
@@ -122,6 +134,7 @@ func finish_shift(_result: LevelResult) -> void:
 	director.clear_pending()
 	yard.freeze()
 	_stop_trigger()
+	_guest_trigger_pointer = null
 	turret_seat.leave()
 	security_pc.release_control()
 	for pointer: XRPointer in context.rig.get_active_pointers():
@@ -161,7 +174,10 @@ func get_status_line() -> String:
 
 ## True while the player stands in the front room or on the porch, where they can defend.
 func is_in_defense_zone() -> bool:
-	var feet: Vector3 = context.rig.get_feet_position()
+	return _is_defense_spot(context.rig.get_feet_position())
+
+
+func _is_defense_spot(feet: Vector3) -> bool:
 	var floor_point: Vector2 = Vector2(feet.x, feet.z)
 	return defense_zone.has_point(floor_point) or porch_region.has_point(floor_point)
 
@@ -202,10 +218,22 @@ func fire_weapon(pointer: XRPointer) -> Raider:
 	var bloom: float = WeaponBallistics.get_bloom(weapon, _shots_in_burst)
 	_shots_in_burst += 1
 	_seconds_since_shot = 0.0
-	var muzzle: Vector3 = _get_muzzle_position(pointer)
+	var first_hit: Raider = _fire_projectiles(pointer, _get_muzzle_position(pointer), weapon, bloom, is_in_defense_zone())
+	if _shown_gun != null:
+		_shown_gun.play_shot()
+	Audio.play_sfx_at(SfxSynth.get_preset(weapon.sound_preset), pointer.ray_origin, 0.06, -3.0)
+	context.rig.pulse(pointer, weapon.recoil as Types.HapticStrength)
+	return first_hit
+
+
+## The projectiles of one shot from [param muzzle] along [param pointer]'s
+## ray (WeaponBallistics: pellets in a cone widened by [param bloom],
+## damage falling off with distance, piercing, cover). Hits raiders only
+## when [param can_hit] (fired from the front room or porch). Returns the
+## first raider hit, or null.
+func _fire_projectiles(pointer: XRPointer, muzzle: Vector3, weapon: WeaponData, bloom: float, can_hit: bool) -> Raider:
 	# Better Rounds is per shot: a shotgun shares it among its pellets.
 	var bonus: float = context.operation.get_upgrade_value(Types.UPGRADE_BLASTER) / maxf(1.0, weapon.pellets)
-	var can_hit: bool = is_in_defense_zone()
 	var first_hit: Raider = null
 	for direction: Vector3 in WeaponBallistics.get_shot_directions(pointer.ray_direction, weapon, bloom, _random):
 		var shot_end: Vector3 = pointer.ray_origin + direction * weapon.range_meters
@@ -226,10 +254,6 @@ func fire_weapon(pointer: XRPointer) -> Raider:
 			shot_end = (hits[hits.size() - 1][0] as Raider).get_hit_center()
 		var tracer: BeamTracer = Pools.spawn(TRACER_SCENE, yard.get_effects_root(), muzzle) as BeamTracer
 		tracer.fire(muzzle, shot_end)
-	if _shown_gun != null:
-		_shown_gun.play_shot()
-	Audio.play_sfx_at(SfxSynth.get_preset(weapon.sound_preset), pointer.ray_origin, 0.06, -3.0)
-	context.rig.pulse(pointer, weapon.recoil as Types.HapticStrength)
 	return first_hit
 
 # ============================================
@@ -261,13 +285,47 @@ func _on_rig_secondary_action_pressed(pointer: XRPointer) -> void:
 
 
 ## Automatic guns keep firing while the trigger is held; a pause between
-## shots lets the spread settle again.
+## shots lets the spread settle again (for each player on their own).
 func _step_trigger() -> void:
 	var weapon: WeaponData = get_equipped_weapon()
 	if weapon != null and _seconds_since_shot > weapon.fire_interval_seconds * 2.5:
 		_shots_in_burst = 0
+	if weapon != null and _guest_seconds_since_shot > weapon.fire_interval_seconds * 2.5:
+		_guest_shots_in_burst = 0
 	if _held_trigger_pointer != null and weapon != null and weapon.is_automatic:
 		fire_weapon(_held_trigger_pointer)
+	if _guest_trigger_pointer != null and weapon != null and weapon.is_automatic:
+		_fire_for_guest()
+
+
+## Co-op: the other player pulled their gun trigger where they stand.
+func _on_guest_fired(pointer: XRPointer, feet: Vector3, recoil_pulse: Callable) -> void:
+	_guest_trigger_pointer = pointer
+	_guest_feet = feet
+	_guest_recoil = recoil_pulse
+	_fire_for_guest()
+
+
+## One shot of the shared gun for the other player: their own pace and
+## burst spread, the shared ammo, the muzzle at their hand.
+func _fire_for_guest() -> void:
+	var weapon: WeaponData = get_equipped_weapon()
+	var pointer: XRPointer = _guest_trigger_pointer
+	if pointer == null or not context.is_playing() or weapon == null or _guest_weapon_cooldown > 0.0:
+		return
+	_guest_weapon_cooldown = weapon.fire_interval_seconds
+	if not Profile.armory.loadout.try_fire(weapon):
+		_guest_trigger_pointer = null
+		Audio.play_ui(Audio.UI_ERROR)
+		FloatingText3D.spawn(tr("Out of ammo"), pointer.get_point(1.5), Palette.WARNING, yard.get_effects_root())
+		return
+	var bloom: float = WeaponBallistics.get_bloom(weapon, _guest_shots_in_burst)
+	_guest_shots_in_burst += 1
+	_guest_seconds_since_shot = 0.0
+	_fire_projectiles(pointer, pointer.ray_origin, weapon, bloom, _is_defense_spot(_guest_feet))
+	Audio.play_sfx_at(SfxSynth.get_preset(weapon.sound_preset), pointer.ray_origin, 0.06, -3.0)
+	if _guest_recoil.is_valid():
+		_guest_recoil.call(weapon.recoil as Types.HapticStrength)
 
 
 func _stop_trigger() -> void:

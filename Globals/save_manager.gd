@@ -6,7 +6,7 @@
 ## swaps files, so a crash mid-write never destroys progress. Saves are
 ## debounced (request_save) and forced when the app goes to the background.
 ##
-## Dependencies: Events autoload
+## Dependencies: Events, Settings autoloads
 extends Node
 
 signal saved
@@ -26,6 +26,9 @@ var _save_callables: Dictionary[StringName, Callable] = {}
 var _load_callables: Dictionary[StringName, Callable] = {}
 var _loaded_sections: Dictionary = {}
 var _debounce_timer: Timer
+## Co-op client: the profile shows the host's progress, so nothing is
+## written to this player's own save until they leave the session.
+var _is_saving_suspended: bool = false
 
 
 func _ready() -> void:
@@ -61,11 +64,14 @@ func unregister_section(section_key: StringName) -> void:
 
 ## Schedules a save shortly after the last change (cheap to call often).
 func request_save() -> void:
-	_debounce_timer.start()
+	if not _is_saving_suspended:
+		_debounce_timer.start()
 
 
 func save_now() -> bool:
 	_debounce_timer.stop()
+	if _is_saving_suspended:
+		return false
 	var sections: Dictionary = _loaded_sections.duplicate()
 	for section_key: StringName in _save_callables:
 		sections[String(section_key)] = _save_callables[section_key].call()
@@ -99,11 +105,34 @@ func delete_save() -> void:
 	save_now()
 
 
+## Stops (or resumes) writing the save file — while playing as a co-op client.
+func set_saving_suspended(is_suspended: bool) -> void:
+	_is_saving_suspended = is_suspended
+	if is_suspended:
+		_debounce_timer.stop()
+
+
+## Forgets the progress in memory and loads the save file again (after a
+## co-op session showed the host's progress). Respects the fresh-start toggle.
+func reload_from_disk() -> void:
+	Events.progress_reset.emit()
+	_loaded_sections = {}
+	_read_from_disk()
+	for section_key: StringName in _load_callables:
+		var section_data: Variant = _loaded_sections.get(String(section_key))
+		if section_data is Dictionary:
+			_load_callables[section_key].call(section_data)
+
+
 func has_save_file() -> bool:
 	return FileAccess.file_exists(SAVE_PATH)
 
 
 func _read_from_disk() -> void:
+	if Settings.starts_fresh():
+		# Development: every launch begins a new game (the next save replaces the old one).
+		print("SaveManager: fresh start (development builds; toggle in Settings).")
+		return
 	var payload: Dictionary = _read_json(SAVE_PATH)
 	if payload.is_empty() and FileAccess.file_exists(BACKUP_PATH):
 		push_warning("SaveManager: main save unreadable, restoring backup.")
