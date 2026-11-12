@@ -1,0 +1,76 @@
+[gd_resource type="Resource" script_class="DialogueData" format=3]
+
+[ext_resource type="Script" path="res://Scripts/Resources/dialogue_data.gd" id="dialogue"]
+[ext_resource type="Script" path="res://Scripts/Resources/dialogue_node_data.gd" id="node"]
+[ext_resource type="Script" path="res://Scripts/Resources/dialogue_reply_data.gd" id="reply"]
+
+[sub_resource type="Resource" id="reply_whats_up"]
+script = ExtResource("reply")
+text = "What's up?"
+next_node = &"smalltalk"
+
+[sub_resource type="Resource" id="reply_pitch"]
+script = ExtResource("reply")
+text = "Want to buy something?"
+next_node = &"pitch"
+
+[sub_resource type="Resource" id="reply_never_mind"]
+script = ExtResource("reply")
+text = "Never mind."
+next_node = &"bye"
+
+[sub_resource type="Resource" id="reply_true_bye"]
+script = ExtResource("reply")
+text = "Ha, true. See you."
+next_node = &"bye"
+
+[sub_resource type="Resource" id="reply_see_you_window"]
+script = ExtResource("reply")
+text = "See you at the back window."
+
+[sub_resource type="Resource" id="reply_your_loss"]
+script = ExtResource("reply")
+text = "Your loss."
+next_node = &"bye"
+
+[sub_resource type="Resource" id="node_hello"]
+script = ExtResource("node")
+id = &"hello"
+line_category = &"hello"
+replies = Array[ExtResource("reply")]([SubResource("reply_whats_up"), SubResource("reply_pitch"), SubResource("reply_never_mind")])
+
+[sub_resource type="Resource" id="node_smalltalk"]
+script = ExtResource("node")
+id = &"smalltalk"
+line_category = &"smalltalk"
+replies = Array[ExtResource("reply")]([SubResource("reply_pitch"), SubResource("reply_true_bye")])
+
+[sub_resource type="Resource" id="node_pitch"]
+script = ExtResource("node")
+id = &"pitch"
+is_roll = true
+success_node = &"pitch_yes"
+failure_node = &"pitch_no"
+
+[sub_resource type="Resource" id="node_pitch_yes"]
+script = ExtResource("node")
+id = &"pitch_yes"
+line_category = &"pitch_yes"
+replies = Array[ExtResource("reply")]([SubResource("reply_see_you_window")])
+outcome = 1
+
+[sub_resource type="Resource" id="node_pitch_no"]
+script = ExtResource("node")
+id = &"pitch_no"
+line_category = &"pitch_no"
+replies = Array[ExtResource("reply")]([SubResource("reply_your_loss")])
+
+[sub_resource type="Resource" id="node_bye"]
+script = ExtResource("node")
+id = &"bye"
+line_category = &"bye"
+
+[resource]
+script = ExtResource("dialogue")
+start_node = &"hello"
+nodes = Array[ExtResource("node")]([SubResource("node_hello"), SubResource("node_smalltalk"), SubResource("node_pitch"), SubResource("node_pitch_yes"), SubResource("node_pitch_no"), SubResource("node_bye")])

@@ -24,6 +24,7 @@
 [ext_resource type="PackedScene" path="res://Scenes/Levels/House/Armory/Armory.tscn" id="armory_scene"]
 [ext_resource type="PackedScene" path="res://Scenes/Levels/House/Admin/Admin.tscn" id="admin_scene"]
 [ext_resource type="PackedScene" path="res://Scenes/Levels/House/Surroundings/Surroundings.tscn" id="surroundings_scene"]
+[ext_resource type="PackedScene" path="res://Scenes/Levels/House/Town/Town.tscn" id="town_scene"]
 [ext_resource type="Material" path="res://Assets/Materials/house_wall_inside.tres" id="wall_inside_material"]
 [ext_resource type="Material" path="res://Assets/Materials/house_wall_outside.tres" id="wall_outside_material"]
 [ext_resource type="Material" path="res://Assets/Materials/house_floor.tres" id="floor_material"]
@@ -129,6 +130,8 @@ light_color = Color(0.5608, 0.6431, 0.8471, 1)
 light_energy = 0.6
 
 [node name="Surroundings" parent="World/Stage" instance=ExtResource("surroundings_scene")]
+
+[node name="Town" parent="World/Stage" instance=ExtResource("town_scene")]
 
 [node name="HouseShell" type="Node3D" parent="World/Stage"]
 unique_name_in_owner = true

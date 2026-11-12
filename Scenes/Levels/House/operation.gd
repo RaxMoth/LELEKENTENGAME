@@ -18,6 +18,8 @@ signal sale_made(order: CustomerOrder, units: int, cash_earned: int)
 signal cash_spent(amount: int, reason: String)
 
 @export var base_stash_capacity: int = 30
+## Buyers talked into it in the street who may be on their way at once.
+@export var max_referred_customers: int = 3
 
 @export_group("Heat")
 @export var heat_cooling_per_second: float = 0.3
@@ -37,6 +39,8 @@ var heat: HeatMeter = null
 var shift_cash_earned: int = 0
 var shift_units_sold: int = 0
 var shift_units_crafted: int = 0
+## Buyers talked into coming by in the street (the Town), not yet at the window.
+var referred_customers: int = 0
 
 var _config: GameConfig = null
 
@@ -189,6 +193,23 @@ func complete_sale(order: CustomerOrder, unit_price: int) -> int:
 	add_heat(order.recipe.heat_per_unit * order.quantity)
 	sale_made.emit(order, order.quantity, cash_earned)
 	return cash_earned
+
+# ============================================
+# REFERRALS
+# ============================================
+
+## Someone in the street agreed to come and buy (the window sends them next).
+## At most max_referred_customers wait to come at once.
+func refer_customer() -> void:
+	referred_customers = mini(referred_customers + 1, max_referred_customers)
+
+
+## Takes one referred buyer off the list. False when nobody is on the way.
+func take_referred_customer() -> bool:
+	if referred_customers <= 0:
+		return false
+	referred_customers -= 1
+	return true
 
 # ============================================
 # HEAT

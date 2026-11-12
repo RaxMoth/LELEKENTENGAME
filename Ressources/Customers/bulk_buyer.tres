@@ -1,6 +1,7 @@
 [gd_resource type="Resource" script_class="CustomerTypeData" format=3]
 
 [ext_resource type="Script" path="res://Scripts/Resources/customer_type_data.gd" id="script"]
+[ext_resource type="Resource" path="res://Ressources/Voices/brocken.tres" id="voice"]
 
 [resource]
 script = ExtResource("script")
@@ -17,3 +18,4 @@ dealer_can_serve = false
 day_weight = 2.0
 night_weight = 1.0
 min_reputation = 8
+voice = ExtResource("voice")

@@ -1,7 +1,8 @@
 [gd_scene format=3]
 
 [ext_resource type="Script" path="res://Scenes/Levels/House/Sales/customer.gd" id="customer"]
-[ext_resource type="Script" path="res://Scripts/Utils/placeholder_mesh_3d.gd" id="mesh"]
+[ext_resource type="Script" path="res://Scenes/Levels/House/Garden/raider_body.gd" id="figure"]
+[ext_resource type="Script" path="res://Scripts/Components/npc_voice.gd" id="voice"]
 [ext_resource type="Script" path="res://Scripts/Utils/blob_shadow_3d.gd" id="shadow"]
 [ext_resource type="Script" path="res://addons/godot_state_charts/state_chart.gd" id="chart"]
 [ext_resource type="Script" path="res://addons/godot_state_charts/compound_state.gd" id="compound"]
@@ -17,30 +18,24 @@ script = ExtResource("customer")
 [node name="Visual" type="Node3D" parent="."]
 unique_name_in_owner = true
 
-[node name="Body" type="MeshInstance3D" parent="Visual"]
+[node name="Figure" type="Node3D" parent="Visual"]
 unique_name_in_owner = true
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.62, 0)
-cast_shadow = 0
-script = ExtResource("mesh")
-shape_kind = 2
-size = Vector3(0.5, 1.1, 0.42)
-color = Color(0.2392, 0.8627, 0.5922, 1)
+script = ExtResource("figure")
+uniform_color = Color(0.2392, 0.4627, 0.3922, 1)
+vest_color = Color(0.5, 0.52, 0.56, 1)
+headgear = 2
+carry = 4
+is_civilian = true
+skin_color = Color(0.87, 0.69, 0.55, 1)
+legs_color = Color(0.15, 0.19, 0.3, 1)
+hair_color = Color(0.3, 0.2, 0.12, 1)
+visibility_meters = 30.0
 
-[node name="Head" type="MeshInstance3D" parent="Visual"]
+[node name="Voice" type="Node3D" parent="."]
 unique_name_in_owner = true
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.38, 0)
-cast_shadow = 0
-script = ExtResource("mesh")
-size = Vector3(0.4, 0.4, 0.4)
-color = Color(0.2392, 0.8627, 0.5922, 1)
-
-[node name="Eyes" type="MeshInstance3D" parent="Visual"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.42, 0.17)
-cast_shadow = 0
-script = ExtResource("mesh")
-shape_kind = 1
-size = Vector3(0.24, 0.05, 0.06)
-color = Color(0.051, 0.0627, 0.0902, 1)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.65, 0)
+script = ExtResource("voice")
+subtitle_offset = 1.05
 
 [node name="Shadow" type="MeshInstance3D" parent="."]
 script = ExtResource("shadow")
@@ -48,19 +43,19 @@ diameter = 0.8
 
 [node name="PatienceBack" type="MeshInstance3D" parent="."]
 unique_name_in_owner = true
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.78, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.0, 0)
 mesh = SubResource("bar")
 cast_shadow = 0
 
 [node name="PatienceFill" type="MeshInstance3D" parent="."]
 unique_name_in_owner = true
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.78, -0.015)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.0, -0.015)
 mesh = SubResource("bar")
 cast_shadow = 0
 
 [node name="Bubble" type="Label3D" parent="."]
 unique_name_in_owner = true
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.08, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.28, 0)
 pixel_size = 0.0016
 billboard = 1
 render_priority = 2

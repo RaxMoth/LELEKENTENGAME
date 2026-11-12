@@ -1,0 +1,13 @@
+[gd_resource type="StandardMaterial3D" format=3]
+
+[ext_resource type="Texture2D" path="res://Assets/Textures/Concrete/Concrete035/Concrete035_Color.jpg" id="color"]
+
+[resource]
+resource_name = "TownAsphalt"
+albedo_color = Color(0.3, 0.31, 0.34, 1)
+albedo_texture = ExtResource("color")
+vertex_color_use_as_albedo = true
+metallic_specular = 0.25
+roughness = 0.95
+texture_filter = 5
+uv1_scale = Vector3(0.125, 0.125, 1)

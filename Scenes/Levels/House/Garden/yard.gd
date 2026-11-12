@@ -45,6 +45,12 @@ const FENCE_POST_SPACING: float = 2.4
 @export var door_spot_distance: float = 0.55
 ## Raiders enter on the far edge and the far halves of the sides.
 @export var side_spawn_share: float = 0.45
+## Width of the gate in the far fence (meters, centred on the door's line):
+## the way out of the garden into the street.
+@export var gate_width: float = 2.6:
+	set(value):
+		gate_width = value
+		_queue_rebuild()
 
 var _obstacle_circles: Array[Vector3] = []
 var _raiders: Array[Raider] = []
@@ -78,6 +84,34 @@ func _physics_process(_delta: float) -> void:
 ## Obstacles as (x, z, radius) for YardNavigation.
 func get_obstacle_circles() -> Array[Vector3]:
 	return _obstacle_circles
+
+
+## The fence as thin rectangles (world X / Z) the player can't walk through;
+## the gate stays open.
+func get_fence_blockers() -> Array[Rect2]:
+	var rects: Array[Rect2] = []
+	for segment: PackedVector2Array in get_fence_segments():
+		var low: Vector2 = Vector2(minf(segment[0].x, segment[1].x), minf(segment[0].y, segment[1].y))
+		var high: Vector2 = Vector2(maxf(segment[0].x, segment[1].x), maxf(segment[0].y, segment[1].y))
+		rects.append(Rect2(low, high - low).grow(0.06))
+	return rects
+
+
+## The fence's straight runs (pairs of world X / Z points): the sides and
+## the far edge, split around the gate.
+func get_fence_segments() -> Array[PackedVector2Array]:
+	var near_left: Vector2 = Vector2(bounds.position.x, bounds.end.y)
+	var far_left: Vector2 = bounds.position
+	var far_right: Vector2 = Vector2(bounds.end.x, bounds.position.y)
+	var near_right: Vector2 = bounds.end
+	var gate_x: float = door.global_position.x if door != null and door.is_inside_tree() else bounds.get_center().x
+	var segments: Array[PackedVector2Array] = [PackedVector2Array([near_left, far_left]), PackedVector2Array([far_right, near_right])]
+	if gate_width > 0.0:
+		segments.append(PackedVector2Array([far_left, Vector2(gate_x - gate_width * 0.5, far_left.y)]))
+		segments.append(PackedVector2Array([Vector2(gate_x + gate_width * 0.5, far_left.y), far_right]))
+	else:
+		segments.append(PackedVector2Array([far_left, far_right]))
+	return segments
 
 
 ## The door on the ground plane.
@@ -313,14 +347,12 @@ func _build_obstacle(obstacle: Vector4) -> void:
 
 
 func _build_fence() -> void:
-	var corners: Array[Vector2] = [
-		Vector2(bounds.position.x, bounds.end.y), Vector2(bounds.position.x, bounds.position.y),
-		Vector2(bounds.end.x, bounds.position.y), Vector2(bounds.end.x, bounds.end.y),
-	]
-	for side_index: int in corners.size() - 1:
-		var from_point: Vector2 = corners[side_index]
-		var to_point: Vector2 = corners[side_index + 1]
+	for segment: PackedVector2Array in get_fence_segments():
+		var from_point: Vector2 = segment[0]
+		var to_point: Vector2 = segment[1]
 		var length: float = from_point.distance_to(to_point)
+		if length < 0.1:
+			continue
 		var middle: Vector2 = (from_point + to_point) * 0.5
 		var along_x: bool = is_equal_approx(from_point.y, to_point.y)
 		var rail_size: Vector3 = Vector3(length, 0.08, 0.06) if along_x else Vector3(0.06, 0.08, length)

@@ -82,6 +82,7 @@ new day, in co-op the guest comes along (`DaySummaryPopup`).
 | Use (station buttons, screens, door bolt) | Dominant-hand trigger | Click |
 | Fire your gun | Off-hand trigger (from the front room, the porch or the garden); the gun sits in that hand; hold it for the SMG | Right-click (hold for the SMG), or click a raider |
 | Front door | Trigger on a handle swings it fully open / shut; grip a handle to swing it by hand | Click a handle |
+| Talk to someone | Dominant-hand trigger on a person in the street; pick a reply on the panel beside them | Click a person, then a reply |
 | Walk | Dominant-hand stick walks where you look (like VRChat; "Smooth Movement", on by default), easing in and out; push it all the way to sprint | WASD / arrows; 1–4 jump to lab, front, window, office |
 | Run with your arms | Hold both grips (hands empty) and swing your arms like jogging: the harder you swing, the faster you run, toward where your hands point; footsteps and a light tap in both hands every stride | — |
 | Reposition | Off-hand stick forward: aim a teleport, release to jump | — |
@@ -167,7 +168,8 @@ money on the table. Prices also change how many people come
 
 A wide open field in front of the house — trees, pines, rocks, bushes and a
 parked car, fenced at the far edges. Open the front door and **walk out**:
-the whole garden up to its fence is yours to walk (around the trees, rocks
+the whole garden is yours to walk, and a gate in its far fence leads out
+into the town (around the trees, rocks
 and the car). Defend from the **front room** (shoot through the windows),
 the **porch** or out in the **garden**, with the gun in your hand and the
 house's roof turrets.
@@ -186,6 +188,35 @@ crouching body from shots at the same height).
 | Cop | Riot shield, cap, armored (6 off every hit), uses cover | Every raid wave |
 | SWAT | Helmet, plate carrier, carbine; tougher, heavy armor (12 off every hit) — bring armor-piercing rounds | From the 2nd wave of raid 2, every wave after |
 | Battering ram | Two officers with a ram: no cover, wait at the house for the rush, then hit the door for 90 every 2.4 s | Last wave of raid 2, one more every 3 raids |
+
+### The town (around the house)
+
+The house stands on one block of a town: streets with sidewalks and zebra
+crossings, brick, plaster and glass buildings rising into downtown towers,
+two parks, a plaza with a fountain, street lamps and parked cars — about
+250 × 260 m, closed off by a ring of buildings. Out of the front door and
+through the **gate** in the garden fence you can walk anywhere: streets,
+sidewalks, parks, the alleys between buildings. At night windows light up
+and the street lamps glow.
+
+People walk the sidewalks and mutter when you pass. **Point at someone and
+pull the trigger to talk**: they stop, face you and answer out loud, and a
+panel beside them shows what they said and your replies — small talk, a
+goodbye, or *"Want to buy something?"*. Talk them into it (the better your
+reputation, the likelier) and they come to the back window; each person
+can be asked once. Details: `Scenes/Levels/House/Town/README.md`.
+
+### Voices
+
+Everyone talks, in German internet-meme slang, from where they stand
+(positional, with a subtitle): customers greet you and order at the
+window, thank you, haggle, complain about the price or the wait; people in
+the street chat; the police shout when a raid wave comes, call for cover,
+cry out when hit and on the way down, and announce the ram. Each kind of
+customer has its own voice. Chatter is rationed (only a couple of voices at
+once). The recordings are placeholders made with Windows' German speech
+voices (`Tools/generate_voices.ps1`); a real recording with the same file
+name replaces one.
 
 ### Roof turrets and the Security PC
 
@@ -468,3 +499,6 @@ the host's device by hand or put both players in a VPN such as Tailscale.
 - **Comfort:** a vignette for smooth movement.
 - **On device:** tune reach, station heights, screen sizes and text, haptics.
 - **Art and audio:** stand-in meshes and synthesized sounds; no music.
+- **Town:** shops to enter, moving traffic, voice actors for the
+  placeholder voices, raiders that come down the street instead of
+  appearing at the yard's edge.

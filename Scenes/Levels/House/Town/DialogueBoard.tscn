@@ -1,0 +1,72 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://Scenes/Levels/House/Town/dialogue_board.gd" id="board"]
+[ext_resource type="Script" path="res://Scripts/UI/icon_label.gd" id="icon_label"]
+[ext_resource type="Texture2D" path="res://Assets/Icons/person.svg" id="person"]
+
+[node name="DialogueBoard" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("board")
+
+[node name="Panel" type="PanelContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_type_variation = &"CardPanel"
+
+[node name="Margin" type="MarginContainer" parent="Panel"]
+layout_mode = 2
+theme_override_constants/margin_left = 32
+theme_override_constants/margin_top = 24
+theme_override_constants/margin_right = 32
+theme_override_constants/margin_bottom = 24
+
+[node name="Column" type="VBoxContainer" parent="Panel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="Speaker" type="HBoxContainer" parent="Panel/Margin/Column"]
+unique_name_in_owner = true
+layout_mode = 2
+script = ExtResource("icon_label")
+icon = ExtResource("person")
+text = "Passer-by"
+icon_size = 40
+icon_color = Color(0.5529, 0.5882, 0.6745, 1)
+
+[node name="Line" type="Label" parent="Panel/Margin/Column"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 112)
+layout_mode = 2
+size_flags_vertical = 3
+theme_type_variation = &"HeaderLabel"
+text = "..."
+autowrap_mode = 3
+
+[node name="Reply1" type="Button" parent="Panel/Margin/Column"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 88)
+layout_mode = 2
+text = "Reply"
+
+[node name="Reply2" type="Button" parent="Panel/Margin/Column"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 88)
+layout_mode = 2
+theme_type_variation = &"SecondaryButton"
+text = "Reply"
+
+[node name="Reply3" type="Button" parent="Panel/Margin/Column"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 88)
+layout_mode = 2
+theme_type_variation = &"GhostButton"
+text = "Reply"

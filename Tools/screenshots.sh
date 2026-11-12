@@ -44,10 +44,13 @@ SHOT_RESOLUTION=$WIDE shot level_11_recipes level=house showcase=house stand=-2.
 SHOT_RESOLUTION=$WIDE shot level_12_coop level=house showcase=house_coop stand=-1.6,0.4 look=-3.6,1.3,-0.3 frames=120
 # Out in the garden: the house from the yard, the player walks here through the front door.
 SHOT_RESOLUTION=$WIDE shot level_13_garden level=house stand=2.5,-11.5 look=0,1.6,-5 frames=150
+# The town around the house: a street corner and a conversation with a passer-by.
+SHOT_RESOLUTION=$WIDE shot level_14_town level=house stand=24,-35 look=85,20,-110 frames=200
+SHOT_RESOLUTION=$WIDE shot level_15_talk level=house showcase=house_town_talk frames=200
 # The house after its renovations (walls, floor, brickwork, roof) and the
 # upgrades that show: door straps, steel frame, wooden stash shelf and crates.
-SHOT_RESOLUTION=$WIDE shot level_14_renovated level=house showcase=house_renovated stand=2.5,-11.5 look=0,1.6,-5 frames=150
-SHOT_RESOLUTION=$WIDE shot level_15_renovated_inside level=house showcase=house_renovated stand=2.2,3.0 look=4.68,1.0,3.25 frames=120
+SHOT_RESOLUTION=$WIDE shot level_16_renovated level=house showcase=house_renovated stand=2.5,-11.5 look=0,1.6,-5 frames=150
+SHOT_RESOLUTION=$WIDE shot level_17_renovated_inside level=house showcase=house_renovated stand=2.2,3.0 look=4.68,1.0,3.25 frames=120
 "$TOOLS_DIR/godot.sh" --headless --script "$TOOLS_DIR/contact_sheet.gd" -- "$OUT_DIR/sheet_menus.png" 5 360 640 \
 	"$OUT_DIR"/0*.png >/dev/null 2>&1
 "$TOOLS_DIR/godot.sh" --headless --script "$TOOLS_DIR/contact_sheet.gd" -- "$OUT_DIR/sheet_levels.png" 3 640 360 \
