@@ -62,6 +62,11 @@ func _run_host() -> void:
 	var lab: Lab = level.get_front(Lab) as Lab
 	var crate: IngredientCrate = lab.get_crate(&"glowcap")
 	var grinder: Workstation = lab.get_station(&"Grinder")
+	# The lab's gadgets come from the office: buy them so the guest can grind.
+	Profile.wallet.add(Types.CURRENCY_CASH, 5000)
+	for gadget_id: StringName in [Types.UPGRADE_GRINDER, Types.UPGRADE_COOKER, Types.UPGRADE_PRESS]:
+		Profile.upgrades.purchase(GameConfig.get_default().find_upgrade(gadget_id))
+	level.apply_upgrades()
 	var cash_before: int = level.operation.get_cash()
 	_check(Coop.host(_port, false) == OK, "host: hosting on port %d" % _port)
 	_check(await _wait_until(func() -> bool: return Coop.get_ready_peers().size() == 1), "host: the guest joined and loaded the house")
@@ -73,9 +78,9 @@ func _run_host() -> void:
 	_check(await _wait_until(func() -> bool: return grinder.is_running()), "host: the guest put it into the grinder")
 	_check(await _wait_until(func() -> bool: return grinder.get_output_socket().item != null), "host: the guest's press on Stop ground it")
 	# Things the guest should see walk around in its copy (and sell to / shoot at).
-	var recipe: RecipeData = level.operation.recipes[0]
-	level.operation.add_product(recipe, 4, 10)
-	level.operation.set_price(recipe, recipe.base_price)
+	for recipe: RecipeData in level.operation.get_unlocked_recipes():
+		level.operation.add_product(recipe, 4, 10)
+		level.operation.set_price(recipe, recipe.base_price)
 	var window: SalesWindow = level.get_front(SalesWindow) as SalesWindow
 	window.spawn_customer(REGULAR_CUSTOMER.create_order(level.operation.get_unlocked_recipes(), RandomNumberGenerator.new()))
 	var garden: FrontGarden = level.get_front(FrontGarden) as FrontGarden

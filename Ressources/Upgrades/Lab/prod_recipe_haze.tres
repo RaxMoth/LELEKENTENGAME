@@ -15,3 +15,4 @@ value_per_level = 1.0
 value_format = ""
 branch = &"production"
 required_reputation = 45
+required_upgrade_id = &"lab_press"

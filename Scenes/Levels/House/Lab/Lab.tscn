@@ -6,6 +6,7 @@
 [ext_resource type="PackedScene" path="res://Scenes/Levels/House/Lab/IngredientCrate.tscn" id="crate"]
 [ext_resource type="PackedScene" path="res://Scenes/Levels/House/Workers/Worker.tscn" id="worker"]
 [ext_resource type="Script" path="res://Scripts/Resources/recipe_data.gd" id="recipe_script"]
+[ext_resource type="Resource" path="res://Ressources/Recipes/shroom.tres" id="r_shroom"]
 [ext_resource type="Resource" path="res://Ressources/Recipes/glow.tres" id="r_glow"]
 [ext_resource type="Resource" path="res://Ressources/Recipes/fizz.tres" id="r_fizz"]
 [ext_resource type="Resource" path="res://Ressources/Recipes/haze.tres" id="r_haze"]
@@ -14,6 +15,7 @@
 [ext_resource type="Resource" path="res://Ressources/Ingredients/fizzroot.tres" id="i_fizzroot"]
 [ext_resource type="Resource" path="res://Ressources/Ingredients/duskleaf.tres" id="i_duskleaf"]
 [ext_resource type="Script" path="res://Scenes/Levels/House/Lab/lab.gd" id="lab"]
+[ext_resource type="PackedScene" path="res://Scenes/Levels/House/Lab/ShroomPlant.tscn" id="plant"]
 [ext_resource type="Script" path="res://Scripts/XR/world_screen.gd" id="screen"]
 [ext_resource type="PackedScene" path="res://Scenes/Levels/House/Lab/RecipeBoard.tscn" id="recipe_board"]
 [ext_resource type="Script" path="res://Scripts/Utils/placeholder_mesh_3d.gd" id="mesh"]
@@ -21,7 +23,7 @@
 
 [node name="Lab" type="Node3D"]
 script = ExtResource("lab")
-recipes = Array[ExtResource("recipe_script")]([ExtResource("r_glow"), ExtResource("r_fizz"), ExtResource("r_haze")])
+recipes = Array[ExtResource("recipe_script")]([ExtResource("r_shroom"), ExtResource("r_glow"), ExtResource("r_fizz"), ExtResource("r_haze")])
 
 [node name="Grinder" parent="." instance=ExtResource("grinder")]
 unique_name_in_owner = true
@@ -55,7 +57,7 @@ ingredient = ExtResource("i_duskleaf")
 unique_name_in_owner = true
 
 [node name="CrafterA" parent="Crafters" instance=ExtResource("worker")]
-transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, -1.5, 0, 1.2)
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, -1.2, 0, 1.0)
 role = 0
 slot = 1
 wage_per_hour = 14
@@ -73,15 +75,15 @@ transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -4.9, 1.62, 0)
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.015)
 script = ExtResource("mesh")
 shape_kind = 1
-size = Vector3(2.18, 1.16, 0.02)
+size = Vector3(2.68, 1.12, 0.02)
 color = Color(0.051, 0.0627, 0.0902, 1)
 
 [node name="RecipeScreen" type="Node3D" parent="RecipeBook"]
 unique_name_in_owner = true
 script = ExtResource("screen")
 content_scene = ExtResource("recipe_board")
-resolution = Vector2i(1400, 720)
-width_meters = 2.1
+resolution = Vector2i(1800, 720)
+width_meters = 2.6
 is_interactive = false
 is_static = true
 
@@ -92,14 +94,42 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.7, 2.12, -1.9)
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.012)
 script = ExtResource("mesh")
 shape_kind = 1
-size = Vector3(2.88, 0.85, 0.02)
+size = Vector3(3.18, 0.85, 0.02)
 color = Color(0.051, 0.0627, 0.0902, 1)
 
 [node name="GuideScreen" type="Node3D" parent="GuidePoster"]
 unique_name_in_owner = true
 script = ExtResource("screen")
 content_scene = ExtResource("guide_board")
-resolution = Vector2i(1600, 440)
-width_meters = 2.8
+resolution = Vector2i(1800, 440)
+width_meters = 3.1
 is_interactive = false
 is_static = true
+
+[node name="GrowShelf" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.95, 0.44, 1.7)
+cast_shadow = 0
+script = ExtResource("mesh")
+shape_kind = 1
+size = Vector3(0.8, 0.88, 0.4)
+color = Color(0.1412, 0.1686, 0.2431, 1)
+
+[node name="GrowShelfTop" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.95, 0.9, 1.7)
+cast_shadow = 0
+script = ExtResource("mesh")
+shape_kind = 1
+size = Vector3(0.84, 0.04, 0.44)
+color = Color(0.5529, 0.5882, 0.6745, 1)
+
+[node name="Plants" type="Node3D" parent="."]
+unique_name_in_owner = true
+
+[node name="PlantA" parent="Plants" instance=ExtResource("plant")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.2, 0.92, 1.7)
+
+[node name="PlantB" parent="Plants" instance=ExtResource("plant")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.95, 0.92, 1.7)
+
+[node name="PlantC" parent="Plants" instance=ExtResource("plant")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.7, 0.92, 1.7)

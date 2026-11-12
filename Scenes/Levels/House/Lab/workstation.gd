@@ -90,6 +90,13 @@ func is_running() -> bool:
 	return _gauge != null
 
 
+## Bought (or not yet): an inactive station is hidden — its slots take
+## nothing and its button can't be pressed — and runs no skill check.
+func set_active(is_active: bool) -> void:
+	visible = is_active
+	process_mode = Node.PROCESS_MODE_INHERIT if is_active else Node.PROCESS_MODE_DISABLED
+
+
 ## The running skill check (tests and tutorials), or null while idle.
 func get_gauge() -> TimingGauge:
 	return _gauge
@@ -169,7 +176,7 @@ func _accepts_input(item: Grabbable) -> bool:
 			var ingredient_ids: Array[StringName] = _get_input_ingredient_ids()
 			ingredient_ids.append(cook_ingredient.data.id)
 			for recipe: RecipeData in operation.get_unlocked_recipes():
-				if recipe.accepts_partial(ingredient_ids):
+				if not recipe.is_grown and recipe.accepts_partial(ingredient_ids):
 					return true
 			return false
 		Types.CraftStep.PACKAGE:
@@ -271,8 +278,9 @@ func _get_input_ingredient_ids() -> Array[StringName]:
 
 func _find_matching_recipe() -> RecipeData:
 	var ingredient_ids: Array[StringName] = _get_input_ingredient_ids()
+	# Grown products (shrooms) come from the plants, never from an empty pot.
 	for recipe: RecipeData in operation.get_unlocked_recipes():
-		if recipe.matches(ingredient_ids):
+		if not recipe.is_grown and recipe.matches(ingredient_ids):
 			return recipe
 	return null
 

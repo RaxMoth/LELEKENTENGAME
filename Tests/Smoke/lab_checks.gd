@@ -16,8 +16,7 @@ static func run(test: SmokeTest, level: HouseLevel) -> void:
 	var glowcap_crate: IngredientCrate = lab.get_crate(&"glowcap")
 	var sugarsalt_crate: IngredientCrate = lab.get_crate(&"sugarsalt")
 	rig.locomotion.travel_to_spot(0)
-	var recipe_board: RecipeBoard = lab.get_recipe_board()
-	test.check(recipe_board.get_found_count() == 0 and not Profile.operation.is_recipe_discovered(&"glow"), "the recipe book starts with question marks only")
+	await _check_start_and_gadgets(test, level, lab)
 
 	var cash_before: int = operation.get_cash()
 	rig.tap_world_point(glowcap_crate.get_grab_center())
@@ -61,7 +60,6 @@ static func run(test: SmokeTest, level: HouseLevel) -> void:
 	await _stop_in_the_middle(test, rig, cooker)
 	var batch: BatchItem = cooker.get_output_socket().item as BatchItem
 	test.check(batch != null and batch.recipe.id == &"glow", "cooking makes a batch of the matching product")
-	test.check(Profile.operation.is_recipe_discovered(&"glow") and recipe_board.get_found_count() == 1, "the first batch of a product fills in its recipe book entry")
 
 	var stash_before: int = operation.stash.get_total()
 	rig.tap_world_point(batch.get_grab_center())
@@ -133,6 +131,43 @@ static func _point_hand(rig: XRPlayerRig, hand: Types.Hand, target: Vector3) -> 
 static func _click(rig: XRPlayerRig, hand: Types.Hand, action_name: StringName) -> void:
 	rig.handle_controller_button(hand, action_name, true)
 	rig.handle_controller_button(hand, action_name, false)
+
+
+## A new operation: one shroom plant that grows on its own, no gadgets; the
+## office sells the grinder, cooker and press in order and each shows up.
+static func _check_start_and_gadgets(test: SmokeTest, level: HouseLevel, lab: Lab) -> void:
+	var rig: XRPlayerRig = level.rig
+	var operation: Operation = level.operation
+	var plants: Array[ShroomPlant] = lab.get_plants()
+	var grinder: Workstation = lab.get_station(&"Grinder")
+	var cooker: Workstation = lab.get_station(&"Cooker")
+	var press: Workstation = lab.get_station(&"Press")
+	test.check(plants[0].is_active() and not plants[1].is_active() and not grinder.visible and not cooker.visible and not press.visible and not lab.get_crate(&"glowcap").visible, "a new lab has one shroom plant and no gadgets yet")
+	var recipe_board: RecipeBoard = lab.get_recipe_board()
+	test.check(recipe_board.get_row_count() == lab.recipes.size() and recipe_board.get_unlocked_count() == 1, "the recipe book shows every recipe, open; only shrooms are unlocked")
+	test.check(not lab.get_guide_board().is_step_unlocked(&"Grind"), "the poster points to the office for the grinder")
+	var plant: ShroomPlant = plants[0]
+	test.check(not plant.is_ripe(), "the plant starts growing")
+	plant.grow(plant.grow_seconds)
+	test.check(plant.is_ripe(), "the plant grows shrooms by itself")
+	var shrooms_before: int = operation.stash.count(&"shroom")
+	rig.tap_world_point(plant.get_harvest_button().get_press_center())
+	await test.frames(3)
+	test.check(operation.stash.count(&"shroom") > shrooms_before and not plant.is_ripe(), "harvesting puts shrooms into the stash, then it grows again")
+	var config: GameConfig = GameConfig.get_default()
+	# Bring the money these purchases cost, so the other areas' checks keep their budget.
+	for upgrade_id: StringName in [Types.UPGRADE_GRINDER, Types.UPGRADE_COOKER, Types.UPGRADE_PRESS, Types.UPGRADE_PLANTS]:
+		Profile.wallet.add(Types.CURRENCY_CASH, config.find_upgrade(upgrade_id).get_cost(0))
+	test.check(not Profile.upgrades.can_purchase(config.find_upgrade(Types.UPGRADE_COOKER)), "the cooker needs the grinder first")
+	for gadget_id: StringName in [Types.UPGRADE_GRINDER, Types.UPGRADE_COOKER, Types.UPGRADE_PRESS]:
+		test.check(Profile.upgrades.purchase(config.find_upgrade(gadget_id)), "the office sells the %s" % gadget_id)
+	level.apply_upgrades()
+	await test.frames(2)
+	test.check(grinder.visible and cooker.visible and press.visible and lab.get_crate(&"glowcap").visible, "bought gadgets and the ingredient crates show up in the lab")
+	test.check(recipe_board.get_unlocked_count() == 2 and lab.get_guide_board().is_step_unlocked(&"Press"), "the press unlocks Glow; the poster shows every step")
+	Profile.upgrades.purchase(config.find_upgrade(Types.UPGRADE_PLANTS))
+	level.apply_upgrades()
+	test.check(plants[1].is_active() and not plants[2].is_active(), "More Plants adds a plant to the shelf")
 
 
 ## Puts the needle in the middle of the sweet zone and presses the station's button.

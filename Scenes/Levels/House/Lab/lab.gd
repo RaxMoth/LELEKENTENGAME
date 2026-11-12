@@ -1,12 +1,16 @@
-## The production front: ingredient crates, the grinder, cooker and press,
-## the crafters and the recipe book on the wall. Owns the product recipes
-## (registered with the Operation at setup, so the sales side knows what
-## exists) and hands the operation to its stations, crates and crew.
-## Everything it makes goes into the shared stash; the first batch of a new
-## product fills in its entry in the recipe book (saved in Profile.operation).
+## The production front. A new operation starts small: one shroom plant on
+## the grow shelf that grows on its own — harvest, sell at the window. The
+## office then sells the lab its gadgets one after the other — the grinder
+## (with the ingredient crates), the cooker, the press — and more plants;
+## each shows up here when bought. Owns the product recipes (registered with
+## the Operation at setup, so the sales side knows what exists), hands the
+## operation to its plants, stations, crates and crew, and keeps the recipe
+## book (every recipe, open, with what it still needs) and the how-to poster
+## up to date.
 ##
-## Dependencies: HouseFront, Workstation, IngredientCrate, Worker, RecipeData,
-##               RecipeBoard, WorldScreen, Operation, Profile autoload, Palette
+## Dependencies: HouseFront, Workstation, IngredientCrate, ShroomPlant, Worker,
+##               RecipeData, RecipeBoard, LabGuideBoard, WorldScreen, Operation,
+##               GameConfig, Profile, Types autoloads
 class_name Lab
 extends HouseFront
 
@@ -14,32 +18,37 @@ extends HouseFront
 @export var recipes: Array[RecipeData] = []
 
 @onready var _crafters: Node3D = %Crafters
+@onready var _plants: Node3D = %Plants
 @onready var _recipe_screen: WorldScreen = %RecipeScreen
 @onready var _guide_screen: WorldScreen = %GuideScreen
 
 
 func _on_setup() -> void:
 	context.operation.recipes = recipes
+	var grown_recipe: RecipeData = _find_grown_recipe()
 	for child: Node in get_children():
 		if child is Workstation:
 			(child as Workstation).setup(context.operation)
 		elif child is IngredientCrate:
 			(child as IngredientCrate).operation = context.operation
+	for plant: ShroomPlant in get_plants():
+		plant.setup(context.operation, grown_recipe)
 	for crafter: Node in _crafters.get_children():
 		(crafter as Worker).operation = context.operation
-	get_station(&"Cooker").batch_cooked.connect(_on_batch_cooked)
-	_refresh_recipe_book()
-	# The how-to poster never changes: draw it once its text is laid out.
-	_guide_screen.request_redraw.call_deferred()
+	_apply_gadgets()
 
 
+## Gadgets, plants, the recipe book and the poster follow what was bought.
 func apply_upgrades() -> void:
-	# A recipe upgrade turns its lock into question marks.
-	_refresh_recipe_book()
+	_apply_gadgets()
 
 
 func get_recipe_board() -> RecipeBoard:
 	return _recipe_screen.content as RecipeBoard
+
+
+func get_guide_board() -> LabGuideBoard:
+	return _guide_screen.content as LabGuideBoard
 
 
 ## The station named [param station_name] (Grinder, Cooker, Press), or null.
@@ -56,15 +65,37 @@ func get_crate(ingredient_id: StringName) -> IngredientCrate:
 	return null
 
 
-func _on_batch_cooked(recipe: RecipeData) -> void:
-	if Profile.operation.discover_recipe(recipe.id):
-		announcement_requested.emit(tr("New recipe: %s") % tr(recipe.display_name), Palette.TEXT)
-		_refresh_recipe_book()
+## Every plant spot on the grow shelf (bought or not).
+func get_plants() -> Array[ShroomPlant]:
+	var plants: Array[ShroomPlant] = []
+	for child: Node in _plants.get_children():
+		var plant: ShroomPlant = child as ShroomPlant
+		if plant != null:
+			plants.append(plant)
+	return plants
 
 
-## Redraws the recipe book from the saved discoveries (co-op guests call it
-## when the host's discoveries arrive).
-func refresh_recipe_book() -> void:
+# ============================================
+# INTERNALS
+# ============================================
+
+func _apply_gadgets() -> void:
+	var has_grinder: bool = Profile.upgrades.is_owned(Types.UPGRADE_GRINDER)
+	var has_cooker: bool = Profile.upgrades.is_owned(Types.UPGRADE_COOKER)
+	var has_press: bool = Profile.upgrades.is_owned(Types.UPGRADE_PRESS)
+	get_station(&"Grinder").set_active(has_grinder)
+	get_station(&"Cooker").set_active(has_cooker)
+	get_station(&"Press").set_active(has_press)
+	# Ingredients only make sense once there is something to grind them with.
+	for child: Node in get_children():
+		if child is IngredientCrate:
+			(child as IngredientCrate).visible = has_grinder
+	var plant_count: int = 1 + Profile.upgrades.get_level(Types.UPGRADE_PLANTS)
+	var plants: Array[ShroomPlant] = get_plants()
+	for plant_index: int in plants.size():
+		plants[plant_index].set_active(plant_index < plant_count)
+	get_guide_board().show_progress(has_grinder, has_cooker, has_press)
+	_guide_screen.request_redraw.call_deferred()
 	_refresh_recipe_book()
 
 
@@ -72,6 +103,19 @@ func _refresh_recipe_book() -> void:
 	var unlocked_ids: Array[StringName] = []
 	for recipe: RecipeData in context.operation.get_unlocked_recipes():
 		unlocked_ids.append(recipe.id)
-	get_recipe_board().show_recipes(recipes, Profile.operation.discovered_recipe_ids, unlocked_ids)
+	var unlock_titles: Dictionary[StringName, String] = {}
+	var config: GameConfig = GameConfig.get_default()
+	for recipe: RecipeData in recipes:
+		var unlock: UpgradeData = config.find_upgrade(recipe.unlock_upgrade_id)
+		if unlock != null:
+			unlock_titles[recipe.id] = unlock.title
+	get_recipe_board().show_recipes(recipes, unlocked_ids, unlock_titles)
 	# Deferred: the new rows sort themselves first, then the poster is drawn.
 	_recipe_screen.request_redraw.call_deferred()
+
+
+func _find_grown_recipe() -> RecipeData:
+	for recipe: RecipeData in recipes:
+		if recipe.is_grown:
+			return recipe
+	return null

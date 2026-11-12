@@ -351,3 +351,29 @@ Crafted %d units,Crafted %d units,%d Einheiten hergestellt
 Police raid beaten,Police raid beaten,Razzia abgewehrt
 Stash lost: %d units,Stash lost: %d units,Lager verloren: %d Einheiten
 Repairs: $%s,Repairs: $%s,Reparaturen: %s $
+Shrooms,Shrooms,Pilze
+More Plants,More Plants,Mehr Pflanzen
+Another shroom plant on the grow shelf. More shrooms every minute.,Another shroom plant on the grow shelf. More shrooms every minute.,Noch eine Pilzpflanze im Pflanzregal. Mehr Pilze jede Minute.
++%s plants,+%s plants,+%s Pflanzen
+A grinder and ingredient crates for the lab: grind raw ingredients into dust.,A grinder and ingredient crates for the lab: grind raw ingredients into dust.,Eine Mühle und Zutatenkisten fürs Labor: rohe Zutaten zu Pulver mahlen.
+Cook ground ingredients into a batch of product.,Cook ground ingredients into a batch of product.,Gemahlene Zutaten zu einer Charge Ware kochen.
+Package cooked batches into the stash. Unlocks Glow (Glowcap + Sugarsalt).,Package cooked batches into the stash. Unlocks Glow (Glowcap + Sugarsalt).,Gekochte Chargen ins Lager verpacken. Schaltet Glow frei (Glowcap + Zuckersalz).
+Needs %s first,Needs %s first,Braucht zuerst: %s
+Ripe: harvest,Ripe: harvest,Reif: ernten
+Growing %d%%,Growing %d%%,Wächst %d%%
+%d / %d unlocked,%d / %d unlocked,%d / %d freigeschaltet
+Unlock gadgets and recipes in the office.,Unlock gadgets and recipes in the office.,Geräte und Rezepte im Büro freischalten.
+Grows on the plant,Grows on the plant,Wächst an der Pflanze
+Needs %s,Needs %s,Braucht %s
+On its own,On its own,Von selbst
+shrooms,shrooms,Pilze
+"Harvest them, sell them at the window.","Harvest them, sell them at the window.",Ernten und am Fenster verkaufen.
+Raw,Raw,Roh
+Dust,Dust,Pulver
+Batch,Batch,Charge
+stash,stash,Lager
+Plant,Plant,Pflanze
+Which mix? See the recipe book.,Which mix? See the recipe book.,Welche Mischung? Siehe Rezeptbuch.
+Buy the Grinder in the office.,Buy the Grinder in the office.,Kauf die Mühle im Büro.
+Buy the Cooker in the office.,Buy the Cooker in the office.,Kauf den Kocher im Büro.
+Buy the Press in the office.,Buy the Press in the office.,Kauf die Presse im Büro.

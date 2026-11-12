@@ -6,8 +6,9 @@ timing skill check that sets the quality. Product goes into the shared stash.
 | Files | What |
 |---|---|
 | `Lab.tscn`, `lab.gd` | The front: stations, crates, crafters, recipe book; registers the recipes with the Operation |
-| `LabGuideBoard.tscn` | The "How to cook" poster above the grinder and cooker (static WorldScreen, text only) |
-| `RecipeBoard.tscn`, `recipe_board.gd` | The recipe book on the wall (static WorldScreen): question marks until a product is first cooked, saved in `Profile.operation.discovered_recipe_ids` |
+| `RecipeBoard.tscn`, `recipe_board.gd` | The recipe book on the wall (static WorldScreen): every product, open, with what it still needs |
+| `ShroomPlant.tscn`, `shroom_plant.gd` | The plants on the grow shelf (StateChart Growing ⇄ Ripe): grow shrooms on their own, harvest into the stash |
+| `LabGuideBoard.tscn`, `lab_guide_board.gd` | The "How to cook" poster: plant, then grinder, cooker, press — dimmed until bought |
 | `Workstation.tscn` + `Grinder/Cooker/Press.tscn`, `workstation.gd` | Stations (StateChart Idle ⇄ Running) |
 | `IngredientCrate.tscn`, `IngredientItem.tscn`, `BatchItem.tscn` | Crates and the items you carry |
 | `Ressources/Ingredients/`, `Ressources/Recipes/` | Ingredients and products (add recipes to `Lab.recipes`) |

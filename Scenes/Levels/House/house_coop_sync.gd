@@ -6,7 +6,7 @@
 ## second it sends the guest a snapshot: spawned things (NetEntities: lab
 ## items, customers, raiders) and station looks (Types.GROUP_NET_NODE);
 ## 4 times a second the shared state: cash, operation progress (stash,
-## reputation, discovered recipes), upgrades, heat, time and wrist lines.
+## reputation), upgrades (which also show the lab's gadgets), heat, time and wrist lines.
 ## Announcements, floating texts and the guest's rumbles are relayed.
 ##
 ## Guest (HouseLevel.is_mirror): its rig forwards trigger, grip and clicks
@@ -68,7 +68,6 @@ var _seconds_until_pose: float = 0.0
 var _seconds_until_snapshot: float = 0.0
 var _seconds_until_world: float = 0.0
 var _last_upgrades_hash: int = 0
-var _last_discovered_count: int = -1
 ## Host: hash of each board's last sent look (path -> hash); cleared when a
 ## guest arrives so it gets every board once.
 var _board_hashes: Dictionary[String, int] = {}
@@ -193,11 +192,6 @@ func _receive_world(world: Array) -> void:
 	operation.heat.value = float(world[WORLD_HEAT])
 	_level.day_cycle.sync_elapsed(float(world[WORLD_TIME]))
 	_level.set_mirrored_wrist_lines(world[WORLD_WRIST_LINES])
-	if Profile.operation.discovered_recipe_ids.size() != _last_discovered_count:
-		_last_discovered_count = Profile.operation.discovered_recipe_ids.size()
-		var lab: Lab = _level.get_front(Lab) as Lab
-		if lab != null:
-			lab.refresh_recipe_book()
 
 
 ## Host -> guest: a board's new look.
