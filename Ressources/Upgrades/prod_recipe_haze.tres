@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="UpgradeData" format=3]
+
+[ext_resource type="Script" path="res://Scripts/Resources/upgrade_data.gd" id="script"]
+
+[resource]
+script = ExtResource("script")
+id = &"prod_recipe_haze"
+title = "Recipe: Haze"
+description = "Unlocks Haze (Duskleaf, Glowcap, Fizzroot). Hard to cook, sells best."
+base_cost = 900
+cost_growth = 1.0
+max_level = 1
+base_value = 0.0
+value_per_level = 1.0
+value_format = ""
+branch = &"production"
+required_reputation = 45

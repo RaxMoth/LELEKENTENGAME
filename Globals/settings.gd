@@ -19,6 +19,10 @@ const KEY_MUSIC_VOLUME: StringName = &"music_volume"
 const KEY_SFX_VOLUME: StringName = &"sfx_volume"
 const KEY_HAPTICS_ENABLED: StringName = &"haptics_enabled"
 const KEY_SHOW_FPS: StringName = &"show_fps"
+## Comfort: thumbstick walking instead of teleporting.
+const KEY_SMOOTH_MOVEMENT: StringName = &"smooth_movement"
+## Comfort: continuous turning instead of 30° snaps.
+const KEY_SMOOTH_TURNING: StringName = &"smooth_turning"
 ## Empty string = follow the device language.
 const KEY_LOCALE: StringName = &"locale"
 
@@ -28,6 +32,8 @@ const DEFAULTS: Dictionary[StringName, Variant] = {
 	KEY_SFX_VOLUME: 0.9,
 	KEY_HAPTICS_ENABLED: true,
 	KEY_SHOW_FPS: false,
+	KEY_SMOOTH_MOVEMENT: false,
+	KEY_SMOOTH_TURNING: false,
 	KEY_LOCALE: "",
 }
 

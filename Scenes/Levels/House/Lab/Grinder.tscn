@@ -1,0 +1,32 @@
+[gd_scene format=3]
+
+[ext_resource type="PackedScene" path="res://Scenes/Levels/House/Lab/Workstation.tscn" id="base"]
+[ext_resource type="Script" path="res://Scripts/Utils/placeholder_mesh_3d.gd" id="mesh"]
+[ext_resource type="Script" path="res://Scripts/XR/item_socket.gd" id="socket"]
+
+[node name="Grinder" instance=ExtResource("base")]
+station_name = "Grinder"
+sweeps_per_second = 0.65
+zone_width = 0.24
+
+[node name="Hopper" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.05, 1.08, -0.12)
+cast_shadow = 0
+script = ExtResource("mesh")
+shape_kind = 3
+size = Vector3(0.34, 0.32, 0.34)
+color = Color(0.3569, 0.3922, 0.4824, 1)
+top_scale = 1.4
+
+[node name="Crank" type="MeshInstance3D" parent="."]
+transform = Transform3D(0, -1, 0, 1, 0, 0, 0, 0, 1, 0.18, 1.14, -0.12)
+cast_shadow = 0
+script = ExtResource("mesh")
+shape_kind = 3
+size = Vector3(0.05, 0.2, 0.05)
+color = Color(0.9608, 0.7216, 0.2549, 1)
+
+[node name="HopperSlot" type="Node3D" parent="Inputs"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.05, 1.26, -0.12)
+script = ExtResource("socket")
+snap_radius = 0.28

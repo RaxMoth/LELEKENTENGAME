@@ -1,0 +1,39 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://Scenes/Levels/House/Lab/batch_item.gd" id="item"]
+[ext_resource type="Script" path="res://Scripts/Utils/placeholder_mesh_3d.gd" id="mesh"]
+
+[node name="BatchItem" type="Node3D"]
+script = ExtResource("item")
+grab_radius = 0.18
+
+[node name="Tray" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.02, 0)
+cast_shadow = 0
+script = ExtResource("mesh")
+shape_kind = 1
+size = Vector3(0.3, 0.04, 0.22)
+color = Color(0.5529, 0.5882, 0.6745, 1)
+
+[node name="Mix" type="MeshInstance3D" parent="."]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.05, 0)
+cast_shadow = 0
+script = ExtResource("mesh")
+shape_kind = 1
+size = Vector3(0.26, 0.03, 0.18)
+color = Color(0.2392, 0.8627, 0.5922, 1)
+glow = 0.3
+
+[node name="NameLabel" type="Label3D" parent="."]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.17, 0)
+pixel_size = 0.0011
+billboard = 1
+render_priority = 2
+outline_render_priority = 1
+modulate = Color(0.9333, 0.9451, 0.9686, 1)
+outline_modulate = Color(0.051, 0.0627, 0.0902, 0.9)
+text = "Batch"
+font_size = 40
+outline_size = 10

@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="RecipeData" format=3]
+
+[ext_resource type="Script" path="res://Scripts/Resources/recipe_data.gd" id="script"]
+[ext_resource type="Script" path="res://Scripts/Resources/ingredient_data.gd" id="ing_script"]
+[ext_resource type="Resource" path="res://Ressources/Ingredients/glowcap.tres" id="i_glowcap"]
+[ext_resource type="Resource" path="res://Ressources/Ingredients/sugarsalt.tres" id="i_sugarsalt"]
+
+[resource]
+script = ExtResource("script")
+id = &"glow"
+display_name = "Glow"
+color = Color(0.2392, 0.8627, 0.5922, 1)
+ingredients = Array[ExtResource("ing_script")]([ExtResource("i_glowcap"), ExtResource("i_sugarsalt")])
+base_price = 40
+base_batch_size = 4
+heat_per_unit = 1.2
+cook_sweeps_per_second = 0.6
+cook_zone_width = 0.24

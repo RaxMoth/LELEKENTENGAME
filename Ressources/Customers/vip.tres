@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="CustomerTypeData" format=3]
+
+[ext_resource type="Script" path="res://Scripts/Resources/customer_type_data.gd" id="script"]
+
+[resource]
+script = ExtResource("script")
+id = &"vip"
+display_name = "VIP"
+color = Color(0.9608, 0.7216, 0.2549, 1)
+quantity_range = Vector2i(3, 6)
+min_tier_range = Vector2i(4, 4)
+price_tolerance = 2.6
+patience_seconds = 75.0
+reputation_gain = 6
+reputation_loss = 4
+dealer_can_serve = false
+day_weight = 0.0
+night_weight = 1.2
+required_upgrade_id = &"sales_vip"

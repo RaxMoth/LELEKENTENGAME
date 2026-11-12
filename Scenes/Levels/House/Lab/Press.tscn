@@ -1,0 +1,33 @@
+[gd_scene format=3]
+
+[ext_resource type="PackedScene" path="res://Scenes/Levels/House/Lab/Workstation.tscn" id="base"]
+[ext_resource type="Script" path="res://Scripts/Utils/placeholder_mesh_3d.gd" id="mesh"]
+[ext_resource type="Script" path="res://Scripts/XR/item_socket.gd" id="socket"]
+
+[node name="Press" instance=ExtResource("base")]
+step = 2
+station_name = "Press"
+sweeps_per_second = 0.8
+zone_width = 0.2
+
+[node name="Frame" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.05, 1.22, -0.2)
+cast_shadow = 0
+script = ExtResource("mesh")
+shape_kind = 1
+size = Vector3(0.5, 0.6, 0.08)
+color = Color(0.3569, 0.3922, 0.4824, 1)
+
+[node name="Ram" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.05, 1.3, -0.04)
+cast_shadow = 0
+script = ExtResource("mesh")
+shape_kind = 1
+size = Vector3(0.36, 0.1, 0.28)
+color = Color(0.9608, 0.7216, 0.2549, 1)
+
+[node name="Bed" type="Node3D" parent="Inputs"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.05, 0.94, -0.04)
+script = ExtResource("socket")
+snap_radius = 0.26
+marker_diameter = 0.3

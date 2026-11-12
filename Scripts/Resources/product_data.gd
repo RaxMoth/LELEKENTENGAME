@@ -12,5 +12,5 @@ extends Resource
 @export var product_type: Types.ProductType = Types.ProductType.CONSUMABLE
 ## Shown until the store returns a localized price.
 @export var fallback_price_text: String = "$0.99"
-## Currencies or items granted on purchase (e.g. {&"gems": 100} or {&"no_ads": 1}).
+## Currencies or items granted on purchase (e.g. {&"cash": 2000} or {&"no_ads": 1}).
 @export var rewards: Dictionary[StringName, int] = {}

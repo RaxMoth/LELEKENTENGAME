@@ -73,8 +73,8 @@ func _update_stats_visibility() -> void:
 
 
 func _build_cheats() -> void:
-	_add_cheat("+1000 coins", func() -> void: Profile.wallet.add(Types.CURRENCY_COINS, 1000))
-	_add_cheat("+100 gems", func() -> void: Profile.wallet.add(Types.CURRENCY_GEMS, 100))
+	_add_cheat("+1000 cash", func() -> void: Profile.wallet.add(Types.CURRENCY_CASH, 1000))
+	_add_cheat("+50 reputation", func() -> void: Profile.operation.add_reputation(50))
 	_add_cheat("Unlock all levels", func() -> void: Profile.levels.unlock_all_for_debug())
 	_add_cheat("Refill energy", func() -> void: Profile.energy.refill())
 	_add_cheat("Win level", func() -> void: _call_on_level(&"win"))

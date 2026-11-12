@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="TowerData" format=3]
+
+[ext_resource type="Script" path="res://Scripts/Resources/tower_data.gd" id="script"]
+[ext_resource type="Texture2D" path="res://Assets/Icons/shield.svg" id="icon"]
+[ext_resource type="PackedScene" path="res://Scenes/Levels/House/Garden/Barricade.tscn" id="scene"]
+
+[resource]
+script = ExtResource("script")
+id = &"barricade"
+display_name = "Barricade"
+icon = ExtResource("icon")
+icon_color = Color(0.5529, 0.5882, 0.6745, 1)
+scene = ExtResource("scene")
+cost = 80
+cooldown_seconds = 5.0
+max_health = 420.0

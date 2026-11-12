@@ -1,0 +1,193 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://Scenes/Levels/House/Sales/sales_board.gd" id="board"]
+[ext_resource type="Script" path="res://Scripts/UI/icon_label.gd" id="icon_label"]
+[ext_resource type="Texture2D" path="res://Assets/Icons/person.svg" id="person"]
+[ext_resource type="Texture2D" path="res://Assets/Icons/minus.svg" id="minus"]
+[ext_resource type="Texture2D" path="res://Assets/Icons/plus.svg" id="plus"]
+
+[node name="SalesBoard" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("board")
+
+[node name="Panel" type="PanelContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_type_variation = &"CardPanel"
+
+[node name="Margin" type="MarginContainer" parent="Panel"]
+layout_mode = 2
+theme_override_constants/margin_left = 32
+theme_override_constants/margin_top = 24
+theme_override_constants/margin_right = 32
+theme_override_constants/margin_bottom = 24
+
+[node name="Column" type="VBoxContainer" parent="Panel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="Header" type="HBoxContainer" parent="Panel/Margin/Column"]
+layout_mode = 2
+
+[node name="Title" type="Label" parent="Panel/Margin/Column/Header"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"HeaderLabel"
+text = "Back window"
+
+[node name="QueueLabel" type="HBoxContainer" parent="Panel/Margin/Column/Header"]
+unique_name_in_owner = true
+layout_mode = 2
+script = ExtResource("icon_label")
+icon = ExtResource("person")
+text = "0 / 3"
+icon_size = 40
+icon_color = Color(0.5529, 0.5882, 0.6745, 1)
+
+[node name="EmptyBox" type="VBoxContainer" parent="Panel/Margin/Column"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+alignment = 1
+
+[node name="EmptyLabel" type="Label" parent="Panel/Margin/Column/EmptyBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"SmallLabel"
+text = "Nobody at the window"
+horizontal_alignment = 1
+
+[node name="OrderBox" type="VBoxContainer" parent="Panel/Margin/Column"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 16
+
+[node name="CustomerRow" type="HBoxContainer" parent="Panel/Margin/Column/OrderBox"]
+layout_mode = 2
+theme_override_constants/separation = 24
+
+[node name="CustomerLabel" type="Label" parent="Panel/Margin/Column/OrderBox/CustomerRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"AccentLabel"
+text = "Regular"
+
+[node name="PatienceBar" type="ProgressBar" parent="Panel/Margin/Column/OrderBox/CustomerRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(240, 16)
+layout_mode = 2
+size_flags_vertical = 4
+value = 100.0
+show_percentage = false
+
+[node name="WantsLabel" type="Label" parent="Panel/Margin/Column/OrderBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Glow ×2, Street or better"
+autowrap_mode = 3
+
+[node name="StockLabel" type="Label" parent="Panel/Margin/Column/OrderBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"SmallLabel"
+text = "In stash: 0"
+
+[node name="PriceRow" type="HBoxContainer" parent="Panel/Margin/Column/OrderBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 24
+alignment = 1
+
+[node name="PriceDown" type="Button" parent="Panel/Margin/Column/OrderBox/PriceRow"]
+custom_minimum_size = Vector2(96, 96)
+layout_mode = 2
+theme_type_variation = &"IconButton"
+icon = ExtResource("minus")
+icon_alignment = 1
+expand_icon = true
+
+[node name="PriceColumn" type="VBoxContainer" parent="Panel/Margin/Column/OrderBox/PriceRow"]
+custom_minimum_size = Vector2(260, 0)
+layout_mode = 2
+alignment = 1
+
+[node name="PriceCaption" type="Label" parent="Panel/Margin/Column/OrderBox/PriceRow/PriceColumn"]
+layout_mode = 2
+theme_type_variation = &"CaptionLabel"
+text = "Price per unit"
+horizontal_alignment = 1
+
+[node name="PriceLabel" type="Label" parent="Panel/Margin/Column/OrderBox/PriceRow/PriceColumn"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"HeaderLabel"
+text = "$40"
+horizontal_alignment = 1
+
+[node name="TotalLabel" type="Label" parent="Panel/Margin/Column/OrderBox/PriceRow/PriceColumn"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"SmallLabel"
+text = "Total $80"
+horizontal_alignment = 1
+
+[node name="PriceUp" type="Button" parent="Panel/Margin/Column/OrderBox/PriceRow"]
+custom_minimum_size = Vector2(96, 96)
+layout_mode = 2
+theme_type_variation = &"IconButton"
+icon = ExtResource("plus")
+icon_alignment = 1
+expand_icon = true
+
+[node name="CounterLabel" type="Label" parent="Panel/Margin/Column/OrderBox"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_type_variation = &"HeaderLabel"
+text = "They offer $36 per unit"
+horizontal_alignment = 1
+
+[node name="Buttons" type="HBoxContainer" parent="Panel/Margin/Column"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="SellButton" type="Button" parent="Panel/Margin/Column/Buttons"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 96)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Sell"
+
+[node name="AcceptButton" type="Button" parent="Panel/Margin/Column/Buttons"]
+unique_name_in_owner = true
+visible = false
+custom_minimum_size = Vector2(0, 96)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"SuccessButton"
+text = "Accept"
+
+[node name="DeclineButton" type="Button" parent="Panel/Margin/Column/Buttons"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(240, 96)
+layout_mode = 2
+theme_type_variation = &"GhostButton"
+text = "Decline"
+
+[connection signal="pressed" from="Panel/Margin/Column/OrderBox/PriceRow/PriceDown" to="." method="_on_price_down_pressed"]
+[connection signal="pressed" from="Panel/Margin/Column/OrderBox/PriceRow/PriceUp" to="." method="_on_price_up_pressed"]
+[connection signal="pressed" from="Panel/Margin/Column/Buttons/SellButton" to="." method="_on_sell_button_pressed"]
+[connection signal="pressed" from="Panel/Margin/Column/Buttons/AcceptButton" to="." method="_on_accept_button_pressed"]
+[connection signal="pressed" from="Panel/Margin/Column/Buttons/DeclineButton" to="." method="_on_decline_button_pressed"]

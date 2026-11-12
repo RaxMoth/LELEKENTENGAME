@@ -25,7 +25,7 @@ const MIN_RETICLE_DISTANCE: float = 0.3
 @export var max_distance: float = 40.0
 ## Beam length while pointing at nothing.
 @export var idle_beam_length: float = 1.5
-@export var beam_color: Color = Color(0.357, 0.486, 0.98)
+@export var beam_color: Color = Palette.PRIMARY
 ## Off for the flat simulator, where the ray starts at the camera.
 @export var is_beam_visible: bool = true
 
@@ -47,6 +47,7 @@ var _reticle: MeshInstance3D = null
 var _is_pressing_screen: bool = false
 var _screen_hit_distance: float = RayMath.NO_HIT
 var _world_hit_distance: float = RayMath.NO_HIT
+var _interaction_hit_distance: float = RayMath.NO_HIT
 
 
 func _ready() -> void:
@@ -97,6 +98,12 @@ func set_ray(origin: Vector3, direction: Vector3) -> void:
 ## (RayMath.NO_HIT for nothing), so the beam and reticle stop there.
 func set_world_hit_distance(distance: float) -> void:
 	_world_hit_distance = distance
+
+
+## Tells the pointer how far away the item or 3D button under the ray is
+## (set by the rig every frame), so the beam ends on it.
+func set_interaction_hit_distance(distance: float) -> void:
+	_interaction_hit_distance = distance
 
 
 ## Starts a click. Returns true when a WorldScreen took it; otherwise the
@@ -170,7 +177,9 @@ func _leave_screen() -> void:
 func _update_visuals() -> void:
 	if _beam == null:
 		return
-	var hit_distance: float = _screen_hit_distance if _screen_hit_distance != RayMath.NO_HIT else _world_hit_distance
+	var hit_distance: float = _screen_hit_distance
+	if hit_distance == RayMath.NO_HIT:
+		hit_distance = _nearest_hit(_interaction_hit_distance, _world_hit_distance)
 	var has_hit: bool = hit_distance != RayMath.NO_HIT
 	var beam_length: float = hit_distance if has_hit else idle_beam_length
 	_beam.visible = is_beam_visible
@@ -180,6 +189,14 @@ func _update_visuals() -> void:
 	if has_hit:
 		_reticle.position = Vector3(0.0, 0.0, -hit_distance)
 		_reticle.scale = Vector3.ONE * maxf(hit_distance, MIN_RETICLE_DISTANCE) * RETICLE_SIZE_PER_METER
+
+
+func _nearest_hit(first_distance: float, second_distance: float) -> float:
+	if first_distance == RayMath.NO_HIT:
+		return second_distance
+	if second_distance == RayMath.NO_HIT:
+		return first_distance
+	return minf(first_distance, second_distance)
 
 
 func _create_visual(visual_mesh: Mesh, color: Color) -> MeshInstance3D:

@@ -8,8 +8,9 @@ allowed-tools:
    per shot; takes about a minute). For a single screen, run
    `Tools/godot.sh --resolution 720x1280 res://Tests/ScreenshotTool.tscn -- scene=res://... frames=90 out=build/screenshots/x.png`
    (`popup=res://...` is also supported). For a level use
-   `--resolution 1280x720` and `level=<id>`; add `showcase=porchlight` for a
-   staged mid-game moment, `pause=1 world_ui=1` for its popup on the
+   `--resolution 1280x720` and `level=house`; add `showcase=house` (or
+   `house_night`) for a staged busy moment, `spot=1..4` for the lab, front,
+   back window or office, `pause=1 world_ui=1` for its popup on the
    in-world screen.
 2. Read `build/screenshots/sheet_menus.png` and `sheet_levels.png`, then the
    individual screenshots of anything you changed.

@@ -4,6 +4,13 @@
 [ext_resource type="Script" path="res://Scripts/XR/xr_pointer.gd" id="2_pointer"]
 [ext_resource type="Script" path="res://Scripts/XR/world_screen.gd" id="3_screen"]
 [ext_resource type="Script" path="res://Scripts/Utils/placeholder_mesh_3d.gd" id="4_mesh"]
+[ext_resource type="Script" path="res://Scripts/XR/xr_locomotion.gd" id="5_locomotion"]
+
+[sub_resource type="CylinderMesh" id="teleport_ring"]
+top_radius = 0.28
+bottom_radius = 0.28
+height = 0.01
+radial_segments = 32
 
 [node name="XRPlayerRig" type="XROrigin3D"]
 script = ExtResource("1_rig")
@@ -40,6 +47,14 @@ unique_name_in_owner = true
 script = ExtResource("2_pointer")
 beam_color = Color(0.9608, 0.7216, 0.2549, 1)
 
+[node name="LeftHoldAnchor" type="Node3D" parent="LeftHand"]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.02, -0.08)
+
+[node name="LeftWristAnchor" type="Node3D" parent="LeftHand"]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 0.7071, 0.7071, 0, -0.7071, 0.7071, 0, 0.07, 0.12)
+
 [node name="RightHand" type="XRController3D" parent="."]
 unique_name_in_owner = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.25, 1.2, -0.35)
@@ -65,11 +80,27 @@ glow = 1.2
 unique_name_in_owner = true
 script = ExtResource("2_pointer")
 
+[node name="RightHoldAnchor" type="Node3D" parent="RightHand"]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.02, -0.08)
+
+[node name="RightWristAnchor" type="Node3D" parent="RightHand"]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 0.7071, 0.7071, 0, -0.7071, 0.7071, 0, 0.07, 0.12)
+
 [node name="FlatCamera" type="Camera3D" parent="."]
 unique_name_in_owner = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.7, 0)
 near = 0.05
 far = 120.0
+
+[node name="FlatHoldAnchor" type="Node3D" parent="FlatCamera"]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.16, -0.14, -0.45)
+
+[node name="FlatWristAnchor" type="Node3D" parent="FlatCamera"]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.2, -0.13, -0.42)
 
 [node name="FlatPointer" type="Node3D" parent="."]
 unique_name_in_owner = true
@@ -83,6 +114,16 @@ script = ExtResource("3_screen")
 resolution = Vector2i(720, 1280)
 width_meters = 0.9
 is_always_on_top = true
+
+[node name="TeleportMarker" type="MeshInstance3D" parent="."]
+mesh = SubResource("teleport_ring")
+cast_shadow = 0
+
+[node name="Locomotion" type="Node" parent="." node_paths=PackedStringArray("rig", "teleport_marker")]
+unique_name_in_owner = true
+script = ExtResource("5_locomotion")
+rig = NodePath("..")
+teleport_marker = NodePath("../TeleportMarker")
 
 [connection signal="button_pressed" from="LeftHand" to="." method="_on_left_hand_button_pressed"]
 [connection signal="button_released" from="LeftHand" to="." method="_on_left_hand_button_released"]

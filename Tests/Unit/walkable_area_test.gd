@@ -1,0 +1,29 @@
+## Unit tests for WalkableArea's floor math: where the player may stand and
+## how blocked moves slide along walls.
+##
+## Dependencies: gdUnit4
+extends GdUnitTestSuite
+
+## Two rooms joined by a narrow doorway along x = 2.
+var _rooms: Array[Rect2] = [Rect2(0.0, 0.0, 2.0, 2.0), Rect2(1.8, 0.8, 0.6, 0.4), Rect2(2.2, 0.0, 2.0, 2.0)]
+
+
+func test_points_inside_any_region_are_walkable() -> void:
+	assert_bool(WalkableArea.contains_point(_rooms, Vector2(1.0, 1.0))).is_true()
+	assert_bool(WalkableArea.contains_point(_rooms, Vector2(2.1, 1.0))).is_true()
+	assert_bool(WalkableArea.contains_point(_rooms, Vector2(2.1, 0.2))).is_false()
+
+
+func test_no_regions_means_anywhere() -> void:
+	var nowhere: Array[Rect2] = []
+	assert_bool(WalkableArea.contains_point(nowhere, Vector2(99.0, -99.0))).is_true()
+
+
+func test_moves_through_the_doorway() -> void:
+	assert_vector(WalkableArea.resolve_move(_rooms, Vector2(1.9, 1.0), Vector2(2.3, 1.0))).is_equal(Vector2(2.3, 1.0))
+
+
+func test_blocked_moves_slide_along_the_wall() -> void:
+	# Walking diagonally into the wall next to the doorway keeps the sideways part.
+	assert_vector(WalkableArea.resolve_move(_rooms, Vector2(1.9, 0.5), Vector2(2.1, 0.7))).is_equal(Vector2(1.9, 0.7))
+	assert_vector(WalkableArea.resolve_move(_rooms, Vector2(1.9, 0.1), Vector2(2.1, -0.1))).is_equal(Vector2(1.9, 0.1))

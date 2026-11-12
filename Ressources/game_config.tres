@@ -4,155 +4,150 @@
 [ext_resource type="Script" uid="uid://b0n04kkvuc2yd" path="res://Scripts/Resources/currency_data.gd" id="2_uypxx"]
 [ext_resource type="Script" uid="uid://dxmb5xils7myo" path="res://Scripts/Resources/reward_bundle.gd" id="3_kxyoi"]
 [ext_resource type="Script" uid="uid://dqdbvtjalxnkv" path="res://Scripts/Resources/level_data.gd" id="4_00tpa"]
-[ext_resource type="Resource" path="res://Ressources/Levels/porchlight.tres" id="20_porch"]
+[ext_resource type="Resource" path="res://Ressources/Levels/house.tres" id="5_house"]
 [ext_resource type="Script" uid="uid://bejsij112wfse" path="res://Scripts/Resources/product_data.gd" id="10_n01iv"]
 [ext_resource type="Script" uid="uid://blem8amxm8bbh" path="res://Scripts/Resources/game_config.gd" id="11_hlth3"]
 [ext_resource type="Script" uid="uid://bjps7qydt4qxq" path="res://Scripts/Resources/upgrade_data.gd" id="12_452dx"]
-[ext_resource type="Resource" path="res://Ressources/Upgrades/porchlight_head_start.tres" id="13_head_start"]
-[ext_resource type="Resource" path="res://Ressources/Upgrades/porchlight_sturdy_porch.tres" id="14_sturdy_porch"]
-[ext_resource type="Texture2D" uid="uid://bfd68dbhq3wrl" path="res://Assets/Icons/coin.svg" id="18_coin"]
-[ext_resource type="Texture2D" uid="uid://dm74wnuu8tnd0" path="res://Assets/Icons/gem.svg" id="19_gem"]
+[ext_resource type="Texture2D" path="res://Assets/Icons/cash.svg" id="18_cash"]
+[ext_resource type="Resource" path="res://Ressources/Upgrades/prod_equipment.tres" id="u_prod_equipment"]
+[ext_resource type="Resource" path="res://Ressources/Upgrades/prod_batch.tres" id="u_prod_batch"]
+[ext_resource type="Resource" path="res://Ressources/Upgrades/prod_recipe_fizz.tres" id="u_prod_recipe_fizz"]
+[ext_resource type="Resource" path="res://Ressources/Upgrades/prod_recipe_haze.tres" id="u_prod_recipe_haze"]
+[ext_resource type="Resource" path="res://Ressources/Upgrades/sales_queue.tres" id="u_sales_queue"]
+[ext_resource type="Resource" path="res://Ressources/Upgrades/sales_patience.tres" id="u_sales_patience"]
+[ext_resource type="Resource" path="res://Ressources/Upgrades/sales_vip.tres" id="u_sales_vip"]
+[ext_resource type="Resource" path="res://Ressources/Upgrades/def_door.tres" id="u_def_door"]
+[ext_resource type="Resource" path="res://Ressources/Upgrades/def_blaster.tres" id="u_def_blaster"]
+[ext_resource type="Resource" path="res://Ressources/Upgrades/def_heavy_gun.tres" id="u_def_heavy_gun"]
+[ext_resource type="Resource" path="res://Ressources/Upgrades/work_crafter.tres" id="u_work_crafter"]
+[ext_resource type="Resource" path="res://Ressources/Upgrades/work_dealer.tres" id="u_work_dealer"]
+[ext_resource type="Resource" path="res://Ressources/Upgrades/work_guard.tres" id="u_work_guard"]
+[ext_resource type="Resource" path="res://Ressources/Upgrades/work_training.tres" id="u_work_training"]
+[ext_resource type="Resource" path="res://Ressources/Upgrades/house_storage.tres" id="u_house_storage"]
+[ext_resource type="Resource" path="res://Ressources/Upgrades/house_security.tres" id="u_house_security"]
 
-[sub_resource type="Resource" id="Resource_xupv4"]
+[sub_resource type="Resource" id="Resource_first_dawn"]
 script = ExtResource("1_tv74q")
 id = &"first_win"
-title = "First Victory"
-description = "Win any level."
+title = "First Dawn"
+description = "Survive your first night."
 stat_id = &"levels_won"
 rewards = Dictionary[StringName, int]({
-&"gems": 5
+&"cash": 250
 })
 
-[sub_resource type="Resource" id="Resource_7fl3l"]
+[sub_resource type="Resource" id="Resource_hold_door"]
 script = ExtResource("1_tv74q")
 id = &"monster_hunter"
-title = "Monster Hunter"
-description = "Defeat 100 attackers."
+title = "Hold the Door"
+description = "Stop 100 attackers."
 stat_id = &"enemies_defeated"
 target_value = 100.0
 rewards = Dictionary[StringName, int]({
-&"coins": 200
+&"cash": 300
 })
 
-[sub_resource type="Resource" id="Resource_lf3ti"]
+[sub_resource type="Resource" id="Resource_dealer"]
+script = ExtResource("1_tv74q")
+id = &"dealer"
+title = "Open for Business"
+description = "Sell 100 units."
+stat_id = &"units_sold"
+target_value = 100.0
+rewards = Dictionary[StringName, int]({
+&"cash": 300
+})
+
+[sub_resource type="Resource" id="Resource_big_earner"]
 script = ExtResource("1_tv74q")
 id = &"getting_rich"
-title = "Getting Rich"
-description = "Earn 5,000 coins in total."
-stat_id = &"coins_earned"
-target_value = 5000.0
+title = "Big Earner"
+description = "Earn $10,000 in total."
+stat_id = &"cash_earned"
+target_value = 10000.0
 rewards = Dictionary[StringName, int]({
-&"gems": 10
+&"cash": 500
 })
 
-[sub_resource type="Resource" id="Resource_cb7jm"]
+[sub_resource type="Resource" id="Resource_dedicated"]
 script = ExtResource("1_tv74q")
 id = &"dedicated"
-title = "Dedicated"
-description = "Play 25 levels."
+title = "Regular Hours"
+description = "Work 10 shifts."
 stat_id = &"levels_played"
-target_value = 25.0
+target_value = 10.0
 rewards = Dictionary[StringName, int]({
-&"gems": 10
+&"cash": 400
 })
 
-[sub_resource type="Resource" id="Resource_kaqou"]
+[sub_resource type="Resource" id="Resource_cash"]
 script = ExtResource("2_uypxx")
-id = &"coins"
-display_name = "Coins"
-icon = ExtResource("18_coin")
-color = Color(0.9608, 0.7216, 0.2549, 1)
-starting_amount = 100
+id = &"cash"
+display_name = "Cash"
+icon = ExtResource("18_cash")
+color = Color(0.1765, 0.7451, 0.4706, 1)
+starting_amount = 250
 
-[sub_resource type="Resource" id="Resource_mgk0r"]
-script = ExtResource("2_uypxx")
-id = &"gems"
-display_name = "Gems"
-icon = ExtResource("19_gem")
-fallback_symbol = "◆"
-color = Color(0.2353, 0.7843, 0.9098, 1)
-starting_amount = 10
-
-[sub_resource type="Resource" id="Resource_e2jnc"]
+[sub_resource type="Resource" id="Resource_day1"]
 script = ExtResource("3_kxyoi")
 title = "Day 1"
 rewards = Dictionary[StringName, int]({
-&"coins": 50
+&"cash": 50
 })
 
-[sub_resource type="Resource" id="Resource_mddpq"]
+[sub_resource type="Resource" id="Resource_day2"]
 script = ExtResource("3_kxyoi")
 title = "Day 2"
 rewards = Dictionary[StringName, int]({
-&"coins": 75
+&"cash": 75
 })
 
-[sub_resource type="Resource" id="Resource_08yvd"]
+[sub_resource type="Resource" id="Resource_day3"]
 script = ExtResource("3_kxyoi")
 title = "Day 3"
 rewards = Dictionary[StringName, int]({
-&"coins": 100
+&"cash": 100
 })
 
-[sub_resource type="Resource" id="Resource_5j71n"]
+[sub_resource type="Resource" id="Resource_day4"]
 script = ExtResource("3_kxyoi")
 title = "Day 4"
 rewards = Dictionary[StringName, int]({
-&"gems": 5
+&"cash": 125
 })
 
-[sub_resource type="Resource" id="Resource_nddt7"]
+[sub_resource type="Resource" id="Resource_day5"]
 script = ExtResource("3_kxyoi")
 title = "Day 5"
 rewards = Dictionary[StringName, int]({
-&"coins": 150
+&"cash": 150
 })
 
-[sub_resource type="Resource" id="Resource_s6s6f"]
+[sub_resource type="Resource" id="Resource_day6"]
 script = ExtResource("3_kxyoi")
 title = "Day 6"
 rewards = Dictionary[StringName, int]({
-&"coins": 200
+&"cash": 200
 })
 
-[sub_resource type="Resource" id="Resource_k7j5h"]
+[sub_resource type="Resource" id="Resource_day7"]
 script = ExtResource("3_kxyoi")
 title = "Day 7"
 rewards = Dictionary[StringName, int]({
-&"gems": 20
+&"cash": 400
 })
 
-[sub_resource type="Resource" id="Resource_ri70k"]
-script = ExtResource("10_n01iv")
-id = &"gems_small"
-title = "Handful of Gems"
-description = "100 gems"
-rewards = Dictionary[StringName, int]({
-&"gems": 100
-})
-
-[sub_resource type="Resource" id="Resource_3e2qu"]
-script = ExtResource("10_n01iv")
-id = &"gems_large"
-title = "Chest of Gems"
-description = "650 gems (best value)"
-fallback_price_text = "$4.99"
-rewards = Dictionary[StringName, int]({
-&"gems": 650
-})
-
-[sub_resource type="Resource" id="Resource_rr1h1"]
+[sub_resource type="Resource" id="Resource_starter_pack"]
 script = ExtResource("10_n01iv")
 id = &"starter_pack"
 title = "Starter Pack"
-description = "2000 coins + 50 gems"
+description = "$2,000 to get the operation going"
 fallback_price_text = "$1.99"
 rewards = Dictionary[StringName, int]({
-&"coins": 2000,
-&"gems": 50
+&"cash": 2000
 })
 
-[sub_resource type="Resource" id="Resource_hjqo3"]
+[sub_resource type="Resource" id="Resource_no_ads"]
 script = ExtResource("10_n01iv")
 id = &"no_ads"
 title = "Remove Ads"
@@ -163,10 +158,10 @@ fallback_price_text = "$2.99"
 [resource]
 script = ExtResource("11_hlth3")
 game_title = "Porchlight VR"
-currencies = Array[ExtResource("2_uypxx")]([SubResource("Resource_kaqou"), SubResource("Resource_mgk0r")])
-upgrades = Array[ExtResource("12_452dx")]([ExtResource("13_head_start"), ExtResource("14_sturdy_porch")])
-products = Array[ExtResource("10_n01iv")]([SubResource("Resource_ri70k"), SubResource("Resource_3e2qu"), SubResource("Resource_rr1h1"), SubResource("Resource_hjqo3")])
-levels = Array[ExtResource("4_00tpa")]([ExtResource("20_porch")])
-xr_start_level_id = &"porchlight"
-achievements = Array[ExtResource("1_tv74q")]([SubResource("Resource_xupv4"), SubResource("Resource_7fl3l"), SubResource("Resource_lf3ti"), SubResource("Resource_cb7jm")])
-daily_rewards = Array[ExtResource("3_kxyoi")]([SubResource("Resource_e2jnc"), SubResource("Resource_mddpq"), SubResource("Resource_08yvd"), SubResource("Resource_5j71n"), SubResource("Resource_nddt7"), SubResource("Resource_s6s6f"), SubResource("Resource_k7j5h")])
+currencies = Array[ExtResource("2_uypxx")]([SubResource("Resource_cash")])
+upgrades = Array[ExtResource("12_452dx")]([ExtResource("u_prod_equipment"), ExtResource("u_prod_batch"), ExtResource("u_prod_recipe_fizz"), ExtResource("u_prod_recipe_haze"), ExtResource("u_sales_queue"), ExtResource("u_sales_patience"), ExtResource("u_sales_vip"), ExtResource("u_def_door"), ExtResource("u_def_blaster"), ExtResource("u_def_heavy_gun"), ExtResource("u_work_crafter"), ExtResource("u_work_dealer"), ExtResource("u_work_guard"), ExtResource("u_work_training"), ExtResource("u_house_storage"), ExtResource("u_house_security")])
+products = Array[ExtResource("10_n01iv")]([SubResource("Resource_starter_pack"), SubResource("Resource_no_ads")])
+levels = Array[ExtResource("4_00tpa")]([ExtResource("5_house")])
+xr_start_level_id = &"house"
+achievements = Array[ExtResource("1_tv74q")]([SubResource("Resource_first_dawn"), SubResource("Resource_hold_door"), SubResource("Resource_dealer"), SubResource("Resource_big_earner"), SubResource("Resource_dedicated")])
+daily_rewards = Array[ExtResource("3_kxyoi")]([SubResource("Resource_day1"), SubResource("Resource_day2"), SubResource("Resource_day3"), SubResource("Resource_day4"), SubResource("Resource_day5"), SubResource("Resource_day6"), SubResource("Resource_day7")])

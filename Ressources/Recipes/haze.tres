@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="RecipeData" format=3]
+
+[ext_resource type="Script" path="res://Scripts/Resources/recipe_data.gd" id="script"]
+[ext_resource type="Script" path="res://Scripts/Resources/ingredient_data.gd" id="ing_script"]
+[ext_resource type="Resource" path="res://Ressources/Ingredients/duskleaf.tres" id="i_duskleaf"]
+[ext_resource type="Resource" path="res://Ressources/Ingredients/glowcap.tres" id="i_glowcap"]
+[ext_resource type="Resource" path="res://Ressources/Ingredients/fizzroot.tres" id="i_fizzroot"]
+
+[resource]
+script = ExtResource("script")
+id = &"haze"
+display_name = "Haze"
+color = Color(0.6392, 0.4824, 0.9686, 1)
+ingredients = Array[ExtResource("ing_script")]([ExtResource("i_duskleaf"), ExtResource("i_glowcap"), ExtResource("i_fizzroot")])
+base_price = 120
+base_batch_size = 4
+heat_per_unit = 2.6
+unlock_upgrade_id = &"prod_recipe_haze"
+cook_sweeps_per_second = 0.9
+cook_zone_width = 0.16

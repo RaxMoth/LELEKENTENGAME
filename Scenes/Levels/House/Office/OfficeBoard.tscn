@@ -1,0 +1,94 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://Scenes/Levels/House/Office/office_board.gd" id="board"]
+[ext_resource type="Script" path="res://Scripts/UI/icon_label.gd" id="icon_label"]
+[ext_resource type="Texture2D" path="res://Assets/Icons/star.svg" id="star"]
+[ext_resource type="Texture2D" path="res://Assets/Icons/cash.svg" id="cash"]
+
+[node name="OfficeBoard" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("board")
+
+[node name="Panel" type="PanelContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_type_variation = &"CardPanel"
+
+[node name="Margin" type="MarginContainer" parent="Panel"]
+layout_mode = 2
+theme_override_constants/margin_left = 32
+theme_override_constants/margin_top = 24
+theme_override_constants/margin_right = 32
+theme_override_constants/margin_bottom = 24
+
+[node name="Column" type="VBoxContainer" parent="Panel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="Header" type="HBoxContainer" parent="Panel/Margin/Column"]
+layout_mode = 2
+theme_override_constants/separation = 32
+
+[node name="Title" type="Label" parent="Panel/Margin/Column/Header"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"HeaderLabel"
+text = "Office"
+
+[node name="ReputationLabel" type="HBoxContainer" parent="Panel/Margin/Column/Header"]
+unique_name_in_owner = true
+layout_mode = 2
+script = ExtResource("icon_label")
+icon = ExtResource("star")
+text = "0"
+icon_size = 44
+icon_color = Color(0.9686, 0.7725, 0.2824, 1)
+label_theme_type = &"HeaderLabel"
+
+[node name="CashLabel" type="HBoxContainer" parent="Panel/Margin/Column/Header"]
+unique_name_in_owner = true
+layout_mode = 2
+script = ExtResource("icon_label")
+icon = ExtResource("cash")
+text = "0"
+icon_size = 48
+label_theme_type = &"HeaderLabel"
+
+[node name="Tabs" type="HBoxContainer" parent="Panel/Margin/Column"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Rows" type="VBoxContainer" parent="Panel/Margin/Column"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 8
+
+[node name="Footer" type="HBoxContainer" parent="Panel/Margin/Column"]
+layout_mode = 2
+theme_override_constants/separation = 24
+
+[node name="HeatLabel" type="Label" parent="Panel/Margin/Column/Footer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Police heat 0"
+
+[node name="BribeButton" type="Button" parent="Panel/Margin/Column/Footer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(320, 88)
+layout_mode = 2
+theme_type_variation = &"SecondaryButton"
+text = "Bribe  $80"
+
+[connection signal="pressed" from="Panel/Margin/Column/Footer/BribeButton" to="." method="_on_bribe_button_pressed"]

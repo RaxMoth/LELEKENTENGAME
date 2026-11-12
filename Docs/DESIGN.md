@@ -3,7 +3,7 @@
 Every screen and every placeholder should look like a shipped, professional
 game: calm, consistent, readable. Never childish, noisy or "programmer art".
 This file is the reference for colors, type, icons, layout and gameplay art.
-Porchlight VR is played in a headset: the world is 3D and UI lives in it
+The game is played in a headset: the world is 3D and UI lives in it
 (WorldScreens, Label3Ds, the in-world popup screen). The menus are 2D
 screens for the flat (no headset) flow and share the same theme.
 Check visual work with screenshots (`/design-review`) before calling it done.
@@ -86,11 +86,12 @@ To re-skin a game, change `Palette` and regenerate the theme colors to match
 
 96 px SVGs on a 96 px canvas: solid shapes, rounded joins, no thin hairlines.
 UI glyphs are pure white so they can be tinted (`self_modulate`, Button icon
-colors). Objects (coin, gem) are full color with 2–3 tones of one hue. New
+colors). Objects (cash, coin, gem) are full color with 2–3 tones of one hue. New
 icons follow the same style; keep them recognizable at 32 px.
 
-Available: coin, gem, star, heart, bolt, trophy, play, gift, bag, check, close,
-lock, back, pause, settings, clock, sparkle. App icon and logo:
+Available: cash, coin, gem, star, heart, bolt, trophy, play, gift, bag, box,
+check, close, lock, back, pause, settings, clock, sparkle, sprout, shield,
+flame, sun, moon, person, plus, minus. App icon and logo:
 `icon.svg`, `Assets/Branding/logo.svg`.
 
 ## Gameplay art
@@ -99,10 +100,15 @@ Until final art exists, the world is built from `PlaceholderMesh3D`
 primitives in `Palette` colors: matte, lit from above, grounded by a
 `BlobShadow3D`.
 
-- Player hands / beams `PRIMARY`, threats `ENEMY*`, rewards `GOLD`.
-- Shapes ≥ 2 sizes apart for clear hierarchy (attacker > defender > spark).
-- `glow` is for the few things the player must notice (sparks, projectiles,
-  lamps). Keep it below 1 on lit shapes so their shading stays readable.
+- Player hands / beams and the crew `PRIMARY`, threats `ENEMY*`, money and
+  quality `GOLD` / `SUCCESS`; products use one distinct hue each.
+- Each attacker faction has its own silhouette, not just a color (hood,
+  riot shield and cap, suit and hat, the boss's size and gold band).
+- Shapes ≥ 2 sizes apart for clear hierarchy (attacker > tower > item).
+- Sky and light come from the lighting tokens (`SKY_*`, `DAYLIGHT`,
+  `MOONLIGHT`, `AMBIENT_*`) so day and night stay calm and on palette.
+- `glow` is for the few things the player must notice (products, lamps,
+  projectiles). Keep it below 1 on lit shapes so their shading stays readable.
 - Terrain uses `WORLD` tones and fades into fog of the horizon color; never
   a bright or textured sky behind gameplay.
 - Floating numbers: `FloatingText3D` in `TEXT`, `GOLD` or `DANGER`;

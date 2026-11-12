@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="RecipeData" format=3]
+
+[ext_resource type="Script" path="res://Scripts/Resources/recipe_data.gd" id="script"]
+[ext_resource type="Script" path="res://Scripts/Resources/ingredient_data.gd" id="ing_script"]
+[ext_resource type="Resource" path="res://Ressources/Ingredients/fizzroot.tres" id="i_fizzroot"]
+[ext_resource type="Resource" path="res://Ressources/Ingredients/sugarsalt.tres" id="i_sugarsalt"]
+
+[resource]
+script = ExtResource("script")
+id = &"fizz"
+display_name = "Fizz"
+color = Color(0.2353, 0.7843, 0.9098, 1)
+ingredients = Array[ExtResource("ing_script")]([ExtResource("i_fizzroot"), ExtResource("i_sugarsalt")])
+base_price = 70
+base_batch_size = 4
+heat_per_unit = 1.8
+unlock_upgrade_id = &"prod_recipe_fizz"
+cook_sweeps_per_second = 0.75
+cook_zone_width = 0.2

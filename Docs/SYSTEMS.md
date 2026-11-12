@@ -1,7 +1,7 @@
 # Systems Reference
 
-Quick API reference for Porchlight VR. Every script also has a header comment
-with usage. The game is VR-only: levels are 3D scenes played in a headset
+Quick API reference for the game (working title Porchlight VR). Every script
+also has a header comment with usage. The game is VR-only: levels are 3D scenes played in a headset
 (or the rig's flat simulator without one); only the menus are 2D screens.
 
 ## Autoloads (`Globals/`)
@@ -57,16 +57,17 @@ SaveManager.save_now()       # also runs automatically on app pause / quit
 
 ### Profile
 ```gdscript
-Profile.wallet.add(Types.CURRENCY_COINS, 50) / spend() / can_afford() / get_amount()
+Profile.wallet.add(Types.CURRENCY_CASH, 50) / spend() / can_afford() / get_amount()   # add(..., false) for refunds
 Profile.inventory.add_item(&"revive") / consume_item() / has_item()
 Profile.levels.get_stars(id) / get_best_score(id) / is_unlocked(level) / get_total_stars()
-Profile.upgrades.get_level(id) / get_value(upgrade) / purchase(upgrade)   # Porchlight reads its starting bonuses here
+Profile.upgrades.get_level(id) / get_value(upgrade) / purchase(upgrade) / is_owned(id)   # needs required_reputation
+Profile.operation.day_number / reputation / add_reputation(n) / get_price(id, default)
 Profile.stats.increment(Types.STAT_X) / record_max(id, value)
 Profile.achievements.is_unlocked(id) / get_progress_ratio(achievement)
 Profile.daily_rewards.can_claim() / claim()
 Profile.energy.get_current() / consume(1) / seconds_until_next()
 Profile.meta.set_flag(&"tutorial_done") / has_flag() / offline_seconds
-Profile.grant_rewards({&"coins": 100, &"revive": 1})   # currencies or items
+Profile.grant_rewards({&"cash": 100, &"revive": 1})   # currencies or items
 Profile.reset_progress()
 ```
 
@@ -92,7 +93,7 @@ Pools are cleared on every scene change.
 ```gdscript
 if await Ads.show_rewarded(&"revive"): ...
 Ads.maybe_show_interstitial(&"level_end")      # capped, skipped with "no_ads"
-if await Store.purchase(&"gems_small"): ...    # rewards granted automatically
+if await Store.purchase(&"starter_pack"): ...  # rewards granted automatically
 Analytics.log_event(&"tutorial_step", {"step": 2})
 Ads.set_provider(MyProvider.new())             # swap mock for a real SDK
 ```
@@ -126,7 +127,7 @@ Target scenes receive params through `receive_scene_params(params)` before
 history → quit dialog.
 
 ### Debug (debug builds only)
-F3 (flat window) or five quick taps in the top-left corner: coins, gems, unlock levels,
+F3 (flat window) or five quick taps in the top-left corner: +1000 cash, +50 reputation, unlock levels,
 refill energy, win/lose level, ×3 time scale, reset daily reward / progress.
 Add cheats in `Globals/Debug/debug_overlay.gd → _build_cheats()`.
 
@@ -156,7 +157,7 @@ LevelBase (Node3D)
 The controller menu / B / Y button toggles the pause menu (connected in
 `LevelBase.tscn`). There is no screen-space HUD — a headset can't see one.
 Show score, timer and status on in-world UI (a `WorldScreen` like
-Porchlight's seed board, or a `Label3D`), driven by `score_changed`.
+the House's sales and build boards, or a `Label3D`), driven by `score_changed`.
 
 ## Components (`Scripts/Components/`)
 
@@ -172,11 +173,16 @@ flash's `health_component`), not `get_parent()`.
 
 ## XR (`Scripts/XR/`, `Scenes/Entities/XRPlayerRig/`)
 
-Details and setup: [VR.md](VR.md).
+Details and setup: [GAME.md](GAME.md).
 
 | Piece | Node | Notes |
 |---|---|---|
-| `XRPlayerRig` | XROrigin3D | Headset camera + two controllers; falls back to a flat simulator (mouse / touch) without a headset. Signals `primary_action_pressed(pointer)`, `secondary_action_pressed(pointer)`, `menu_pressed`, `selection_step_requested(step)`; `get_tool_pointer()`, `pulse(pointer, strength)`, `set_world_space_ui()` |
+| `XRPlayerRig` | XROrigin3D | Headset camera + two controllers; falls back to a flat simulator (mouse, WASD) without a headset. Signals `primary_action_pressed(pointer)`, `secondary_action_pressed(pointer)`, `menu_pressed`, `item_grabbed`, `item_placed`; `walkable_area`, `get_tool_pointer()`, `get_wrist_anchor()`, `pulse(pointer, strength)`, `set_world_space_ui()`, `tap_world_point()` (tests) |
+| `XRLocomotion` | Node | Teleport (off-hand stick), smooth movement, snap / smooth turning (dominant stick), flat WASD and `travel_spots` (keys 1–4); clamps to the `WalkableArea` |
+| `WalkableArea` | Node3D | Floor rectangles the player may stand on; `contains()`, `clamp_move()` |
+| `Grabbable` / `ItemSocket` | Node3D | Items a hand or the flat cursor picks up and drops into sockets; sockets decide what they accept (`accept_rule`) and signal `item_inserted` |
+| `PointerButton` | Node3D | A 3D button pressed by the pointer ray |
+| `InteractionQuery` | static | Finds grab targets, sockets and buttons by sphere math (no physics) |
 | `XRPointer` | Node3D | Ray along -Z. Clicks `WorldScreen`s itself; game code reads `ray_origin` / `ray_direction` and reports hits with `set_world_hit_distance()` |
 | `WorldScreen` | Node3D | Shows a Control scene (`content_scene`) or an existing viewport (`attach_viewport`) on a panel in the world and forwards pointer input as mouse events |
 | `RayMath` (`Scripts/Utils/`) | static | `intersect_plane` / `intersect_ground` / `intersect_sphere` / `distance_to_point`: picking without physics |
@@ -199,7 +205,7 @@ and `PopEffect3D` (pooled effects).
 
 ```gdscript
 IconLabel.create(COIN_ICON, "1.2K")                      # icon + text, centered together
-reward_list.set_rewards({&"coins": 20, &"gems": 1})      # "+20 [coin]  +1 [gem]"
+reward_list.set_rewards({&"cash": 250})                  # "+250 [cash]"
 ```
 
 `IconLabel`, `RewardList`, `SafeAreaContainer`, `CurrencyDisplay` (shows
@@ -215,9 +221,32 @@ count_label…), `RayMath`, `LaneGrid`, `PlaceholderMesh3D` & `BlobShadow3D`
 
 ## Data resources (`Scripts/Resources/`)
 
-`GameConfig`, `LevelData`, `CurrencyData`, `UpgradeData`, `ProductData`,
-`AchievementData`, `RewardBundle`, `WaveData`/`WaveEntry`, `DefenderData`
-(Porchlight's plantable defenders).
+`GameConfig`, `LevelData`, `CurrencyData`, `UpgradeData` (with `branch` and
+`required_reputation`), `ProductData` (in-app products), `AchievementData`,
+`RewardBundle`, `WaveData`/`WaveEntry`, and the game's own: `IngredientData`,
+`RecipeData`, `CustomerTypeData`, `TowerData`.
+
+## Game rules (`Scripts/Game/`, pure, unit-tested)
+
+```gdscript
+var gauge: TimingGauge = TimingGauge.new(0.7, 0.2)   # gauge.advance(delta); gauge.stop() -> 0..1
+QualityMath.tier_from_score(QualityMath.combine(accuracies, equipment_bonus))   # 1..4: Cut, Street, Pure, Premium
+stash.add(&"glow", tier, units) / take(&"glow", min_tier, amount) / steal(n) / count(id, min_tier)
+SalesMath.evaluate(asked_price, max_price, haggles)   # Verdict.ACCEPT / COUNTER / REFUSE
+heat.add(n) / cool(delta) / take_pending_raid()
+clock.advance(delta) / get_hour() / get_phase() / just_passed_hour(25.0, delta)
+```
+
+## The House (`Scenes/Levels/House/`)
+
+```gdscript
+operation.stash / heat / get_cash() / spend_cash(n, reason) / complete_sale(order, price)
+operation.get_upgrade_value(Types.UPGRADE_BATCH) / get_unlocked_recipes() / bribe()
+sales_window.spawn_customer(order) / get_front_customer() / sell_to_front() / accept_counter()
+director.spawn_customer() / spawn_attacker(scene) / start_raid(level) / start_boss_wave()
+board.place_tower(tower_data, cell) / spawn_enemy(scene) / pick_enemy(ray...)
+```
+See [GAME.md](GAME.md) for the scene tree and the design.
 
 ## Physics
 

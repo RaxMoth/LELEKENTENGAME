@@ -42,6 +42,17 @@ const PROJECTILE: Color = Color("#ffe08a")
 const WORLD: Color = Color("#151b28")
 const WORLD_DETAIL: Color = Color("#1e2637")
 
+# World lighting (day / night cycle). Muted on purpose: the world stays calm
+# and dark enough for in-world UI to read in daylight too.
+const SKY_DAY: Color = Color("#3d4c6b")
+const SKY_DAY_HORIZON: Color = Color("#7d879e")
+const SKY_NIGHT: Color = Color("#0d1017")
+const SKY_NIGHT_HORIZON: Color = Color("#1a2030")
+const DAYLIGHT: Color = Color("#fff1d6")
+const MOONLIGHT: Color = Color("#8fa4d8")
+const AMBIENT_DAY: Color = Color("#aab3c7")
+const AMBIENT_NIGHT: Color = Color("#4b5675")
+
 ## Distinct, evenly bright hues for puzzle pieces, teams and categories.
 const CATEGORY: Array[Color] = [
 	Color("#f06a6a"),

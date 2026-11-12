@@ -1,11 +1,14 @@
 ## Generic shop row: title, description, detail line and a buy button.
-## The Shop scene binds it to upgrades, products or rewarded ads.
+## The Shop scene and the in-world office bind it to upgrades, products or
+## rewarded ads.
 ##
-## Dependencies: none
+## Dependencies: UpgradeData, NumberFormat, Profile, GameConfig
 class_name ShopItemRow
 extends PanelContainer
 
 signal buy_pressed
+
+const LOCK_ICON: Texture2D = preload("res://Assets/Icons/lock.svg")
 
 @onready var _title_label: Label = %TitleLabel
 @onready var _description_label: Label = %DescriptionLabel
@@ -29,6 +32,23 @@ func setup(title: String, description: String, detail: String, button_text: Stri
 	_price_label.text = button_text
 	_price_label.modulate.a = 1.0 if is_enabled else 0.45
 	_buy_button.disabled = not is_enabled
+
+
+## Shows an upgrade: level, value and price; locked until the operation has
+## the reputation it needs.
+func setup_upgrade(upgrade: UpgradeData) -> void:
+	var current_level: int = Profile.upgrades.get_level(upgrade.id)
+	var detail: String = tr("Level %d") % current_level
+	if not upgrade.value_format.is_empty():
+		detail += "  ·  " + upgrade.value_format % NumberFormat.compact(upgrade.get_value(current_level))
+	if upgrade.is_maxed(current_level):
+		setup(tr(upgrade.title), tr(upgrade.description), detail, tr("Max"), false)
+		return
+	if not Profile.upgrades.is_reputation_met(upgrade):
+		setup(tr(upgrade.title), tr(upgrade.description), tr("Needs %d reputation") % upgrade.required_reputation, str(upgrade.required_reputation), false, LOCK_ICON)
+		return
+	var currency: CurrencyData = GameConfig.get_default().find_currency(upgrade.currency_id)
+	setup(tr(upgrade.title), tr(upgrade.description), detail, NumberFormat.compact(upgrade.get_cost(current_level)), Profile.upgrades.can_purchase(upgrade), currency.icon if currency != null else null)
 
 
 func get_buy_button() -> Button:

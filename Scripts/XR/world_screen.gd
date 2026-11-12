@@ -4,7 +4,7 @@
 ##
 ##   screen.content_scene = BOARD_SCENE                  # own UI, built at _ready
 ##   screen.attach_viewport(UI.get_world_viewport())     # or show an existing viewport
-##   var board: SeedBoard = screen.content as SeedBoard
+##   var board: SalesBoard = screen.content as SalesBoard
 ##
 ## The panel faces its local +Z. Pointer input is ray-vs-rectangle math (no
 ## physics) forwarded to the viewport as mouse events, so normal Buttons work.
@@ -85,6 +85,18 @@ func set_active(should_be_active: bool) -> void:
 		pointer_leave()
 	if _owns_viewport:
 		_viewport.render_target_update_mode = SubViewport.UPDATE_ALWAYS if should_be_active else SubViewport.UPDATE_DISABLED
+
+
+## Keeps the panel visible but stops (or resumes) redrawing its own
+## viewport — the last frame stays on the panel. Levels pause screens the
+## player is far from or facing away from (each redraw costs a render pass).
+func set_rendering(should_render: bool) -> void:
+	if _owns_viewport and is_active:
+		_viewport.render_target_update_mode = SubViewport.UPDATE_ALWAYS if should_render else SubViewport.UPDATE_DISABLED
+
+
+func is_rendering() -> bool:
+	return _owns_viewport and is_active and _viewport.render_target_update_mode == SubViewport.UPDATE_ALWAYS
 
 
 func get_size_meters() -> Vector2:

@@ -130,6 +130,6 @@ func _migrate(payload: Dictionary) -> Dictionary:
 		push_warning("SaveManager: save is from a newer game version (%d)." % file_version)
 	# Example for the future:
 	# if file_version < 2:
-	#     payload[KEY_SECTIONS]["wallet"]["gems"] = 0
+	#     payload[KEY_SECTIONS]["wallet"]["cash"] = 0
 	payload[KEY_VERSION] = SAVE_VERSION
 	return payload

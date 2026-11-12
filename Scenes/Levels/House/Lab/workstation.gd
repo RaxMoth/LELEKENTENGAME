@@ -1,0 +1,295 @@
+## A lab station: the grinder (process), the cooker (combine) or the press
+## (package). Put the right items into its sockets and it starts its skill
+## check — a needle sweeping over a bar. Press the plunger while the needle
+## is in the green zone; the closer to its middle, the better the product.
+## State: Idle (waiting for inputs) <-> Running (the gauge sweeps).
+##
+## Dependencies: TimingGauge, QualityMath, IngredientItem, BatchItem,
+##               ItemSocket, PointerButton, Operation, FloatingText3D,
+##               PopEffect3D, PlaceholderMesh3D, Palette, Pools, Audio,
+##               Types autoloads, SfxSynth
+class_name Workstation
+extends Node3D
+
+## The press finished: units went into the stash.
+signal product_packaged(recipe: RecipeData, tier: int, units: int)
+signal step_finished(step: Types.CraftStep, accuracy: float)
+
+const BATCH_SCENE: PackedScene = preload("res://Scenes/Levels/House/Lab/BatchItem.tscn")
+const GAUGE_LENGTH: float = 0.5
+const GAUGE_THICKNESS: float = 0.035
+
+@export var step: Types.CraftStep = Types.CraftStep.PROCESS
+@export var operation: Operation
+@export var station_name: String = "Station"
+## Needle sweeps per second (the cooker uses the recipe's own).
+@export var sweeps_per_second: float = 0.6
+## Width of the sweet zone before equipment upgrades (the cooker uses the recipe's).
+@export var zone_width: float = 0.22
+
+var _gauge: TimingGauge = null
+var _active_recipe: RecipeData = null
+var _needle: MeshInstance3D = null
+var _zone: MeshInstance3D = null
+
+@onready var _inputs: Node3D = %Inputs
+@onready var _output: ItemSocket = %Output
+@onready var _stop_button: PointerButton = %StopButton
+@onready var _status_label: Label3D = %StatusLabel
+@onready var _gauge_root: Node3D = %Gauge
+@onready var state_chart: StateChart = %StateChart
+
+
+func _ready() -> void:
+	for socket: ItemSocket in get_input_sockets():
+		socket.accept_rule = _accepts_input
+		socket.item_inserted.connect(func(_item: Grabbable) -> void: _try_start.call_deferred())
+	# Only the station itself puts things on its output tray.
+	# Only the station puts things on its output tray (and takes its own back).
+	_output.accept_rule = func(item: Grabbable) -> bool: return item.home_socket == _output
+	_output.item_removed.connect(func(_item: Grabbable) -> void: _try_start.call_deferred())
+	_stop_button.pressed.connect(_on_stop_pressed)
+	# A full stash holds the press back; start as soon as there is room again.
+	operation.stash_changed.connect(func() -> void: _try_start.call_deferred())
+	_build_gauge()
+
+# ============================================
+# PUBLIC API
+# ============================================
+
+func get_input_sockets() -> Array[ItemSocket]:
+	var sockets: Array[ItemSocket] = []
+	for child: Node in _inputs.get_children():
+		if child is ItemSocket:
+			sockets.append(child as ItemSocket)
+	return sockets
+
+
+func get_output_socket() -> ItemSocket:
+	return _output
+
+
+func get_stop_button() -> PointerButton:
+	return _stop_button
+
+
+func is_running() -> bool:
+	return _gauge != null
+
+
+## The running skill check (tests and tutorials), or null while idle.
+func get_gauge() -> TimingGauge:
+	return _gauge
+
+# ============================================
+# STATE CHART CALLBACKS (connected in Workstation.tscn)
+# ============================================
+
+func _on_idle_state_entered() -> void:
+	_gauge = null
+	_active_recipe = null
+	_stop_button.is_enabled = false
+	_gauge_root.visible = false
+	_set_inputs_removable(true)
+	_update_idle_status()
+
+
+func _on_running_state_entered() -> void:
+	var sweep_rate: float = _active_recipe.cook_sweeps_per_second if step == Types.CraftStep.COMBINE and _active_recipe != null else sweeps_per_second
+	var base_width: float = _active_recipe.cook_zone_width if step == Types.CraftStep.COMBINE and _active_recipe != null else zone_width
+	var width: float = minf(0.8, base_width * operation.get_sweet_zone_multiplier())
+	_gauge = TimingGauge.new(sweep_rate, width, randf_range(width * 0.5 + 0.1, 1.0 - width * 0.5 - 0.05))
+	_zone.scale.x = width * GAUGE_LENGTH
+	_zone.position.x = (_gauge.zone_center - 0.5) * GAUGE_LENGTH
+	_gauge_root.visible = true
+	_stop_button.is_enabled = true
+	_set_inputs_removable(false)
+	_status_label.text = tr("Stop it in the green")
+	Audio.play_sfx_at(SfxSynth.get_preset(&"pop"), global_position, 0.1, -10.0)
+
+
+func _on_running_state_processing(delta: float) -> void:
+	if _gauge == null:
+		return
+	_gauge.advance(delta)
+	_needle.position.x = (_gauge.get_needle() - 0.5) * GAUGE_LENGTH
+
+# ============================================
+# INTERNALS
+# ============================================
+
+func _accepts_input(item: Grabbable) -> bool:
+	if is_running():
+		return false
+	match step:
+		Types.CraftStep.PROCESS:
+			var ingredient: IngredientItem = item as IngredientItem
+			return ingredient != null and not ingredient.is_processed
+		Types.CraftStep.COMBINE:
+			var cook_ingredient: IngredientItem = item as IngredientItem
+			if cook_ingredient == null or not cook_ingredient.is_processed:
+				return false
+			var ingredient_ids: Array[StringName] = _get_input_ingredient_ids()
+			ingredient_ids.append(cook_ingredient.data.id)
+			for recipe: RecipeData in operation.get_unlocked_recipes():
+				if recipe.accepts_partial(ingredient_ids):
+					return true
+			return false
+		Types.CraftStep.PACKAGE:
+			return item is BatchItem
+	return false
+
+
+func _try_start() -> void:
+	if is_running() or not _output.is_empty():
+		_update_idle_status()
+		return
+	match step:
+		Types.CraftStep.PROCESS, Types.CraftStep.PACKAGE:
+			if _get_input_items().is_empty():
+				_update_idle_status()
+				return
+			if step == Types.CraftStep.PACKAGE:
+				_active_recipe = (_get_input_items()[0] as BatchItem).recipe
+				if operation.stash.get_free_space() < operation.get_batch_size(_active_recipe):
+					_status_label.text = tr("Stash is full")
+					return
+		Types.CraftStep.COMBINE:
+			_active_recipe = _find_matching_recipe()
+			if _active_recipe == null:
+				_update_idle_status()
+				return
+	state_chart.send_event(Types.EVENT_STATION_START)
+
+
+func _on_stop_pressed(_button: PointerButton) -> void:
+	if _gauge == null:
+		return
+	var accuracy: float = _gauge.stop()
+	_complete(accuracy)
+	step_finished.emit(step, accuracy)
+	state_chart.send_event(Types.EVENT_STATION_DONE)
+	_try_start.call_deferred()
+
+
+func _complete(accuracy: float) -> void:
+	var feedback_position: Vector3 = _output.global_position + Vector3(0.0, 0.3, 0.0)
+	FloatingText3D.spawn(_describe_accuracy(accuracy), feedback_position, _accuracy_color(accuracy), Global.get_world_root())
+	match step:
+		Types.CraftStep.PROCESS:
+			var ingredient: IngredientItem = _get_input_items()[0] as IngredientItem
+			ingredient.socket.remove_item()
+			ingredient.mark_processed(accuracy)
+			ingredient.home_socket = _output
+			_output.insert(ingredient)
+		Types.CraftStep.COMBINE:
+			var accuracies: Array[float] = []
+			for item: Grabbable in _get_input_items():
+				var ingredient: IngredientItem = item as IngredientItem
+				accuracies.append_array(ingredient.step_accuracies)
+				item.socket.remove_item()
+				Pools.despawn(item)
+			accuracies.append(accuracy)
+			var batch: BatchItem = Pools.spawn(BATCH_SCENE, Global.get_world_root(), _output.global_position) as BatchItem
+			batch.setup(_active_recipe, accuracies)
+			batch.home_socket = _output
+			_output.insert(batch)
+			PopEffect3D.spawn(_output.global_position, _active_recipe.color, 0.5, Global.get_world_root())
+		Types.CraftStep.PACKAGE:
+			var batch_item: BatchItem = _get_input_items()[0] as BatchItem
+			if operation.stash.get_free_space() < operation.get_batch_size(batch_item.recipe):
+				# The stash filled up during the skill check: keep the batch for later.
+				_status_label.text = tr("Stash is full")
+				return
+			var accuracies_so_far: Array[float] = batch_item.step_accuracies.duplicate()
+			accuracies_so_far.append(accuracy)
+			var tier: int = QualityMath.tier_from_score(QualityMath.combine(accuracies_so_far, operation.get_equipment_bonus()))
+			var units: int = operation.add_product(batch_item.recipe, tier, operation.get_batch_size(batch_item.recipe))
+			batch_item.socket.remove_item()
+			Pools.despawn(batch_item)
+			FloatingText3D.spawn("%s ×%d" % [tr(QualityMath.get_tier_name(tier)), units], feedback_position + Vector3(0.0, 0.25, 0.0), Palette.GOLD, Global.get_world_root())
+			Audio.play_sfx_at(SfxSynth.get_preset(&"coin"), global_position, 0.05)
+			product_packaged.emit(batch_item.recipe, tier, units)
+
+
+func _get_input_items() -> Array[Grabbable]:
+	var items: Array[Grabbable] = []
+	for socket: ItemSocket in get_input_sockets():
+		if socket.item != null:
+			items.append(socket.item)
+	return items
+
+
+func _get_input_ingredient_ids() -> Array[StringName]:
+	var ingredient_ids: Array[StringName] = []
+	for item: Grabbable in _get_input_items():
+		var ingredient: IngredientItem = item as IngredientItem
+		if ingredient != null:
+			ingredient_ids.append(ingredient.data.id)
+	return ingredient_ids
+
+
+func _find_matching_recipe() -> RecipeData:
+	var ingredient_ids: Array[StringName] = _get_input_ingredient_ids()
+	for recipe: RecipeData in operation.get_unlocked_recipes():
+		if recipe.matches(ingredient_ids):
+			return recipe
+	return null
+
+
+func _set_inputs_removable(is_removable: bool) -> void:
+	for socket: ItemSocket in get_input_sockets():
+		socket.allows_removal = is_removable
+
+
+func _update_idle_status() -> void:
+	if is_running():
+		return
+	if not _output.is_empty():
+		_status_label.text = tr("Take the result")
+		return
+	match step:
+		Types.CraftStep.PROCESS:
+			_status_label.text = tr(station_name) + "\n" + tr("Put in a raw ingredient")
+		Types.CraftStep.COMBINE:
+			_status_label.text = tr(station_name) + "\n" + tr("Add ground ingredients")
+		Types.CraftStep.PACKAGE:
+			_status_label.text = tr(station_name) + "\n" + tr("Put in a cooked batch")
+
+
+func _describe_accuracy(accuracy: float) -> String:
+	if accuracy >= 0.85:
+		return tr("Perfect")
+	if accuracy >= 0.5:
+		return tr("Good")
+	if accuracy > 0.0:
+		return tr("Sloppy")
+	return tr("Ruined")
+
+
+func _accuracy_color(accuracy: float) -> Color:
+	if accuracy >= 0.85:
+		return Palette.SUCCESS
+	if accuracy >= 0.5:
+		return Palette.TEXT
+	return Palette.DANGER
+
+
+func _build_gauge() -> void:
+	var bar: MeshInstance3D = _create_gauge_part(Vector3(1.0, GAUGE_THICKNESS, 0.02), Palette.BACKGROUND_RAISED, Vector3.ZERO, 0.0)
+	bar.scale.x = GAUGE_LENGTH
+	_zone = _create_gauge_part(Vector3(1.0, GAUGE_THICKNESS * 1.1, 0.022), Palette.SUCCESS, Vector3(0.0, 0.0, 0.004), 0.4)
+	_needle = _create_gauge_part(Vector3(0.012, GAUGE_THICKNESS * 2.2, 0.026), Palette.TEXT, Vector3(0.0, 0.0, 0.01), 0.0)
+	_gauge_root.visible = false
+
+
+func _create_gauge_part(box_size: Vector3, color: Color, offset: Vector3, glow: float) -> MeshInstance3D:
+	var part: MeshInstance3D = MeshInstance3D.new()
+	var box: BoxMesh = BoxMesh.new()
+	box.size = box_size
+	part.mesh = box
+	part.position = offset
+	part.material_override = PlaceholderMesh3D.get_shared_material(color, glow, true)
+	part.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	_gauge_root.add_child(part)
+	return part

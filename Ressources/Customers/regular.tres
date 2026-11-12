@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="CustomerTypeData" format=3]
+
+[ext_resource type="Script" path="res://Scripts/Resources/customer_type_data.gd" id="script"]
+
+[resource]
+script = ExtResource("script")
+id = &"regular"
+display_name = "Regular"
+color = Color(0.1765, 0.7451, 0.4706, 1)
+quantity_range = Vector2i(1, 2)
+min_tier_range = Vector2i(1, 2)
+price_tolerance = 1.15
+patience_seconds = 50.0
+reputation_gain = 1
+reputation_loss = 1
+day_weight = 6.0
+night_weight = 2.0

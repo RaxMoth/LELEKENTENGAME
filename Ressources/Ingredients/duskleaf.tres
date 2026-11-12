@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="IngredientData" format=3]
+
+[ext_resource type="Script" path="res://Scripts/Resources/ingredient_data.gd" id="script"]
+
+[resource]
+script = ExtResource("script")
+id = &"duskleaf"
+display_name = "Duskleaf"
+cost = 14
+color = Color(0.6392, 0.4824, 0.9686, 1)
+shape_kind = 3
+needs_processing = true
+processed_name = "Duskleaf dust"

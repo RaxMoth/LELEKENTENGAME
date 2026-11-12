@@ -1,6 +1,6 @@
 ## The player's persistent profile. Owns one ProfileModule per data domain and
 ## registers each with SaveManager. Access modules directly:
-##   Profile.wallet.add(Types.CURRENCY_COINS, 50)
+##   Profile.wallet.add(Types.CURRENCY_CASH, 50)
 ##   Profile.levels.get_stars(&"level_1")
 ##   Profile.meta.set_flag(&"tutorial_done")
 ##
@@ -20,6 +20,7 @@ var stats: Statistics
 var achievements: AchievementTracker
 var daily_rewards: DailyRewards
 var energy: Energy
+var operation: OperationProgress
 
 var _modules: Array[ProfileModule] = []
 
@@ -51,7 +52,8 @@ func _create_modules() -> void:
 	achievements = AchievementTracker.new(config)
 	daily_rewards = DailyRewards.new(config)
 	energy = Energy.new(config)
-	_modules = [meta, wallet, inventory, levels, upgrades, stats, achievements, daily_rewards, energy]
+	operation = OperationProgress.new(config)
+	_modules = [meta, wallet, inventory, levels, upgrades, stats, achievements, daily_rewards, energy, operation]
 
 
 ## Grants a reward dictionary. Ids matching a CurrencyData go to the wallet,

@@ -1,9 +1,10 @@
 ## Captures a screenshot of any scene after a delay — handy for checking
 ## layouts and for store screenshots. Must run with a window (not headless):
-##   godot --path . --resolution 720x1280 res://Tests/ScreenshotTool.tscn -- scene=res://Scenes/Menus/MainMenu/MainMenu.tscn frames=90 out=/tmp/menu.png [popup=res://...tscn] [level=porchlight] [showcase=porchlight] [pause=1] [cursor=640,400]
+##   godot --path . --resolution 720x1280 res://Tests/ScreenshotTool.tscn -- scene=res://Scenes/Menus/MainMenu/MainMenu.tscn frames=90 out=/tmp/menu.png [popup=res://...tscn] [level=house] [showcase=house] [spot=2] [pause=1] [cursor=640,400]
 ##
 ## showcase=<name> runs Tests/Showcases/<name>_showcase.gd (static apply(scene))
-## once the level is playing, to stage a mid-game moment. pause=1 opens the
+## once the level is playing, to stage a mid-game moment. spot=N moves the
+## player to the level's N-th travel spot (1-based). pause=1 opens the
 ## level's pause menu before the shot. cursor=x,y moves the mouse to that
 ## window pixel first (hover states, 3D pointer rays).
 ##
@@ -40,6 +41,10 @@ func _run() -> void:
 		await _wait_until_playing()
 		var showcase: Script = load("res://Tests/Showcases/%s_showcase.gd" % arguments["showcase"]) as Script
 		showcase.call("apply", get_tree().current_scene)
+	if arguments.has("spot"):
+		var level: LevelBase = get_tree().current_scene as LevelBase
+		if level != null:
+			level.rig.locomotion.travel_to_spot(int(arguments["spot"]) - 1)
 	for frame_index: int in int(arguments.get("frames", "90")):
 		await get_tree().process_frame
 	if arguments.has("cursor"):

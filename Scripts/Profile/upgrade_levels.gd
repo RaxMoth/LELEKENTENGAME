@@ -1,4 +1,5 @@
-## Purchased levels of persistent UpgradeData definitions.
+## Purchased levels of persistent UpgradeData definitions. An upgrade can be
+## bought once the operation has its required reputation.
 ##
 ## Dependencies: Events, Profile autoloads
 class_name UpgradeLevels
@@ -38,7 +39,16 @@ func get_next_cost(upgrade: UpgradeData) -> int:
 
 func can_purchase(upgrade: UpgradeData) -> bool:
 	var current_level: int = get_level(upgrade.id)
-	return not upgrade.is_maxed(current_level) and Profile.wallet.can_afford(upgrade.currency_id, upgrade.get_cost(current_level))
+	return not upgrade.is_maxed(current_level) and is_reputation_met(upgrade) and Profile.wallet.can_afford(upgrade.currency_id, upgrade.get_cost(current_level))
+
+
+func is_reputation_met(upgrade: UpgradeData) -> bool:
+	return Profile.operation.reputation >= upgrade.required_reputation
+
+
+## True when [param upgrade_id] is empty or bought at least once.
+func is_owned(upgrade_id: StringName) -> bool:
+	return upgrade_id.is_empty() or get_level(upgrade_id) > 0
 
 
 func purchase(upgrade: UpgradeData) -> bool:

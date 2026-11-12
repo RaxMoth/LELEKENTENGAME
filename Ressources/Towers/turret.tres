@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="TowerData" format=3]
+
+[ext_resource type="Script" path="res://Scripts/Resources/tower_data.gd" id="script"]
+[ext_resource type="Texture2D" path="res://Assets/Icons/bolt.svg" id="icon"]
+[ext_resource type="PackedScene" path="res://Scenes/Levels/House/Garden/Turret.tscn" id="scene"]
+
+[resource]
+script = ExtResource("script")
+id = &"turret"
+display_name = "Turret"
+icon = ExtResource("icon")
+icon_color = Color(0.3569, 0.4863, 0.9804, 1)
+scene = ExtResource("scene")
+cost = 120
+cooldown_seconds = 4.0
+max_health = 140.0

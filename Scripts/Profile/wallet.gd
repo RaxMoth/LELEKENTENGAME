@@ -36,12 +36,14 @@ func can_afford(currency_id: StringName, amount: int) -> bool:
 	return get_amount(currency_id) >= amount
 
 
-func add(currency_id: StringName, amount: int) -> void:
+## [param counts_as_earned] false for refunds, so they don't feed
+## "cash earned" statistics and achievements.
+func add(currency_id: StringName, amount: int, counts_as_earned: bool = true) -> void:
 	if amount == 0:
 		return
 	_balances[currency_id] = maxi(0, get_amount(currency_id) + amount)
-	if currency_id == Types.CURRENCY_COINS and amount > 0:
-		Profile.stats.increment(Types.STAT_COINS_EARNED, amount)
+	if counts_as_earned and currency_id == Types.CURRENCY_CASH and amount > 0:
+		Profile.stats.increment(Types.STAT_CASH_EARNED, amount)
 	Events.currency_changed.emit(currency_id, _balances[currency_id], amount)
 	mark_dirty()
 

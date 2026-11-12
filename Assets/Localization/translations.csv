@@ -38,36 +38,164 @@ Privacy Policy,Privacy Policy,Datenschutz
 Reset all progress? This cannot be undone.,Reset all progress? This cannot be undone.,Gesamten Fortschritt zurücksetzen? Das kann nicht rückgängig gemacht werden.
 Quit the game?,Quit the game?,Spiel beenden?
 Locked,Locked,Gesperrt
-Upgrades,Upgrades,Verbesserungen
 Store,Store,Store
 Free Coins,Free Coins,Gratis-Münzen
 Watch an ad,Watch an ad,Werbung ansehen
 Restore Purchases,Restore Purchases,Käufe wiederherstellen
 Owned,Owned,Gekauft
 Max,Max,Max
-Not enough coins,Not enough coins,Nicht genug Münzen
 Purchase complete!,Purchase complete!,Kauf abgeschlossen!
 Achievement unlocked,Achievement unlocked,Erfolg freigeschaltet
 Come back tomorrow!,Come back tomorrow!,Komm morgen wieder!
 Day %d,Day %d,Tag %d
 Ready?,Ready?,Bereit?
 Go!,Go!,Los!
-Wave %d,Wave %d,Welle %d
 Playing ad…,Playing ad…,Werbung läuft…
 Advertisement,Advertisement,Werbung
 Connecting to store…,Connecting to store…,Verbinde mit Store…
 Not enough energy,Not enough energy,Nicht genug Energie
 Awards,Awards,Erfolge
 Free,Free,Gratis
-"+%d coins","+%d coins","+%d Münzen"
 Level %d,Level %d,Stufe %d
-Wave %d / %d,Wave %d / %d,Welle %d / %d
-Score %s,Score %s,Punkte %s
-Hold the porch!,Hold the porch!,Halte die Veranda!
-Breach!,Breach!,Durchbruch!
 Taken,Taken,Belegt
 Not ready,Not ready,Nicht bereit
 Need %d,Need %d,%d nötig
-Trigger: plant   ·   Other hand: blaster,Trigger: plant   ·   Other hand: blaster,Trigger: pflanzen   ·   Andere Hand: Blaster
-Tap a tile to plant   ·   Tap an attacker to shoot,Tap a tile to plant   ·   Tap an attacker to shoot,Feld antippen: pflanzen   ·   Angreifer antippen: schießen
 No VR headset found. Playing on the flat screen.,No VR headset found. Playing on the flat screen.,Kein VR-Headset gefunden. Das Spiel läuft auf dem Bildschirm.
+Accept,Accept,Annehmen
+Back window,Back window,Hinterfenster
+Barricade,Barricade,Barrikade
+Better Blaster,Better Blaster,Besserer Blaster
+Better Equipment,Better Equipment,Bessere Ausrüstung
+Big Earner,Big Earner,Großverdiener
+Big-spending VIPs show up at night. They want Premium.,Big-spending VIPs show up at night. They want Premium.,Zahlungskräftige VIPs kommen nachts. Sie wollen Premium.
+Bigger Batches,Bigger Batches,Größere Chargen
+Bigger Stash,Bigger Stash,Größeres Lager
+Bigger Yard,Bigger Yard,Größerer Hof
+Bribe  $%s,Bribe  $%s,Bestechen  $%s
+Bulk buyer,Bulk buyer,Großabnehmer
+Buy,Buy,Kaufen
+Cash,Cash,Geld
+"Choose a tower, then point at a tile","Choose a tower, then point at a tile",Wähle einen Turm und zeige auf ein Feld
+Connoisseur,Connoisseur,Kenner
+Cooker,Cooker,Kocher
+"Craft, sell and hold the door until dawn.","Craft, sell and hold the door until dawn.","Herstellen, verkaufen und die Tür bis zum Morgen halten."
+Crafter,Crafter,Hersteller
+Crew Training,Crew Training,Crew-Training
+Customer,Customer,Kunde
+Customers wait 20% longer.,Customers wait 20% longer.,Kunden warten 20 % länger.
+Cut,Cut,Gestreckt
+Day,Day,Tag
+Dealer,Dealer,Dealer
+Decline,Decline,Ablehnen
+Defense,Defense,Verteidigung
+Door,Door,Tür
+Duskleaf,Duskleaf,Dämmerblatt
+"Earn $10,000 in total.","Earn $10,000 in total.",Verdiene insgesamt $10.000.
+Every press run makes 2 more units.,Every press run makes 2 more units.,Jeder Pressvorgang ergibt 2 Einheiten mehr.
+First Dawn,First Dawn,Erster Morgen
+Fizz,Fizz,Fizz
+Fizzroot,Fizzroot,Sprudelwurzel
+Forget it,Forget it,Vergiss es
+Free Cash,Free Cash,Gratis-Geld
+Front,Front,Vorne
+Front door %d%%,Front door %d%%,Haustür %d%%
+Glow,Glow,Glow
+Glowcap,Glowcap,Leuchtpilz
+Good,Good,Gut
+Grinder,Grinder,Mühle
+Guard,Guard,Wache
+Haggler,Haggler,Feilscher
+Haze,Haze,Haze
+Heat,Heat,Hitze
+Heat dropped,Heat dropped,Hitze gesunken
+Heavy Gun,Heavy Gun,Schweres Geschütz
+Hire Crafter,Hire Crafter,Hersteller einstellen
+Hire Dealer,Hire Dealer,Dealer einstellen
+Hire Guard,Hire Guard,Wache einstellen
+Hold the Door,Hold the Door,Halte die Tür
+House,House,Haus
+In stash: %d · you hand over %s,In stash: %d · you hand over %s,Im Lager: %d · du gibst %s
+Lab,Lab,Labor
+Locks & Cameras,Locks & Cameras,Schlösser & Kameras
+Mafia crew incoming,Mafia crew incoming,Mafia-Trupp im Anmarsch
+Makes standard product in the lab. Wage $14 an hour.,Makes standard product in the lab. Wage $14 an hour.,Stellt Standardware im Labor her. Lohn $14 pro Stunde.
+Need $%d,Need $%d,$%d nötig
+Needs %d reputation,Needs %d reputation,Braucht %d Ruf
+Next customer is coming up,Next customer is coming up,Der nächste Kunde kommt
+Night,Night,Nacht
+Night falls,Night falls,Die Nacht bricht an
+No more interstitial ads. Forever.,No more interstitial ads. Forever.,Nie wieder Zwischenwerbung.
+Nobody at the window,Nobody at the window,Niemand am Fenster
+Not enough in the stash (%d of %d),Not enough in the stash (%d of %d),Nicht genug im Lager (%d von %d)
+Office,Office,Büro
+One more customer can wait at the window.,One more customer can wait at the window.,Ein Kunde mehr kann am Fenster warten.
+Open for Business,Open for Business,Geöffnet
+Perfect,Perfect,Perfekt
+"Pick a tower, click a tile · Right-click: blaster","Pick a tower, click a tile · Right-click: blaster","Turm wählen, Feld anklicken · Rechtsklick: Blaster"
+"Pick a tower, point at a tile, pull the trigger · Other hand: blaster","Pick a tower, point at a tile, pull the trigger · Other hand: blaster","Turm wählen, auf ein Feld zeigen, Abzug drücken · Andere Hand: Blaster"
+Police heat %d,Police heat %d,Polizei-Hitze %d
+Police raid!,Police raid!,Razzia!
+Premium,Premium,Premium
+Press,Press,Presse
+Price per unit,Price per unit,Preis pro Einheit
+Production,Production,Produktion
+Pure,Pure,Rein
+Queue,Queue,Schlange
+Recipe: Fizz,Recipe: Fizz,Rezept: Fizz
+Recipe: Haze,Recipe: Haze,Rezept: Haze
+Regular,Regular,Stammkunde
+Regular Hours,Regular Hours,Feste Arbeitszeiten
+Reinforced Door,Reinforced Door,Verstärkte Tür
+Remove Ads,Remove Ads,Werbung entfernen
+Rep,Rep,Ruf
+Room for 20 more units.,Room for 20 more units.,Platz für 20 Einheiten mehr.
+Ruined,Ruined,Ruiniert
+Sales,Sales,Verkauf
+Sell,Sell,Verkaufen
+Sell 100 units.,Sell 100 units.,Verkaufe 100 Einheiten.
+Serves regular customers at the window. Wage $10 an hour.,Serves regular customers at the window. Wage $10 an hour.,Bedient Stammkunden am Fenster. Lohn $10 pro Stunde.
+Shoots attackers near the door. Wage $12 an hour.,Shoots attackers near the door. Wage $12 an hour.,Schießt auf Angreifer an der Tür. Lohn $12 pro Stunde.
+Sloppy,Sloppy,Schlampig
+Smooth Movement,Smooth Movement,Fließende Bewegung
+Smooth Turning,Smooth Turning,Fließendes Drehen
+Starter Pack,Starter Pack,Startpaket
+"$2,000 to get the operation going","$2,000 to get the operation going",$2.000 für den Start
+Stash,Stash,Lager
+Stash %d / %d,Stash %d / %d,Lager %d / %d
+Stash is full,Stash is full,Lager ist voll
+Stock stolen: %d,Stock stolen: %d,Ware gestohlen: %d
+Stop 100 attackers.,Stop 100 attackers.,Halte 100 Angreifer auf.
+Stop it in the green,Stop it in the green,Im grünen Bereich stoppen
+Street,Street,Straße
+Sugarsalt,Sugarsalt,Zuckersalz
+Survive your first night.,Survive your first night.,Überlebe deine erste Nacht.
+Take the result,Take the result,Ergebnis nehmen
+Thanks,Thanks,Danke
+The House,The House,Das Haus
+The boss is here,The boss is here,Der Boss ist da
+The crew works 15% faster; trained crafters make Pure.,The crew works 15% faster; trained crafters make Pure.,Die Crew arbeitet 15 % schneller; geschulte Hersteller machen reine Ware.
+The door is down,The door is down,Die Tür ist gefallen
+The front door holds 300 more damage.,The front door holds 300 more damage.,Die Haustür hält 300 Schaden mehr aus.
+They offer $%d per unit,They offer $%d per unit,Sie bieten $%d pro Einheit
+Thieves get away with one unit less.,Thieves get away with one unit less.,Diebe kommen mit einer Einheit weniger davon.
+Too expensive,Too expensive,Zu teuer
+Too slow,Too slow,Zu langsam
+Total $%s,Total $%s,Gesamt $%s
+Tower,Tower,Turm
+Turret,Turret,Geschützturm
+Unlocks Fizz (Fizzroot + Sugarsalt). Sells for more.,Unlocks Fizz (Fizzroot + Sugarsalt). Sells for more.,Schaltet Fizz frei (Sprudelwurzel + Zuckersalz). Bringt mehr ein.
+"Unlocks Haze (Duskleaf, Glowcap, Fizzroot). Hard to cook, sells best.","Unlocks Haze (Duskleaf, Glowcap, Fizzroot). Hard to cook, sells best.","Schaltet Haze frei (Dämmerblatt, Leuchtpilz, Sprudelwurzel). Schwer zu kochen, bringt am meisten."
+"Unlocks the heavy gun: slow, strong, pierces armor.","Unlocks the heavy gun: slow, strong, pierces armor.","Schaltet das schwere Geschütz frei: langsam, stark, durchschlägt Panzerung."
+VIP,VIP,VIP
+VIP Access,VIP Access,VIP-Zugang
+Waiting Bench,Waiting Bench,Wartebank
+Wider sweet zones and better quality from every batch.,Wider sweet zones and better quality from every batch.,Breitere grüne Bereiche und bessere Qualität bei jeder Charge.
+Work 10 shifts.,Work 10 shifts.,Arbeite 10 Schichten.
+Workforce,Workforce,Personal
+Your blaster hits 8 harder.,Your blaster hits 8 harder.,Dein Blaster trifft 8 stärker.
+%s (unpaid),%s (unpaid),%s (unbezahlt)
+%s batch,%s batch,%s-Charge
+"%s ×%d, %s or better","%s ×%d, %s or better","%s ×%d, %s oder besser"
+Put in a raw ingredient,Put in a raw ingredient,Rohe Zutat einlegen
+Add ground ingredients,Add ground ingredients,Gemahlene Zutaten hinzufügen
+Put in a cooked batch,Put in a cooked batch,Gekochte Charge einlegen

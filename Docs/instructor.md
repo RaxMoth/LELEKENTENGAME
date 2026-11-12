@@ -1,9 +1,10 @@
-# Agent Instructor — Porchlight VR
+# Agent Instructor — Porchlight VR (working title)
 
 ## Project Overview
 
-This is **Porchlight VR**, a single **VR game** on **Godot 4.7+** (a
-lane-defense game you play standing on a porch — see [VR.md](VR.md)). It runs
+This is a single **VR game** on **Godot 4.7+**: a crime-sim run out of one
+house — craft in the lab, sell at the back window, defend the front door,
+all at once (working title Porchlight VR, see [GAME.md](GAME.md)). It runs
 through **OpenXR** on standalone headsets (Meta Quest, Android) and PC
 headsets (SteamVR, Windows). The renderer is **GL Compatibility** for the
 widest standalone-headset support. Every architectural decision must reflect
@@ -37,15 +38,16 @@ res://
 │   ├── Menus/       # MainMenu, LevelSelect, Shop (2D, flat-screen flow)
 │   ├── Game/        # LevelBase — every level inherits it (3D, owns the XR rig)
 │   ├── Entities/    # Reusable entities (XRPlayerRig, pooled 3D effects)
-│   ├── Levels/      # The game's levels, one folder each (Porchlight)
+│   ├── Levels/      # The game's levels: House (Lab, Sales, Garden, Office, Workers)
 │   └── UI/          # Popups (shown on the in-world screen inside a headset)
 ├── Scripts/         # Standalone class_name scripts (not tied to one scene)
 │   ├── Components/  # Composable node components
+│   ├── Game/        # Pure game rules (timing, quality, stash, sales, heat, day clock)
 │   ├── Resources/   # Resource schemas (data definitions)
 │   ├── Profile/     # Persistent player-data modules
 │   ├── Services/    # Ads / store / analytics provider base classes
 │   ├── UI/          # Reusable UI controls (menus, popups, in-world screens)
-│   ├── XR/          # XR building blocks (XRPointer, WorldScreen)
+│   ├── XR/          # XR building blocks (pointer, screens, locomotion, grab, sockets, buttons)
 │   └── Utils/       # Helpers, ray / lane math, 3D placeholders
 ├── Tests/           # Smoke test, screenshot tool, Unit/ gdUnit4 suites (excluded from exports)
 ├── Tools/           # Shell helpers: godot.sh, smoke_test.sh, screenshots.sh (ignored by Godot)
@@ -73,10 +75,16 @@ Respect the folder color-coding in `project.godot`. Never place files in the wro
 - **No screen-space UI in levels:** a headset can't see a `CanvasLayer`.
   Status lives on `WorldScreen`s / `Label3D`s in the world; popups go through
   the rig's in-world popup screen.
-- **Input is controller pointers:** `XRPlayerRig` signals (`primary_action_pressed`,
-  `secondary_action_pressed`, `menu_pressed`, `selection_step_requested`)
-  and `XRPointer` rays. One job per hand. The flat simulator maps mouse /
-  touch onto the same API, so every level must stay playable without a headset.
+- **Input is controller pointers and hands:** `XRPlayerRig` signals
+  (`primary_action_pressed`, `secondary_action_pressed`, `menu_pressed`,
+  `item_grabbed`, `item_placed`), `XRPointer` rays, `Grabbable` /
+  `ItemSocket` / `PointerButton` for hand interaction and `XRLocomotion`
+  for movement. Grip grabs; the dominant trigger uses, the off-hand trigger
+  is the second action. The flat simulator maps mouse and WASD onto the same
+  API, so every level must stay playable without a headset.
+- **Shared state in one place:** a level's game state (the house's stash,
+  heat, prices) lives in one node (`Operation`) that every front reads and
+  writes — the seam for co-op replication later.
 - **Menus (2D, flat flow):** touch targets ≥ 48×48 dp (≈ 88 px at 720 wide),
   anchors and containers (never hardcoded positions), a `SafeAreaContainer`
   at the root, layouts that work on tall and short windows.
@@ -195,7 +203,7 @@ Optional methods whose names live in `Types.METHOD_*`:
 ---
 
 ### XR scenes
-See [VR.md](VR.md). In short:
+See [GAME.md](GAME.md). In short:
 - The player is the `XRPlayerRig` in `LevelBase`; it runs a flat simulator
   when no headset is connected, so every level must stay playable (and
   testable) without one.
@@ -217,7 +225,7 @@ See [VR.md](VR.md). In short:
   stateless helpers) — never in `_process`.
 - Prefer ray / lane math (`RayMath`, `LaneGrid`) over physics bodies; if you
   need physics, `Area3D` for triggers and `CharacterBody3D` for movers.
-- Anything spawned often (attackers, bolts, sparks, floating text, effects) goes
+- Anything spawned often (attackers, customers, items, bolts, floating text, effects) goes
   through `Pools.spawn()` / `Pools.despawn()`. Never `instantiate()` +
   `queue_free()` in a hot path. Pooled scripts reset in `_on_pool_spawned()` and
   guard callbacks with `Pools.is_in_pool(self)`.
@@ -234,7 +242,7 @@ See [VR.md](VR.md). In short:
 ## UI Architecture
 
 - In-level UI: `Control` scenes shown on a `WorldScreen` in the level (e.g.
-  `Scenes/Levels/Porchlight/SeedBoard.tscn`) and `Label3D`s; no HUD.
+  `Scenes/Levels/House/Sales/SalesBoard.tscn`) and `Label3D`s; no HUD.
   Popups: `Scenes/UI/Popups/` (extend `BasePopup`; inside a headset they show
   on the rig's in-world popup screen). Menus: `Scenes/Menus/` (2D, flat flow).
 - Open popups with `UI.open_popup(scene, data)` and await `.closed`.
@@ -288,7 +296,7 @@ Every `.gd` script starts with a `##` doc comment: purpose, usage, dependencies.
   ProfileModule or `Events` signal.
 - **Never** place `.gd` files in `Scenes/` that aren't attached to a `.tscn` in the
   same folder (a level may keep its level-only base classes with it, like
-  `LaneEnemy` / `LaneDefender` in `Scenes/Levels/Porchlight/`).
+  `LaneEnemy` / `LaneDefender` in `Scenes/Levels/House/Garden/`).
 - **Never** hand-roll a state machine where `godot_state_charts` fits.
 - **Never** design for mouse/keyboard first — tracked controllers are
   primary; the flat simulator is the fallback, not the target.

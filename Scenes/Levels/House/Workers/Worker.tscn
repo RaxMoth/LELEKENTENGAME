@@ -1,0 +1,96 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://Scenes/Levels/House/Workers/worker.gd" id="worker"]
+[ext_resource type="Script" path="res://Scripts/Utils/placeholder_mesh_3d.gd" id="mesh"]
+[ext_resource type="Script" path="res://Scripts/Utils/blob_shadow_3d.gd" id="shadow"]
+[ext_resource type="Script" path="res://addons/godot_state_charts/state_chart.gd" id="chart"]
+[ext_resource type="Script" path="res://addons/godot_state_charts/compound_state.gd" id="compound"]
+[ext_resource type="Script" path="res://addons/godot_state_charts/atomic_state.gd" id="atomic"]
+[ext_resource type="Script" path="res://addons/godot_state_charts/transition.gd" id="transition"]
+
+[node name="Worker" type="Node3D"]
+script = ExtResource("worker")
+
+[node name="Body" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.62, 0)
+cast_shadow = 0
+script = ExtResource("mesh")
+shape_kind = 2
+size = Vector3(0.48, 1.1, 0.4)
+color = Color(0.3569, 0.4863, 0.9804, 1)
+
+[node name="Head" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.38, 0)
+cast_shadow = 0
+script = ExtResource("mesh")
+size = Vector3(0.38, 0.38, 0.38)
+color = Color(0.3569, 0.4863, 0.9804, 1)
+
+[node name="Cap" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.56, -0.02)
+cast_shadow = 0
+script = ExtResource("mesh")
+shape_kind = 3
+size = Vector3(0.36, 0.08, 0.36)
+color = Color(0.1412, 0.1686, 0.2431, 1)
+
+[node name="Muzzle" type="Marker3D" parent="."]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.2, -0.35)
+
+[node name="Shadow" type="MeshInstance3D" parent="."]
+script = ExtResource("shadow")
+diameter = 0.75
+
+[node name="RoleLabel" type="Label3D" parent="."]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.9, 0)
+pixel_size = 0.0015
+billboard = 1
+render_priority = 2
+outline_render_priority = 1
+modulate = Color(0.9333, 0.9451, 0.9686, 1)
+outline_modulate = Color(0.051, 0.0627, 0.0902, 0.9)
+text = "Crafter"
+font_size = 40
+outline_size = 10
+
+[node name="StateChart" type="Node" parent="."]
+unique_name_in_owner = true
+script = ExtResource("chart")
+
+[node name="Root" type="Node" parent="StateChart"]
+script = ExtResource("compound")
+initial_state = NodePath("Absent")
+
+[node name="Absent" type="Node" parent="StateChart/Root"]
+script = ExtResource("atomic")
+
+[node name="ToWorking" type="Node" parent="StateChart/Root/Absent"]
+script = ExtResource("transition")
+to = NodePath("../../Working")
+event = &"hired"
+delay_in_seconds = "0.0"
+
+[node name="Working" type="Node" parent="StateChart/Root"]
+script = ExtResource("atomic")
+
+[node name="ToStriking" type="Node" parent="StateChart/Root/Working"]
+script = ExtResource("transition")
+to = NodePath("../../Striking")
+event = &"wage_missed"
+delay_in_seconds = "0.0"
+
+[node name="Striking" type="Node" parent="StateChart/Root"]
+script = ExtResource("atomic")
+
+[node name="ToWorking" type="Node" parent="StateChart/Root/Striking"]
+script = ExtResource("transition")
+to = NodePath("../../Working")
+event = &"wage_paid"
+delay_in_seconds = "0.0"
+
+[connection signal="state_entered" from="StateChart/Root/Absent" to="." method="_on_absent_state_entered"]
+[connection signal="state_entered" from="StateChart/Root/Working" to="." method="_on_working_state_entered"]
+[connection signal="state_processing" from="StateChart/Root/Working" to="." method="_on_working_state_processing"]
+[connection signal="state_entered" from="StateChart/Root/Striking" to="." method="_on_striking_state_entered"]

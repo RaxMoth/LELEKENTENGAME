@@ -7,7 +7,8 @@
    variations only, icons from `Assets/Icons` (never text glyphs like `●` or `★`),
    one primary action per screen, 8 px spacing. Verify visual changes with
    screenshots (`/design-review`) before calling them done.
-2. **VR only.** This repo is one game, Porchlight VR. Levels are 3D scenes
+2. **VR only.** This repo is one game: a VR crime-sim run out of one house
+   (working title Porchlight VR, `Docs/GAME.md`). Levels are 3D scenes
    inheriting `LevelBase` (which owns the `XRPlayerRig`); UI in levels lives
    in the world (no screen-space HUD); input is controller pointers; hold
    the headset refresh rate on a Quest; no camera motion the player didn't
@@ -21,7 +22,7 @@
 ## Working in this repo
 
 - Target engine: Godot 4.7 with OpenXR. The game, controls, headset setup
-  and design decisions: `Docs/VR.md`; API overview: `Docs/SYSTEMS.md`; adding
+  and design decisions: `Docs/GAME.md`; API overview: `Docs/SYSTEMS.md`; adding
   levels and content: `Docs/GETTING_STARTED.md`; visuals: `Docs/DESIGN.md`.
 - `Tools/godot.sh <args>` runs Godot from the project root (finds it via
   `$GODOT`, `PATH` or `/Applications/Godot.app`). Use it instead of a bare `godot`.

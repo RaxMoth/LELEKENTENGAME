@@ -50,16 +50,10 @@ theme_override_constants/separation = 20
 layout_mode = 2
 theme_override_constants/separation = 12
 
-[node name="CoinsDisplay" type="PanelContainer" parent="SafeArea/Layout/TopBar" unique_id=1133589397]
+[node name="CashDisplay" type="PanelContainer" parent="SafeArea/Layout/TopBar" unique_id=1133589397]
 layout_mode = 2
 size_flags_vertical = 4
 script = ExtResource("3_currency_d")
-
-[node name="GemsDisplay" type="PanelContainer" parent="SafeArea/Layout/TopBar" unique_id=1658967518]
-layout_mode = 2
-size_flags_vertical = 4
-script = ExtResource("3_currency_d")
-currency_id = &"gems"
 
 [node name="EnergyDisplay" type="PanelContainer" parent="SafeArea/Layout/TopBar" unique_id=171978144]
 layout_mode = 2

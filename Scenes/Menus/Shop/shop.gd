@@ -1,13 +1,14 @@
-## Shop: persistent upgrades (soft currency), a rewarded-ad freebie and
-## in-app purchases. Rebuilds itself whenever balances change.
+## Shop (flat-screen menu): the operation's upgrades by branch (the same ones
+## the in-world office sells), a rewarded-ad freebie and in-app purchases.
+## Rebuilds itself whenever balances change.
 ##
 ## Dependencies: Profile, Store, Ads, UI, SceneManager, Events autoloads
 extends Control
 
 const ROW_SCENE: PackedScene = preload("res://Scenes/Menus/Shop/ShopItemRow.tscn")
 const PLAY_ICON: Texture2D = preload("res://Assets/Icons/play.svg")
-const FREE_COINS_AMOUNT: int = 100
-const AD_PLACEMENT_FREE_COINS: StringName = &"shop_free_coins"
+const FREE_CASH_AMOUNT: int = 100
+const AD_PLACEMENT_FREE_CASH: StringName = &"shop_free_cash"
 
 @onready var _sections: VBoxContainer = %Sections
 
@@ -21,14 +22,20 @@ func _ready() -> void:
 func _rebuild() -> void:
 	Global.remove_all_children(_sections)
 	var config: GameConfig = GameConfig.get_default()
-	_add_header(tr("Upgrades"))
-	for upgrade: UpgradeData in config.upgrades:
-		if upgrade.show_in_shop:
+	for branch: StringName in UpgradeData.BRANCHES:
+		var branch_upgrades: Array[UpgradeData] = []
+		for upgrade: UpgradeData in config.upgrades:
+			if upgrade.show_in_shop and upgrade.branch == branch:
+				branch_upgrades.append(upgrade)
+		if branch_upgrades.is_empty():
+			continue
+		_add_header(tr(UpgradeData.get_branch_title(branch)))
+		for upgrade: UpgradeData in branch_upgrades:
 			_add_upgrade_row(upgrade)
-	_add_header(tr("Free Coins"))
+	_add_header(tr("Free Cash"))
 	var free_row: ShopItemRow = _add_row()
-	free_row.setup(tr("Watch an ad"), "", tr("+%d coins") % FREE_COINS_AMOUNT, tr("Free"), Ads.is_rewarded_ready(), PLAY_ICON)
-	free_row.buy_pressed.connect(_on_free_coins_pressed)
+	free_row.setup(tr("Watch an ad"), "", tr("+$%d") % FREE_CASH_AMOUNT, tr("Free"), Ads.is_rewarded_ready(), PLAY_ICON)
+	free_row.buy_pressed.connect(_on_free_cash_pressed)
 	_add_header(tr("Store"))
 	for product: ProductData in Store.get_products():
 		_add_product_row(product)
@@ -54,16 +61,8 @@ func _add_row() -> ShopItemRow:
 
 
 func _add_upgrade_row(upgrade: UpgradeData) -> void:
-	var current_level: int = Profile.upgrades.get_level(upgrade.id)
 	var row: ShopItemRow = _add_row()
-	var currency: CurrencyData = GameConfig.get_default().find_currency(upgrade.currency_id)
-	var value_text: String = upgrade.value_format % NumberFormat.compact(upgrade.get_value(current_level))
-	var detail: String = tr("Level %d") % current_level + "  ·  " + value_text
-	if upgrade.is_maxed(current_level):
-		row.setup(upgrade.title, upgrade.description, detail, tr("Max"), false)
-		return
-	var cost: int = upgrade.get_cost(current_level)
-	row.setup(upgrade.title, upgrade.description, detail, NumberFormat.compact(cost), Profile.upgrades.can_purchase(upgrade), currency.icon if currency != null else null)
+	row.setup_upgrade(upgrade)
 	row.buy_pressed.connect(func() -> void:
 		if Profile.upgrades.purchase(upgrade):
 			Audio.play_ui(Audio.UI_CONFIRM)
@@ -81,9 +80,9 @@ func _add_product_row(product: ProductData) -> void:
 			UI.toast(tr("Purchase complete!")))
 
 
-func _on_free_coins_pressed() -> void:
-	if await Ads.show_rewarded(AD_PLACEMENT_FREE_COINS):
-		Profile.wallet.add(Types.CURRENCY_COINS, FREE_COINS_AMOUNT)
+func _on_free_cash_pressed() -> void:
+	if await Ads.show_rewarded(AD_PLACEMENT_FREE_CASH):
+		Profile.wallet.add(Types.CURRENCY_CASH, FREE_CASH_AMOUNT)
 		Audio.play_ui(Audio.UI_REWARD)
 
 

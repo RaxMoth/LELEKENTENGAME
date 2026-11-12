@@ -33,6 +33,7 @@ signal stat_changed(stat_id: StringName, new_value: float)
 signal achievement_unlocked(achievement: AchievementData)
 signal daily_reward_claimed(streak_day: int, rewards: Dictionary)
 signal energy_changed(current_energy: int, max_energy: int)
+signal reputation_changed(new_reputation: int, amount_delta: int)
 signal progress_reset
 
 # --- Gameplay feedback ---

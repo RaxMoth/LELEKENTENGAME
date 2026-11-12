@@ -8,7 +8,7 @@ extends PanelContainer
 ## Emitted when tapped (e.g. open the shop).
 signal tapped(currency_id: StringName)
 
-@export var currency_id: StringName = &"coins":
+@export var currency_id: StringName = &"cash":
 	set(value):
 		currency_id = value
 		if is_node_ready():

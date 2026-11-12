@@ -1,7 +1,7 @@
 # Getting Started
 
-This repository is one game: **Porchlight VR**, a lane-defense game you
-play standing on a porch in a headset ([VR.md](VR.md)). It is built on a
+This repository is one game: a VR crime-sim run out of one house (working
+title Porchlight VR, [GAME.md](GAME.md)). It is built on a
 VR-only foundation: every level is a 3D scene with the `XRPlayerRig`, UI
 lives in the world, and only the menus are 2D screens (the flat flow when no
 headset is connected). Do the first section right away; the rest when you
@@ -23,17 +23,19 @@ need it.
 1. **Scene → New Inherited Scene** → `Scenes/Game/LevelBase/LevelBase.tscn`.
 2. Save it as `Scenes/Levels/<Name>/<Name>.tscn`.
 3. Attach a new script to the root that `extends LevelBase`.
-4. Build the stage under **World** (`PlaceholderMesh3D` stand-ins, a
-   `WorldEnvironment`), move **World/XRPlayerRig** to where the player
-   stands and **World/Announcer** into their view.
+4. Build the stage under **World** (`PlaceholderMesh3D` stand-ins or a
+   `HouseShell`, a `WorldEnvironment`), add a `WalkableArea` for where the
+   player may stand, move **World/XRPlayerRig** to the start and
+   **World/Announcer** into their view.
 5. Show status on in-world UI: a `WorldScreen` with a `Control` scene (like
-   Porchlight's `SeedBoard`) or a `Label3D`. Never a screen-space HUD.
+   the House's `SalesBoard`) or a `Label3D`. Never a screen-space HUD.
 6. Override the hooks you need:
 
 ```gdscript
 extends LevelBase
 
 func _on_level_setup() -> void:      # build / connect things (before the intro)
+	rig.walkable_area = %WalkableArea
 	rig.primary_action_pressed.connect(_on_trigger)
 
 func _on_level_started() -> void:    # after "Ready? Go!" on the announcer
@@ -63,16 +65,26 @@ rewarded "×2", interstitial pacing and progress saving are handled by
 Without a headset the level runs in the rig's flat simulator (drag to look,
 click to act), which is also what the smoke test drives — keep it playable.
 
-## 3. Grow Porchlight
+## 3. Grow the operation
 
-- **Defenders:** a `DefenderData` in `Ressources/Defenders/` plus a scene
-  extending `LaneDefender`; add it to the level's `defenders` array.
-- **Attackers:** a scene like `Husk.tscn` (pooled `LaneEnemy`, StateChart
-  `Alive { Advancing ⇄ Attacking } → Dead`); tune with exports.
-- **Waves:** `WaveData` entries on the level's `WaveSpawner`.
-- **Shop upgrades:** an `UpgradeData` in `Ressources/Upgrades/`, listed in
-  `game_config.tres → upgrades`, read with `Profile.upgrades.get_value()`
-  (see `starting_sparks_upgrade` on `Porchlight.tscn`).
+- **Products:** an `IngredientData` per new ingredient (`Ressources/Ingredients/`,
+  plus an `IngredientCrate` in the lab of `House.tscn`) and a `RecipeData`
+  (`Ressources/Recipes/`) added to `Operation.recipes`. Gate it with an
+  unlock upgrade (`unlock_upgrade_id`).
+- **Customers:** a `CustomerTypeData` in `Ressources/Customers/` added to
+  `PressureDirector.customer_types` (wants, budget, haggling, patience,
+  day / night weights, reputation or upgrade gates).
+- **Attackers:** an inherited scene of `Garden/Attacker.tscn` (see
+  `Junkie.tscn`): health, speed, armor, tower resistance, theft. Send it
+  from `PressureDirector`.
+- **Towers:** a scene extending `LaneDefender` (`Turret` for shooters) and a
+  `TowerData` in `Ressources/Towers/`, added to the level's `towers`.
+- **Upgrades:** an `UpgradeData` (`branch`, `required_reputation`, cost
+  curve) in `Ressources/Upgrades/`, listed in `game_config.tres → upgrades`
+  and read where it matters with `Operation.get_upgrade_value(id)` (add its
+  id to `Types.UPGRADE_*`). It shows up in the office and the Shop.
+- **Pressure and pacing:** exports on `PressureDirector`, `DayCycle` and
+  `Operation` in `House.tscn`.
 - Run `Tools/unit_tests.sh` and `Tools/smoke_test.sh` afterwards.
 
 ## 4. Art, fonts, audio
@@ -95,8 +107,8 @@ click to act), which is also what the smoke test drives — keep it playable.
 - **Sounds:** `Audio.play_sfx_at(preload("res://Assets/Audio/hit.ogg"), global_position)`
   (positional, so the player hears where it happened), `Audio.play_music(...)`.
   The synthesized presets (`SfxSynth`) are just stand-ins.
-- **Currency icons:** set `icon` on each `CurrencyData` (coins and gems use
-  `Assets/Icons/coin.svg` / `gem.svg`; the glyph is only a fallback).
+- **Currency icon:** set `icon` on the `CurrencyData` (cash uses
+  `Assets/Icons/cash.svg`; the glyph is only a fallback).
 
 ## 5. Economy & meta-progression
 
@@ -111,9 +123,8 @@ All in `game_config.tres`:
 | 7-day login streak | `daily_rewards` |
 | Energy / lives | `max_energy` (> 0 enables), `energy_regen_seconds`, `LevelData.energy_cost` |
 
-Read upgrades in gameplay: `Profile.upgrades.get_value(upgrade)` with the
-`UpgradeData` exported on the level (Porchlight: `starting_sparks_upgrade`,
-`starting_lives_upgrade`).
+Read upgrades in gameplay: `operation.get_upgrade_value(Types.UPGRADE_X)`
+(or `Profile.upgrades.get_value(upgrade)` outside the house).
 Track stats for achievements: `Profile.stats.increment(Types.STAT_X)`.
 
 ## 6. Monetization & analytics (when you ship)

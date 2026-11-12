@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="UpgradeData" format=3]
+
+[ext_resource type="Script" path="res://Scripts/Resources/upgrade_data.gd" id="script"]
+
+[resource]
+script = ExtResource("script")
+id = &"work_dealer"
+title = "Hire Dealer"
+description = "Serves regular customers at the window. Wage $10 an hour."
+base_cost = 400
+cost_growth = 1.6
+max_level = 2
+base_value = 0.0
+value_per_level = 1.0
+value_format = "%s hired"
+branch = &"workforce"
+required_reputation = 15

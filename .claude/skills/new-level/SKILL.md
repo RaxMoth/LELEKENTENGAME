@@ -9,8 +9,9 @@ section 2 and `Docs/instructor.md`:
 
 1. `Scenes/Levels/$0/$0.tscn`: an inherited scene of
    `res://Scenes/Game/LevelBase/LevelBase.tscn` (root `instance=` the base,
-   like `Scenes/Levels/Porchlight/Porchlight.tscn`). Build the stage under
-   `World` (a `WorldEnvironment` with fog of the horizon color, scenery),
+   like `Scenes/Levels/House/House.tscn`). Build the stage under
+   `World` (a `WorldEnvironment` with fog of the horizon color, scenery, a
+   `WalkableArea` wired to `rig.walkable_area` in `_on_level_setup`),
    override `World/XRPlayerRig`'s transform to where the player stands and
    `World/Announcer`'s to a spot in their view.
 2. `Scenes/Levels/$0/<snake_case>_level.gd`: `extends LevelBase`, with a `##`
@@ -20,7 +21,7 @@ section 2 and `Docs/instructor.md`:
    scene; pick with `RayMath` on the pointer ray. Call `add_score()`,
    `announce()`, `win()`, `lose()` or `end_run()`. Fully typed. Tunables as `@export`.
 3. Status UI in the world: a `Control` scene on a `WorldScreen` (see
-   `SeedBoard.tscn`) or `Label3D`s — never a screen-space HUD.
+   `Sales/SalesBoard.tscn`) or `Label3D`s — never a screen-space HUD.
 4. `Ressources/Levels/<snake_case>.tres`: a `LevelData` with `id`, `title`,
    `description`, `scene_path`, star thresholds and rewards; add it to
    `levels` in `Ressources/game_config.tres`.

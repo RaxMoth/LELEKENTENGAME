@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="IngredientData" format=3]
+
+[ext_resource type="Script" path="res://Scripts/Resources/ingredient_data.gd" id="script"]
+
+[resource]
+script = ExtResource("script")
+id = &"fizzroot"
+display_name = "Fizzroot"
+cost = 10
+color = Color(0.2353, 0.7843, 0.9098, 1)
+shape_kind = 2
+needs_processing = true
+processed_name = "Fizzroot dust"

@@ -12,6 +12,8 @@ const LOCALE_OPTIONS: PackedStringArray = ["", "en", "de"]
 @onready var _music_slider: HSlider = %MusicSlider
 @onready var _sfx_slider: HSlider = %SfxSlider
 @onready var _haptics_toggle: CheckButton = %HapticsToggle
+@onready var _smooth_move_toggle: CheckButton = %SmoothMoveToggle
+@onready var _smooth_turn_toggle: CheckButton = %SmoothTurnToggle
 @onready var _fps_toggle: CheckButton = %FpsToggle
 @onready var _language_option: OptionButton = %LanguageOption
 @onready var _privacy_button: Button = %PrivacyButton
@@ -22,6 +24,8 @@ func _on_opened(_data: Dictionary) -> void:
 	_music_slider.value = Settings.get_float(Settings.KEY_MUSIC_VOLUME)
 	_sfx_slider.value = Settings.get_float(Settings.KEY_SFX_VOLUME)
 	_haptics_toggle.button_pressed = Settings.get_bool(Settings.KEY_HAPTICS_ENABLED)
+	_smooth_move_toggle.button_pressed = Settings.get_bool(Settings.KEY_SMOOTH_MOVEMENT)
+	_smooth_turn_toggle.button_pressed = Settings.get_bool(Settings.KEY_SMOOTH_TURNING)
 	_fps_toggle.button_pressed = Settings.get_bool(Settings.KEY_SHOW_FPS)
 	_language_option.clear()
 	_language_option.add_item(tr("System"))
@@ -34,6 +38,8 @@ func _on_opened(_data: Dictionary) -> void:
 	_music_slider.value_changed.connect(func(value: float) -> void: Settings.set_value(Settings.KEY_MUSIC_VOLUME, value))
 	_sfx_slider.value_changed.connect(_on_sfx_slider_changed)
 	_haptics_toggle.toggled.connect(func(enabled: bool) -> void: Settings.set_value(Settings.KEY_HAPTICS_ENABLED, enabled))
+	_smooth_move_toggle.toggled.connect(func(enabled: bool) -> void: Settings.set_value(Settings.KEY_SMOOTH_MOVEMENT, enabled))
+	_smooth_turn_toggle.toggled.connect(func(enabled: bool) -> void: Settings.set_value(Settings.KEY_SMOOTH_TURNING, enabled))
 	_fps_toggle.toggled.connect(func(enabled: bool) -> void: Settings.set_value(Settings.KEY_SHOW_FPS, enabled))
 	_language_option.item_selected.connect(func(index: int) -> void: Settings.set_value(Settings.KEY_LOCALE, LOCALE_OPTIONS[index]))
 

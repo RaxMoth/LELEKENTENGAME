@@ -1,7 +1,7 @@
 ## Ads facade with frequency capping and "remove ads" support.
 ##
 ##   if await Ads.show_rewarded(&"double_coins"):
-##       Profile.wallet.add(Types.CURRENCY_COINS, bonus)
+##       Profile.wallet.add(Types.CURRENCY_CASH, bonus)
 ##   Ads.maybe_show_interstitial(&"level_end")   # respects caps & no-ads
 ##
 ## Dependencies: Events, Profile, Types autoloads, AdsProvider

@@ -8,6 +8,8 @@ TOOLS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 OUT_DIR="${1:-build/screenshots}"
 mkdir -p "$OUT_DIR"
 OUT_DIR="$(cd "$OUT_DIR" && pwd)"
+# Keep Godot from importing the captures when they land inside the project.
+touch "$OUT_DIR/.gdignore"
 # shot <name> <args...>; set SHOT_RESOLUTION for anything other than portrait.
 shot() {
 	local name="$1"; shift
@@ -19,12 +21,17 @@ shot 02_level_select scene=res://Scenes/Menus/LevelSelect/LevelSelect.tscn frame
 shot 03_shop scene=res://Scenes/Menus/Shop/Shop.tscn frames=90
 shot 04_settings scene=$MENU popup=res://Scenes/UI/Popups/SettingsPopup/SettingsPopup.tscn frames=60
 shot 05_achievements scene=$MENU popup=res://Scenes/UI/Popups/AchievementsPopup/AchievementsPopup.tscn frames=60
-# The game in the rig's flat simulator: the wide view that is closest to a
-# headset, its pause menu on the in-world popup screen, and a portrait phone
-# window (the flat fallback must still be playable there).
-SHOT_RESOLUTION=1280x720 shot level_porchlight level=porchlight showcase=porchlight frames=200
-SHOT_RESOLUTION=1280x720 shot level_porchlight_pause level=porchlight showcase=porchlight frames=120 pause=1 world_ui=1
-shot level_porchlight_portrait level=porchlight showcase=porchlight frames=200
+# The game in the rig's flat simulator, wide like a headset view: each front
+# from its travel spot (1 lab, 2 front, 3 back window, 4 office), the pause
+# menu on the in-world popup screen, the night, and one portrait phone shot.
+WIDE=1280x720
+SHOT_RESOLUTION=$WIDE shot level_1_front level=house showcase=house spot=2 frames=200
+SHOT_RESOLUTION=$WIDE shot level_2_lab level=house showcase=house spot=1 frames=160
+SHOT_RESOLUTION=$WIDE shot level_3_window level=house showcase=house spot=3 frames=900
+SHOT_RESOLUTION=$WIDE shot level_4_office level=house showcase=house spot=4 frames=120
+SHOT_RESOLUTION=$WIDE shot level_5_night level=house showcase=house_night spot=2 frames=200
+SHOT_RESOLUTION=$WIDE shot level_6_pause level=house showcase=house spot=2 frames=120 pause=1 world_ui=1
+shot level_7_portrait level=house showcase=house spot=2 frames=200
 "$TOOLS_DIR/godot.sh" --headless --script "$TOOLS_DIR/contact_sheet.gd" -- "$OUT_DIR/sheet_menus.png" 5 360 640 \
 	"$OUT_DIR"/0*.png >/dev/null 2>&1
 "$TOOLS_DIR/godot.sh" --headless --script "$TOOLS_DIR/contact_sheet.gd" -- "$OUT_DIR/sheet_levels.png" 3 640 360 \

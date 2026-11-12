@@ -1,0 +1,51 @@
+[gd_scene format=3]
+
+[ext_resource type="PackedScene" path="res://Scenes/Levels/House/Garden/Attacker.tscn" id="base"]
+[ext_resource type="Script" path="res://Scripts/Utils/placeholder_mesh_3d.gd" id="mesh"]
+
+[node name="Cop" instance=ExtResource("base")]
+base_max_health = 150.0
+base_speed = 0.34
+bite_damage = 16.0
+bite_interval_seconds = 1.0
+score_value = 15
+faction_name = "Cops"
+armor = 6.0
+hit_radius = 0.55
+hit_height = 0.85
+reach = 0.45
+step_frequency = 4.0
+sway_degrees = 3.0
+
+[node name="Body" parent="Visual"]
+size = Vector3(0.66, 1.0, 0.6)
+color = Color(0.7843, 0.2784, 0.3333, 1)
+
+[node name="Head" parent="Visual"]
+size = Vector3(0.44, 0.44, 0.44)
+color = Color(0.7843, 0.2784, 0.3333, 1)
+
+[node name="Face" parent="Visual"]
+color = Color(0.2353, 0.7843, 0.9098, 1)
+
+[node name="Cap" type="MeshInstance3D" parent="Visual"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.42, 0)
+cast_shadow = 0
+script = ExtResource("mesh")
+shape_kind = 3
+size = Vector3(0.5, 0.12, 0.5)
+color = Color(0.1412, 0.1686, 0.2431, 1)
+
+[node name="Shield" type="MeshInstance3D" parent="Visual"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.08, 0.62, 0.4)
+cast_shadow = 0
+script = ExtResource("mesh")
+shape_kind = 1
+size = Vector3(0.62, 0.92, 0.06)
+color = Color(0.3569, 0.3922, 0.4824, 1)
+
+[node name="Shadow" parent="."]
+diameter = 1.0
+
+[node name="HealthComponent" parent="."]
+max_health = 150.0

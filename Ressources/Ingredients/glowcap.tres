@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="IngredientData" format=3]
+
+[ext_resource type="Script" path="res://Scripts/Resources/ingredient_data.gd" id="script"]
+
+[resource]
+script = ExtResource("script")
+id = &"glowcap"
+display_name = "Glowcap"
+cost = 6
+color = Color(0.2392, 0.8627, 0.5922, 1)
+shape_kind = 0
+needs_processing = true
+processed_name = "Glowcap dust"
