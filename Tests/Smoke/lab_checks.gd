@@ -16,6 +16,8 @@ static func run(test: SmokeTest, level: HouseLevel) -> void:
 	var glowcap_crate: IngredientCrate = lab.get_crate(&"glowcap")
 	var sugarsalt_crate: IngredientCrate = lab.get_crate(&"sugarsalt")
 	rig.locomotion.travel_to_spot(0)
+	var recipe_board: RecipeBoard = lab.get_recipe_board()
+	test.check(recipe_board.get_found_count() == 0 and not Profile.operation.is_recipe_discovered(&"glow"), "the recipe book starts with question marks only")
 
 	var cash_before: int = operation.get_cash()
 	rig.tap_world_point(glowcap_crate.get_grab_center())
@@ -46,6 +48,7 @@ static func run(test: SmokeTest, level: HouseLevel) -> void:
 	await _stop_in_the_middle(test, rig, cooker)
 	var batch: BatchItem = cooker.get_output_socket().item as BatchItem
 	test.check(batch != null and batch.recipe.id == &"glow", "cooking makes a batch of the matching product")
+	test.check(Profile.operation.is_recipe_discovered(&"glow") and recipe_board.get_found_count() == 1, "the first batch of a product fills in its recipe book entry")
 
 	var stash_before: int = operation.stash.get_total()
 	rig.tap_world_point(batch.get_grab_center())
@@ -58,6 +61,8 @@ static func run(test: SmokeTest, level: HouseLevel) -> void:
 	test.check(units == operation.get_batch_size(batch.recipe), "packaging puts a full batch into the stash")
 	test.check(operation.stash.count(&"glow", 3) == units, "perfect handwork makes Pure quality or better")
 
+	await _check_vr_hands(test, rig, operation, glowcap_crate, grinder, cooker)
+
 	# Crew: a hired crafter makes product on its own.
 	Profile.operation.add_reputation(100)
 	(level.get_front(Office) as Office).buy_upgrade(GameConfig.get_default().find_upgrade(Types.UPGRADE_CRAFTER))
@@ -68,6 +73,53 @@ static func run(test: SmokeTest, level: HouseLevel) -> void:
 	var stock_before: int = operation.stash.get_total()
 	crafter.work_now()
 	test.check(operation.stash.get_total() > stock_before, "a crafter makes product")
+
+
+## The VR hand path (as a headset would drive it): point at a crate and pull
+## the trigger to buy into the hand, point at the grinder and pull again to
+## put it in; a quick grip click keeps holding until the next click.
+static func _check_vr_hands(test: SmokeTest, rig: XRPlayerRig, operation: Operation, crate: IngredientCrate, grinder: Workstation, cooker: Workstation) -> void:
+	var hand: Types.Hand = rig.dominant_hand
+	var off_hand: Types.Hand = Types.Hand.LEFT if hand == Types.Hand.RIGHT else Types.Hand.RIGHT
+	var cash_before: int = operation.get_cash()
+	_point_hand(rig, off_hand, crate.get_grab_center())
+	_click(rig, off_hand, Types.XR_ACTION_TRIGGER_CLICK)
+	await test.frames(2)
+	test.check(rig.get_held_items().is_empty() and operation.get_cash() == cash_before, "the off-hand trigger (the gun) never picks anything up")
+	_point_hand(rig, hand, crate.get_grab_center())
+	_click(rig, hand, Types.XR_ACTION_TRIGGER_CLICK)
+	await test.frames(2)
+	test.check(rig.get_held_items().size() == 1 and operation.get_cash() == cash_before - crate.ingredient.cost, "a VR trigger at a crate buys an ingredient into the hand")
+	_point_hand(rig, hand, grinder.get_input_sockets()[0].global_position)
+	_click(rig, hand, Types.XR_ACTION_TRIGGER_CLICK)
+	await test.frames(3)
+	test.check(grinder.is_running() and rig.get_held_items().is_empty(), "a VR trigger at the grinder puts the ingredient in")
+	await _stop_in_the_middle(test, rig, grinder)
+	var ground: Grabbable = grinder.get_output_socket().item
+	_point_hand(rig, hand, ground.get_grab_center())
+	_click(rig, hand, Types.XR_ACTION_GRIP_CLICK)
+	await test.frames(2)
+	var held_items: Array[Grabbable] = rig.get_held_items()
+	test.check(held_items.size() == 1 and held_items[0] == ground, "a quick VR grip click keeps holding the item")
+	var cooker_slot: ItemSocket = cooker.get_input_sockets()[0]
+	_point_hand(rig, hand, cooker_slot.global_position)
+	_click(rig, hand, Types.XR_ACTION_GRIP_CLICK)
+	await test.frames(2)
+	test.check(cooker_slot.item == ground and rig.get_held_items().is_empty(), "the next grip click puts it where the beam points")
+
+
+## Puts a VR hand at eye height and points its beam at [param target].
+static func _point_hand(rig: XRPlayerRig, hand: Types.Hand, target: Vector3) -> void:
+	var pointer: XRPointer = rig.get_hand_pointer(hand)
+	var head: Vector3 = rig.get_head_transform().origin
+	pointer.get_parent_node_3d().global_position = head
+	pointer.set_ray(head, (target - head).normalized())
+
+
+## Presses and lets go of a controller button in the same frame.
+static func _click(rig: XRPlayerRig, hand: Types.Hand, action_name: StringName) -> void:
+	rig.handle_controller_button(hand, action_name, true)
+	rig.handle_controller_button(hand, action_name, false)
 
 
 ## Puts the needle in the middle of the sweet zone and presses the station's button.

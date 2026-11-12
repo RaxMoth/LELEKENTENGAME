@@ -243,3 +243,8 @@ locked,locked,verriegelt
 open,open,offen
 unlocked,unlocked,entriegelt
 unlimited ammo,unlimited ammo,unbegrenzte Munition
+Standing View When Seated,Standing View When Seated,Stehende Sicht im Sitzen
+Recipe book,Recipe book,Rezeptbuch
+"%d / %d found","%d / %d found","%d / %d gefunden"
+Cook a new combination to fill in the book.,Cook a new combination to fill in the book.,"Koche eine neue Kombination, um das Buch zu füllen."
+"New recipe: %s","New recipe: %s","Neues Rezept: %s"

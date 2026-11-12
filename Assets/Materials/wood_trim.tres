@@ -1,0 +1,14 @@
+[gd_resource type="StandardMaterial3D" format=3]
+
+[ext_resource type="Texture2D" path="res://Assets/Textures/Wood/Planks037A/Planks037A_Color.jpg" id="color"]
+[ext_resource type="Texture2D" path="res://Assets/Textures/Wood/Planks037A/Planks037A_NormalGL.jpg" id="normal"]
+[ext_resource type="Texture2D" path="res://Assets/Textures/Wood/Planks037A/Planks037A_Roughness.jpg" id="roughness"]
+
+[resource]
+resource_name = "WoodTrim"
+albedo_texture = ExtResource("color")
+roughness_texture = ExtResource("roughness")
+normal_enabled = true
+normal_texture = ExtResource("normal")
+roughness = 1.0
+uv1_scale = Vector3(0.5, 0.5, 1)

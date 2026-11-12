@@ -20,6 +20,13 @@
 [ext_resource type="PackedScene" path="res://Scenes/Levels/House/Office/Office.tscn" id="office_scene"]
 [ext_resource type="PackedScene" path="res://Scenes/Levels/House/Cycle/HouseCycle.tscn" id="house_cycle_scene"]
 [ext_resource type="PackedScene" path="res://Scenes/Levels/House/Armory/Armory.tscn" id="armory_scene"]
+[ext_resource type="PackedScene" path="res://Scenes/Levels/House/Surroundings/Surroundings.tscn" id="surroundings_scene"]
+[ext_resource type="Material" path="res://Assets/Materials/house_wall_inside.tres" id="wall_inside_material"]
+[ext_resource type="Material" path="res://Assets/Materials/house_wall_outside.tres" id="wall_outside_material"]
+[ext_resource type="Material" path="res://Assets/Materials/house_floor.tres" id="floor_material"]
+[ext_resource type="Material" path="res://Assets/Materials/house_ceiling.tres" id="ceiling_material"]
+[ext_resource type="Material" path="res://Assets/Materials/wood_trim.tres" id="trim_material"]
+[ext_resource type="Material" path="res://Assets/Materials/house_roof.tres" id="roof_material"]
 
 [sub_resource type="ProceduralSkyMaterial" id="sky_material"]
 sky_top_color = Color(0.051, 0.0627, 0.0902, 1)
@@ -111,19 +118,19 @@ transform = Transform3D(1, 0, 0, 0, 0.5, 0.866, 0, -0.866, 0.5, 0, 12, 0)
 light_color = Color(0.5608, 0.6431, 0.8471, 1)
 light_energy = 0.6
 
-[node name="Ground" type="MeshInstance3D" parent="World/Stage"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.06, 0)
-cast_shadow = 0
-script = ExtResource("mesh")
-shape_kind = 1
-size = Vector3(90, 0.04, 90)
-color = Color(0.0824, 0.1059, 0.1569, 1)
+[node name="Surroundings" parent="World/Stage" instance=ExtResource("surroundings_scene")]
 
 [node name="HouseShell" type="Node3D" parent="World/Stage"]
 script = ExtResource("shell")
 walls = Array[Vector4]([Vector4(-5, -5, 5, -5), Vector4(-5, 5, 5, 5), Vector4(-5, -5, -5, 5), Vector4(5, -5, 5, 5), Vector4(-5, -2, 5, -2), Vector4(-0.8, -2, -0.8, 5), Vector4(0.8, -2, 0.8, 5), Vector4(-5, 2, -0.8, 2), Vector4(0.8, 1.5, 5, 1.5)])
 doors = Array[Vector4]([Vector4(-0.6, -5, 0.6, -5), Vector4(-0.7, -2, 0.7, -2), Vector4(-0.8, -0.5, -0.8, 0.5), Vector4(-0.8, 3, -0.8, 4), Vector4(0.8, -0.5, 0.8, 0.5), Vector4(0.8, 3, 0.8, 4)])
 windows = Array[Vector4]([Vector4(-4.2, -5, -1.6, -5), Vector4(1.6, -5, 4.2, -5), Vector4(-3.9, 5, -2.1, 5)])
+inside_wall_material = ExtResource("wall_inside_material")
+outside_wall_material = ExtResource("wall_outside_material")
+floor_material = ExtResource("floor_material")
+ceiling_material = ExtResource("ceiling_material")
+frame_material = ExtResource("trim_material")
+roof_material = ExtResource("roof_material")
 
 [node name="FrontGarden" parent="World/Stage" instance=ExtResource("front_garden_scene")]
 unique_name_in_owner = true

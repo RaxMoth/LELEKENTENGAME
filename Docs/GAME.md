@@ -70,12 +70,15 @@ raid is fought again).
 
 | | Headset | Flat simulator (no headset) |
 |---|---|---|
-| Grab / let go | Grip (at the hand, or along the beam) | Click an item / click where to put it |
+| Pick up / put in | Dominant-hand trigger: point at a crate, ingredient or batch and pull; point at a station slot and pull again | Click an item / click where to put it |
+| Carry by hand | Grip (either hand, at the hand or along the beam): hold to carry, let go at — or pointing at — a slot; a quick grip click keeps holding until the next click | — |
 | Use (station buttons, screens, build, door bolt) | Dominant-hand trigger | Click |
 | Fire your gun | Off-hand trigger (from the front room or porch) | Right-click, or click an attacker |
-| Front door | Grip a handle, swing the door open or shut | Click a handle |
-| Move | Off-hand stick forward: aim a teleport, release to jump (or smooth movement in Settings) | WASD / arrows; 1–4 jump to lab, front, window, office |
-| Turn | Dominant-hand stick: 30° snaps (or smooth turning) | Drag |
+| Front door | Grip a handle (or hold the dominant trigger on it), swing the door open or shut | Click a handle |
+| Walk | Dominant-hand stick walks where you look (like VRChat; "Smooth Movement", on by default) | WASD / arrows; 1–4 jump to lab, front, window, office |
+| Reposition | Off-hand stick forward: aim a teleport, release to jump | — |
+| Turn | Off-hand stick left / right: 30° snaps (or smooth turning) | Drag |
+| Seated play | "Standing View When Seated" (on by default) lifts a seated player to standing eye height; after sitting down or standing up, hold the headset's system button to recenter | — |
 | Pause | Menu or B / Y | Esc |
 | Status | Look at your off-hand wrist | Lower left of the view |
 
@@ -107,6 +110,11 @@ the better.
 Quality = average step accuracy plus equipment → tiers **Cut, Street, Pure,
 Premium** (`QualityMath`). Customers care: each wants a minimum tier and
 pays more for better.
+
+The **recipe book** on the wall above the crates lists every product as
+ingredients → product. Until you cook a product for the first time its row
+is question marks (a lock while the recipe isn't unlocked); the first batch
+fills it in for good (`Profile.operation.discovered_recipe_ids`).
 
 ### Back window (inside, west-back)
 
@@ -265,7 +273,8 @@ Scenes/Levels/House/House.tscn                inherits LevelBase; house_level.gd
     │   ├── Operation          the shared house state: stash, heat, cash flow, prices, recipes, upgrade effects
     │   ├── DayCycle           DayClock + sun / sky / lamps; StateChart Day -> Night
     │   ├── HouseCycle         Cycle/HouseCycle.tscn: the 3-day cycle; StateChart Selling -> Raid { WaveBreak <-> WaveActive } -> Cleared
-    │   ├── HouseShell         walls / doors / windows / floor built from a few numbers
+    │   ├── Surroundings       HOUSE     Surroundings/Surroundings.tscn: lawn, approach path, trees, weeds, junk (no gameplay)
+    │   ├── HouseShell         walls / doors / windows (framed) / floor / ceiling / gable roof built from a few numbers
     │   ├── FrontGarden        DEFENSE   Garden/FrontGarden.tscn: lanes, swinging / bolting door, porch, towers, build board, guards, raid waves, firing guns
     │   ├── SalesWindow        CUSTOMERS Sales/SalesWindow.tscn: window, queue, board, dealers, CustomerFlow
     │   ├── Lab                HOUSE     Lab/Lab.tscn: crates, grinder, cooker, press, crafters, recipes
@@ -310,12 +319,16 @@ attackers as exports on their scenes, pacing on `AttackerDirector`,
   falling are announced in front of you with sound and a heavy rumble.
 - **Readable lane.** The front room has two wide windows down the garden;
   the board above the gate shows door health and heat at a glance.
-- **Hands.** Grip always grabs (either hand). Triggers: dominant uses,
-  off-hand shoots — a missed shot never builds or presses something.
-  Distance grab along the beam keeps reach comfortable.
-- **Comfort.** Teleport and snap turning by default, smooth movement /
-  turning in Settings, no camera motion the player didn't make, popups and
-  announcements appear where you look and stay world-locked.
+- **Hands.** The dominant trigger picks up and puts in by pointing, like
+  the flat cursor's clicks; grip grabs with either hand (hold to carry, a
+  quick click to keep holding). The off-hand trigger only shoots (or clicks
+  a screen / button) — it never picks anything up, so aiming past the door
+  handle still fires. Distance grab along the beam keeps reach comfortable.
+- **Comfort.** Stick walking where you look plus teleport and snap turning
+  on the off-hand stick; smooth turning in Settings. Seated players are
+  lifted to standing height (re-measured on recenter). No camera motion the
+  player didn't make; popups and announcements appear where you look and
+  stay world-locked.
 - **Performance** (standalone headsets are phones): no physics for
   interaction or combat, pooled spawns, shared meshes and materials, blob
   shadows, one unshadowed light, fog instead of far draw distance, three
@@ -331,6 +344,6 @@ attackers as exports on their scenes, pacing on `AttackerDirector`,
 - **Lane overview:** a tabletop miniature of the garden in the hall.
 - **More content:** recipes, customer types, towers, traps, extra garden
   lanes, more lab rooms; worker skill per person.
-- **Comfort:** a vignette for smooth movement; height calibration.
+- **Comfort:** a vignette for smooth movement.
 - **On device:** tune reach, station heights, screen sizes and text, haptics.
 - **Art and audio:** stand-in meshes and synthesized sounds; no music.

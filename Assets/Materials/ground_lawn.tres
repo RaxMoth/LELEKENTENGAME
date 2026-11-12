@@ -1,0 +1,15 @@
+[gd_resource type="StandardMaterial3D" format=3]
+
+[ext_resource type="Texture2D" path="res://Assets/Textures/Ground/Ground037/Ground037_Color.jpg" id="color"]
+[ext_resource type="Texture2D" path="res://Assets/Textures/Ground/Ground037/Ground037_NormalGL.jpg" id="normal"]
+
+[resource]
+resource_name = "GroundLawn"
+albedo_texture = ExtResource("color")
+normal_enabled = true
+normal_texture = ExtResource("normal")
+vertex_color_use_as_albedo = true
+metallic_specular = 0.25
+roughness = 1.0
+texture_filter = 5
+uv1_scale = Vector3(0.4, 0.4, 1)

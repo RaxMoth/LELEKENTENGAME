@@ -16,6 +16,10 @@ signal released(item: Grabbable)
 @export var grab_radius: float = 0.12
 ## Where it sits relative to the holder (a controller or the flat camera).
 @export var hold_offset: Vector3 = Vector3(0.0, 0.0, -0.06)
+## Fixed to something in the world (a door handle): it only moves while a
+## hand holds the button down, never stays in the hand after a click and
+## never goes into a socket.
+@export var is_fixed: bool = false
 
 ## The node it follows while held (null when not held).
 var holder: Node3D = null
