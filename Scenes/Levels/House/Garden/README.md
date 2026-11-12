@@ -15,9 +15,11 @@ yard stays quiet.
 | `Yard` (`yard.gd`, in `FrontGarden.tscn`) | The open field: obstacles (x, z, radius, kind) → trees, pines, rocks, bushes, a car, the fence; raider registry, picking, line of sight (`is_shot_blocked`), door spots |
 | `Raider.tscn`, `raider.gd` + `Cop/Swat/RamTeam.tscn` | Raiders; StateChart Alive { Moving ⇄ InCover, Attacking } → Dead; tune with exports (health, armor, speeds, cover times, door damage, `is_battering_ram`) |
 | `raid_squad.gd` | `RaidSquad`: leapfrogging from cover to cover, gathering, the rush |
+| `raider_body.gd` (`RaiderBody`) | The jointed raider body (uniform, vest, headgear, what it carries) built from exports, animated procedurally (walk, crouch, strike) |
 | `attacker_director.gd` | Spawns each raid wave at the yard's edges, splits it into squads, gives door spots, counts who is left |
 | `HouseTurret.tscn`, `house_turret.gd` | Roof turrets (Roof Turrets upgrade): auto-aim at visible raiders, or manual from the PC |
 | `SecurityPc.tscn`, `security_pc.gd`, `TurretConsole.tscn`, `turret_console.gd` | The office desk PC (Security PC upgrade): live turret camera, take control, aim, fire |
+| `TurretSeat.tscn`, `turret_seat.gd` | "VR in VR": the goggles beside the PC put the player into a turret (head at its camera, barrel follows the hand, triggers fire, visor frame) |
 | `FrontDoor.tscn`, `front_door.gd` (+ `Scripts/XR/hinge_handle.gd`) | The objective and the way out: trigger or grip a handle, bolt it from either side; StateChart Closed { Unlocked ⇄ Locked } ⇄ Open |
 | `BeamTracer.tscn` | Pooled shot tracer |
 | `../Armory/` (+ `Guns/`) | The armory terminal and the animated gun models — also this area |

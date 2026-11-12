@@ -22,6 +22,11 @@ const PRESETS: Dictionary[StringName, Array] = {
 	&"jump": [300.0, 700.0, 0.12, 1, 0.25],
 	&"explosion": [200.0, 40.0, 0.35, 2, 0.5],
 	&"pop": [500.0, 900.0, 0.07, 0, 0.5],
+	&"step": [150.0, 70.0, 0.06, 2, 0.22],
+	&"shot_pistol": [1100.0, 260.0, 0.07, 2, 0.3],
+	&"shot_smg": [1500.0, 420.0, 0.045, 2, 0.22],
+	&"shot_shotgun": [420.0, 50.0, 0.22, 2, 0.5],
+	&"shot_rifle": [900.0, 110.0, 0.14, 2, 0.42],
 }
 
 static var _cache: Dictionary[StringName, AudioStreamWAV] = {}

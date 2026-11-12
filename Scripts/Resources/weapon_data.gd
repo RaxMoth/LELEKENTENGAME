@@ -29,6 +29,29 @@ extends Resource
 ## Haptic kick of one shot, in Types.HapticStrength order (kept as a plain
 ## int so the resource loads without autoloads, e.g. in unit tests).
 @export_enum("Light", "Medium", "Heavy") var recoil: int = 0
+## SfxSynth preset of the shot (each gun sounds different).
+@export var sound_preset: StringName = &"shoot"
+## Keeps firing while the trigger is held (SMG); otherwise one shot per pull.
+@export var is_automatic: bool = false
+
+@export_group("Projectiles")
+## Projectiles per shot (a shotgun's pellets); damage is per projectile.
+@export_range(1, 32) var pellets: int = 1
+## Half-angle of the cone the projectiles fly in (0 = dead accurate).
+@export var spread_degrees: float = 0.0
+## Automatic fire: the cone widens by this much per shot in a burst...
+@export var bloom_per_shot_degrees: float = 0.0
+## ...up to this much.
+@export var max_bloom_degrees: float = 0.0
+## Raiders one projectile can pass through (a rifle round: 2).
+@export_range(1, 5) var pierce_count: int = 1
+
+@export_group("Damage falloff")
+## Full damage up to here (meters)...
+@export var falloff_start_meters: float = 100.0
+## ...down to falloff_min_multiplier at this distance (end <= start = no falloff).
+@export var falloff_end_meters: float = 0.0
+@export_range(0.0, 1.0) var falloff_min_multiplier: float = 1.0
 
 @export_group("Ammo")
 ## Never runs out (the starter pistol).

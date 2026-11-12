@@ -7,7 +7,7 @@
 script = ExtResource("script")
 id = &"rifle"
 display_name = "Rifle"
-description = "Long reach and armor-piercing rounds. The answer to SWAT."
+description = "Dead accurate, armor-piercing rounds that go through one raider into the next. The answer to SWAT."
 cost = 800
 model_scene = ExtResource("model")
 damage = 60.0
@@ -20,3 +20,7 @@ starting_ammo = 20
 ammo_pack_size = 20
 ammo_pack_cost = 50
 max_ammo = 100
+pellets = 1
+spread_degrees = 0.1
+pierce_count = 2
+sound_preset = &"shot_rifle"

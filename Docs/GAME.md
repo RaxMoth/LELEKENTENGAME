@@ -74,9 +74,10 @@ raid is fought again).
 | Pick up / put in | Dominant-hand trigger: point at a crate, ingredient or batch and pull; point at a station slot and pull again | Click an item / click where to put it |
 | Carry by hand | Grip (either hand, at the hand or along the beam): hold to carry, let go at — or pointing at — a slot; a quick grip click keeps holding until the next click | — |
 | Use (station buttons, screens, door bolt) | Dominant-hand trigger | Click |
-| Fire your gun | Off-hand trigger (from the front room or porch); the gun sits in that hand | Right-click, or click a raider |
+| Fire your gun | Off-hand trigger (from the front room or porch); the gun sits in that hand; hold it for the SMG | Right-click (hold for the SMG), or click a raider |
 | Front door | Trigger on a handle swings it fully open / shut; grip a handle to swing it by hand | Click a handle |
-| Walk | Dominant-hand stick walks where you look (like VRChat; "Smooth Movement", on by default) | WASD / arrows; 1–4 jump to lab, front, window, office |
+| Walk | Dominant-hand stick walks where you look (like VRChat; "Smooth Movement", on by default), easing in and out; push it all the way to sprint | WASD / arrows; 1–4 jump to lab, front, window, office |
+| Run with your arms | Hold both grips (hands empty) and swing your arms like jogging: the harder you swing, the faster you run, toward where your hands point; footsteps and a light tap in both hands every stride | — |
 | Reposition | Off-hand stick forward: aim a teleport, release to jump | — |
 | Turn | Off-hand stick left / right: 30° snaps (or smooth turning) | Drag |
 | Seated play | "Standing View When Seated" (on by default) lifts a seated player to standing eye height; after sitting down or standing up, hold the headset's system button to recenter | — |
@@ -157,8 +158,8 @@ crouching body from shots at the same height).
 
 | Raider | Behavior | Comes |
 |---|---|---|
-| Cop | Armored (6 off every hit), uses cover | Every raid wave |
-| SWAT | Tougher, heavy armor (12 off every hit) — bring armor-piercing rounds | From the 2nd wave of raid 2, every wave after |
+| Cop | Riot shield, cap, armored (6 off every hit), uses cover | Every raid wave |
+| SWAT | Helmet, plate carrier, carbine; tougher, heavy armor (12 off every hit) — bring armor-piercing rounds | From the 2nd wave of raid 2, every wave after |
 | Battering ram | Two officers with a ram: no cover, wait at the house for the rush, then hit the door for 90 every 2.4 s | Last wave of raid 2, one more every 3 raids |
 
 ### Roof turrets and the Security PC
@@ -171,6 +172,14 @@ puts a monitor on the office desk with each turret's live camera view:
 switch turrets, **take control**, point at the view to aim and pull the
 trigger on it to fire (held = keeps firing); release it and it aims on its
 own again.
+
+**VR in VR:** beside the monitor lie the **turret goggles**. Put them on
+(trigger or click) and you are in the turret on screen: your head where its
+camera sits on the roof, the barrel right below you following your hand,
+either trigger firing it, a visor frame with the turret's name around your
+view. You can't walk while seated and your own gun is put away; the
+"Take off goggles" button floating in front of you (or the end of the
+shift) puts you back at the desk exactly where you stood.
 
 ### The front door
 
@@ -192,14 +201,17 @@ runs dry, so you are never unarmed. "Better Rounds" adds damage to every gun.
 Each gun has its own model in the off hand (lower right of the view in the
 flat simulator) and is animated on every shot: kick, muzzle flash and its
 moving part — the pistol's slide, the SMG's charging handle, the shotgun's
-pump, the rifle's bolt. An empty gun only clicks.
+pump, the rifle's bolt. An empty gun only clicks. The models are built from
+metal, polymer and wood materials (sights, serrations, curved magazine,
+scope, wooden furniture). Every gun shoots its own way (`WeaponBallistics`)
+and has its own sound.
 
 | Gun | Cost | Damage | Shots/s | Range | Ammo (box) |
 |---|---|---|---|---|---|
-| Pistol | free | 20 | 3.3 | 30 m | unlimited |
-| SMG | $350 | 14 | 10 | 25 m | 90 for $40 (max 360) |
-| Shotgun | $500 | 90 | 1.2 | 12 m | 16 for $40 (max 64) |
-| Rifle | $800 | 60, pierces armor | 1.8 | 40 m | 20 for $50 (max 100) |
+| Pistol | free | 20, falls off past 18 m | 3.3, semi-auto | 30 m | unlimited |
+| SMG | $350 | 12, falls off past 12 m | 12.5, full auto (hold), spread grows during a burst | 25 m | 90 for $40 (max 360) |
+| Shotgun | $500 | 9 pellets × 14 in a 5.5° cone, weak past 15 m | 1.2, pump | 18 m | 16 for $40 (max 64) |
+| Rifle | $800 | 60, pierces armor, goes through one raider into the next | 1.8, bolt | 40 m | 20 for $50 (max 100) |
 
 No single answer works: cops come in numbers and hide, SWAT shrug off the
 SMG, the ram must die before it reaches the door, and the shotgun only
@@ -324,10 +336,12 @@ Scenes/Levels/House/House.tscn                inherits LevelBase; house_level.gd
 | `Yard`, `Raider`, `RaidSquad`, `AttackerDirector` | The open yard (round obstacles, cover, line of sight; `YardNavigation`); pooled raiders with StateChart Alive { Moving ⇄ InCover, Attacking } → Dead, moving in squads that leapfrog and rush together |
 | `HouseTurret`, `SecurityPc`, `TurretConsole` | Roof turrets (house upgrade) that aim on their own or from the office PC's camera view |
 | `GunModel` | The animated gun in hand (slide, pump, bolt, flash, kick) |
+| `RaiderBody` | A raider's jointed body (hips, torso, head, arms, legs) built from exports and animated procedurally: walk cycle, crouch, strike |
+| `TurretSeat` | "VR in VR": the goggles put the player into a roof turret (view at its camera, barrel follows the hand) |
 | `FrontDoor`, `HingeHandle` | The door: StateChart Closed { Unlocked ⇄ Locked } ⇄ Open; grab-and-swing handles, bolts on both sides, opens the doorway in the `WalkableArea` |
 | `Armory`, `WeaponData`, `WeaponLoadout`, `Profile.armory` | Guns and ammo: bought at the terminal, fired by the FrontGarden |
 | `Worker` | StateChart Absent → Working ⇄ Striking; lives in its front's scene |
-| Pure logic (`Scripts/Game/`) | `TimingGauge`, `QualityMath`, `Stash`, `SalesMath`, `CustomerOrder`, `HeatMeter`, `DayClock`, `RaidPlanner`, `WeaponLoadout`, `YardNavigation` — unit-tested |
+| Pure logic (`Scripts/Game/`) | `TimingGauge`, `QualityMath`, `Stash`, `SalesMath`, `CustomerOrder`, `HeatMeter`, `DayClock`, `RaidPlanner`, `WeaponLoadout`, `YardNavigation`, `WeaponBallistics`, `WalkMotion` — unit-tested |
 
 All numbers are data: ingredients, recipes, customer types, guns and raids in
 `Ressources/`, upgrades in one catalog per area (`Ressources/Upgrades/<Area>/`),

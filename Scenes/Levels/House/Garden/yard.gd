@@ -24,7 +24,7 @@ signal raider_defeated(raider: Raider)
 enum ObstacleKind { PINE, TREE, ROCK, BUSH, CAR, COVER_ONLY }
 
 ## Height (meters) each kind of obstacle covers a shot up to.
-const COVER_HEIGHTS: Array[float] = [5.0, 4.2, 0.85, 1.0, 1.45, 4.5]
+const COVER_HEIGHTS: Array[float] = [5.0, 4.2, 0.85, 1.0, 1.65, 4.5]
 const FENCE_HEIGHT: float = 1.1
 const FENCE_POST_SPACING: float = 2.4
 
@@ -209,6 +209,22 @@ func pick_raider(ray_origin: Vector3, ray_direction: Vector3, max_distance: floa
 	return nearest
 
 
+## Up to [param max_count] living raiders a ray passes through, nearest
+## first, each not hidden by cover (a rifle round that goes through one into
+## the next). Each entry is [Raider, distance along the ray].
+func pick_raiders(ray_origin: Vector3, ray_direction: Vector3, max_distance: float, max_count: int) -> Array[Array]:
+	var hits: Array[Array] = []
+	for raider: Raider in _raiders:
+		if not raider.is_alive():
+			continue
+		var distance: float = RayMath.intersect_sphere(ray_origin, ray_direction, raider.get_hit_center(), raider.hit_radius)
+		if distance == RayMath.NO_HIT or distance > max_distance or is_shot_blocked(ray_origin, raider.get_hit_center()):
+			continue
+		hits.append([raider, distance])
+	hits.sort_custom(func(first: Array, second: Array) -> bool: return float(first[1]) < float(second[1]))
+	return hits.slice(0, maxi(1, max_count))
+
+
 ## Living raider closest to the door within [param max_distance] of
 ## [param point] and in its line of fire (guards, turrets).
 func find_raider_nearest_door(point: Vector3, max_distance: float) -> Raider:
@@ -292,8 +308,8 @@ func _build_obstacle(obstacle: Vector4) -> void:
 		ObstacleKind.BUSH:
 			_add_part(base + Vector3(0.0, 0.45, 0.0), PlaceholderMesh3D.ShapeKind.SPHERE, Vector3(radius * 2.0, 0.95, radius * 2.0), Palette.WORLD_DETAIL.lightened(0.15))
 		ObstacleKind.CAR:
-			_add_part(base + Vector3(0.0, 0.5, 0.0), PlaceholderMesh3D.ShapeKind.BOX, Vector3(radius * 1.1, 0.75, radius * 2.0), Palette.CATEGORY[1].darkened(0.45))
-			_add_part(base + Vector3(0.0, 1.1, -radius * 0.1), PlaceholderMesh3D.ShapeKind.BOX, Vector3(radius * 1.0, 0.55, radius * 1.1), Palette.SURFACE)
+			_add_part(base + Vector3(0.0, 0.6, 0.0), PlaceholderMesh3D.ShapeKind.BOX, Vector3(radius * 1.1, 0.95, radius * 2.0), Palette.CATEGORY[1].darkened(0.45))
+			_add_part(base + Vector3(0.0, 1.35, -radius * 0.1), PlaceholderMesh3D.ShapeKind.BOX, Vector3(radius * 1.0, 0.6, radius * 1.1), Palette.SURFACE)
 
 
 func _build_fence() -> void:

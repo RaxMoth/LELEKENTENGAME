@@ -43,6 +43,9 @@ var _recoil_tween: Tween
 @onready var _muzzle: Marker3D = %Muzzle
 @onready var _camera_mount: Marker3D = %CameraMount
 @onready var _flash: MeshInstance3D = %Flash
+@onready var _mount_mesh: MeshInstance3D = %Mount
+@onready var _housing: MeshInstance3D = %Housing
+@onready var _sensor: MeshInstance3D = %Sensor
 
 
 func _ready() -> void:
@@ -84,6 +87,14 @@ func get_aim_direction() -> Vector3:
 func set_manual(should_be_manual: bool) -> void:
 	is_manual = should_be_manual
 	_target = null
+
+
+## Someone sits in the turret (the goggles at the Security PC): its own
+## housing hides so it doesn't block their view; the barrel stays.
+func set_seated(is_seated: bool) -> void:
+	_mount_mesh.visible = not is_seated
+	_housing.visible = not is_seated
+	_sensor.visible = not is_seated
 
 
 ## Manual mode: the point in the world to swing toward.

@@ -40,6 +40,12 @@ const TRACER_SCENE: PackedScene = preload("res://Scenes/Levels/House/Garden/Beam
 @export var doorway_region: Rect2 = Rect2(-0.5, -5.35, 1.0, 0.7)
 
 var _weapon_cooldown: float = 0.0
+## The pointer whose trigger is held (automatic guns keep firing), or null.
+var _held_trigger_pointer: XRPointer = null
+## Shots fired in the current burst (automatic spread grows with it).
+var _shots_in_burst: int = 0
+var _seconds_since_shot: float = 0.0
+var _random: RandomNumberGenerator = RandomNumberGenerator.new()
 var _turrets: Array[HouseTurret] = []
 ## Gun models by weapon id, made once and swapped when another gun is equipped.
 var _gun_models: Dictionary[StringName, GunModel] = {}
@@ -49,6 +55,7 @@ var _shown_gun: GunModel = null
 @onready var door: FrontDoor = %FrontDoor
 @onready var director: AttackerDirector = %AttackerDirector
 @onready var security_pc: SecurityPc = %SecurityPc
+@onready var turret_seat: TurretSeat = %TurretSeat
 @onready var _turret_root: Node3D = %Turrets
 @onready var _guards: Node3D = %Guards
 
@@ -59,6 +66,11 @@ var _shown_gun: GunModel = null
 func _on_setup() -> void:
 	context.rig.primary_action_pressed.connect(_on_rig_primary_action_pressed)
 	context.rig.secondary_action_pressed.connect(_on_rig_secondary_action_pressed)
+	context.rig.secondary_action_released.connect(func(_pointer: XRPointer) -> void:
+		_stop_trigger()
+		turret_seat.set_firing(false, false))
+	context.rig.primary_action_released.connect(func(_pointer: XRPointer) -> void: turret_seat.set_firing(false, true))
+	_random.randomize()
 	yard.raider_defeated.connect(func(raider: Raider) -> void: score_earned.emit(raider.score_value))
 	door.broken.connect(_on_door_broken)
 	door.passage_changed.connect(_on_door_passage_changed)
@@ -70,6 +82,8 @@ func _on_setup() -> void:
 		turret.setup(yard)
 		_turrets.append(turret)
 	security_pc.setup(_turrets, yard)
+	security_pc.goggles_used.connect(func(turret: HouseTurret) -> void: turret_seat.enter(turret))
+	turret_seat.setup(context.rig)
 	for guard: Node in _guards.get_children():
 		(guard as Worker).operation = context.operation
 	apply_upgrades()
@@ -77,10 +91,13 @@ func _on_setup() -> void:
 
 func _shift_process(delta: float) -> void:
 	_weapon_cooldown = maxf(0.0, _weapon_cooldown - delta)
+	_seconds_since_shot += delta
+	_step_trigger()
 	director.step(delta)
 	for turret: HouseTurret in _turrets:
 		turret.step(delta)
 	security_pc.step(delta)
+	turret_seat.step(delta)
 	_update_gun()
 	_update_pointers()
 
@@ -104,6 +121,8 @@ func apply_upgrades() -> void:
 func finish_shift(_result: LevelResult) -> void:
 	director.clear_pending()
 	yard.freeze()
+	_stop_trigger()
+	turret_seat.leave()
 	security_pc.release_control()
 	for pointer: XRPointer in context.rig.get_active_pointers():
 		pointer.set_world_hit_distance(RayMath.NO_HIT)
@@ -162,37 +181,56 @@ func get_shown_gun() -> GunModel:
 	return _shown_gun
 
 
-## Fires the equipped gun along a pointer's ray: its damage (plus the Better
-## Rounds upgrade), range and armor piercing, one round of its ammo; cover
-## in the yard stops the shot. Returns the raider it hit, or null.
+## Fires the equipped gun along a pointer's ray, the way that gun shoots
+## (WeaponBallistics): its projectiles (a shotgun's pellets) fly in a cone
+## that widens during a burst, each loses damage with distance, goes through
+## up to pierce_count raiders (a rifle round) and is stopped by cover. One
+## round of ammo per shot; Better Rounds adds damage. Returns the first
+## raider hit, or null.
 func fire_weapon(pointer: XRPointer) -> Raider:
 	var weapon: WeaponData = get_equipped_weapon()
 	if not context.is_playing() or weapon == null or _weapon_cooldown > 0.0:
 		return null
 	_weapon_cooldown = weapon.fire_interval_seconds
 	if not Profile.armory.loadout.try_fire(weapon):
+		_stop_trigger()
 		Audio.play_ui(Audio.UI_ERROR)
 		if _shown_gun != null:
 			_shown_gun.play_dry_fire()
 		FloatingText3D.spawn(tr("Out of ammo"), pointer.get_point(1.5), Palette.WARNING, yard.get_effects_root())
 		return null
-	var raider: Raider = yard.pick_raider(pointer.ray_origin, pointer.ray_direction, weapon.range_meters) if is_in_defense_zone() else null
-	var shot_end: Vector3 = pointer.get_point(weapon.range_meters)
-	var ground: float = yard.get_ground_distance(pointer.ray_origin, pointer.ray_direction)
-	if ground != RayMath.NO_HIT and ground < weapon.range_meters:
-		shot_end = pointer.get_point(ground)
-	if raider != null:
-		shot_end = raider.get_hit_center()
-		raider.take_hit(weapon.damage + context.operation.get_upgrade_value(Types.UPGRADE_BLASTER), self, false, weapon.pierces_armor)
-		PopEffect3D.spawn(shot_end, Palette.PROJECTILE, 0.4, yard.get_effects_root())
+	var bloom: float = WeaponBallistics.get_bloom(weapon, _shots_in_burst)
+	_shots_in_burst += 1
+	_seconds_since_shot = 0.0
 	var muzzle: Vector3 = _get_muzzle_position(pointer)
-	var tracer: BeamTracer = Pools.spawn(TRACER_SCENE, yard.get_effects_root(), muzzle) as BeamTracer
-	tracer.fire(muzzle, shot_end)
+	# Better Rounds is per shot: a shotgun shares it among its pellets.
+	var bonus: float = context.operation.get_upgrade_value(Types.UPGRADE_BLASTER) / maxf(1.0, weapon.pellets)
+	var can_hit: bool = is_in_defense_zone()
+	var first_hit: Raider = null
+	for direction: Vector3 in WeaponBallistics.get_shot_directions(pointer.ray_direction, weapon, bloom, _random):
+		var shot_end: Vector3 = pointer.ray_origin + direction * weapon.range_meters
+		var ground: float = yard.get_ground_distance(pointer.ray_origin, direction)
+		if ground != RayMath.NO_HIT and ground < weapon.range_meters:
+			shot_end = pointer.ray_origin + direction * ground
+		var hits: Array[Array] = []
+		if can_hit:
+			hits = yard.pick_raiders(pointer.ray_origin, direction, weapon.range_meters, weapon.pierce_count)
+		for hit: Array in hits:
+			var raider: Raider = hit[0] as Raider
+			raider.take_hit(WeaponBallistics.get_damage_at(weapon, float(hit[1])) + bonus, self, false, weapon.pierces_armor)
+			PopEffect3D.spawn(raider.get_hit_center(), Palette.PROJECTILE, 0.3, yard.get_effects_root())
+			if first_hit == null:
+				first_hit = raider
+		# The projectile stops in the last raider it can reach.
+		if not hits.is_empty() and hits.size() >= weapon.pierce_count:
+			shot_end = (hits[hits.size() - 1][0] as Raider).get_hit_center()
+		var tracer: BeamTracer = Pools.spawn(TRACER_SCENE, yard.get_effects_root(), muzzle) as BeamTracer
+		tracer.fire(muzzle, shot_end)
 	if _shown_gun != null:
 		_shown_gun.play_shot()
-	Audio.play_sfx_at(SfxSynth.get_preset(&"shoot"), pointer.ray_origin, 0.1, -4.0)
+	Audio.play_sfx_at(SfxSynth.get_preset(weapon.sound_preset), pointer.ray_origin, 0.06, -3.0)
 	context.rig.pulse(pointer, weapon.recoil as Types.HapticStrength)
-	return raider
+	return first_hit
 
 # ============================================
 # INTERNALS
@@ -201,6 +239,13 @@ func fire_weapon(pointer: XRPointer) -> Raider:
 ## Flat simulator: one cursor does everything, so a click on a raider fires.
 ## In a headset the dominant trigger stays for screens and buttons.
 func _on_rig_primary_action_pressed(pointer: XRPointer) -> void:
+	if turret_seat.is_active():
+		# Seated in a turret, either trigger fires it (flat: a click fires one burst).
+		turret_seat.set_firing(true)
+		if not context.rig.is_xr_active:
+			turret_seat.get_turret().fire()
+			turret_seat.set_firing(false)
+		return
 	if not context.is_playing() or not is_in_defense_zone() or context.rig.is_xr_active:
 		return
 	if yard.pick_raider(pointer.ray_origin, pointer.ray_direction, _get_weapon_range()) != null:
@@ -208,7 +253,25 @@ func _on_rig_primary_action_pressed(pointer: XRPointer) -> void:
 
 
 func _on_rig_secondary_action_pressed(pointer: XRPointer) -> void:
+	if turret_seat.is_active():
+		turret_seat.set_firing(true, false)
+		return
+	_held_trigger_pointer = pointer
 	fire_weapon(pointer)
+
+
+## Automatic guns keep firing while the trigger is held; a pause between
+## shots lets the spread settle again.
+func _step_trigger() -> void:
+	var weapon: WeaponData = get_equipped_weapon()
+	if weapon != null and _seconds_since_shot > weapon.fire_interval_seconds * 2.5:
+		_shots_in_burst = 0
+	if _held_trigger_pointer != null and weapon != null and weapon.is_automatic:
+		fire_weapon(_held_trigger_pointer)
+
+
+func _stop_trigger() -> void:
+	_held_trigger_pointer = null
 
 
 func _on_door_broken() -> void:
@@ -238,7 +301,7 @@ func _update_gun() -> void:
 	var wanted: GunModel = _get_gun_model(weapon)
 	var anchor: Node3D = context.rig.get_weapon_anchor()
 	var should_show: bool = wanted != null and anchor != null and not context.rig.is_weapon_hand_busy() \
-		and (context.rig.is_xr_active or is_in_defense_zone())
+		and not turret_seat.is_active() and (context.rig.is_xr_active or is_in_defense_zone())
 	if _shown_gun != null and (_shown_gun != wanted or not should_show):
 		_shown_gun.visible = false
 		_shown_gun = null
