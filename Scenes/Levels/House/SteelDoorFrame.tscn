@@ -1,0 +1,49 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://Scripts/Components/upgrade_look.gd" id="look"]
+[ext_resource type="Script" path="res://Scripts/Utils/textured_box_3d.gd" id="box"]
+[ext_resource type="Material" path="res://Assets/Materials/steel_frame.tres" id="steel"]
+
+[node name="SteelDoorFrame" type="Node3D"]
+script = ExtResource("look")
+upgrade_id = &"house_security"
+
+[node name="JambHinge" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.66, 1.07, 0)
+cast_shadow = 0
+script = ExtResource("box")
+size = Vector3(0.12, 2.14, 0.22)
+box_material = ExtResource("steel")
+
+[node name="JambLatch" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.66, 1.07, 0)
+cast_shadow = 0
+script = ExtResource("box")
+size = Vector3(0.12, 2.14, 0.22)
+box_material = ExtResource("steel")
+
+[node name="Lintel" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.16, 0)
+cast_shadow = 0
+script = ExtResource("box")
+size = Vector3(1.44, 0.12, 0.22)
+box_material = ExtResource("steel")
+
+[node name="HeavyLocks" type="Node3D" parent="."]
+script = ExtResource("look")
+upgrade_id = &"house_security"
+min_level = 2
+
+[node name="LockLow" type="MeshInstance3D" parent="HeavyLocks"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.66, 0.95, 0.14)
+cast_shadow = 0
+script = ExtResource("box")
+size = Vector3(0.11, 0.16, 0.06)
+box_material = ExtResource("steel")
+
+[node name="LockHigh" type="MeshInstance3D" parent="HeavyLocks"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.66, 1.55, 0.14)
+cast_shadow = 0
+script = ExtResource("box")
+size = Vector3(0.11, 0.16, 0.06)
+box_material = ExtResource("steel")

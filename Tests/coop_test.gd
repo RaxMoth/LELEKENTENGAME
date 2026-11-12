@@ -62,9 +62,10 @@ func _run_host() -> void:
 	var lab: Lab = level.get_front(Lab) as Lab
 	var crate: IngredientCrate = lab.get_crate(&"glowcap")
 	var grinder: Workstation = lab.get_station(&"Grinder")
-	# The lab's gadgets come from the office: buy them so the guest can grind.
+	# The lab's gadgets come from the office: buy them so the guest can grind
+	# (and patch the walls, so the guest's house shows the renovation).
 	Profile.wallet.add(Types.CURRENCY_CASH, 5000)
-	for gadget_id: StringName in [Types.UPGRADE_GRINDER, Types.UPGRADE_COOKER, Types.UPGRADE_PRESS]:
+	for gadget_id: StringName in [Types.UPGRADE_GRINDER, Types.UPGRADE_COOKER, Types.UPGRADE_PRESS, Types.UPGRADE_RENOVATE_WALLS]:
 		Profile.upgrades.purchase(GameConfig.get_default().find_upgrade(gadget_id))
 	level.apply_upgrades()
 	var cash_before: int = level.operation.get_cash()
@@ -101,6 +102,8 @@ func _run_guest() -> void:
 	var grinder: Workstation = lab.get_station(&"Grinder")
 	var rig: XRPlayerRig = level.rig
 	_check(await _wait_until(func() -> bool: return sync.get_remote_players().size() == 1), "guest: sees the host")
+	var shell: HouseShell = level.get_house_shell()
+	_check(await _wait_until(func() -> bool: return shell.get_surface_material(HouseShell.SurfaceKind.INSIDE_WALL) != shell.inside_wall_material), "guest: the host's renovated walls show here too")
 	# Let the first shared state arrive before reading the cash.
 	await _seconds(1.0)
 	var cash_before: int = level.operation.get_cash()

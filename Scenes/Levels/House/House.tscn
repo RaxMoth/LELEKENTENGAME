@@ -7,7 +7,8 @@
 [ext_resource type="Script" path="res://Scenes/Levels/House/operation.gd" id="operation"]
 [ext_resource type="Script" path="res://Scenes/Levels/House/day_cycle.gd" id="day_cycle"]
 [ext_resource type="Script" path="res://Scenes/Levels/House/house_shell.gd" id="shell"]
-[ext_resource type="Script" path="res://Scenes/Levels/House/stash_shelf.gd" id="stash_shelf"]
+[ext_resource type="PackedScene" path="res://Scenes/Levels/House/StashShelf.tscn" id="stash_shelf_scene"]
+[ext_resource type="PackedScene" path="res://Scenes/Levels/House/SteelDoorFrame.tscn" id="steel_door_frame_scene"]
 [ext_resource type="Script" path="res://Scenes/Levels/House/wrist_status.gd" id="wrist"]
 [ext_resource type="Script" path="res://Scripts/XR/walkable_area.gd" id="walkable"]
 [ext_resource type="Script" path="res://Scripts/Utils/placeholder_mesh_3d.gd" id="mesh"]
@@ -30,6 +31,13 @@
 [ext_resource type="Material" path="res://Assets/Materials/house_ceiling.tres" id="ceiling_material"]
 [ext_resource type="Material" path="res://Assets/Materials/wood_trim.tres" id="trim_material"]
 [ext_resource type="Material" path="res://Assets/Materials/house_roof.tres" id="roof_material"]
+[ext_resource type="Script" path="res://Scripts/Resources/shell_renovation.gd" id="shell_renovation"]
+[ext_resource type="Resource" path="res://Ressources/Renovations/inside_walls.tres" id="renovation_inside_walls"]
+[ext_resource type="Resource" path="res://Ressources/Renovations/ceiling.tres" id="renovation_ceiling"]
+[ext_resource type="Resource" path="res://Ressources/Renovations/frames.tres" id="renovation_frames"]
+[ext_resource type="Resource" path="res://Ressources/Renovations/floor.tres" id="renovation_floor"]
+[ext_resource type="Resource" path="res://Ressources/Renovations/facade.tres" id="renovation_facade"]
+[ext_resource type="Resource" path="res://Ressources/Renovations/roof.tres" id="renovation_roof"]
 
 [sub_resource type="ProceduralSkyMaterial" id="sky_material"]
 sky_top_color = Color(0.051, 0.0627, 0.0902, 1)
@@ -126,6 +134,7 @@ light_energy = 0.6
 [node name="Town" parent="World/Stage" instance=ExtResource("town_scene")]
 
 [node name="HouseShell" type="Node3D" parent="World/Stage"]
+unique_name_in_owner = true
 script = ExtResource("shell")
 walls = Array[Vector4]([Vector4(-5, -5, 5, -5), Vector4(-5, 5, 5, 5), Vector4(-5, -5, -5, 5), Vector4(5, -5, 5, 5), Vector4(-5, -2, 5, -2), Vector4(-0.8, -2, -0.8, 5), Vector4(0.8, -2, 0.8, 5), Vector4(-5, 2, -0.8, 2), Vector4(0.8, 1.5, 5, 1.5)])
 doors = Array[Vector4]([Vector4(-0.6, -5, 0.6, -5), Vector4(-0.7, -2, 0.7, -2), Vector4(-0.8, -0.5, -0.8, 0.5), Vector4(-0.8, 3, -0.8, 4), Vector4(0.8, -0.5, 0.8, 0.5), Vector4(0.8, 3, 0.8, 4)])
@@ -136,6 +145,7 @@ floor_material = ExtResource("floor_material")
 ceiling_material = ExtResource("ceiling_material")
 frame_material = ExtResource("trim_material")
 roof_material = ExtResource("roof_material")
+renovations = Array[ExtResource("shell_renovation")]([ExtResource("renovation_inside_walls"), ExtResource("renovation_ceiling"), ExtResource("renovation_frames"), ExtResource("renovation_floor"), ExtResource("renovation_facade"), ExtResource("renovation_roof")])
 
 [node name="FrontGarden" parent="World/Stage" instance=ExtResource("front_garden_scene")]
 unique_name_in_owner = true
@@ -156,71 +166,13 @@ unique_name_in_owner = true
 unique_name_in_owner = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, 0, 5)
 
-[node name="StashShelf" type="Node3D" parent="World/Stage" node_paths=PackedStringArray("operation")]
+[node name="StashShelf" parent="World/Stage" node_paths=PackedStringArray("operation") instance=ExtResource("stash_shelf_scene")]
 unique_name_in_owner = true
 transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 4.68, 0, 3.25)
-script = ExtResource("stash_shelf")
 operation = NodePath("../Operation")
 
-[node name="Board1" type="MeshInstance3D" parent="World/Stage/StashShelf"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
-cast_shadow = 0
-script = ExtResource("mesh")
-shape_kind = 1
-size = Vector3(1.8, 0.04, 0.42)
-color = Color(0.3569, 0.3922, 0.4824, 1)
-
-[node name="Board2" type="MeshInstance3D" parent="World/Stage/StashShelf"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9199999999999999, 0)
-cast_shadow = 0
-script = ExtResource("mesh")
-shape_kind = 1
-size = Vector3(1.8, 0.04, 0.42)
-color = Color(0.3569, 0.3922, 0.4824, 1)
-
-[node name="Board3" type="MeshInstance3D" parent="World/Stage/StashShelf"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.3399999999999999, 0)
-cast_shadow = 0
-script = ExtResource("mesh")
-shape_kind = 1
-size = Vector3(1.8, 0.04, 0.42)
-color = Color(0.3569, 0.3922, 0.4824, 1)
-
-[node name="Board4" type="MeshInstance3D" parent="World/Stage/StashShelf"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.76, 0)
-cast_shadow = 0
-script = ExtResource("mesh")
-shape_kind = 1
-size = Vector3(1.8, 0.04, 0.42)
-color = Color(0.3569, 0.3922, 0.4824, 1)
-
-[node name="UprightLeft" type="MeshInstance3D" parent="World/Stage/StashShelf"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.9, 0.95, 0)
-cast_shadow = 0
-script = ExtResource("mesh")
-shape_kind = 1
-size = Vector3(0.06, 1.9, 0.42)
-color = Color(0.1804, 0.2118, 0.2941, 1)
-
-[node name="UprightRight" type="MeshInstance3D" parent="World/Stage/StashShelf"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.9, 0.95, 0)
-cast_shadow = 0
-script = ExtResource("mesh")
-shape_kind = 1
-size = Vector3(0.06, 1.9, 0.42)
-color = Color(0.1804, 0.2118, 0.2941, 1)
-
-[node name="CountLabel" type="Label3D" parent="World/Stage/StashShelf"]
-unique_name_in_owner = true
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.15, 0.1)
-pixel_size = 0.0035
-render_priority = 2
-outline_render_priority = 1
-modulate = Color(0.9333, 0.9451, 0.9686, 1)
-outline_modulate = Color(0.051, 0.0627, 0.0902, 0.9)
-text = "Stash 0 / 30"
-font_size = 56
-outline_size = 14
+[node name="SteelDoorFrame" parent="World/Stage" instance=ExtResource("steel_door_frame_scene")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -5)
 
 [node name="Lamps" type="Node3D" parent="World/Stage"]
 

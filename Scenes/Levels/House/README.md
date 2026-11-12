@@ -8,7 +8,7 @@ the same files.
 |---|---|---|---|---|
 | **Defense** (the yard and its raids, the door, roof turrets, the Security PC, the armory) | `Garden/FrontGarden.tscn` · `front_garden.gd` (+ yard, raiders, squads, director, door, turrets, PC), `Armory/Armory.tscn` | `Ressources/Weapons/`, `Ressources/Raids/`, raider exports in `Garden/*.tscn`, yard obstacles | `Ressources/Upgrades/Defense/` | `Tests/Smoke/defense_checks.gd` |
 | **Customers** (back window and yard) | `Sales/SalesWindow.tscn` · `sales_window.gd` (+ `customer_flow.gd`, customers, sales board) | `Ressources/Customers/`, `CustomerFlow` exports | `Ressources/Upgrades/Sales/` | `Tests/Smoke/sales_checks.gd` |
-| **House** (lab, office, stash, crew, the shift, the 3-day cycle) | `House.tscn` · `house_level.gd`, `Cycle/HouseCycle.tscn`, `Lab/Lab.tscn`, `Office/Office.tscn`, `Workers/`, `operation.gd`, `day_cycle.gd`, `house_shell.gd`, `Surroundings/Surroundings.tscn` (lawn, trees, weeds, junk) | `Ressources/Ingredients/`, `Ressources/Recipes/`, `Lab.tscn` recipes | `Ressources/Upgrades/Lab/`, `Ressources/Upgrades/House/` | `Tests/Smoke/lab_checks.gd`, `house_checks.gd` |
+| **House** (lab, office, stash, crew, the shift, the 3-day cycle) | `House.tscn` · `house_level.gd`, `Cycle/HouseCycle.tscn`, `Lab/Lab.tscn`, `Office/Office.tscn`, `Workers/`, `operation.gd`, `day_cycle.gd`, `house_shell.gd`, `StashShelf.tscn`, `SteelDoorFrame.tscn`, `Surroundings/Surroundings.tscn` (lawn, trees, weeds, junk) | `Ressources/Ingredients/`, `Ressources/Recipes/`, `Ressources/Renovations/`, `Lab.tscn` recipes | `Ressources/Upgrades/Lab/`, `Ressources/Upgrades/House/` | `Tests/Smoke/lab_checks.gd`, `house_checks.gd` |
 | **Town** (the streets around the house, people in them, street talk) | `Town/Town.tscn` · `town.gd` (+ `pedestrian.gd`, `dialogue_board.gd`) | `Ressources/Town/town.tres`, `Ressources/Dialogue/`, voices in `Ressources/Voices/` (generated, see `Tools/generate_voices.ps1`) | — | `Tests/Smoke/town_checks.gd` |
 
 Each area folder has its own README with the details.
@@ -35,6 +35,14 @@ Every front (`FrontGarden`, `SalesWindow`, `Lab`, `Office`, `Armory`, `AdminPane
   **`Operation`** (stash, heat, cash, prices, recipes, upgrade values).
   Crew live inside their front's scene; the House pays everyone in
   `Types.GROUP_CREW`.
+- **Upgrades that change the look** go into the scene of the area that owns
+  the part: an `UpgradeLook` node (`Scripts/Components/`) with the upgrade
+  id and the level it shows from, its parts as children (the door's iron
+  straps in `Garden/FrontDoor.tscn`, the steel frame in
+  `SteelDoorFrame.tscn`, shelves and crates in `StashShelf.tscn`). The House
+  level re-applies every look in `Types.GROUP_UPGRADE_LOOK` (and the
+  shell's `ShellRenovation`s in `Ressources/Renovations/`) whenever upgrades
+  change, on a co-op guest too — a front needs no code for it.
 
 If a front needs something new from another area (a new value in
 `Operation`, a new hook), make that change in a **small PR of its own**

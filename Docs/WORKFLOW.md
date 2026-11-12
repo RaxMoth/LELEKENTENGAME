@@ -77,7 +77,7 @@ area folder has a README listing its files and how to add things.
 |---|---|
 | **Defense** (the yard, the door, raids, turrets, the armory) | `Scenes/Levels/House/Garden/`, `Scenes/Levels/House/Armory/`, `Ressources/Weapons/`, `Ressources/Raids/`, `Ressources/Upgrades/Defense/`, `Tests/Smoke/defense_checks.gd` |
 | **Customers** (the back sales window) | `Scenes/Levels/House/Sales/`, `Ressources/Customers/`, `Ressources/Upgrades/Sales/`, `Scripts/Game/sales_math.gd`, `customer_order.gd`, `Tests/Smoke/sales_checks.gd` |
-| **House** (lab, office, crew, the shift) | `Scenes/Levels/House/Lab/`, `Office/`, `Workers/`, `Surroundings/`, `day_cycle.gd`, `house_shell.gd`, `stash_shelf.gd`, `wrist_status.gd`, `Ressources/Ingredients/`, `Ressources/Recipes/`, `Ressources/Upgrades/Lab/` and `House/`, `Scripts/Game/timing_gauge.gd`, `quality_math.gd`, `day_clock.gd`, `Tests/Smoke/lab_checks.gd`, `house_checks.gd` |
+| **House** (lab, office, crew, the shift) | `Scenes/Levels/House/Lab/`, `Office/`, `Workers/`, `Surroundings/`, `day_cycle.gd`, `house_shell.gd`, `stash_shelf.gd` / `StashShelf.tscn`, `SteelDoorFrame.tscn`, `wrist_status.gd`, `Ressources/Ingredients/`, `Ressources/Recipes/`, `Ressources/Renovations/`, `Ressources/Upgrades/Lab/` and `House/`, `Scripts/Game/timing_gauge.gd`, `quality_math.gd`, `day_clock.gd`, `Tests/Smoke/lab_checks.gd`, `house_checks.gd` |
 
 With two people and three areas, one of you usually holds two. Agree who
 owns which for the current milestone, name the area in each PR, and tell

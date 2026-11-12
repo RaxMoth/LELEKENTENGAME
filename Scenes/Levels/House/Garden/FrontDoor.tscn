@@ -4,6 +4,8 @@
 [ext_resource type="Script" path="res://Scripts/Utils/placeholder_mesh_3d.gd" id="mesh"]
 [ext_resource type="Script" path="res://Scripts/Utils/textured_box_3d.gd" id="textured_box"]
 [ext_resource type="Material" path="res://Assets/Materials/front_door.tres" id="door_material"]
+[ext_resource type="Script" path="res://Scripts/Components/upgrade_look.gd" id="upgrade_look"]
+[ext_resource type="Material" path="res://Assets/Materials/iron_strap.tres" id="iron_material"]
 [ext_resource type="Script" path="res://Scripts/Components/health_component.gd" id="health"]
 [ext_resource type="Script" path="res://Scripts/XR/hinge_handle.gd" id="handle"]
 [ext_resource type="Script" path="res://Scripts/XR/pointer_button.gd" id="button"]
@@ -33,6 +35,48 @@ script = ExtResource("textured_box")
 size = Vector3(1.1, 2.1, 0.08)
 box_material = ExtResource("door_material")
 fallback_color = Color(0.3569, 0.3922, 0.4824, 1)
+
+[node name="Straps" type="Node3D" parent="Hinge/Panel"]
+script = ExtResource("upgrade_look")
+upgrade_id = &"def_door"
+
+[node name="StrapLow" type="MeshInstance3D" parent="Hinge/Panel/Straps"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.12, 0.45, 0)
+cast_shadow = 0
+script = ExtResource("textured_box")
+size = Vector3(0.86, 0.07, 0.1)
+box_material = ExtResource("iron_material")
+
+[node name="StrapHigh" type="MeshInstance3D" parent="Hinge/Panel/Straps"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.12, 1.75, 0)
+cast_shadow = 0
+script = ExtResource("textured_box")
+size = Vector3(0.86, 0.07, 0.1)
+box_material = ExtResource("iron_material")
+
+[node name="MiddleStrap" type="Node3D" parent="Hinge/Panel"]
+script = ExtResource("upgrade_look")
+upgrade_id = &"def_door"
+min_level = 2
+
+[node name="Strap" type="MeshInstance3D" parent="Hinge/Panel/MiddleStrap"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.12, 1.1, 0)
+cast_shadow = 0
+script = ExtResource("textured_box")
+size = Vector3(0.86, 0.07, 0.1)
+box_material = ExtResource("iron_material")
+
+[node name="KickPlate" type="Node3D" parent="Hinge/Panel"]
+script = ExtResource("upgrade_look")
+upgrade_id = &"def_door"
+min_level = 3
+
+[node name="Plate" type="MeshInstance3D" parent="Hinge/Panel/KickPlate"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.17, 0)
+cast_shadow = 0
+script = ExtResource("textured_box")
+size = Vector3(1.1, 0.3, 0.096)
+box_material = ExtResource("iron_material")
 
 [node name="OutsideHandle" type="Node3D" parent="Hinge/Panel"]
 unique_name_in_owner = true

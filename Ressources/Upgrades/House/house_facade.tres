@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="UpgradeData" format=3]
+
+[ext_resource type="Script" path="res://Scripts/Resources/upgrade_data.gd" id="script"]
+
+[resource]
+script = ExtResource("script")
+id = &"house_facade"
+title = "Clean the Brickwork"
+description = "Fresh mortar, then a good scrub: the house looks like any other on the street. Heat cools 10% faster per level."
+base_cost = 400
+cost_growth = 2.0
+max_level = 2
+base_value = 0.0
+value_per_level = 10.0
+value_format = "+%s%% heat cooling"
+branch = &"house"
+required_reputation = 4
