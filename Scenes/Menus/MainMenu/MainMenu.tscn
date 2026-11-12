@@ -1,0 +1,184 @@
+[gd_scene format=3 uid="uid://dn2qfbu5mp0us"]
+
+[ext_resource type="Script" uid="uid://drxxtb0bo8jf4" path="res://Scenes/Menus/MainMenu/main_menu.gd" id="1_main_menu"]
+[ext_resource type="Script" uid="uid://b7j48s1lw3uil" path="res://Scripts/UI/safe_area_container.gd" id="2_safe_area_"]
+[ext_resource type="Script" uid="uid://b0ociipi11rum" path="res://Scripts/UI/currency_display.gd" id="3_currency_d"]
+[ext_resource type="Script" uid="uid://c2bp757o4iyb6" path="res://Scripts/UI/energy_display.gd" id="4_energy_dis"]
+[ext_resource type="Texture2D" uid="uid://ufvlxstqc63d" path="res://Assets/Icons/settings.svg" id="5_settings"]
+[ext_resource type="Script" uid="uid://bqv0t87wasanp" path="res://Scripts/UI/icon_label.gd" id="6_icon_label"]
+[ext_resource type="Texture2D" uid="uid://bo4xvxx44pxwj" path="res://Assets/Branding/logo.svg" id="7_logo"]
+[ext_resource type="Texture2D" uid="uid://df7u0tjfgdbcc" path="res://Assets/Icons/star.svg" id="8_star"]
+[ext_resource type="Texture2D" uid="uid://bgso2ufx51c23" path="res://Assets/Icons/play.svg" id="9_play"]
+[ext_resource type="Texture2D" uid="uid://ddq2cevbuoari" path="res://Assets/Icons/bag.svg" id="10_bag"]
+[ext_resource type="Texture2D" uid="uid://jrh1iudx8qin" path="res://Assets/Icons/trophy.svg" id="11_trophy"]
+[ext_resource type="Texture2D" uid="uid://dbt7p4ry6s26y" path="res://Assets/Icons/gift.svg" id="12_gift"]
+[ext_resource type="Texture2D" uid="uid://qbsbgufgonrn" path="res://Assets/Themes/screen_glow.tres" id="13_glow"]
+
+[node name="MainMenu" type="Control" unique_id=1218320551]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_main_menu")
+
+[node name="Glow" type="TextureRect" parent="." unique_id=217969149]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 900.0
+grow_horizontal = 2
+mouse_filter = 2
+texture = ExtResource("13_glow")
+expand_mode = 1
+
+[node name="SafeArea" type="MarginContainer" parent="." unique_id=192850450]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("2_safe_area_")
+
+[node name="Layout" type="VBoxContainer" parent="SafeArea" unique_id=780982314]
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="TopBar" type="HBoxContainer" parent="SafeArea/Layout" unique_id=1432040480]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="CoinsDisplay" type="PanelContainer" parent="SafeArea/Layout/TopBar" unique_id=1133589397]
+layout_mode = 2
+size_flags_vertical = 4
+script = ExtResource("3_currency_d")
+
+[node name="GemsDisplay" type="PanelContainer" parent="SafeArea/Layout/TopBar" unique_id=1658967518]
+layout_mode = 2
+size_flags_vertical = 4
+script = ExtResource("3_currency_d")
+currency_id = &"gems"
+
+[node name="EnergyDisplay" type="PanelContainer" parent="SafeArea/Layout/TopBar" unique_id=171978144]
+layout_mode = 2
+size_flags_vertical = 4
+script = ExtResource("4_energy_dis")
+
+[node name="TopSpacer" type="Control" parent="SafeArea/Layout/TopBar" unique_id=1982510986]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+
+[node name="SettingsButton" type="Button" parent="SafeArea/Layout/TopBar" unique_id=1450576828]
+custom_minimum_size = Vector2(88, 88)
+layout_mode = 2
+theme_type_variation = &"IconButton"
+icon = ExtResource("5_settings")
+icon_alignment = 1
+expand_icon = true
+
+[node name="Spacer1" type="Control" parent="SafeArea/Layout" unique_id=1172948270]
+layout_mode = 2
+size_flags_vertical = 3
+mouse_filter = 2
+
+[node name="Hero" type="VBoxContainer" parent="SafeArea/Layout" unique_id=1631096104]
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="Logo" type="TextureRect" parent="SafeArea/Layout/Hero" unique_id=1571053367]
+custom_minimum_size = Vector2(184, 184)
+layout_mode = 2
+size_flags_horizontal = 4
+texture = ExtResource("7_logo")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="TitleLabel" type="Label" parent="SafeArea/Layout/Hero" unique_id=1755728529]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"TitleLabel"
+text = "Base Template"
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="ProgressChip" type="PanelContainer" parent="SafeArea/Layout/Hero" unique_id=262027440]
+layout_mode = 2
+size_flags_horizontal = 4
+theme_type_variation = &"PillPanel"
+
+[node name="StarProgress" type="HBoxContainer" parent="SafeArea/Layout/Hero/ProgressChip" unique_id=40081414]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 10
+script = ExtResource("6_icon_label")
+icon = ExtResource("8_star")
+text = "0 / 0"
+icon_size = 32
+icon_color = Color(0.9686, 0.7725, 0.2824, 1)
+
+[node name="Spacer2" type="Control" parent="SafeArea/Layout" unique_id=1466012411]
+layout_mode = 2
+size_flags_vertical = 3
+mouse_filter = 2
+
+[node name="Buttons" type="VBoxContainer" parent="SafeArea/Layout" unique_id=2080354687]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="PlayButton" type="Button" parent="SafeArea/Layout/Buttons" unique_id=1910445067]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 124)
+layout_mode = 2
+theme_override_font_sizes/font_size = 44
+theme_override_constants/icon_max_width = 40
+text = "Play"
+icon = ExtResource("9_play")
+expand_icon = true
+
+[node name="Row" type="HBoxContainer" parent="SafeArea/Layout/Buttons" unique_id=1313838762]
+layout_mode = 2
+
+[node name="ShopButton" type="Button" parent="SafeArea/Layout/Buttons/Row" unique_id=1475521371]
+custom_minimum_size = Vector2(0, 100)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"SecondaryButton"
+text = "Shop"
+icon = ExtResource("10_bag")
+expand_icon = true
+
+[node name="AchievementsButton" type="Button" parent="SafeArea/Layout/Buttons/Row" unique_id=625066545]
+custom_minimum_size = Vector2(0, 100)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"SecondaryButton"
+text = "Awards"
+icon = ExtResource("11_trophy")
+expand_icon = true
+
+[node name="DailyRewardButton" type="Button" parent="SafeArea/Layout/Buttons" unique_id=658443616]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 100)
+layout_mode = 2
+theme_type_variation = &"SuccessButton"
+text = "Daily Reward"
+icon = ExtResource("12_gift")
+expand_icon = true
+
+[node name="QuitButton" type="Button" parent="SafeArea/Layout/Buttons" unique_id=2074389084]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 88)
+layout_mode = 2
+theme_type_variation = &"GhostButton"
+text = "Quit"
+
+[connection signal="pressed" from="SafeArea/Layout/TopBar/SettingsButton" to="." method="_on_settings_button_pressed"]
+[connection signal="pressed" from="SafeArea/Layout/Buttons/PlayButton" to="." method="_on_play_button_pressed"]
+[connection signal="pressed" from="SafeArea/Layout/Buttons/Row/ShopButton" to="." method="_on_shop_button_pressed"]
+[connection signal="pressed" from="SafeArea/Layout/Buttons/Row/AchievementsButton" to="." method="_on_achievements_button_pressed"]
+[connection signal="pressed" from="SafeArea/Layout/Buttons/DailyRewardButton" to="." method="_on_daily_reward_button_pressed"]
+[connection signal="pressed" from="SafeArea/Layout/Buttons/QuitButton" to="." method="_on_quit_button_pressed"]

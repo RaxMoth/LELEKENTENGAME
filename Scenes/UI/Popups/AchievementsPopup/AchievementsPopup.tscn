@@ -1,0 +1,74 @@
+[gd_scene format=3 uid="uid://crum5toablle6"]
+
+[ext_resource type="Script" uid="uid://bm1uqujrtjdoj" path="res://Scenes/UI/Popups/AchievementsPopup/achievements_popup.gd" id="1_achievemen"]
+
+[node name="AchievementsPopup" type="Control" unique_id=1073552067]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_achievemen")
+
+[node name="Backdrop" type="ColorRect" parent="." unique_id=297136564]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.02, 0.027, 0.043, 0.72)
+
+[node name="CenterContainer" type="CenterContainer" parent="." unique_id=275925878]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Panel" type="PanelContainer" parent="CenterContainer" unique_id=1666482959]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(620, 0)
+layout_mode = 2
+
+[node name="Content" type="VBoxContainer" parent="CenterContainer/Panel" unique_id=1517852605]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="TitleLabel" type="Label" parent="CenterContainer/Panel/Content" unique_id=928859793]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"HeaderLabel"
+text = "Achievements"
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="SummaryLabel" type="Label" parent="CenterContainer/Panel/Content" unique_id=2120029568]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"SmallLabel"
+text = "0 / 0"
+horizontal_alignment = 1
+
+[node name="Scroll" type="ScrollContainer" parent="CenterContainer/Panel/Content" unique_id=392018505]
+custom_minimum_size = Vector2(0, 720)
+layout_mode = 2
+horizontal_scroll_mode = 0
+
+[node name="AchievementList" type="VBoxContainer" parent="CenterContainer/Panel/Content/Scroll" unique_id=987328894]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 12
+
+[node name="CloseButton" type="Button" parent="CenterContainer/Panel/Content" unique_id=1327391170]
+custom_minimum_size = Vector2(0, 96)
+layout_mode = 2
+text = "Close"
+
+[connection signal="pressed" from="CenterContainer/Panel/Content/CloseButton" to="." method="_on_close_button_pressed"]

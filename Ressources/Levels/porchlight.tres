@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="LevelData" format=3]
+
+[ext_resource type="Script" path="res://Scripts/Resources/level_data.gd" id="data"]
+
+[resource]
+script = ExtResource("data")
+id = &"porchlight"
+title = "Porchlight VR"
+description = "Plant blooms from your porch and hold five lanes."
+scene_path = "res://Scenes/Levels/Porchlight/Porchlight.tscn"
+star_score_thresholds = Array[int]([300, 600, 900])
+always_unlocked = true
+energy_cost = 0
+first_clear_rewards = Dictionary[StringName, int]({
+&"gems": 10
+})
+completion_rewards = Dictionary[StringName, int]({
+&"coins": 80
+})
+custom_parameters = Dictionary[StringName, Variant]({
+&"starting_lives": 3,
+&"starting_sparks": 150
+})

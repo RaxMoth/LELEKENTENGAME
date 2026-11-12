@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="UpgradeData" format=3 uid="uid://blfacmv5imuc6"]
+
+[ext_resource type="Script" uid="uid://bjps7qydt4qxq" path="res://Scripts/Resources/upgrade_data.gd" id="1_127eu"]
+
+[resource]
+script = ExtResource("1_127eu")
+id = &"td_war_chest"
+title = "War Chest"
+description = "+25 starting gold in Tower Defense."
+base_cost = 40
+cost_growth = 1.5
+max_level = 8
+value_per_level = 25.0
+value_format = "+%s gold"

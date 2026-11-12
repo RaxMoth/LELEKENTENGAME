@@ -1,0 +1,15 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://Scenes/Levels/Porchlight/beam_tracer.gd" id="tracer"]
+[ext_resource type="Script" path="res://Scripts/Utils/placeholder_mesh_3d.gd" id="mesh"]
+
+[node name="BeamTracer" type="Node3D"]
+script = ExtResource("tracer")
+
+[node name="Beam" type="MeshInstance3D" parent="."]
+cast_shadow = 0
+script = ExtResource("mesh")
+shape_kind = 1
+size = Vector3(0.035, 0.035, 1)
+color = Color(1, 0.8784, 0.5412, 1)
+unshaded = true

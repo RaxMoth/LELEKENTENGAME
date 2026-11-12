@@ -1,0 +1,10 @@
+# Godot 4+ specific ignores
+.godot/
+/android/
+
+# Export output (see export_presets.cfg)
+/build/
+
+# OS clutter
+.DS_Store
+Thumbs.db

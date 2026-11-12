@@ -1,0 +1,14 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://Scenes/Entities/FloatingText3D/floating_text_3d.gd" id="1_text"]
+
+[node name="FloatingText3D" type="Label3D"]
+pixel_size = 0.006
+billboard = 1
+no_depth_test = true
+render_priority = 5
+outline_render_priority = 4
+font_size = 56
+outline_size = 10
+text = "0"
+script = ExtResource("1_text")

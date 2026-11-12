@@ -1,0 +1,26 @@
+[gd_scene format=3 uid="uid://rxg0qs4w6rsr"]
+
+[ext_resource type="Script" uid="uid://tdbqk2dkopyx" path="res://Scenes/Examples/Runner/runner_obstacle.gd" id="1_runner_obs"]
+[ext_resource type="Script" uid="uid://b8wokaaih540q" path="res://Scripts/Utils/placeholder_shape.gd" id="2_placeholde"]
+
+[sub_resource type="RectangleShape2D" id="hit"]
+size = Vector2(44, 50)
+
+[node name="ObstacleLow" type="Area2D" unique_id=1166002604]
+collision_layer = 0
+collision_mask = 8
+script = ExtResource("1_runner_obs")
+damage = 1.0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=459021918]
+position = Vector2(0, -29)
+shape = SubResource("hit")
+
+[node name="Visual" type="Node2D" parent="." unique_id=796748761]
+position = Vector2(0, -29)
+rotation = -1.5708
+script = ExtResource("2_placeholde")
+shape_kind = 2
+size = Vector2(58, 56)
+color = Color(0.9412, 0.4157, 0.4157, 1)
+corner_roundness = 0.18

@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="LevelData" format=3 uid="uid://bwk0jjiqvvtl1"]
+
+[ext_resource type="Script" uid="uid://dqdbvtjalxnkv" path="res://Scripts/Resources/level_data.gd" id="1_js213"]
+
+[resource]
+script = ExtResource("1_js213")
+id = &"match3"
+title = "Match-3 Puzzle"
+description = "Swipe to swap gems and reach the target score."
+scene_path = "res://Scenes/Examples/Match3/Match3.tscn"
+star_score_thresholds = Array[int]([1500, 2200, 3000])
+always_unlocked = true
+energy_cost = 0
+first_clear_rewards = Dictionary[StringName, int]({
+&"gems": 5
+})
+completion_rewards = Dictionary[StringName, int]({
+&"coins": 40
+})
+custom_parameters = Dictionary[StringName, Variant]({
+&"moves": 20,
+&"target_score": 1500
+})

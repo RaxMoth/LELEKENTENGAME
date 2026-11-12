@@ -1,0 +1,16 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://Scenes/Entities/PopEffect3D/pop_effect_3d.gd" id="1_pop"]
+[ext_resource type="Script" path="res://Scripts/Utils/placeholder_mesh_3d.gd" id="2_mesh"]
+
+[node name="PopEffect3D" type="Node3D"]
+script = ExtResource("1_pop")
+
+[node name="Ball" type="MeshInstance3D" parent="."]
+unique_name_in_owner = true
+cast_shadow = 0
+script = ExtResource("2_mesh")
+size = Vector3(1, 1, 1)
+color = Color(1, 0.8784, 0.5412, 1)
+glow = 1.5
+unshaded = true

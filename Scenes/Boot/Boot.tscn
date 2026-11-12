@@ -1,0 +1,51 @@
+[gd_scene format=3 uid="uid://kgd4j50o8mal"]
+
+[ext_resource type="Script" uid="uid://bkk4mcme63p2o" path="res://Scenes/Boot/boot.gd" id="1_boot"]
+[ext_resource type="Texture2D" uid="uid://bo4xvxx44pxwj" path="res://Assets/Branding/logo.svg" id="2_logo"]
+
+[node name="Boot" type="Control" unique_id=1745760696]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_boot")
+
+[node name="Center" type="VBoxContainer" parent="." unique_id=571783585]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -300.0
+offset_top = -220.0
+offset_right = 300.0
+offset_bottom = 220.0
+grow_horizontal = 2
+grow_vertical = 2
+alignment = 1
+
+[node name="Logo" type="TextureRect" parent="Center" unique_id=124455005]
+custom_minimum_size = Vector2(200, 200)
+layout_mode = 2
+size_flags_horizontal = 4
+texture = ExtResource("2_logo")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="TitleLabel" type="Label" parent="Center" unique_id=880132820]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"TitleLabel"
+text = "Base Template"
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="VersionLabel" type="Label" parent="Center" unique_id=133348688]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"SmallLabel"
+text = "v0.1.0"
+horizontal_alignment = 1

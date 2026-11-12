@@ -1,0 +1,50 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://Scenes/Levels/Porchlight/lane_defender.gd" id="defender"]
+[ext_resource type="Script" path="res://Scripts/Utils/placeholder_mesh_3d.gd" id="mesh"]
+[ext_resource type="Script" path="res://Scripts/Utils/blob_shadow_3d.gd" id="shadow"]
+[ext_resource type="Script" path="res://Scripts/Components/health_component.gd" id="health"]
+[ext_resource type="Script" path="res://Scripts/Components/hit_flash_3d_component.gd" id="flash"]
+
+[node name="Stonecap" type="Node3D"]
+script = ExtResource("defender")
+
+[node name="Visual" type="Node3D" parent="."]
+unique_name_in_owner = true
+
+[node name="Body" type="MeshInstance3D" parent="Visual"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.42, 0)
+cast_shadow = 0
+script = ExtResource("mesh")
+size = Vector3(1, 0.95, 1)
+color = Color(0.5529, 0.5882, 0.6745, 1)
+
+[node name="Band" type="MeshInstance3D" parent="Visual"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.36, 0)
+cast_shadow = 0
+script = ExtResource("mesh")
+shape_kind = 3
+size = Vector3(1.02, 0.1, 1.02)
+color = Color(0.3569, 0.3922, 0.4824, 1)
+
+[node name="Cap" type="MeshInstance3D" parent="Visual"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.88, 0)
+cast_shadow = 0
+script = ExtResource("mesh")
+size = Vector3(0.56, 0.2, 0.56)
+color = Color(0.3569, 0.3922, 0.4824, 1)
+
+[node name="Shadow" type="MeshInstance3D" parent="."]
+script = ExtResource("shadow")
+diameter = 1.25
+
+[node name="HealthComponent" type="Node" parent="."]
+unique_name_in_owner = true
+script = ExtResource("health")
+max_health = 120
+
+[node name="HitFlash3DComponent" type="Node" parent="." node_paths=PackedStringArray("flash_root", "health_component")]
+unique_name_in_owner = true
+script = ExtResource("flash")
+flash_root = NodePath("../Visual")
+health_component = NodePath("../HealthComponent")

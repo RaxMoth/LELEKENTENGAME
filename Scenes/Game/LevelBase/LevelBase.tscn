@@ -1,0 +1,85 @@
+[gd_scene format=3 uid="uid://w157plbirhid"]
+
+[ext_resource type="Script" uid="uid://g5xihp1n45qx" path="res://Scenes/Game/LevelBase/level_base.gd" id="1_level_base"]
+[ext_resource type="Script" uid="uid://bwxf1ojh8jg3h" path="res://Scripts/Components/game_camera.gd" id="2_game_camer"]
+[ext_resource type="PackedScene" uid="uid://cu5mf6jxqomn4" path="res://Scenes/UI/HUD/HUD.tscn" id="3_HUD"]
+[ext_resource type="Script" uid="uid://couw105c3bde4" path="res://addons/godot_state_charts/state_chart.gd" id="4_state_char"]
+[ext_resource type="Script" uid="uid://jk2jm1g6q853" path="res://addons/godot_state_charts/compound_state.gd" id="5_compound_s"]
+[ext_resource type="Script" uid="uid://cytafq8i1y8qm" path="res://addons/godot_state_charts/atomic_state.gd" id="6_atomic_sta"]
+[ext_resource type="Script" uid="uid://cf1nsco3w0mf6" path="res://addons/godot_state_charts/transition.gd" id="7_transition"]
+
+[node name="LevelBase" type="Node2D" unique_id=812559817]
+script = ExtResource("1_level_base")
+
+[node name="World" type="Node2D" parent="." unique_id=42466780 groups=["world_root"]]
+unique_name_in_owner = true
+
+[node name="GameCamera" type="Camera2D" parent="." unique_id=1124155239]
+unique_name_in_owner = true
+position = Vector2(360, 640)
+script = ExtResource("2_game_camer")
+
+[node name="HUD" parent="." unique_id=590172173 instance=ExtResource("3_HUD")]
+unique_name_in_owner = true
+
+[node name="StateChart" type="Node" parent="." unique_id=1222856823]
+unique_name_in_owner = true
+script = ExtResource("4_state_char")
+
+[node name="Root" type="Node" parent="StateChart" unique_id=581960194]
+script = ExtResource("5_compound_s")
+initial_state = NodePath("Intro")
+
+[node name="Intro" type="Node" parent="StateChart/Root" unique_id=725919478]
+script = ExtResource("6_atomic_sta")
+
+[node name="ToPlaying" type="Node" parent="StateChart/Root/Intro" unique_id=1323978901]
+script = ExtResource("7_transition")
+to = NodePath("../../Playing")
+event = &"level_start"
+delay_in_seconds = "0.0"
+
+[node name="Playing" type="Node" parent="StateChart/Root" unique_id=2133303719]
+script = ExtResource("6_atomic_sta")
+
+[node name="ToPaused" type="Node" parent="StateChart/Root/Playing" unique_id=839470513]
+script = ExtResource("7_transition")
+to = NodePath("../../Paused")
+event = &"pause"
+delay_in_seconds = "0.0"
+
+[node name="ToWon" type="Node" parent="StateChart/Root/Playing" unique_id=1366084958]
+script = ExtResource("7_transition")
+to = NodePath("../../Won")
+event = &"win"
+delay_in_seconds = "0.0"
+
+[node name="ToLost" type="Node" parent="StateChart/Root/Playing" unique_id=1241712398]
+script = ExtResource("7_transition")
+to = NodePath("../../Lost")
+event = &"lose"
+delay_in_seconds = "0.0"
+
+[node name="Paused" type="Node" parent="StateChart/Root" unique_id=845062847]
+script = ExtResource("6_atomic_sta")
+
+[node name="ToPlaying" type="Node" parent="StateChart/Root/Paused" unique_id=1351195824]
+script = ExtResource("7_transition")
+to = NodePath("../../Playing")
+event = &"resume"
+delay_in_seconds = "0.0"
+
+[node name="Won" type="Node" parent="StateChart/Root" unique_id=546921075]
+script = ExtResource("6_atomic_sta")
+
+[node name="Lost" type="Node" parent="StateChart/Root" unique_id=369399562]
+script = ExtResource("6_atomic_sta")
+
+[connection signal="pause_pressed" from="HUD" to="." method="_on_hud_pause_pressed"]
+[connection signal="state_entered" from="StateChart/Root/Intro" to="." method="_on_intro_state_entered"]
+[connection signal="state_entered" from="StateChart/Root/Playing" to="." method="_on_playing_state_entered"]
+[connection signal="state_physics_processing" from="StateChart/Root/Playing" to="." method="_on_playing_state_physics_processing"]
+[connection signal="state_processing" from="StateChart/Root/Playing" to="." method="_on_playing_state_processing"]
+[connection signal="state_entered" from="StateChart/Root/Paused" to="." method="_on_paused_state_entered"]
+[connection signal="state_entered" from="StateChart/Root/Won" to="." method="_on_won_state_entered"]
+[connection signal="state_entered" from="StateChart/Root/Lost" to="." method="_on_lost_state_entered"]

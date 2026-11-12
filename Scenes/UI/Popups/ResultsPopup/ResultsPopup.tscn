@@ -1,0 +1,126 @@
+[gd_scene format=3 uid="uid://cqnd37abw16ia"]
+
+[ext_resource type="Script" uid="uid://chhungnf52xvc" path="res://Scenes/UI/Popups/ResultsPopup/results_popup.gd" id="1_results_po"]
+[ext_resource type="Script" uid="uid://7w1xbgby2sug" path="res://Scripts/UI/stars_display.gd" id="2_stars_disp"]
+[ext_resource type="Script" uid="uid://bqgy3njy0ruwh" path="res://Scripts/UI/reward_list.gd" id="3_reward_list"]
+
+[node name="ResultsPopup" type="Control" unique_id=772061125]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_results_po")
+close_on_backdrop_tap = false
+
+[node name="Backdrop" type="ColorRect" parent="." unique_id=824804833]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.02, 0.027, 0.043, 0.72)
+
+[node name="CenterContainer" type="CenterContainer" parent="." unique_id=1646632830]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Panel" type="PanelContainer" parent="CenterContainer" unique_id=1820851619]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(600, 0)
+layout_mode = 2
+
+[node name="Content" type="VBoxContainer" parent="CenterContainer/Panel" unique_id=1750672168]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="TitleLabel" type="Label" parent="CenterContainer/Panel/Content" unique_id=418724080]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"TitleLabel"
+text = "Victory!"
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="StarsDisplay" type="HBoxContainer" parent="CenterContainer/Panel/Content" unique_id=1069907661]
+unique_name_in_owner = true
+layout_mode = 2
+script = ExtResource("2_stars_disp")
+star_size = 72
+
+[node name="ScoreCaption" type="Label" parent="CenterContainer/Panel/Content" unique_id=2006644586]
+layout_mode = 2
+theme_type_variation = &"SmallLabel"
+text = "Score"
+horizontal_alignment = 1
+
+[node name="ScoreLabel" type="Label" parent="CenterContainer/Panel/Content" unique_id=179721550]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"BigNumberLabel"
+text = "0"
+horizontal_alignment = 1
+
+[node name="BestLabel" type="Label" parent="CenterContainer/Panel/Content" unique_id=1443993833]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"SmallLabel"
+text = "Best: 0"
+horizontal_alignment = 1
+
+[node name="NewBestLabel" type="Label" parent="CenterContainer/Panel/Content" unique_id=1435852463]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.82, 0.25, 1)
+text = "New Best!"
+horizontal_alignment = 1
+
+[node name="RewardList" type="HBoxContainer" parent="CenterContainer/Panel/Content" unique_id=1155000497]
+unique_name_in_owner = true
+layout_mode = 2
+script = ExtResource("3_reward_list")
+
+[node name="DoubleButton" type="Button" parent="CenterContainer/Panel/Content" unique_id=1667352677]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 96)
+layout_mode = 2
+theme_type_variation = &"SuccessButton"
+text = "Claim x2"
+
+[node name="NextButton" type="Button" parent="CenterContainer/Panel/Content" unique_id=1933116667]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 100)
+layout_mode = 2
+text = "Next"
+
+[node name="Buttons" type="HBoxContainer" parent="CenterContainer/Panel/Content" unique_id=132789636]
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="RetryButton" type="Button" parent="CenterContainer/Panel/Content/Buttons" unique_id=432125989]
+custom_minimum_size = Vector2(0, 96)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"SecondaryButton"
+text = "Retry"
+
+[node name="MenuButton" type="Button" parent="CenterContainer/Panel/Content/Buttons" unique_id=524570003]
+custom_minimum_size = Vector2(0, 96)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"SecondaryButton"
+text = "Main Menu"
+
+[connection signal="pressed" from="CenterContainer/Panel/Content/DoubleButton" to="." method="_on_double_button_pressed"]
+[connection signal="pressed" from="CenterContainer/Panel/Content/NextButton" to="." method="_on_next_button_pressed"]
+[connection signal="pressed" from="CenterContainer/Panel/Content/Buttons/RetryButton" to="." method="_on_retry_button_pressed"]
+[connection signal="pressed" from="CenterContainer/Panel/Content/Buttons/MenuButton" to="." method="_on_menu_button_pressed"]

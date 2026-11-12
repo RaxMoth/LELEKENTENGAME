@@ -1,0 +1,61 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://Scenes/Levels/Porchlight/seed_card.gd" id="card"]
+[ext_resource type="Script" path="res://Scripts/UI/icon_label.gd" id="icon_label"]
+[ext_resource type="Texture2D" path="res://Assets/Icons/sparkle.svg" id="sparkle"]
+
+[node name="SeedCard" type="Button"]
+custom_minimum_size = Vector2(220, 0)
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_type_variation = &"CardButton"
+script = ExtResource("card")
+
+[node name="Content" type="VBoxContainer" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_constants/separation = 8
+alignment = 1
+
+[node name="Icon" type="TextureRect" parent="Content"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 112)
+layout_mode = 2
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="NameLabel" type="Label" parent="Content"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Defender"
+horizontal_alignment = 1
+
+[node name="CostLabel" type="HBoxContainer" parent="Content"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 4
+script = ExtResource("icon_label")
+icon = ExtResource("sparkle")
+text = "50"
+icon_size = 40
+icon_color = Color(0.9608, 0.7216, 0.2549, 1)
+label_theme_type = &"HeaderLabel"
+
+[node name="Overlay" type="Control" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[connection signal="draw" from="Overlay" to="." method="_on_overlay_draw"]

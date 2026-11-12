@@ -1,0 +1,125 @@
+[gd_scene format=3 uid="uid://cu5mf6jxqomn4"]
+
+[ext_resource type="Script" uid="uid://1l7t30i4j5k8" path="res://Scenes/UI/HUD/hud.gd" id="1_hud"]
+[ext_resource type="Script" uid="uid://b7j48s1lw3uil" path="res://Scripts/UI/safe_area_container.gd" id="2_safe_area_"]
+[ext_resource type="Script" uid="uid://b0ociipi11rum" path="res://Scripts/UI/currency_display.gd" id="3_currency_d"]
+[ext_resource type="Texture2D" uid="uid://e3o68c1i6uf4" path="res://Assets/Icons/pause.svg" id="4_pause"]
+[ext_resource type="Texture2D" uid="uid://csgo7osxg6c1l" path="res://Assets/Themes/top_scrim.tres" id="5_scrim"]
+
+[node name="HUD" type="CanvasLayer" unique_id=980542310]
+layer = 10
+script = ExtResource("1_hud")
+
+[node name="TopScrim" type="TextureRect" parent="." unique_id=1170373404]
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 260.0
+grow_horizontal = 2
+mouse_filter = 2
+texture = ExtResource("5_scrim")
+expand_mode = 1
+
+[node name="SafeArea" type="MarginContainer" parent="." unique_id=846472120]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("2_safe_area_")
+base_margin = 20
+
+[node name="Layout" type="VBoxContainer" parent="SafeArea" unique_id=1725673221]
+layout_mode = 2
+mouse_filter = 2
+
+[node name="TopBar" type="HBoxContainer" parent="SafeArea/Layout" unique_id=1251481287]
+layout_mode = 2
+mouse_filter = 2
+
+[node name="PauseButton" type="Button" parent="SafeArea/Layout/TopBar" unique_id=30004135]
+custom_minimum_size = Vector2(88, 88)
+layout_mode = 2
+theme_type_variation = &"IconButton"
+icon = ExtResource("4_pause")
+icon_alignment = 1
+expand_icon = true
+
+[node name="ScoreBox" type="VBoxContainer" parent="SafeArea/Layout/TopBar" unique_id=69009429]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+theme_override_constants/separation = 0
+
+[node name="ScoreCaption" type="Label" parent="SafeArea/Layout/TopBar/ScoreBox" unique_id=459825136]
+layout_mode = 2
+theme_type_variation = &"SmallLabel"
+text = "Score"
+horizontal_alignment = 1
+
+[node name="ScoreLabel" type="Label" parent="SafeArea/Layout/TopBar/ScoreBox" unique_id=1986601451]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"HeaderLabel"
+text = "0"
+horizontal_alignment = 1
+
+[node name="TimerLabel" type="Label" parent="SafeArea/Layout/TopBar" unique_id=1330601298]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"HeaderLabel"
+text = "0:00"
+
+[node name="CurrencyDisplay" type="PanelContainer" parent="SafeArea/Layout/TopBar" unique_id=1930146021]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 4
+script = ExtResource("3_currency_d")
+
+[node name="ProgressBox" type="VBoxContainer" parent="SafeArea/Layout" unique_id=1138696689]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 6
+
+[node name="ProgressLabel" type="Label" parent="SafeArea/Layout/ProgressBox" unique_id=1911228341]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"SmallLabel"
+horizontal_alignment = 1
+
+[node name="ProgressBar" type="ProgressBar" parent="SafeArea/Layout/ProgressBox" unique_id=1942678461]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 14)
+layout_mode = 2
+mouse_filter = 2
+show_percentage = false
+
+[node name="Spacer" type="Control" parent="SafeArea/Layout" unique_id=546666730]
+layout_mode = 2
+size_flags_vertical = 3
+mouse_filter = 2
+
+[node name="ActionBar" type="HBoxContainer" parent="SafeArea/Layout" unique_id=1305081373]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 16
+alignment = 1
+
+[node name="CenterMessage" type="Label" parent="." unique_id=410617971]
+unique_name_in_owner = true
+anchors_preset = -1
+anchor_top = 0.3
+anchor_right = 1.0
+anchor_bottom = 0.3
+offset_top = -60.0
+offset_bottom = 60.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_type_variation = &"OverlayLabel"
+text = "Ready?"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[connection signal="pressed" from="SafeArea/Layout/TopBar/PauseButton" to="." method="_on_pause_button_pressed"]

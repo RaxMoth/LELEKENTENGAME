@@ -1,0 +1,77 @@
+[gd_scene format=3 uid="uid://dwqhbhphn0lmf"]
+
+[ext_resource type="Script" uid="uid://bua2uii2ftpmx" path="res://Scenes/UI/Popups/PausePopup/pause_popup.gd" id="1_pause_popu"]
+
+[node name="PausePopup" type="Control" unique_id=42656893]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_pause_popu")
+
+[node name="Backdrop" type="ColorRect" parent="." unique_id=613545314]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.02, 0.027, 0.043, 0.72)
+
+[node name="CenterContainer" type="CenterContainer" parent="." unique_id=1977067361]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Panel" type="PanelContainer" parent="CenterContainer" unique_id=929415556]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(520, 0)
+layout_mode = 2
+
+[node name="Content" type="VBoxContainer" parent="CenterContainer/Panel" unique_id=1161433760]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="TitleLabel" type="Label" parent="CenterContainer/Panel/Content" unique_id=639086241]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"TitleLabel"
+text = "Paused"
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="ResumeButton" type="Button" parent="CenterContainer/Panel/Content" unique_id=856988192]
+custom_minimum_size = Vector2(0, 100)
+layout_mode = 2
+text = "Resume"
+
+[node name="RestartButton" type="Button" parent="CenterContainer/Panel/Content" unique_id=77962512]
+custom_minimum_size = Vector2(0, 100)
+layout_mode = 2
+theme_type_variation = &"SecondaryButton"
+text = "Restart"
+
+[node name="SettingsButton" type="Button" parent="CenterContainer/Panel/Content" unique_id=1005146489]
+custom_minimum_size = Vector2(0, 100)
+layout_mode = 2
+theme_type_variation = &"SecondaryButton"
+text = "Settings"
+
+[node name="MenuButton" type="Button" parent="CenterContainer/Panel/Content" unique_id=824304664]
+custom_minimum_size = Vector2(0, 100)
+layout_mode = 2
+theme_type_variation = &"SecondaryButton"
+text = "Main Menu"
+
+[connection signal="pressed" from="CenterContainer/Panel/Content/ResumeButton" to="." method="_on_resume_button_pressed"]
+[connection signal="pressed" from="CenterContainer/Panel/Content/RestartButton" to="." method="_on_restart_button_pressed"]
+[connection signal="pressed" from="CenterContainer/Panel/Content/SettingsButton" to="." method="_on_settings_button_pressed"]
+[connection signal="pressed" from="CenterContainer/Panel/Content/MenuButton" to="." method="_on_menu_button_pressed"]

@@ -1,0 +1,41 @@
+[gd_scene format=3 uid="uid://b1npu62vo66th"]
+
+[ext_resource type="Script" uid="uid://cck60d1qxsrv0" path="res://Scenes/Examples/TowerDefense/build_spot.gd" id="1_build_spot"]
+[ext_resource type="Script" uid="uid://b8wokaaih540q" path="res://Scripts/Utils/placeholder_shape.gd" id="2_placeholde"]
+[ext_resource type="Script" uid="uid://bxq4ynx3hxel4" path="res://Scripts/Components/tap_area.gd" id="3_tap_area"]
+
+[sub_resource type="CircleShape2D" id="tap"]
+radius = 48.0
+
+[node name="BuildSpot" type="Node2D" unique_id=1596786118]
+script = ExtResource("1_build_spot")
+
+[node name="Visual" type="Node2D" parent="." unique_id=613494250]
+script = ExtResource("2_placeholde")
+size = Vector2(88, 88)
+color = Color(1, 1, 1, 0.035)
+shading = 0.0
+outline_color = Color(1, 1, 1, 0.18)
+outline_width = 2.0
+shadow_enabled = false
+
+[node name="Label" type="Label" parent="." unique_id=2017721827]
+unique_name_in_owner = true
+z_index = 10
+offset_left = -50.0
+offset_top = 34.0
+offset_right = 50.0
+offset_bottom = 64.0
+theme_override_font_sizes/font_size = 24
+theme_override_colors/font_color = Color(0.9608, 0.7216, 0.2549, 1)
+text = "50"
+horizontal_alignment = 1
+
+[node name="TapArea" type="Area2D" parent="." unique_id=318728560]
+unique_name_in_owner = true
+collision_layer = 64
+collision_mask = 0
+script = ExtResource("3_tap_area")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="TapArea" unique_id=1154899992]
+shape = SubResource("tap")

@@ -1,0 +1,116 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://Scenes/Levels/Porchlight/lane_enemy.gd" id="enemy"]
+[ext_resource type="Script" path="res://Scripts/Utils/placeholder_mesh_3d.gd" id="mesh"]
+[ext_resource type="Script" path="res://Scripts/Utils/blob_shadow_3d.gd" id="shadow"]
+[ext_resource type="Script" path="res://Scripts/Components/health_component.gd" id="health"]
+[ext_resource type="Script" path="res://Scripts/Components/hit_flash_3d_component.gd" id="flash"]
+[ext_resource type="Script" path="res://addons/godot_state_charts/state_chart.gd" id="chart"]
+[ext_resource type="Script" path="res://addons/godot_state_charts/compound_state.gd" id="compound"]
+[ext_resource type="Script" path="res://addons/godot_state_charts/atomic_state.gd" id="atomic"]
+[ext_resource type="Script" path="res://addons/godot_state_charts/transition.gd" id="transition"]
+
+[node name="Husk" type="Node3D"]
+script = ExtResource("enemy")
+hit_radius = 0.5
+hit_height = 0.8
+reach = 0.3
+
+[node name="Visual" type="Node3D" parent="."]
+unique_name_in_owner = true
+
+[node name="Body" type="MeshInstance3D" parent="Visual"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.55, 0)
+cast_shadow = 0
+script = ExtResource("mesh")
+shape_kind = 2
+size = Vector3(0.52, 0.98, 0.52)
+color = Color(0.9412, 0.4157, 0.4157, 1)
+
+[node name="Head" type="MeshInstance3D" parent="Visual"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.2, 0.02)
+cast_shadow = 0
+script = ExtResource("mesh")
+size = Vector3(0.46, 0.46, 0.46)
+color = Color(0.9412, 0.4157, 0.4157, 1)
+
+[node name="Crest" type="MeshInstance3D" parent="Visual"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 0)
+cast_shadow = 0
+script = ExtResource("mesh")
+shape_kind = 3
+size = Vector3(0.18, 0.24, 0.18)
+color = Color(0.7843, 0.2784, 0.3333, 1)
+top_scale = 0
+
+[node name="Visor" type="MeshInstance3D" parent="Visual"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.27, 0.07)
+cast_shadow = 0
+script = ExtResource("mesh")
+size = Vector3(0.44, 0.0484, 0.44)
+color = Color(0.051, 0.0627, 0.0902, 1)
+
+[node name="Shadow" type="MeshInstance3D" parent="."]
+script = ExtResource("shadow")
+diameter = 0.85
+
+[node name="HealthComponent" type="Node" parent="."]
+unique_name_in_owner = true
+script = ExtResource("health")
+max_health = 100
+
+[node name="HitFlash3DComponent" type="Node" parent="." node_paths=PackedStringArray("flash_root", "health_component")]
+unique_name_in_owner = true
+script = ExtResource("flash")
+flash_root = NodePath("../Visual")
+health_component = NodePath("../HealthComponent")
+
+[node name="StateChart" type="Node" parent="."]
+unique_name_in_owner = true
+script = ExtResource("chart")
+
+[node name="Root" type="Node" parent="StateChart"]
+script = ExtResource("compound")
+initial_state = NodePath("Alive")
+
+[node name="Alive" type="Node" parent="StateChart/Root"]
+script = ExtResource("compound")
+initial_state = NodePath("Advancing")
+
+[node name="Advancing" type="Node" parent="StateChart/Root/Alive"]
+script = ExtResource("atomic")
+
+[node name="ToAttacking" type="Node" parent="StateChart/Root/Alive/Advancing"]
+script = ExtResource("transition")
+to = NodePath("../../Attacking")
+event = &"target_in_range"
+delay_in_seconds = "0.0"
+
+[node name="Attacking" type="Node" parent="StateChart/Root/Alive"]
+script = ExtResource("atomic")
+
+[node name="ToAdvancing" type="Node" parent="StateChart/Root/Alive/Attacking"]
+script = ExtResource("transition")
+to = NodePath("../../Advancing")
+event = &"target_out_of_range"
+delay_in_seconds = "0.0"
+
+[node name="ToDead" type="Node" parent="StateChart/Root/Alive"]
+script = ExtResource("transition")
+to = NodePath("../../Dead")
+event = &"died"
+delay_in_seconds = "0.0"
+
+[node name="Dead" type="Node" parent="StateChart/Root"]
+script = ExtResource("atomic")
+
+[node name="ToAlive" type="Node" parent="StateChart/Root/Dead"]
+script = ExtResource("transition")
+to = NodePath("../../Alive")
+event = &"respawn"
+delay_in_seconds = "0.0"
+
+[connection signal="state_physics_processing" from="StateChart/Root/Alive/Advancing" to="." method="_on_advancing_state_physics_processing"]
+[connection signal="state_entered" from="StateChart/Root/Alive/Attacking" to="." method="_on_attacking_state_entered"]
+[connection signal="state_physics_processing" from="StateChart/Root/Alive/Attacking" to="." method="_on_attacking_state_physics_processing"]
+[connection signal="state_entered" from="StateChart/Root/Dead" to="." method="_on_dead_state_entered"]

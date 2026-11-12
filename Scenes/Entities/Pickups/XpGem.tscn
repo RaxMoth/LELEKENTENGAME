@@ -1,0 +1,24 @@
+[gd_scene format=3 uid="uid://ctq4h6307nafp"]
+
+[ext_resource type="Script" uid="uid://bq24bdxs03s4x" path="res://Scripts/Components/pickup.gd" id="1_pickup"]
+[ext_resource type="Script" uid="uid://b8wokaaih540q" path="res://Scripts/Utils/placeholder_shape.gd" id="2_placeholde"]
+
+[sub_resource type="CircleShape2D" id="circle_pickup"]
+radius = 14.0
+
+[node name="XpGem" type="Area2D" unique_id=1856318642]
+collision_layer = 32
+collision_mask = 0
+script = ExtResource("1_pickup")
+lifetime_seconds = 30.0
+collect_sound_preset = &"pop"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1360715385]
+shape = SubResource("circle_pickup")
+
+[node name="Visual" type="Node2D" parent="." unique_id=260134441]
+script = ExtResource("2_placeholde")
+shape_kind = 3
+size = Vector2(22, 28)
+color = Color(0.2392, 0.8627, 0.5922, 1)
+corner_roundness = 0.12

@@ -1,0 +1,7 @@
+[gd_scene format=3 uid="uid://b860nnxj8kohe"]
+
+[ext_resource type="Script" uid="uid://chtty02hi46l7" path="res://Tests/screenshot_tool.gd" id="1_shot"]
+
+[node name="ScreenshotTool" type="Node" unique_id=841381483]
+process_mode = 3
+script = ExtResource("1_shot")

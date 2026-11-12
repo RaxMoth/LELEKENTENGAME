@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="LevelData" format=3 uid="uid://dxpa04rted62m"]
+
+[ext_resource type="Script" uid="uid://dqdbvtjalxnkv" path="res://Scripts/Resources/level_data.gd" id="1_yjfo8"]
+
+[resource]
+script = ExtResource("1_yjfo8")
+id = &"survivor"
+title = "Arena Survivor"
+description = "Top-down action: joystick, auto-fire, waves, XP and perks."
+scene_path = "res://Scenes/Examples/Survivor/Survivor.tscn"
+star_score_thresholds = Array[int]([600, 1200, 2000])
+always_unlocked = true
+energy_cost = 0
+first_clear_rewards = Dictionary[StringName, int]({
+&"gems": 5
+})
+completion_rewards = Dictionary[StringName, int]({
+&"coins": 50
+})

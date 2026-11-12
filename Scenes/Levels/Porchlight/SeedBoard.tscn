@@ -1,0 +1,98 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://Scenes/Levels/Porchlight/seed_board.gd" id="board"]
+[ext_resource type="Script" path="res://Scripts/UI/icon_label.gd" id="icon_label"]
+[ext_resource type="Texture2D" path="res://Assets/Icons/sparkle.svg" id="sparkle"]
+
+[node name="SeedBoard" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("board")
+
+[node name="Panel" type="PanelContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_type_variation = &"CardPanel"
+
+[node name="Margin" type="MarginContainer" parent="Panel"]
+layout_mode = 2
+theme_override_constants/margin_left = 32
+theme_override_constants/margin_top = 24
+theme_override_constants/margin_right = 24
+theme_override_constants/margin_bottom = 24
+
+[node name="Row" type="HBoxContainer" parent="Panel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 32
+
+[node name="Status" type="VBoxContainer" parent="Panel/Margin/Row"]
+custom_minimum_size = Vector2(440, 0)
+layout_mode = 2
+theme_override_constants/separation = 16
+alignment = 1
+
+[node name="Header" type="HBoxContainer" parent="Panel/Margin/Row/Status"]
+layout_mode = 2
+
+[node name="WaveLabel" type="Label" parent="Panel/Margin/Row/Status/Header"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"HeaderLabel"
+text = "Wave 1 / 5"
+
+[node name="ScoreLabel" type="Label" parent="Panel/Margin/Row/Status/Header"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 8
+theme_type_variation = &"SmallLabel"
+text = "Score 0"
+horizontal_alignment = 2
+
+[node name="WaveBar" type="ProgressBar" parent="Panel/Margin/Row/Status"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 16)
+layout_mode = 2
+max_value = 5.0
+show_percentage = false
+
+[node name="Stats" type="HBoxContainer" parent="Panel/Margin/Row/Status"]
+layout_mode = 2
+theme_override_constants/separation = 32
+
+[node name="SparksLabel" type="HBoxContainer" parent="Panel/Margin/Row/Status/Stats"]
+unique_name_in_owner = true
+layout_mode = 2
+script = ExtResource("icon_label")
+icon = ExtResource("sparkle")
+text = "150"
+icon_size = 52
+icon_color = Color(0.9608, 0.7216, 0.2549, 1)
+label_theme_type = &"HeaderLabel"
+
+[node name="Hearts" type="HBoxContainer" parent="Panel/Margin/Row/Status/Stats"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 10
+theme_override_constants/separation = 8
+
+[node name="HintLabel" type="Label" parent="Panel/Margin/Row/Status"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"SmallLabel"
+text = "Tap a tile to plant"
+autowrap_mode = 3
+
+[node name="Cards" type="HBoxContainer" parent="Panel/Margin/Row"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 16

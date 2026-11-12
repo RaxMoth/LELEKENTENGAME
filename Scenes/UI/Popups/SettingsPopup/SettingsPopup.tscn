@@ -1,0 +1,166 @@
+[gd_scene format=3 uid="uid://cgelheotc8yen"]
+
+[ext_resource type="Script" uid="uid://btmh7m2465ghl" path="res://Scenes/UI/Popups/SettingsPopup/settings_popup.gd" id="1_settings_p"]
+
+[node name="SettingsPopup" type="Control" unique_id=2146951910]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_settings_p")
+
+[node name="Backdrop" type="ColorRect" parent="." unique_id=50213929]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.02, 0.027, 0.043, 0.72)
+
+[node name="CenterContainer" type="CenterContainer" parent="." unique_id=755100141]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Panel" type="PanelContainer" parent="CenterContainer" unique_id=544235575]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(620, 0)
+layout_mode = 2
+
+[node name="Content" type="VBoxContainer" parent="CenterContainer/Panel" unique_id=136904437]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="TitleLabel" type="Label" parent="CenterContainer/Panel/Content" unique_id=1630274540]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"HeaderLabel"
+text = "Settings"
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="MasterSliderRow" type="HBoxContainer" parent="CenterContainer/Panel/Content" unique_id=799269396]
+layout_mode = 2
+
+[node name="MasterSliderLabel" type="Label" parent="CenterContainer/Panel/Content/MasterSliderRow" unique_id=1017761639]
+custom_minimum_size = Vector2(230, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 26
+text = "Master Volume"
+
+[node name="MasterSlider" type="HSlider" parent="CenterContainer/Panel/Content/MasterSliderRow" unique_id=1509955076]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 52)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+max_value = 1.0
+step = 0.05
+value = 1.0
+
+[node name="MusicSliderRow" type="HBoxContainer" parent="CenterContainer/Panel/Content" unique_id=1780471237]
+layout_mode = 2
+
+[node name="MusicSliderLabel" type="Label" parent="CenterContainer/Panel/Content/MusicSliderRow" unique_id=355734487]
+custom_minimum_size = Vector2(230, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 26
+text = "Music"
+
+[node name="MusicSlider" type="HSlider" parent="CenterContainer/Panel/Content/MusicSliderRow" unique_id=237169265]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 52)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+max_value = 1.0
+step = 0.05
+value = 1.0
+
+[node name="SfxSliderRow" type="HBoxContainer" parent="CenterContainer/Panel/Content" unique_id=986738720]
+layout_mode = 2
+
+[node name="SfxSliderLabel" type="Label" parent="CenterContainer/Panel/Content/SfxSliderRow" unique_id=1708976548]
+custom_minimum_size = Vector2(230, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 26
+text = "Sound Effects"
+
+[node name="SfxSlider" type="HSlider" parent="CenterContainer/Panel/Content/SfxSliderRow" unique_id=1242456662]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 52)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+max_value = 1.0
+step = 0.05
+value = 1.0
+
+[node name="HapticsToggle" type="CheckButton" parent="CenterContainer/Panel/Content" unique_id=654878800]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 60)
+layout_mode = 2
+text = "Vibration"
+
+[node name="ShakeToggle" type="CheckButton" parent="CenterContainer/Panel/Content" unique_id=1497424112]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 60)
+layout_mode = 2
+text = "Screen Shake"
+
+[node name="BatteryToggle" type="CheckButton" parent="CenterContainer/Panel/Content" unique_id=1020889092]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 60)
+layout_mode = 2
+text = "Battery Saver (30 FPS)"
+
+[node name="FpsToggle" type="CheckButton" parent="CenterContainer/Panel/Content" unique_id=517874679]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 60)
+layout_mode = 2
+text = "Show FPS"
+
+[node name="LanguageRow" type="HBoxContainer" parent="CenterContainer/Panel/Content" unique_id=1449026608]
+layout_mode = 2
+
+[node name="LanguageLabel" type="Label" parent="CenterContainer/Panel/Content/LanguageRow" unique_id=1611300062]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Language"
+
+[node name="LanguageOption" type="OptionButton" parent="CenterContainer/Panel/Content/LanguageRow" unique_id=1050283374]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(260, 72)
+layout_mode = 2
+theme_type_variation = &"SecondaryButton"
+
+[node name="PrivacyButton" type="Button" parent="CenterContainer/Panel/Content" unique_id=388092314]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 80)
+layout_mode = 2
+theme_type_variation = &"SecondaryButton"
+text = "Privacy Policy"
+
+[node name="ResetButton" type="Button" parent="CenterContainer/Panel/Content" unique_id=867848014]
+custom_minimum_size = Vector2(0, 80)
+layout_mode = 2
+theme_type_variation = &"DangerGhostButton"
+text = "Reset Progress"
+
+[node name="CloseButton" type="Button" parent="CenterContainer/Panel/Content" unique_id=175899079]
+custom_minimum_size = Vector2(0, 96)
+layout_mode = 2
+text = "Close"
+
+[connection signal="pressed" from="CenterContainer/Panel/Content/PrivacyButton" to="." method="_on_privacy_button_pressed"]
+[connection signal="pressed" from="CenterContainer/Panel/Content/ResetButton" to="." method="_on_reset_button_pressed"]
+[connection signal="pressed" from="CenterContainer/Panel/Content/CloseButton" to="." method="_on_close_button_pressed"]

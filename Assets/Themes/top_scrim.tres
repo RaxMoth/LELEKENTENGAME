@@ -1,0 +1,10 @@
+[gd_resource type="GradientTexture2D" format=3 uid="uid://csgo7osxg6c1l"]
+
+[sub_resource type="Gradient" id="scrim_gradient"]
+colors = PackedColorArray(0.051, 0.063, 0.09, 0.85, 0.051, 0.063, 0.09, 0)
+
+[resource]
+gradient = SubResource("scrim_gradient")
+width = 8
+height = 128
+fill_to = Vector2(0, 1)

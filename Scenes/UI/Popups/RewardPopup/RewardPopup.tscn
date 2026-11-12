@@ -1,0 +1,79 @@
+[gd_scene format=3 uid="uid://b3uqryhhmi2nb"]
+
+[ext_resource type="Script" uid="uid://c5fa73eericbu" path="res://Scenes/UI/Popups/RewardPopup/reward_popup.gd" id="1_reward_pop"]
+
+[node name="RewardPopup" type="Control" unique_id=788569657]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_reward_pop")
+close_on_backdrop_tap = false
+
+[node name="Backdrop" type="ColorRect" parent="." unique_id=1924121510]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.02, 0.027, 0.043, 0.72)
+
+[node name="CenterContainer" type="CenterContainer" parent="." unique_id=1119725683]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Panel" type="PanelContainer" parent="CenterContainer" unique_id=288114391]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(560, 0)
+layout_mode = 2
+
+[node name="Content" type="VBoxContainer" parent="CenterContainer/Panel" unique_id=1808965972]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="TitleLabel" type="Label" parent="CenterContainer/Panel/Content" unique_id=1011040694]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"HeaderLabel"
+text = "Reward"
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="SubtitleLabel" type="Label" parent="CenterContainer/Panel/Content" unique_id=1401273281]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"SmallLabel"
+text = "Subtitle"
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="RewardsRow" type="HBoxContainer" parent="CenterContainer/Panel/Content" unique_id=621211802]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 16
+alignment = 1
+
+[node name="DoubleButton" type="Button" parent="CenterContainer/Panel/Content" unique_id=358073987]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 96)
+layout_mode = 2
+theme_type_variation = &"SuccessButton"
+text = "Claim x2"
+
+[node name="ClaimButton" type="Button" parent="CenterContainer/Panel/Content" unique_id=1647328094]
+custom_minimum_size = Vector2(0, 100)
+layout_mode = 2
+text = "Claim"
+
+[connection signal="pressed" from="CenterContainer/Panel/Content/DoubleButton" to="." method="_on_double_button_pressed"]
+[connection signal="pressed" from="CenterContainer/Panel/Content/ClaimButton" to="." method="_on_claim_button_pressed"]

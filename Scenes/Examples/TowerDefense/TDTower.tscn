@@ -1,0 +1,58 @@
+[gd_scene format=3 uid="uid://bcv7nwy7ush02"]
+
+[ext_resource type="Script" uid="uid://cuhvt5avrb23w" path="res://Scenes/Examples/TowerDefense/td_tower.gd" id="1_td_tower"]
+[ext_resource type="Script" uid="uid://b8wokaaih540q" path="res://Scripts/Utils/placeholder_shape.gd" id="2_placeholde"]
+[ext_resource type="Script" uid="uid://cjaoenrq5aygf" path="res://Scripts/Components/targeting_component.gd" id="3_targeting_"]
+[ext_resource type="PackedScene" uid="uid://dvu86a2nc7h4x" path="res://Scenes/Entities/Projectile/Projectile.tscn" id="4_Projectile"]
+[ext_resource type="Script" uid="uid://bvbjs0w3n8pox" path="res://Scripts/Components/shooter_component.gd" id="5_shooter_co"]
+
+[node name="TDTower" type="Node2D" unique_id=547680542]
+script = ExtResource("1_td_tower")
+
+[node name="RangeIndicator" type="Node2D" parent="." unique_id=173422302]
+unique_name_in_owner = true
+script = ExtResource("2_placeholde")
+size = Vector2(380, 380)
+color = Color(1, 1, 1, 0.04)
+shading = 0.0
+outline_color = Color(1, 1, 1, 0.16)
+outline_width = 2.0
+shadow_enabled = false
+
+[node name="Base" type="Node2D" parent="." unique_id=1486091417]
+unique_name_in_owner = true
+script = ExtResource("2_placeholde")
+shape_kind = 1
+size = Vector2(64, 64)
+color = Color(0.2275, 0.2706, 0.3765, 1)
+corner_roundness = 0.3
+
+[node name="Turret" type="Node2D" parent="." unique_id=361252433]
+unique_name_in_owner = true
+
+[node name="Barrel" type="Node2D" parent="Turret" unique_id=2139142335]
+position = Vector2(20, 0)
+script = ExtResource("2_placeholde")
+shape_kind = 1
+size = Vector2(46, 20)
+color = Color(0.5608, 0.6588, 1, 1)
+corner_roundness = 0.5
+shading = 0.0
+shadow_enabled = false
+
+[node name="TargetingComponent" type="Area2D" parent="." unique_id=1284062853]
+unique_name_in_owner = true
+collision_layer = 0
+collision_mask = 16
+script = ExtResource("3_targeting_")
+detection_radius = 190.0
+target_priority = 4
+
+[node name="ShooterComponent" type="Marker2D" parent="." unique_id=496053328]
+unique_name_in_owner = true
+script = ExtResource("5_shooter_co")
+projectile_scene = ExtResource("4_Projectile")
+shots_per_second = 1.4
+damage = 14.0
+projectile_speed_override = 650.0
+homing_turn_rate = 10.0

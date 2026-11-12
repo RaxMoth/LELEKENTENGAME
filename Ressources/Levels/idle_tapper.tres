@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="LevelData" format=3 uid="uid://onede6wtkcn6"]
+
+[ext_resource type="Script" uid="uid://dqdbvtjalxnkv" path="res://Scripts/Resources/level_data.gd" id="1_dgsah"]
+
+[resource]
+script = ExtResource("1_dgsah")
+id = &"idle_tapper"
+title = "Idle Tapper"
+description = "Clicker / idle: tap, buy upgrades, earn while away."
+scene_path = "res://Scenes/Examples/IdleClicker/IdleClicker.tscn"
+star_score_thresholds = Array[int]([200, 1000, 5000])
+is_endless = true
+always_unlocked = true
+energy_cost = 0
+completion_rewards = Dictionary[StringName, int]({
+&"coins": 10
+})

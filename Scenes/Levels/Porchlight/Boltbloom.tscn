@@ -1,0 +1,82 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://Scenes/Levels/Porchlight/boltbloom.gd" id="defender"]
+[ext_resource type="Script" path="res://Scripts/Utils/placeholder_mesh_3d.gd" id="mesh"]
+[ext_resource type="Script" path="res://Scripts/Utils/blob_shadow_3d.gd" id="shadow"]
+[ext_resource type="Script" path="res://Scripts/Components/health_component.gd" id="health"]
+[ext_resource type="Script" path="res://Scripts/Components/hit_flash_3d_component.gd" id="flash"]
+
+[node name="Boltbloom" type="Node3D"]
+script = ExtResource("defender")
+
+[node name="Visual" type="Node3D" parent="."]
+unique_name_in_owner = true
+
+[node name="Base" type="MeshInstance3D" parent="Visual"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.04, 0)
+cast_shadow = 0
+script = ExtResource("mesh")
+shape_kind = 3
+size = Vector3(0.66, 0.08, 0.66)
+color = Color(0.1804, 0.2118, 0.2941, 1)
+
+[node name="Stem" type="MeshInstance3D" parent="Visual"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.29, 0)
+cast_shadow = 0
+script = ExtResource("mesh")
+shape_kind = 3
+size = Vector3(0.11, 0.42, 0.11)
+color = Color(0.1765, 0.7451, 0.4706, 1)
+
+[node name="Leaf" type="MeshInstance3D" parent="Visual"]
+transform = Transform3D(0.913545, 0.406737, 0, -0.406737, 0.913545, 0, 0, 0, 1, 0.17, 0.26, 0.04)
+cast_shadow = 0
+script = ExtResource("mesh")
+size = Vector3(0.3, 0.09, 0.3)
+color = Color(0.1765, 0.7451, 0.4706, 1)
+
+[node name="Head" type="Node3D" parent="Visual"]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.66, 0)
+
+[node name="Body" type="MeshInstance3D" parent="Visual/Head"]
+cast_shadow = 0
+script = ExtResource("mesh")
+size = Vector3(0.5, 0.5, 0.5)
+color = Color(0.3569, 0.4863, 0.9804, 1)
+
+[node name="Barrel" type="MeshInstance3D" parent="Visual/Head"]
+transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, 0, 0.02, -0.3)
+cast_shadow = 0
+script = ExtResource("mesh")
+shape_kind = 3
+size = Vector3(0.22, 0.36, 0.22)
+color = Color(0.3569, 0.4863, 0.9804, 1)
+top_scale = 0.8
+
+[node name="Tip" type="MeshInstance3D" parent="Visual/Head"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.02, -0.5)
+cast_shadow = 0
+script = ExtResource("mesh")
+size = Vector3(0.15, 0.15, 0.15)
+color = Color(1, 0.8784, 0.5412, 1)
+glow = 0.7
+
+[node name="Muzzle" type="Marker3D" parent="Visual/Head"]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.02, -0.56)
+
+[node name="Shadow" type="MeshInstance3D" parent="."]
+script = ExtResource("shadow")
+diameter = 0.95
+
+[node name="HealthComponent" type="Node" parent="."]
+unique_name_in_owner = true
+script = ExtResource("health")
+max_health = 120
+
+[node name="HitFlash3DComponent" type="Node" parent="." node_paths=PackedStringArray("flash_root", "health_component")]
+unique_name_in_owner = true
+script = ExtResource("flash")
+flash_root = NodePath("../Visual")
+health_component = NodePath("../HealthComponent")

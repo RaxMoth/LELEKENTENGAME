@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="UpgradeData" format=3 uid="uid://bvlaqh5huterv"]
+
+[ext_resource type="Script" uid="uid://bjps7qydt4qxq" path="res://Scripts/Resources/upgrade_data.gd" id="1_ek2x5"]
+
+[resource]
+script = ExtResource("1_ek2x5")
+id = &"idle_tap_power"
+title = "Stronger Taps"
+description = "More coins per tap."
+base_cost = 15
+cost_growth = 1.18
+base_value = 1.0
+value_format = "%s / tap"
+show_in_shop = false

@@ -1,0 +1,50 @@
+[gd_scene format=3 uid="uid://cl3ctwj36xt27"]
+
+[ext_resource type="Script" uid="uid://joy36r2drk2h" path="res://Globals/Debug/debug_overlay.gd" id="1_dbg"]
+
+[node name="DebugOverlay" type="CanvasLayer" unique_id=1578830293]
+process_mode = 3
+layer = 120
+script = ExtResource("1_dbg")
+
+[node name="StatsLabel" type="Label" parent="." unique_id=1380750202]
+unique_name_in_owner = true
+offset_left = 8.0
+offset_top = 4.0
+offset_right = 600.0
+offset_bottom = 32.0
+theme_override_font_sizes/font_size = 20
+theme_override_colors/font_color = Color(0.6, 1, 0.6, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 6
+text = "FPS"
+
+[node name="CheatPanel" type="PanelContainer" parent="." unique_id=359026833]
+unique_name_in_owner = true
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -220.0
+offset_top = -420.0
+offset_right = 220.0
+offset_bottom = 420.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Scroll" type="ScrollContainer" parent="CheatPanel" unique_id=1263253631]
+layout_mode = 2
+horizontal_scroll_mode = 0
+
+[node name="CheatList" type="VBoxContainer" parent="CheatPanel/Scroll" unique_id=1283233921]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 10
+
+[node name="Title" type="Label" parent="CheatPanel/Scroll/CheatList" unique_id=1893318623]
+layout_mode = 2
+theme_type_variation = &"HeaderLabel"
+text = "Debug"
+horizontal_alignment = 1

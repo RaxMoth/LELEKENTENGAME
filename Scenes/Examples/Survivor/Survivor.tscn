@@ -1,0 +1,276 @@
+[gd_scene format=3 uid="uid://ttadu7uk6kj5"]
+
+[ext_resource type="PackedScene" uid="uid://w157plbirhid" path="res://Scenes/Game/LevelBase/LevelBase.tscn" id="1_LevelBase"]
+[ext_resource type="Script" uid="uid://cmbdhlqtqbfmn" path="res://Scenes/Examples/Survivor/survivor_level.gd" id="2_survivor_l"]
+[ext_resource type="Resource" uid="uid://dxpa04rted62m" path="res://Ressources/Levels/survivor.tres" id="3_survivor"]
+[ext_resource type="Script" uid="uid://carpg7ljtptxn" path="res://Scripts/Resources/stat_modifier.gd" id="4_stat_modif"]
+[ext_resource type="Script" uid="uid://cqly6xra680jx" path="res://Scripts/Resources/perk_data.gd" id="5_perk_data"]
+[ext_resource type="Script" uid="uid://2rt1o3scufkf" path="res://Scenes/Examples/Survivor/nova_ability.gd" id="6_nova_abili"]
+[ext_resource type="Script" uid="uid://bny1q1dxsxhg0" path="res://Scripts/Resources/wave_entry.gd" id="7_wave_entry"]
+[ext_resource type="PackedScene" uid="uid://co73o0yxnlcwh" path="res://Scenes/Entities/ChaserEnemy/ChaserEnemy.tscn" id="8_ChaserEnem"]
+[ext_resource type="Script" uid="uid://2wqa5sl48ce8" path="res://Scripts/Resources/wave_data.gd" id="9_wave_data"]
+[ext_resource type="PackedScene" uid="uid://bkm0354c3cy4v" path="res://Scenes/Examples/Survivor/BruteEnemy.tscn" id="10_BruteEnemy"]
+[ext_resource type="Script" uid="uid://dh0dj7tjwrsuh" path="res://Scripts/Utils/grid_background.gd" id="11_grid_backg"]
+[ext_resource type="PackedScene" uid="uid://cclak2hjt07cb" path="res://Scenes/Entities/TopDownPlayer/TopDownPlayer.tscn" id="12_TopDownPla"]
+[ext_resource type="Script" uid="uid://cuaon6i30u4e4" path="res://Scripts/Components/wave_spawner.gd" id="13_wave_spawn"]
+[ext_resource type="Script" uid="uid://bv5vbokqtk0hi" path="res://Scripts/Components/ability_component.gd" id="14_ability_co"]
+[ext_resource type="Script" uid="uid://mdpfl148ht3c" path="res://Scripts/Resources/ability_data.gd" id="15_ability_da"]
+[ext_resource type="Script" uid="uid://47fo57q0xr0c" path="res://Scripts/UI/touch_joystick.gd" id="16_touch_joys"]
+
+[sub_resource type="Resource" id="mod_sharp_0"]
+script = ExtResource("4_stat_modif")
+stat_id = &"damage"
+kind = 1
+value = 0.25
+
+[sub_resource type="Resource" id="perk_sharp"]
+script = ExtResource("5_perk_data")
+id = &"sharp"
+title = "Sharp Bullets"
+description = "+25% damage"
+modifiers = Array[ExtResource("4_stat_modif")]([SubResource("mod_sharp_0")])
+
+[sub_resource type="Resource" id="mod_rapid_0"]
+script = ExtResource("4_stat_modif")
+stat_id = &"fire_rate"
+kind = 1
+value = 0.2
+
+[sub_resource type="Resource" id="perk_rapid"]
+script = ExtResource("5_perk_data")
+id = &"rapid"
+title = "Rapid Fire"
+description = "+20% fire rate"
+modifiers = Array[ExtResource("4_stat_modif")]([SubResource("mod_rapid_0")])
+
+[sub_resource type="Resource" id="mod_multi_0"]
+script = ExtResource("4_stat_modif")
+stat_id = &"projectile_count"
+value = 1.0
+
+[sub_resource type="Resource" id="perk_multi"]
+script = ExtResource("5_perk_data")
+id = &"multi"
+title = "Multishot"
+description = "+1 projectile per shot"
+modifiers = Array[ExtResource("4_stat_modif")]([SubResource("mod_multi_0")])
+max_stacks = 3
+weight = 0.6
+
+[sub_resource type="Resource" id="mod_swift_0"]
+script = ExtResource("4_stat_modif")
+stat_id = &"move_speed"
+kind = 1
+value = 0.12
+
+[sub_resource type="Resource" id="perk_swift"]
+script = ExtResource("5_perk_data")
+id = &"swift"
+title = "Swift Boots"
+description = "+12% move speed"
+modifiers = Array[ExtResource("4_stat_modif")]([SubResource("mod_swift_0")])
+max_stacks = 4
+weight = 0.9
+
+[sub_resource type="Resource" id="mod_vital_0"]
+script = ExtResource("4_stat_modif")
+stat_id = &"max_health"
+value = 25.0
+
+[sub_resource type="Resource" id="perk_vital"]
+script = ExtResource("5_perk_data")
+id = &"vital"
+title = "Vitality"
+description = "+25 max health"
+modifiers = Array[ExtResource("4_stat_modif")]([SubResource("mod_vital_0")])
+weight = 0.9
+
+[sub_resource type="Resource" id="mod_magnet_0"]
+script = ExtResource("4_stat_modif")
+stat_id = &"pickup_radius"
+kind = 1
+value = 0.4
+
+[sub_resource type="Resource" id="perk_magnet"]
+script = ExtResource("5_perk_data")
+id = &"magnet"
+title = "Magnet"
+description = "+40% pickup radius"
+modifiers = Array[ExtResource("4_stat_modif")]([SubResource("mod_magnet_0")])
+max_stacks = 3
+weight = 0.7
+
+[sub_resource type="RectangleShape2D" id="wall_Top"]
+size = Vector2(2600, 100)
+
+[sub_resource type="RectangleShape2D" id="wall_Bottom"]
+size = Vector2(2600, 100)
+
+[sub_resource type="RectangleShape2D" id="wall_Left"]
+size = Vector2(100, 2600)
+
+[sub_resource type="RectangleShape2D" id="wall_Right"]
+size = Vector2(100, 2600)
+
+[sub_resource type="Resource" id="sv_w0_e0"]
+script = ExtResource("7_wave_entry")
+enemy_scene = ExtResource("8_ChaserEnem")
+count = 10
+spawn_interval = 0.6
+
+[sub_resource type="Resource" id="sv_w0"]
+script = ExtResource("9_wave_data")
+entries = Array[ExtResource("7_wave_entry")]([SubResource("sv_w0_e0")])
+delay_before_wave = 1.0
+
+[sub_resource type="Resource" id="sv_w1_e0"]
+script = ExtResource("7_wave_entry")
+enemy_scene = ExtResource("8_ChaserEnem")
+count = 14
+spawn_interval = 0.45
+
+[sub_resource type="Resource" id="sv_w1"]
+script = ExtResource("9_wave_data")
+entries = Array[ExtResource("7_wave_entry")]([SubResource("sv_w1_e0")])
+health_multiplier = 1.2
+
+[sub_resource type="Resource" id="sv_w2_e0"]
+script = ExtResource("7_wave_entry")
+enemy_scene = ExtResource("8_ChaserEnem")
+count = 14
+spawn_interval = 0.4
+
+[sub_resource type="Resource" id="sv_w2_e1"]
+script = ExtResource("7_wave_entry")
+enemy_scene = ExtResource("10_BruteEnemy")
+count = 2
+spawn_interval = 2.0
+start_delay = 2.0
+
+[sub_resource type="Resource" id="sv_w2"]
+script = ExtResource("9_wave_data")
+entries = Array[ExtResource("7_wave_entry")]([SubResource("sv_w2_e0"), SubResource("sv_w2_e1")])
+health_multiplier = 1.4
+
+[sub_resource type="Resource" id="sv_w3_e0"]
+script = ExtResource("7_wave_entry")
+enemy_scene = ExtResource("8_ChaserEnem")
+count = 20
+spawn_interval = 0.3
+
+[sub_resource type="Resource" id="sv_w3_e1"]
+script = ExtResource("7_wave_entry")
+enemy_scene = ExtResource("10_BruteEnemy")
+count = 4
+spawn_interval = 1.5
+start_delay = 1.0
+
+[sub_resource type="Resource" id="sv_w3"]
+script = ExtResource("9_wave_data")
+entries = Array[ExtResource("7_wave_entry")]([SubResource("sv_w3_e0"), SubResource("sv_w3_e1")])
+health_multiplier = 1.7
+
+[sub_resource type="Resource" id="sv_w4_e0"]
+script = ExtResource("7_wave_entry")
+enemy_scene = ExtResource("8_ChaserEnem")
+count = 26
+spawn_interval = 0.25
+
+[sub_resource type="Resource" id="sv_w4_e1"]
+script = ExtResource("7_wave_entry")
+enemy_scene = ExtResource("10_BruteEnemy")
+count = 6
+spawn_interval = 1.2
+start_delay = 1.0
+
+[sub_resource type="Resource" id="sv_w4"]
+script = ExtResource("9_wave_data")
+entries = Array[ExtResource("7_wave_entry")]([SubResource("sv_w4_e0"), SubResource("sv_w4_e1")])
+health_multiplier = 2.0
+
+[sub_resource type="Resource" id="nova"]
+script = ExtResource("6_nova_abili")
+id = &"nova"
+title = "Nova"
+cooldown_seconds = 6.0
+
+[node name="Survivor" unique_id=1069816599 instance=ExtResource("1_LevelBase")]
+script = ExtResource("2_survivor_l")
+perks = Array[ExtResource("5_perk_data")]([SubResource("perk_sharp"), SubResource("perk_rapid"), SubResource("perk_multi"), SubResource("perk_swift"), SubResource("perk_vital"), SubResource("perk_magnet")])
+first_level_xp = 5
+xp_growth = 1.35
+score_per_kill = 10
+level_data = ExtResource("3_survivor")
+time_limit_seconds = 90.0
+
+[node name="Floor" type="Node2D" parent="World" parent_id_path=PackedInt32Array(42466780) index="0" unique_id=1472750457]
+z_index = -10
+position = Vector2(-1200, -1200)
+script = ExtResource("11_grid_backg")
+area_size = Vector2(2400, 2400)
+cell_size = Vector2(96, 96)
+
+[node name="Walls" type="StaticBody2D" parent="World" parent_id_path=PackedInt32Array(42466780) index="1" unique_id=1311081154]
+collision_mask = 0
+
+[node name="Top" type="CollisionShape2D" parent="World/Walls" index="0" unique_id=354570186]
+position = Vector2(0, -1250)
+shape = SubResource("wall_Top")
+
+[node name="Bottom" type="CollisionShape2D" parent="World/Walls" index="1" unique_id=646514457]
+position = Vector2(0, 1250)
+shape = SubResource("wall_Bottom")
+
+[node name="Left" type="CollisionShape2D" parent="World/Walls" index="2" unique_id=1550215738]
+position = Vector2(-1250, 0)
+shape = SubResource("wall_Left")
+
+[node name="Right" type="CollisionShape2D" parent="World/Walls" index="3" unique_id=248281779]
+position = Vector2(1250, 0)
+shape = SubResource("wall_Right")
+
+[node name="Player" parent="World" parent_id_path=PackedInt32Array(42466780) index="2" unique_id=974256172 instance=ExtResource("12_TopDownPla")]
+unique_name_in_owner = true
+
+[node name="WaveSpawner" type="Node" parent="World" parent_id_path=PackedInt32Array(42466780) index="3" unique_id=1496479721]
+unique_name_in_owner = true
+script = ExtResource("13_wave_spawn")
+waves = Array[ExtResource("9_wave_data")]([SubResource("sv_w0"), SubResource("sv_w1"), SubResource("sv_w2"), SubResource("sv_w3"), SubResource("sv_w4")])
+spawn_mode = 1
+endless = true
+
+[node name="AbilityComponent" type="Node" parent="World" parent_id_path=PackedInt32Array(42466780) index="4" unique_id=968194458 node_paths=PackedStringArray("caster")]
+unique_name_in_owner = true
+script = ExtResource("14_ability_co")
+abilities = Array[ExtResource("15_ability_da")]([SubResource("nova")])
+caster = NodePath("../Player")
+
+[node name="GameCamera" parent="." index="1" unique_id=1124155239]
+position = Vector2(0, 0)
+limit_left = -1200
+limit_top = -1200
+limit_right = 1200
+limit_bottom = 1200
+position_smoothing_enabled = true
+position_smoothing_speed = 8.0
+
+[node name="Controls" type="CanvasLayer" parent="." index="4" unique_id=1419334514]
+layer = 5
+
+[node name="TouchJoystick" type="VirtualJoystick" parent="Controls" index="0" unique_id=1218975114]
+anchors_preset = -1
+anchor_top = 0.35
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 0
+joystick_mode = 1
+joystick_size = 220.0
+tip_size = 92.0
+deadzone_ratio = 0.15
+initial_offset_ratio = Vector2(0.5, 0.7)
+action_left = &"move_left"
+action_right = &"move_right"
+action_up = &"move_up"
+action_down = &"move_down"
+script = ExtResource("16_touch_joys")

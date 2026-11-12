@@ -1,0 +1,24 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://Scenes/Levels/Porchlight/spark_orb.gd" id="orb"]
+[ext_resource type="Script" path="res://Scripts/Utils/placeholder_mesh_3d.gd" id="mesh"]
+
+[node name="SparkOrb" type="Node3D"]
+script = ExtResource("orb")
+
+[node name="Visual" type="Node3D" parent="."]
+unique_name_in_owner = true
+
+[node name="Core" type="MeshInstance3D" parent="Visual"]
+cast_shadow = 0
+script = ExtResource("mesh")
+size = Vector3(0.3, 0.3, 0.3)
+color = Color(0.9608, 0.7216, 0.2549, 1)
+glow = 0.9
+
+[node name="Halo" type="MeshInstance3D" parent="Visual"]
+cast_shadow = 0
+script = ExtResource("mesh")
+size = Vector3(0.5, 0.5, 0.5)
+color = Color(0.9608, 0.7216, 0.2549, 0.22)
+unshaded = true
