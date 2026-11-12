@@ -79,6 +79,7 @@ var _last_rattle_msec: int = -100000
 
 
 func _ready() -> void:
+	add_to_group(Types.GROUP_NET_NODE)
 	_bar_back.material_override = PlaceholderMesh3D.get_shared_material(Palette.BACKGROUND, 0.0, true)
 	health_component.damaged.connect(_on_damaged)
 	health_component.health_changed.connect(_on_health_changed)
@@ -217,6 +218,31 @@ func get_inside_lock() -> PointerButton:
 
 func get_outside_lock() -> PointerButton:
 	return _outside_lock
+
+## Co-op: how the door looks right now — [open angle, bolted, health, max health].
+func get_net_state() -> Array:
+	return [_open_angle, _is_locked, health_component.current_health, health_component.max_health]
+
+
+## Co-op guest: show the host's door (its swing, bolt and health) and let
+## the guest walk through when it stands open — without running its rules.
+func apply_net_state(state: Array) -> void:
+	var angle: float = float(state[0])
+	if not is_equal_approx(angle, _open_angle):
+		_open_angle = clampf(angle, 0.0, max_open_degrees)
+		_hinge.rotation.y = -deg_to_rad(_open_angle)
+		_inside_handle.current_angle_degrees = _open_angle
+		_outside_handle.current_angle_degrees = _open_angle
+		_is_open = _open_angle > latch_below_degrees
+		var now_passable: bool = _open_angle >= passable_from_degrees
+		if now_passable != _is_passable:
+			_is_passable = now_passable
+			passage_changed.emit(_is_passable)
+	var bolted: bool = bool(state[1])
+	if bolted != _is_locked:
+		_is_locked = bolted
+		_apply_lock_look()
+	_on_health_changed(float(state[2]), float(state[3]))
 
 # ============================================
 # STATE CHART CALLBACKS (connected in FrontDoor.tscn)

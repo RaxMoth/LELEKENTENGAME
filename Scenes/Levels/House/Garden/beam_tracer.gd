@@ -1,7 +1,7 @@
 ## Pooled flash of the player's blaster: a thin glowing beam between two
 ## points that thins out and disappears.
 ##
-## Dependencies: Pools autoload
+## Dependencies: Pools, Events autoloads
 class_name BeamTracer
 extends Node3D
 
@@ -11,6 +11,7 @@ var _tween: Tween
 
 
 func fire(from_position: Vector3, to_position: Vector3) -> void:
+	Events.beam_fired.emit(from_position, to_position)
 	var beam_length: float = from_position.distance_to(to_position)
 	if beam_length < 0.01:
 		Pools.despawn(self)

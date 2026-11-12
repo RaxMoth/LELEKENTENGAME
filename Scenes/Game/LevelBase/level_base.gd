@@ -13,7 +13,7 @@
 ## in-world UI (a WorldScreen or a Label3D); popups reach the player through
 ## the rig's in-world popup screen.
 ##
-## Dependencies: Events, Profile, SceneManager, UI, Ads, Global, Types autoloads,
+## Dependencies: Events, Coop, Profile, SceneManager, UI, Ads, Global, Types autoloads,
 ##               XRPlayerRig, godot_state_charts addon
 class_name LevelBase
 extends Node3D
@@ -47,6 +47,7 @@ var elapsed_seconds: float = 0.0
 var phase: Phase = Phase.INTRO
 
 var _has_started: bool = false
+var _is_pause_menu_open: bool = false
 var _announce_tween: Tween
 
 @onready var world: Node3D = %World
@@ -73,6 +74,7 @@ static func start_level(level: LevelData, add_to_history: bool = true) -> bool:
 
 func _ready() -> void:
 	Events.app_paused.connect(_on_app_paused)
+	Coop.mode_changed.connect(_on_coop_mode_changed)
 	announcer.hide()
 	_on_level_setup()
 
@@ -124,8 +126,14 @@ func end_run() -> void:
 
 
 func pause_level() -> void:
-	if phase == Phase.PLAYING:
-		state_chart.send_event(Types.EVENT_PAUSE)
+	if phase != Phase.PLAYING:
+		return
+	if Coop.is_online():
+		# In co-op the world keeps going for the other player: only the menu opens.
+		if not _is_pause_menu_open:
+			_show_pause_menu()
+		return
+	state_chart.send_event(Types.EVENT_PAUSE)
 
 
 func resume_level() -> void:
@@ -264,7 +272,15 @@ func _on_paused_state_entered() -> void:
 	phase = Phase.PAUSED
 	get_tree().paused = true
 	Events.level_paused.emit(true)
+	_show_pause_menu()
+
+
+## The pause menu; offline the level waits in Paused meanwhile, in co-op it
+## keeps playing behind the menu.
+func _show_pause_menu() -> void:
+	_is_pause_menu_open = true
 	var choice: Variant = await UI.open_popup(PAUSE_POPUP).closed
+	_is_pause_menu_open = false
 	match choice:
 		PausePopup.RESULT_RESTART:
 			restart_level()
@@ -287,7 +303,7 @@ func _on_lost_state_entered() -> void:
 
 ## Controller menu or B / Y button: toggles the pause menu.
 func _on_rig_menu_pressed() -> void:
-	if phase == Phase.PAUSED:
+	if _is_pause_menu_open:
 		UI.close_top_popup()
 	else:
 		pause_level()
@@ -326,6 +342,13 @@ func _finish(outcome: Types.LevelOutcome) -> void:
 			restart_level()
 		_:
 			quit_to_menu()
+
+
+## Started hosting (or joined) from the pause menu: the world must run on
+## behind the open menu, for the other player.
+func _on_coop_mode_changed(_mode: Coop.Mode) -> void:
+	if Coop.is_online() and phase == Phase.PAUSED:
+		resume_level()
 
 
 func _on_app_paused() -> void:

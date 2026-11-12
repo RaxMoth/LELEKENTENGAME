@@ -8,6 +8,11 @@
 class_name HouseContext
 extends RefCounted
 
+## Co-op: the other player pulled their gun trigger (their off-hand trigger
+## hit no screen or button). [param feet]: where they stand;
+## [param recoil_pulse]: call with a Types.HapticStrength to rumble their hand.
+signal guest_fired(pointer: XRPointer, feet: Vector3, recoil_pulse: Callable)
+
 var level: LevelBase = null
 var rig: XRPlayerRig = null
 var operation: Operation = null

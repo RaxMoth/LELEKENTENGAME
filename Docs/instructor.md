@@ -154,6 +154,7 @@ Autoloads are services with one responsibility each. Current set and why they ex
 | `Analytics`, `Ads`, `Store` | SDK facades must exist once per app |
 | `UI` | Popups/toasts overlay every scene, survive pausing, and render into the in-world screen in a headset |
 | `SceneManager` | Owns scene swaps and the transition overlay; sends a headset player "home" to the XR start level |
+| `Coop` | The two-player network session (host / join, players, discovery) must outlive level reloads, and its RPC node path must be the same on both players |
 | `Debug` | Developer overlay (removes itself in release builds) |
 
 Do not add new autoloads without a documented reason in this table. Prefer a

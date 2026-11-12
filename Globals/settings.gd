@@ -26,6 +26,9 @@ const KEY_SMOOTH_TURNING: StringName = &"smooth_turning"
 ## Comfort: a player whose head is lower than standing height (seated) is
 ## lifted to it, so the house is reachable from a chair.
 const KEY_STANDING_VIEW: StringName = &"standing_view"
+## Development: debug builds ignore the savegame at launch and start fresh
+## (release builds always load it). Toggle it off to test saving.
+const KEY_FRESH_START_IN_DEV: StringName = &"fresh_start_in_dev"
 ## Empty string = follow the device language.
 const KEY_LOCALE: StringName = &"locale"
 
@@ -38,6 +41,7 @@ const DEFAULTS: Dictionary[StringName, Variant] = {
 	KEY_SMOOTH_MOVEMENT: true,
 	KEY_SMOOTH_TURNING: false,
 	KEY_STANDING_VIEW: true,
+	KEY_FRESH_START_IN_DEV: true,
 	KEY_LOCALE: "",
 }
 
@@ -59,6 +63,12 @@ func _ready() -> void:
 
 func get_value(setting_key: StringName) -> Variant:
 	return _values.get(setting_key, DEFAULTS.get(setting_key))
+
+
+## True when this launch should ignore the savegame (debug build with the
+## development fresh-start toggle on).
+func starts_fresh() -> bool:
+	return OS.is_debug_build() and get_bool(KEY_FRESH_START_IN_DEV)
 
 
 func get_bool(setting_key: StringName) -> bool:

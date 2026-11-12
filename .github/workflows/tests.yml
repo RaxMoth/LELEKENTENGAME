@@ -34,6 +34,9 @@ jobs:
       - name: Smoke test
         run: Tools/smoke_test.sh
 
+      - name: Co-op test (host + guest over 127.0.0.1)
+        run: Tools/coop_test.sh
+
       - name: Upload test reports
         if: failure()
         uses: actions/upload-artifact@v4

@@ -2,6 +2,7 @@
 
 [ext_resource type="PackedScene" path="res://Scenes/Game/LevelBase/LevelBase.tscn" id="base"]
 [ext_resource type="Script" path="res://Scenes/Levels/House/house_level.gd" id="level"]
+[ext_resource type="Script" path="res://Scenes/Levels/House/house_coop_sync.gd" id="coop_sync"]
 [ext_resource type="Resource" path="res://Ressources/Levels/house.tres" id="level_data"]
 [ext_resource type="Script" path="res://Scenes/Levels/House/operation.gd" id="operation"]
 [ext_resource type="Script" path="res://Scenes/Levels/House/day_cycle.gd" id="day_cycle"]
@@ -394,5 +395,10 @@ text = "Cash $0   Rep 0"
 font_size = 32
 vertical_alignment = 0
 outline_size = 8
+
+
+[node name="CoopSync" type="Node" parent="."]
+unique_name_in_owner = true
+script = ExtResource("coop_sync")
 
 [connection signal="state_entered" from="World/Stage/DayCycle/CycleChart/Root/Night" to="World/Stage/DayCycle" method="_on_night_state_entered"]

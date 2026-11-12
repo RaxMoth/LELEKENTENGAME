@@ -59,6 +59,14 @@ func advance(delta: float) -> void:
 		_apply_lighting()
 
 
+## Co-op guest: moves the clock on to the host's [param elapsed_seconds]
+## (lighting and nightfall follow as if the time had passed here).
+func sync_elapsed(elapsed_seconds: float) -> void:
+	var behind: float = elapsed_seconds - clock.elapsed_seconds
+	if behind > 0.0:
+		advance(behind)
+
+
 func is_night() -> bool:
 	return clock.get_phase() == DayClock.Phase.NIGHT
 

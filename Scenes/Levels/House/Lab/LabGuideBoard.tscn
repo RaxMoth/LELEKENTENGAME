@@ -1,0 +1,227 @@
+[gd_scene format=3]
+
+[ext_resource type="Texture2D" path="res://Assets/Icons/arrow.svg" id="arrow"]
+
+[node name="LabGuideBoard" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Panel" type="PanelContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_type_variation = &"CardPanel"
+
+[node name="Margin" type="MarginContainer" parent="Panel"]
+layout_mode = 2
+theme_override_constants/margin_left = 32
+theme_override_constants/margin_top = 24
+theme_override_constants/margin_right = 32
+theme_override_constants/margin_bottom = 24
+
+[node name="Column" type="VBoxContainer" parent="Panel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="Header" type="HBoxContainer" parent="Panel/Margin/Column"]
+layout_mode = 2
+theme_override_constants/separation = 24
+
+[node name="Title" type="Label" parent="Panel/Margin/Column/Header"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"HeaderLabel"
+text = "How to cook"
+
+[node name="Controls" type="Label" parent="Panel/Margin/Column/Header"]
+layout_mode = 2
+size_flags_vertical = 4
+theme_type_variation = &"SmallLabel"
+text = "Trigger: point at an item and pull to pick it up, point at a slot and pull to put it in"
+
+[node name="Steps" type="HBoxContainer" parent="Panel/Margin/Column"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 16
+
+[node name="Grind" type="PanelContainer" parent="Panel/Margin/Column/Steps"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"ChipPanel"
+
+[node name="Column" type="VBoxContainer" parent="Panel/Margin/Column/Steps/Grind"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Title" type="HBoxContainer" parent="Panel/Margin/Column/Steps/Grind/Column"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="Number" type="Label" parent="Panel/Margin/Column/Steps/Grind/Column/Title"]
+layout_mode = 2
+theme_type_variation = &"AccentLabel"
+text = "1"
+
+[node name="Name" type="Label" parent="Panel/Margin/Column/Steps/Grind/Column/Title"]
+layout_mode = 2
+theme_type_variation = &"HeaderLabel"
+text = "Grinder"
+
+[node name="Flow" type="HBoxContainer" parent="Panel/Margin/Column/Steps/Grind/Column"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="In" type="Label" parent="Panel/Margin/Column/Steps/Grind/Column/Flow"]
+layout_mode = 2
+text = "Raw ingredient"
+
+[node name="Arrow" type="TextureRect" parent="Panel/Margin/Column/Steps/Grind/Column/Flow"]
+self_modulate = Color(0.5529, 0.5882, 0.6745, 1)
+custom_minimum_size = Vector2(32, 32)
+layout_mode = 2
+size_flags_vertical = 4
+texture = ExtResource("arrow")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Out" type="Label" parent="Panel/Margin/Column/Steps/Grind/Column/Flow"]
+layout_mode = 2
+text = "dust"
+
+[node name="Note" type="Label" parent="Panel/Margin/Column/Steps/Grind/Column"]
+layout_mode = 2
+theme_type_variation = &"SmallLabel"
+text = "Sugarsalt needs no grinding."
+autowrap_mode = 3
+
+[node name="ArrowA" type="TextureRect" parent="Panel/Margin/Column/Steps"]
+self_modulate = Color(0.3569, 0.4863, 0.9804, 1)
+custom_minimum_size = Vector2(40, 40)
+layout_mode = 2
+size_flags_vertical = 4
+texture = ExtResource("arrow")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Cook" type="PanelContainer" parent="Panel/Margin/Column/Steps"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"ChipPanel"
+
+[node name="Column" type="VBoxContainer" parent="Panel/Margin/Column/Steps/Cook"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Title" type="HBoxContainer" parent="Panel/Margin/Column/Steps/Cook/Column"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="Number" type="Label" parent="Panel/Margin/Column/Steps/Cook/Column/Title"]
+layout_mode = 2
+theme_type_variation = &"AccentLabel"
+text = "2"
+
+[node name="Name" type="Label" parent="Panel/Margin/Column/Steps/Cook/Column/Title"]
+layout_mode = 2
+theme_type_variation = &"HeaderLabel"
+text = "Cooker"
+
+[node name="Flow" type="HBoxContainer" parent="Panel/Margin/Column/Steps/Cook/Column"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="In" type="Label" parent="Panel/Margin/Column/Steps/Cook/Column/Flow"]
+layout_mode = 2
+text = "2 or 3 ingredients"
+
+[node name="Arrow" type="TextureRect" parent="Panel/Margin/Column/Steps/Cook/Column/Flow"]
+self_modulate = Color(0.5529, 0.5882, 0.6745, 1)
+custom_minimum_size = Vector2(32, 32)
+layout_mode = 2
+size_flags_vertical = 4
+texture = ExtResource("arrow")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Out" type="Label" parent="Panel/Margin/Column/Steps/Cook/Column/Flow"]
+layout_mode = 2
+text = "batch"
+
+[node name="Note" type="Label" parent="Panel/Margin/Column/Steps/Cook/Column"]
+layout_mode = 2
+theme_type_variation = &"SmallLabel"
+text = "Which mix? The recipe book is on the left wall."
+autowrap_mode = 3
+
+[node name="ArrowB" type="TextureRect" parent="Panel/Margin/Column/Steps"]
+self_modulate = Color(0.3569, 0.4863, 0.9804, 1)
+custom_minimum_size = Vector2(40, 40)
+layout_mode = 2
+size_flags_vertical = 4
+texture = ExtResource("arrow")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Press" type="PanelContainer" parent="Panel/Margin/Column/Steps"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"ChipPanel"
+
+[node name="Column" type="VBoxContainer" parent="Panel/Margin/Column/Steps/Press"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Title" type="HBoxContainer" parent="Panel/Margin/Column/Steps/Press/Column"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="Number" type="Label" parent="Panel/Margin/Column/Steps/Press/Column/Title"]
+layout_mode = 2
+theme_type_variation = &"AccentLabel"
+text = "3"
+
+[node name="Name" type="Label" parent="Panel/Margin/Column/Steps/Press/Column/Title"]
+layout_mode = 2
+theme_type_variation = &"HeaderLabel"
+text = "Press"
+
+[node name="Flow" type="HBoxContainer" parent="Panel/Margin/Column/Steps/Press/Column"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="In" type="Label" parent="Panel/Margin/Column/Steps/Press/Column/Flow"]
+layout_mode = 2
+text = "batch"
+
+[node name="Arrow" type="TextureRect" parent="Panel/Margin/Column/Steps/Press/Column/Flow"]
+self_modulate = Color(0.5529, 0.5882, 0.6745, 1)
+custom_minimum_size = Vector2(32, 32)
+layout_mode = 2
+size_flags_vertical = 4
+texture = ExtResource("arrow")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Out" type="Label" parent="Panel/Margin/Column/Steps/Press/Column/Flow"]
+layout_mode = 2
+text = "product to sell"
+
+[node name="Note" type="Label" parent="Panel/Margin/Column/Steps/Press/Column"]
+layout_mode = 2
+theme_type_variation = &"SmallLabel"
+text = "The press is behind you."
+autowrap_mode = 3
+
+[node name="Tip" type="Label" parent="Panel/Margin/Column"]
+layout_mode = 2
+theme_type_variation = &"SmallLabel"
+text = "Every station is a skill check: press Stop while the needle is in the green. The closer to the middle, the better the product."
+horizontal_alignment = 1
+autowrap_mode = 3

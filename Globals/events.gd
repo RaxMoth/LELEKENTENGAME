@@ -46,3 +46,10 @@ signal setting_changed(setting_key: StringName, value: Variant)
 signal rewarded_ad_finished(placement: StringName, was_rewarded: bool)
 signal purchase_completed(product_id: StringName)
 signal purchase_failed(product_id: StringName, reason: String)
+
+# --- Co-op ---
+## A floating number or note appeared in the world (the co-op host shows it
+## to the other player too).
+signal floating_text_shown(label_text: String, world_position: Vector3, color: Color)
+## A shot's tracer flashed between two points (the co-op host shows it to the other player too).
+signal beam_fired(from_position: Vector3, to_position: Vector3)

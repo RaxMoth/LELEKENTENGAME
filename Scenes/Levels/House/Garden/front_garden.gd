@@ -40,6 +40,8 @@ const TRACER_SCENE: PackedScene = preload("res://Scenes/Levels/House/Garden/Beam
 @export var doorway_region: Rect2 = Rect2(-0.5, -5.35, 1.0, 0.7)
 
 var _weapon_cooldown: float = 0.0
+## Co-op: the other player's own trigger pace (same gun, own cooldown).
+var _guest_weapon_cooldown: float = 0.0
 var _turrets: Array[HouseTurret] = []
 ## Gun models by weapon id, made once and swapped when another gun is equipped.
 var _gun_models: Dictionary[StringName, GunModel] = {}
@@ -59,6 +61,7 @@ var _shown_gun: GunModel = null
 func _on_setup() -> void:
 	context.rig.primary_action_pressed.connect(_on_rig_primary_action_pressed)
 	context.rig.secondary_action_pressed.connect(_on_rig_secondary_action_pressed)
+	context.guest_fired.connect(_on_guest_fired)
 	yard.raider_defeated.connect(func(raider: Raider) -> void: score_earned.emit(raider.score_value))
 	door.broken.connect(_on_door_broken)
 	door.passage_changed.connect(_on_door_passage_changed)
@@ -77,6 +80,7 @@ func _on_setup() -> void:
 
 func _shift_process(delta: float) -> void:
 	_weapon_cooldown = maxf(0.0, _weapon_cooldown - delta)
+	_guest_weapon_cooldown = maxf(0.0, _guest_weapon_cooldown - delta)
 	director.step(delta)
 	for turret: HouseTurret in _turrets:
 		turret.step(delta)
@@ -142,7 +146,10 @@ func get_status_line() -> String:
 
 ## True while the player stands in the front room or on the porch, where they can defend.
 func is_in_defense_zone() -> bool:
-	var feet: Vector3 = context.rig.get_feet_position()
+	return _is_defense_spot(context.rig.get_feet_position())
+
+
+func _is_defense_spot(feet: Vector3) -> bool:
 	var floor_point: Vector2 = Vector2(feet.x, feet.z)
 	return defense_zone.has_point(floor_point) or porch_region.has_point(floor_point)
 
@@ -176,21 +183,9 @@ func fire_weapon(pointer: XRPointer) -> Raider:
 			_shown_gun.play_dry_fire()
 		FloatingText3D.spawn(tr("Out of ammo"), pointer.get_point(1.5), Palette.WARNING, yard.get_effects_root())
 		return null
-	var raider: Raider = yard.pick_raider(pointer.ray_origin, pointer.ray_direction, weapon.range_meters) if is_in_defense_zone() else null
-	var shot_end: Vector3 = pointer.get_point(weapon.range_meters)
-	var ground: float = yard.get_ground_distance(pointer.ray_origin, pointer.ray_direction)
-	if ground != RayMath.NO_HIT and ground < weapon.range_meters:
-		shot_end = pointer.get_point(ground)
-	if raider != null:
-		shot_end = raider.get_hit_center()
-		raider.take_hit(weapon.damage + context.operation.get_upgrade_value(Types.UPGRADE_BLASTER), self, false, weapon.pierces_armor)
-		PopEffect3D.spawn(shot_end, Palette.PROJECTILE, 0.4, yard.get_effects_root())
-	var muzzle: Vector3 = _get_muzzle_position(pointer)
-	var tracer: BeamTracer = Pools.spawn(TRACER_SCENE, yard.get_effects_root(), muzzle) as BeamTracer
-	tracer.fire(muzzle, shot_end)
+	var raider: Raider = _resolve_shot(pointer, _get_muzzle_position(pointer), weapon, is_in_defense_zone())
 	if _shown_gun != null:
 		_shown_gun.play_shot()
-	Audio.play_sfx_at(SfxSynth.get_preset(&"shoot"), pointer.ray_origin, 0.1, -4.0)
 	context.rig.pulse(pointer, weapon.recoil as Types.HapticStrength)
 	return raider
 
@@ -209,6 +204,39 @@ func _on_rig_primary_action_pressed(pointer: XRPointer) -> void:
 
 func _on_rig_secondary_action_pressed(pointer: XRPointer) -> void:
 	fire_weapon(pointer)
+
+
+## Co-op: the other player shoots the same gun (shared ammo) from where they stand.
+func _on_guest_fired(pointer: XRPointer, feet: Vector3, recoil_pulse: Callable) -> void:
+	var weapon: WeaponData = get_equipped_weapon()
+	if not context.is_playing() or weapon == null or _guest_weapon_cooldown > 0.0:
+		return
+	_guest_weapon_cooldown = weapon.fire_interval_seconds
+	if not Profile.armory.loadout.try_fire(weapon):
+		Audio.play_ui(Audio.UI_ERROR)
+		FloatingText3D.spawn(tr("Out of ammo"), pointer.get_point(1.5), Palette.WARNING, yard.get_effects_root())
+		return
+	_resolve_shot(pointer, pointer.ray_origin, weapon, _is_defense_spot(feet))
+	recoil_pulse.call(weapon.recoil as Types.HapticStrength)
+
+
+## A shot along [param pointer]'s ray from [param muzzle]: hits the first
+## raider in range (when [param can_hit] — fired from the front room or
+## porch), stops at cover or the ground, flashes a tracer. Returns the raider hit.
+func _resolve_shot(pointer: XRPointer, muzzle: Vector3, weapon: WeaponData, can_hit: bool) -> Raider:
+	var raider: Raider = yard.pick_raider(pointer.ray_origin, pointer.ray_direction, weapon.range_meters) if can_hit else null
+	var shot_end: Vector3 = pointer.get_point(weapon.range_meters)
+	var ground: float = yard.get_ground_distance(pointer.ray_origin, pointer.ray_direction)
+	if ground != RayMath.NO_HIT and ground < weapon.range_meters:
+		shot_end = pointer.get_point(ground)
+	if raider != null:
+		shot_end = raider.get_hit_center()
+		raider.take_hit(weapon.damage + context.operation.get_upgrade_value(Types.UPGRADE_BLASTER), self, false, weapon.pierces_armor)
+		PopEffect3D.spawn(shot_end, Palette.PROJECTILE, 0.4, yard.get_effects_root())
+	var tracer: BeamTracer = Pools.spawn(TRACER_SCENE, yard.get_effects_root(), muzzle) as BeamTracer
+	tracer.fire(muzzle, shot_end)
+	Audio.play_sfx_at(SfxSynth.get_preset(&"shoot"), pointer.ray_origin, 0.1, -4.0)
+	return raider
 
 
 func _on_door_broken() -> void:

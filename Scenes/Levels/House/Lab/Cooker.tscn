@@ -34,19 +34,19 @@ color = Color(0.9608, 0.6196, 0.298, 1)
 glow = 1.2
 
 [node name="SlotA" type="Node3D" parent="Inputs"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.24, 1.2, 0.08)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.14, 1.18, -0.03)
 script = ExtResource("socket")
 snap_radius = 0.16
-marker_diameter = 0.16
+marker_diameter = 0.12
 
 [node name="SlotB" type="Node3D" parent="Inputs"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.05, 1.2, 0.12)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.04, 1.18, -0.03)
 script = ExtResource("socket")
 snap_radius = 0.16
-marker_diameter = 0.16
+marker_diameter = 0.12
 
 [node name="SlotC" type="Node3D" parent="Inputs"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.14, 1.2, 0.08)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.05, 1.18, -0.18)
 script = ExtResource("socket")
 snap_radius = 0.16
-marker_diameter = 0.16
+marker_diameter = 0.12

@@ -1,0 +1,85 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://Scenes/Entities/RemotePlayer/remote_player.gd" id="1_player"]
+[ext_resource type="Script" path="res://Scripts/Utils/placeholder_mesh_3d.gd" id="2_mesh"]
+
+[node name="RemotePlayer" type="Node3D"]
+script = ExtResource("1_player")
+
+[node name="Head" type="Node3D" parent="."]
+unique_name_in_owner = true
+
+[node name="HeadMesh" type="MeshInstance3D" parent="Head"]
+unique_name_in_owner = true
+script = ExtResource("2_mesh")
+size = Vector3(0.19, 0.23, 0.21)
+color = Color(0.357, 0.486, 0.98, 1)
+
+[node name="Visor" type="MeshInstance3D" parent="Head"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.02, -0.105)
+script = ExtResource("2_mesh")
+shape_kind = 1
+size = Vector3(0.15, 0.06, 0.03)
+color = Color(0.051, 0.0627, 0.0902, 1)
+
+[node name="NameLabel" type="Label3D" parent="Head"]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.24, 0)
+pixel_size = 0.0014
+billboard = 1
+outline_modulate = Color(0.051, 0.0627, 0.0902, 0.9)
+text = "Player"
+font_size = 40
+outline_size = 10
+
+[node name="Body" type="Node3D" parent="."]
+unique_name_in_owner = true
+
+[node name="Torso" type="MeshInstance3D" parent="Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.33, 0)
+script = ExtResource("2_mesh")
+shape_kind = 2
+size = Vector3(0.36, 0.56, 0.22)
+color = Color(0.1412, 0.1686, 0.2431, 1)
+
+[node name="Collar" type="MeshInstance3D" parent="Body"]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.06, 0)
+script = ExtResource("2_mesh")
+shape_kind = 3
+size = Vector3(0.2, 0.04, 0.2)
+color = Color(0.357, 0.486, 0.98, 1)
+
+[node name="LeftHand" type="Node3D" parent="."]
+unique_name_in_owner = true
+
+[node name="Grip" type="MeshInstance3D" parent="LeftHand"]
+transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0.02, 0.14)
+script = ExtResource("2_mesh")
+shape_kind = 2
+size = Vector3(0.045, 0.16, 0.045)
+color = Color(0.1412, 0.1686, 0.2431, 1)
+
+[node name="LeftTip" type="MeshInstance3D" parent="LeftHand"]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.02, 0.05)
+script = ExtResource("2_mesh")
+size = Vector3(0.05, 0.05, 0.05)
+color = Color(0.357, 0.486, 0.98, 1)
+
+[node name="RightHand" type="Node3D" parent="."]
+unique_name_in_owner = true
+
+[node name="Grip" type="MeshInstance3D" parent="RightHand"]
+transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0.02, 0.14)
+script = ExtResource("2_mesh")
+shape_kind = 2
+size = Vector3(0.045, 0.16, 0.045)
+color = Color(0.1412, 0.1686, 0.2431, 1)
+
+[node name="RightTip" type="MeshInstance3D" parent="RightHand"]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.02, 0.05)
+script = ExtResource("2_mesh")
+size = Vector3(0.05, 0.05, 0.05)
+color = Color(0.357, 0.486, 0.98, 1)

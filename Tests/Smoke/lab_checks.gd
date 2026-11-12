@@ -27,6 +27,19 @@ static func run(test: SmokeTest, level: HouseLevel) -> void:
 	await test.frames(2)
 	test.check(rig.get_held_items().is_empty() and operation.get_cash() == cash_before, "an ingredient dropped nowhere goes back and is refunded")
 
+	# Wrong station: the cooker says why instead of silently bouncing it.
+	var refusals: Array[String] = []
+	for slot: ItemSocket in cooker.get_input_sockets():
+		test.check(slot.shows_empty_marker, "empty cooker slots show their ring")
+		slot.item_refused.connect(func(_item: Grabbable, reason: String) -> void: refusals.append(reason))
+	rig.tap_world_point(glowcap_crate.get_grab_center())
+	await test.frames(2)
+	rig.tap_world_point(cooker.get_input_sockets()[0].global_position)
+	await test.frames(2)
+	test.check(cooker.get_input_sockets()[0].is_empty() and refusals.size() == 1 and refusals[0] == TranslationServer.translate("Grind it first"), "a raw ingredient in the cooker is refused with a reason")
+	test.check(rig.get_held_items().is_empty() and operation.get_cash() == cash_before, "the refused ingredient goes back to its crate")
+	test.check(not grinder.get_stop_button().visible, "an idle station shows no Stop button")
+
 	rig.tap_world_point(glowcap_crate.get_grab_center())
 	await test.frames(2)
 	rig.tap_world_point(grinder.get_input_sockets()[0].global_position)

@@ -43,6 +43,12 @@ const GROUP_CREW: StringName = &"crew"
 const GROUP_WORLD_ROOT: StringName = &"world_root"
 ## Every active WorldScreen (2D UI shown in 3D); XRPointer looks its targets up here.
 const GROUP_WORLD_SCREEN: StringName = &"world_screen"
+## Co-op: spawned things the host streams to the other player (items,
+## customers; raiders come through GROUP_ENEMY).
+const GROUP_NET_ENTITY: StringName = &"net_entity"
+## Co-op: scene nodes whose look the host streams (stations); they offer
+## get_net_state() / apply_net_state(state).
+const GROUP_NET_NODE: StringName = &"net_node"
 
 # ============================================
 # INPUT ACTIONS (defined in Project Settings > Input Map)

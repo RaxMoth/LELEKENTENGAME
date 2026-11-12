@@ -1,0 +1,150 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://Scenes/UI/Popups/CoopPopup/coop_popup.gd" id="1_coop"]
+
+[node name="CoopPopup" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_coop")
+
+[node name="Backdrop" type="ColorRect" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.02, 0.027, 0.043, 0.72)
+
+[node name="CenterContainer" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Panel" type="PanelContainer" parent="CenterContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(620, 0)
+layout_mode = 2
+
+[node name="Content" type="VBoxContainer" parent="CenterContainer/Panel"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="TitleLabel" type="Label" parent="CenterContainer/Panel/Content"]
+layout_mode = 2
+theme_type_variation = &"HeaderLabel"
+text = "Play Together"
+horizontal_alignment = 1
+
+[node name="StatusLabel" type="Label" parent="CenterContainer/Panel/Content"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(560, 0)
+layout_mode = 2
+theme_type_variation = &"SmallLabel"
+text = "Play the same house with a friend: one hosts, the other joins."
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="HostButton" type="Button" parent="CenterContainer/Panel/Content"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 100)
+layout_mode = 2
+text = "Host a Game"
+
+[node name="HostInfo" type="VBoxContainer" parent="CenterContainer/Panel/Content"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="LocalAddressLabel" type="Label" parent="CenterContainer/Panel/Content/HostInfo"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(560, 0)
+layout_mode = 2
+text = "Same Wi-Fi: 192.168.0.2:7777"
+autowrap_mode = 3
+
+[node name="InternetAddressLabel" type="Label" parent="CenterContainer/Panel/Content/HostInfo"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(560, 0)
+layout_mode = 2
+theme_type_variation = &"SmallLabel"
+text = "Over the internet: asking your router"
+autowrap_mode = 3
+
+[node name="JoinSection" type="VBoxContainer" parent="CenterContainer/Panel/Content"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="GamesCaption" type="Label" parent="CenterContainer/Panel/Content/JoinSection"]
+layout_mode = 2
+theme_type_variation = &"CaptionLabel"
+text = "Games on this Wi-Fi"
+
+[node name="GamesList" type="VBoxContainer" parent="CenterContainer/Panel/Content/JoinSection"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="NoGamesLabel" type="Label" parent="CenterContainer/Panel/Content/JoinSection"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"SmallLabel"
+text = "Looking for games on this Wi-Fi"
+
+[node name="AddressCaption" type="Label" parent="CenterContainer/Panel/Content/JoinSection"]
+layout_mode = 2
+theme_type_variation = &"CaptionLabel"
+text = "Or join by address (over the internet)"
+
+[node name="AddressField" type="LineEdit" parent="CenterContainer/Panel/Content/JoinSection"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 88)
+layout_mode = 2
+placeholder_text = "e.g. 203.0.113.5:7777"
+alignment = 1
+
+[node name="Keypad" type="GridContainer" parent="CenterContainer/Panel/Content/JoinSection"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/h_separation = 8
+theme_override_constants/v_separation = 8
+columns = 5
+
+[node name="JoinButton" type="Button" parent="CenterContainer/Panel/Content/JoinSection"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 100)
+layout_mode = 2
+theme_type_variation = &"SecondaryButton"
+disabled = true
+text = "Join"
+
+[node name="LeaveButton" type="Button" parent="CenterContainer/Panel/Content"]
+unique_name_in_owner = true
+visible = false
+custom_minimum_size = Vector2(0, 100)
+layout_mode = 2
+theme_type_variation = &"DangerGhostButton"
+text = "Leave the Game"
+
+[node name="CloseButton" type="Button" parent="CenterContainer/Panel/Content"]
+custom_minimum_size = Vector2(0, 100)
+layout_mode = 2
+theme_type_variation = &"GhostButton"
+text = "Close"
+
+[connection signal="pressed" from="CenterContainer/Panel/Content/HostButton" to="." method="_on_host_button_pressed"]
+[connection signal="text_changed" from="CenterContainer/Panel/Content/JoinSection/AddressField" to="." method="_on_address_field_text_changed"]
+[connection signal="pressed" from="CenterContainer/Panel/Content/JoinSection/JoinButton" to="." method="_on_join_button_pressed"]
+[connection signal="pressed" from="CenterContainer/Panel/Content/LeaveButton" to="." method="_on_leave_button_pressed"]
+[connection signal="pressed" from="CenterContainer/Panel/Content/CloseButton" to="." method="_on_close_button_pressed"]

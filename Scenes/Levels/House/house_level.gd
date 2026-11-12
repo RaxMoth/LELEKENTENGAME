@@ -15,9 +15,13 @@
 ## HouseContext at setup — so the defense, customer and house sides can be
 ## developed without touching each other's files.
 ##
+## Co-op: on the host this is the real shift. A guest's copy is a mirror
+## (is_mirror): its fronts and cycle stand still and HouseCoopSync shows the
+## host's world — time, money, stash, items, stations — instead.
+##
 ## Dependencies: LevelBase, HouseFront, HouseContext, HouseCycle, Operation, DayCycle,
-##               Worker, WristStatus, XRPlayerRig, Profile, Audio, Events,
-##               Platform, Types autoloads, Palette, SfxSynth
+##               Worker, WristStatus, XRPlayerRig, HouseCoopSync, Profile, Audio,
+##               Events, Platform, Coop, Types autoloads, Palette, SfxSynth
 class_name HouseLevel
 extends LevelBase
 
@@ -35,10 +39,14 @@ const RAID_CLEARED_HOLD_SECONDS: float = 2.5
 @export var glow_on_mobile: bool = false
 
 var context: HouseContext = null
+## Co-op guest: this level only shows the host's world (no game logic runs).
+var is_mirror: bool = false
 
 var _fronts: Array[HouseFront] = []
 var _last_paid_hour: int = 0
 var _seconds_until_wrist_refresh: float = 0.0
+## Co-op guest: the host's wrist status lines (cycle and fronts).
+var _mirrored_wrist_lines: PackedStringArray = PackedStringArray()
 
 @onready var operation: Operation = %Operation
 @onready var day_cycle: DayCycle = %DayCycle
@@ -46,12 +54,14 @@ var _seconds_until_wrist_refresh: float = 0.0
 @onready var _wrist_status: WristStatus = %WristStatus
 @onready var _travel_spots: Node3D = %TravelSpots
 @onready var _world_environment: WorldEnvironment = %WorldEnvironment
+@onready var _coop_sync: HouseCoopSync = %CoopSync
 
 # ============================================
 # LEVEL HOOKS
 # ============================================
 
 func _on_level_setup() -> void:
+	is_mirror = Coop.is_client()
 	if Platform.is_mobile() and not glow_on_mobile:
 		_world_environment.environment.glow_enabled = false
 	rig.walkable_area = %WalkableArea
@@ -80,16 +90,30 @@ func _on_level_setup() -> void:
 	Events.upgrade_purchased.connect(func(_upgrade_id: StringName, _level: int) -> void: apply_upgrades())
 	_last_paid_hour = floori(day_cycle.clock.get_hour())
 	apply_upgrades()
+	if is_mirror:
+		# The host runs the shift; this copy only shows it.
+		for front: HouseFront in _fronts:
+			front.process_mode = Node.PROCESS_MODE_DISABLED
+		cycle.process_mode = Node.PROCESS_MODE_DISABLED
+	_coop_sync.setup(self)
 	_refresh_wrist()
 
 
 func _on_level_started() -> void:
+	if is_mirror:
+		return
 	announce(cycle.get_day_announcement(), Palette.WARNING if cycle.is_raid_day() else Palette.TEXT, 2.0)
 	for front: HouseFront in _fronts:
 		front.on_shift_started()
 
 
 func _level_process(delta: float) -> void:
+	if is_mirror:
+		_seconds_until_wrist_refresh -= delta
+		if _seconds_until_wrist_refresh <= 0.0:
+			_seconds_until_wrist_refresh = WRIST_REFRESH_SECONDS
+			_refresh_wrist()
+		return
 	# The raid night has no clock: it lasts until the last wave is beaten.
 	if not cycle.is_raid_active():
 		day_cycle.advance(delta)
@@ -147,6 +171,23 @@ func announce(message: String, color: Color = Palette.TEXT, hold_seconds: float 
 	forward = forward.normalized() if forward.length() > 0.01 else Vector3.FORWARD
 	announcer.global_transform = Transform3D(Basis.looking_at(forward, Vector3.UP), head.origin + forward * ANNOUNCE_DISTANCE + Vector3(0.0, 0.35, 0.0))
 	super(message, color, hold_seconds)
+	if Coop.is_host():
+		_coop_sync.broadcast_announcement(message, color, hold_seconds)
+
+
+## The wrist status lines: the cycle's and every front's (co-op streams them).
+func get_wrist_lines() -> PackedStringArray:
+	var lines: PackedStringArray = PackedStringArray([cycle.get_status_line()])
+	for front: HouseFront in _fronts:
+		var line: String = front.get_status_line()
+		if not line.is_empty():
+			lines.append(line)
+	return lines
+
+
+## Co-op guest: the host's wrist lines to show.
+func set_mirrored_wrist_lines(lines: PackedStringArray) -> void:
+	_mirrored_wrist_lines = lines
 
 # ============================================
 # INTERNALS
@@ -166,6 +207,8 @@ func _on_shift_lost(reason: String) -> void:
 
 
 func _on_nightfall() -> void:
+	if is_mirror:
+		return
 	announce(tr("Night falls"), Palette.MOONLIGHT)
 	Audio.play_sfx(SfxSynth.get_preset(&"explosion"), 0.0, -14.0)
 	for front: HouseFront in _fronts:
@@ -207,10 +250,6 @@ func _pay_wages_on_the_hour() -> void:
 
 
 func _refresh_wrist() -> void:
-	var front_lines: PackedStringArray = PackedStringArray([cycle.get_status_line()])
-	for front: HouseFront in _fronts:
-		var line: String = front.get_status_line()
-		if not line.is_empty():
-			front_lines.append(line)
+	var front_lines: PackedStringArray = _mirrored_wrist_lines if is_mirror else get_wrist_lines()
 	_wrist_status.show_status(day_cycle.clock.format_time(), day_cycle.is_night(), operation.get_cash(), Profile.operation.reputation,
 		operation.stash.get_total(), operation.stash.capacity, operation.heat.value, front_lines)

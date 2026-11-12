@@ -15,8 +15,9 @@
    make; pooled spawning. Only the menus are 2D (the no-headset flow), and
    every level must stay playable in the rig's flat simulator.
 3. **Typed, documented GDScript** following `Docs/instructor.md`; state in StateCharts.
-4. **Nothing is done until the tests pass:** `Tools/unit_tests.sh` and
-   `Tools/smoke_test.sh` (exit 0). New pure logic gets a gdUnit4 suite in `Tests/Unit/`.
+4. **Nothing is done until the tests pass:** `Tools/unit_tests.sh`,
+   `Tools/smoke_test.sh` and `Tools/coop_test.sh` (exit 0). New pure logic
+   gets a gdUnit4 suite in `Tests/Unit/`.
 5. **Data over code.** Tunables in Resources / `Ressources/game_config.tres`.
 6. **Two developers, one `main`.** Two people develop this game in parallel,
    each with Claude. Follow `Docs/WORKFLOW.md`:
