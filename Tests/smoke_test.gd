@@ -32,7 +32,7 @@ func _run() -> void:
 	# Detach from get_tree().current_scene so SceneManager can swap scenes without freeing the test.
 	get_tree().current_scene = null
 	await frames(10)
-	# The checks expect default comfort settings (snap turning, teleport);
+	# The checks expect default comfort settings (snap turning, stick walking);
 	# the developer's own preferences come back at the end.
 	var saved_settings: Dictionary[StringName, Variant] = {}
 	for setting_key: StringName in Settings.DEFAULTS:
@@ -59,13 +59,20 @@ func _run() -> void:
 func _test_save_roundtrip() -> void:
 	Profile.wallet.add(Types.CURRENCY_CASH, 123)
 	Profile.operation.add_reputation(7)
+	check(Profile.operation.discover_recipe(&"glow") and not Profile.operation.discover_recipe(&"glow"), "a recipe is discovered only once")
 	var expected_cash: int = Profile.wallet.get_amount(Types.CURRENCY_CASH)
 	check(SaveManager.save_now(), "save_now succeeded")
 	var saved: Variant = JSON.parse_string(FileAccess.get_file_as_string(SaveManager.SAVE_PATH))
 	var saved_cash: int = int(saved["sections"]["wallet"]["cash"]) if saved is Dictionary else -1
-	var saved_reputation: int = int(saved["sections"]["operation"]["reputation"]) if saved is Dictionary else -1
+	var saved_operation: Dictionary = saved["sections"]["operation"] if saved is Dictionary else {}
+	var saved_reputation: int = int(saved_operation.get("reputation", -1))
 	check(saved_cash == expected_cash, "wallet persisted (%d == %d)" % [saved_cash, expected_cash])
 	check(saved_reputation == 7, "operation progress persisted")
+	var reloaded: OperationProgress = OperationProgress.new(GameConfig.get_default())
+	reloaded.from_dict(saved_operation)
+	check(reloaded.is_recipe_discovered(&"glow") and reloaded.discovered_recipe_ids.size() == 1, "discovered recipes survive a save and load")
+	# The lab checks start from an empty recipe book.
+	Profile.operation.discovered_recipe_ids.clear()
 	check(not Profile.wallet.spend(Types.CURRENCY_CASH, 999999999), "cannot overspend")
 
 

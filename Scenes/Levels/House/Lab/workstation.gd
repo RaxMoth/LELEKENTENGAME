@@ -14,6 +14,8 @@ extends Node3D
 ## The press finished: units went into the stash.
 signal product_packaged(recipe: RecipeData, tier: int, units: int)
 signal step_finished(step: Types.CraftStep, accuracy: float)
+## The cooker turned its ingredients into a batch of [param recipe].
+signal batch_cooked(recipe: RecipeData)
 
 const BATCH_SCENE: PackedScene = preload("res://Scenes/Levels/House/Lab/BatchItem.tscn")
 const GAUGE_LENGTH: float = 0.5
@@ -203,6 +205,7 @@ func _complete(accuracy: float) -> void:
 			batch.home_socket = _output
 			_output.insert(batch)
 			PopEffect3D.spawn(_output.global_position, _active_recipe.color, 0.5, Global.get_world_root())
+			batch_cooked.emit(_active_recipe)
 		Types.CraftStep.PACKAGE:
 			var batch_item: BatchItem = _get_input_items()[0] as BatchItem
 			if operation.stash.get_free_space() < operation.get_batch_size(batch_item.recipe):

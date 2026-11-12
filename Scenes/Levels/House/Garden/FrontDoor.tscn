@@ -2,6 +2,8 @@
 
 [ext_resource type="Script" path="res://Scenes/Levels/House/Garden/front_door.gd" id="door"]
 [ext_resource type="Script" path="res://Scripts/Utils/placeholder_mesh_3d.gd" id="mesh"]
+[ext_resource type="Script" path="res://Scripts/Utils/textured_box_3d.gd" id="textured_box"]
+[ext_resource type="Material" path="res://Assets/Materials/front_door.tres" id="door_material"]
 [ext_resource type="Script" path="res://Scripts/Components/health_component.gd" id="health"]
 [ext_resource type="Script" path="res://Scripts/XR/hinge_handle.gd" id="handle"]
 [ext_resource type="Script" path="res://Scripts/XR/pointer_button.gd" id="button"]
@@ -27,26 +29,10 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.55, 0, 0)
 [node name="Leaf" type="MeshInstance3D" parent="Hinge/Panel"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.05, 0)
 cast_shadow = 0
-script = ExtResource("mesh")
-shape_kind = 1
+script = ExtResource("textured_box")
 size = Vector3(1.1, 2.1, 0.08)
-color = Color(0.3569, 0.3922, 0.4824, 1)
-
-[node name="BraceTop" type="MeshInstance3D" parent="Hinge/Panel"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.6, -0.05)
-cast_shadow = 0
-script = ExtResource("mesh")
-shape_kind = 1
-size = Vector3(1.14, 0.12, 0.04)
-color = Color(0.1804, 0.2118, 0.2941, 1)
-
-[node name="BraceBottom" type="MeshInstance3D" parent="Hinge/Panel"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.45, -0.05)
-cast_shadow = 0
-script = ExtResource("mesh")
-shape_kind = 1
-size = Vector3(1.14, 0.12, 0.04)
-color = Color(0.1804, 0.2118, 0.2941, 1)
+box_material = ExtResource("door_material")
+fallback_color = Color(0.3569, 0.3922, 0.4824, 1)
 
 [node name="OutsideHandle" type="Node3D" parent="Hinge/Panel"]
 unique_name_in_owner = true

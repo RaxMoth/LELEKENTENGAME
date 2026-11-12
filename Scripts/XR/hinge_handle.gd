@@ -28,6 +28,10 @@ var _grab_hand_angle: float = 0.0
 var _grab_leaf_angle: float = 0.0
 
 
+func _init() -> void:
+	is_fixed = true
+
+
 func attach_to(new_holder: Node3D) -> void:
 	super(new_holder)
 	if not _is_tracked_hand(new_holder):

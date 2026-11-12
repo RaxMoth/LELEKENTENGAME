@@ -8,7 +8,7 @@ the same files.
 |---|---|---|---|---|
 | **Defense** (the yard and its raids, the door, roof turrets, the Security PC, the armory) | `Garden/FrontGarden.tscn` · `front_garden.gd` (+ yard, raiders, squads, director, door, turrets, PC), `Armory/Armory.tscn` | `Ressources/Weapons/`, `Ressources/Raids/`, raider exports in `Garden/*.tscn`, yard obstacles | `Ressources/Upgrades/Defense/` | `Tests/Smoke/defense_checks.gd` |
 | **Customers** (back window and yard) | `Sales/SalesWindow.tscn` · `sales_window.gd` (+ `customer_flow.gd`, customers, sales board) | `Ressources/Customers/`, `CustomerFlow` exports | `Ressources/Upgrades/Sales/` | `Tests/Smoke/sales_checks.gd` |
-| **House** (lab, office, stash, crew, the shift, the 3-day cycle) | `House.tscn` · `house_level.gd`, `Cycle/HouseCycle.tscn`, `Lab/Lab.tscn`, `Office/Office.tscn`, `Workers/`, `operation.gd`, `day_cycle.gd`, `house_shell.gd` | `Ressources/Ingredients/`, `Ressources/Recipes/`, `Lab.tscn` recipes | `Ressources/Upgrades/Lab/`, `Ressources/Upgrades/House/` | `Tests/Smoke/lab_checks.gd`, `house_checks.gd` |
+| **House** (lab, office, stash, crew, the shift, the 3-day cycle) | `House.tscn` · `house_level.gd`, `Cycle/HouseCycle.tscn`, `Lab/Lab.tscn`, `Office/Office.tscn`, `Workers/`, `operation.gd`, `day_cycle.gd`, `house_shell.gd`, `Surroundings/Surroundings.tscn` (lawn, trees, weeds, junk) | `Ressources/Ingredients/`, `Ressources/Recipes/`, `Lab.tscn` recipes | `Ressources/Upgrades/Lab/`, `Ressources/Upgrades/House/` | `Tests/Smoke/lab_checks.gd`, `house_checks.gd` |
 
 Each area folder has its own README with the details.
 

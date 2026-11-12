@@ -8,10 +8,14 @@
 ##   rig.secondary_action_pressed.connect(_on_shoot)    # off-hand trigger / right click
 ##   rig.walkable_area = %WalkableArea
 ##
-## Interaction order for a trigger press or click: a WorldScreen, then a
-## PointerButton, then (flat only) an item to grab or a socket to fill, then
-## the game. Grip grabs the item at the hand or under its ray; letting go
-## near an ItemSocket that takes it puts it there.
+## Interaction order for the dominant trigger or a click: a WorldScreen,
+## then (holding something) putting it into the socket next to it or under
+## the beam, then a PointerButton, then picking up the item (or a new one
+## from a crate) at the hand or under the beam, then the game. So a VR hand
+## works like the flat cursor: point and pull to pick up, point and pull to
+## put in. The off-hand trigger only clicks screens and buttons or fires.
+## Grip grabs with either hand; let go after holding it to put the item
+## down, or click it quickly to keep holding until the next grip click.
 ##
 ## XR: OpenXR must be enabled in Project Settings (see Docs/GAME.md). The
 ## project uses the "Local Floor" reference space, so the player stands on
@@ -40,6 +44,11 @@ const HAPTIC_SECONDS: float = 0.06
 const HAND_GRAB_REACH: float = 0.12
 ## Pointer grabs and button presses reach this far.
 const POINTER_REACH: float = 4.5
+## A grip let go sooner than this after picking something up was a click:
+## the hand keeps the item until the next grip click or trigger.
+const GRIP_CLICK_SECONDS: float = 0.35
+## _grip_grabbed_at_msec value of a hand whose item the grip didn't pick up.
+const NOT_GRIP_GRABBED: int = -1
 ## Where the popup screen appears: this far ahead of the head and this much lower.
 const POPUP_DISTANCE: float = 1.9
 const POPUP_DROP: float = 0.15
@@ -54,6 +63,9 @@ const POPUP_DROP: float = 0.15
 ## mirrors the headset view, which the menus' portrait window would squeeze
 ## into a narrow strip.
 @export var spectator_window_size: Vector2i = Vector2i(1280, 720)
+## Eye height (meters above the floor) a seated player is lifted to while
+## the "Standing View When Seated" comfort setting is on.
+@export var standing_eye_height: float = 1.65
 
 @export_group("Flat simulator")
 @export var flat_eye_height: float = 1.7
@@ -85,7 +97,16 @@ var _uses_world_space_ui: bool = false
 var _is_popup_shown: bool = false
 var _default_physics_ticks: int = 60
 var _held_items: Dictionary[Types.Hand, Grabbable] = {Types.Hand.LEFT: null, Types.Hand.RIGHT: null}
+## When each hand's grip picked up what it holds (Time ticks, ms), or
+## NOT_GRIP_GRABBED (the trigger took it: a grip release leaves it alone).
+var _grip_grabbed_at_msec: Dictionary[Types.Hand, int] = {Types.Hand.LEFT: NOT_GRIP_GRABBED, Types.Hand.RIGHT: NOT_GRIP_GRABBED}
+## The grip press already put the item down; its release must not act again.
+var _ignores_grip_release: Dictionary[Types.Hand, bool] = {Types.Hand.LEFT: false, Types.Hand.RIGHT: false}
 var _flat_held_item: Grabbable = null
+## Meters the play space is raised for seated play (see StandingView).
+var _standing_lift: float = 0.0
+## Measure the head again once it is tracked (start, recenter, setting change).
+var _needs_height_calibration: bool = false
 var _highlighted_sockets: Array[ItemSocket] = []
 var _flat_yaw_degrees: float = 0.0
 var _flat_pitch_degrees: float = 0.0
@@ -133,12 +154,18 @@ func _exit_tree() -> void:
 		_xr_interface.session_begun.disconnect(_on_xr_session_begun)
 		_xr_interface.session_visible.disconnect(_on_xr_session_visible)
 		_xr_interface.session_focussed.disconnect(_on_xr_session_focussed)
+		var openxr_interface: OpenXRInterface = _xr_interface as OpenXRInterface
+		if openxr_interface != null and openxr_interface.pose_recentered.is_connected(_on_xr_pose_recentered):
+			openxr_interface.pose_recentered.disconnect(_on_xr_pose_recentered)
+		Events.setting_changed.disconnect(_on_setting_changed)
 	# With a headset the UI stays in the world; a flat window gets its overlay back.
 	if _uses_world_space_ui and not is_xr_active:
 		UI.set_world_space_enabled(false)
 
 
 func _process(_delta: float) -> void:
+	if _needs_height_calibration and _is_head_tracked():
+		_calibrate_standing_view()
 	if _uses_world_space_ui:
 		var should_show_popup: bool = UI.has_visible_content()
 		if should_show_popup and not _is_popup_shown:
@@ -224,10 +251,11 @@ func get_head_transform() -> Transform3D:
 	return _xr_camera.global_transform if is_xr_active else _flat_camera.global_transform
 
 
-## Point on the floor under the player's head.
+## Point on the floor under the player's head (a seated player's lift
+## doesn't count: their feet are still on the level's floor).
 func get_feet_position() -> Vector3:
 	var head: Vector3 = get_head_transform().origin
-	return Vector3(head.x, global_position.y, head.z)
+	return Vector3(head.x, global_position.y - _standing_lift, head.z)
 
 
 ## Where a wrist display belongs: above the off-hand in a headset, the lower
@@ -251,6 +279,28 @@ func is_weapon_hand_busy() -> bool:
 	if is_xr_active:
 		return _held_items[_get_offhand()] != null
 	return _flat_held_item != null
+
+
+## The ray of a controller. It only follows a real hand inside a headset;
+## tests aim it with XRPointer.set_ray().
+func get_hand_pointer(hand: Types.Hand) -> XRPointer:
+	return _get_pointer(hand)
+
+
+## A controller button changed (wired from both XRController3Ds). Tests call
+## it to drive the VR hand path without a headset.
+func handle_controller_button(hand: Types.Hand, action_name: StringName, is_pressed: bool) -> void:
+	match action_name:
+		Types.XR_ACTION_TRIGGER_CLICK:
+			_on_trigger(hand, is_pressed)
+		Types.XR_ACTION_GRIP_CLICK:
+			_on_grip(hand, is_pressed)
+		Types.XR_ACTION_MENU_BUTTON, Types.XR_ACTION_SECONDARY_BUTTON:
+			if is_pressed:
+				menu_pressed.emit()
+		Types.XR_ACTION_TRACKPAD_CLICK:
+			if is_pressed:
+				locomotion.handle_trackpad_click(_get_controller(hand).get_vector2(Types.XR_ACTION_TRACKPAD), _get_pointer(hand))
 
 
 ## Items currently held (by either hand or the flat cursor).
@@ -343,7 +393,33 @@ func _enter_xr_mode() -> void:
 	_xr_interface.session_begun.connect(_on_xr_session_begun)
 	_xr_interface.session_visible.connect(_on_xr_session_visible)
 	_xr_interface.session_focussed.connect(_on_xr_session_focussed)
+	var openxr_interface: OpenXRInterface = _xr_interface as OpenXRInterface
+	if openxr_interface != null:
+		openxr_interface.pose_recentered.connect(_on_xr_pose_recentered)
+	Events.setting_changed.connect(_on_setting_changed)
+	_needs_height_calibration = true
 	_match_physics_to_display()
+
+
+func _is_head_tracked() -> bool:
+	var head: XRPositionalTracker = XRServer.get_tracker(&"head") as XRPositionalTracker
+	if head == null:
+		return false
+	var pose: XRPose = head.get_pose(&"default")
+	return pose != null and pose.has_tracking_data
+
+
+## Raises the play space so a seated player's eyes sit at standing height
+## (or lowers it back when the setting is off or the player stands). It only
+## runs when the session starts, on a recenter (the system jumps the view
+## then anyway) or when the player flips the setting — never on its own.
+func _calibrate_standing_view() -> void:
+	_needs_height_calibration = false
+	var lift: float = 0.0
+	if Settings.get_bool(Settings.KEY_STANDING_VIEW):
+		lift = StandingView.get_lift(_xr_camera.position.y, standing_eye_height)
+	global_position.y += lift - _standing_lift
+	_standing_lift = lift
 
 
 func _get_pointer(hand: Types.Hand) -> XRPointer:
@@ -373,33 +449,62 @@ func _match_physics_to_display() -> void:
 		Engine.physics_ticks_per_second = roundi(refresh_rate)
 
 
-func _handle_controller_button(hand: Types.Hand, action_name: StringName, is_pressed: bool) -> void:
+## Dominant trigger: a screen, then (holding something) putting it down
+## where it goes, then a 3D button, then picking up what the hand or beam is
+## on, then the game's use action. The off-hand trigger is the gun: a
+## screen, a 3D button, or a shot — it never picks anything up.
+func _on_trigger(hand: Types.Hand, is_pressed: bool) -> void:
 	var pointer: XRPointer = _get_pointer(hand)
-	match action_name:
-		Types.XR_ACTION_TRIGGER_CLICK:
-			if not is_pressed:
-				pointer.release()
-			elif not pointer.press() and not _press_button_on_ray(pointer):
-				if hand == dominant_hand:
-					primary_action_pressed.emit(pointer)
-				else:
-					secondary_action_pressed.emit(pointer)
-		Types.XR_ACTION_GRIP_CLICK:
-			if is_pressed:
-				_grab_with_hand(hand)
-			else:
-				_release_hand(hand)
-		Types.XR_ACTION_MENU_BUTTON, Types.XR_ACTION_SECONDARY_BUTTON:
-			if is_pressed:
-				menu_pressed.emit()
-		Types.XR_ACTION_TRACKPAD_CLICK:
-			if is_pressed:
-				locomotion.handle_trackpad_click(_get_controller(hand).get_vector2(Types.XR_ACTION_TRACKPAD), pointer)
-
-
-func _grab_with_hand(hand: Types.Hand) -> void:
-	if _held_items[hand] != null or get_tree().paused:
+	if not is_pressed:
+		pointer.release()
+		# Something fixed (a door handle) only moves while the trigger is held.
+		var held_item: Grabbable = _held_items[hand]
+		if hand == dominant_hand and held_item != null and held_item.is_fixed:
+			_put_down(hand)
 		return
+	if pointer.press() or get_tree().paused:
+		return
+	if hand != dominant_hand:
+		if not _press_button_on_ray(pointer):
+			secondary_action_pressed.emit(pointer)
+		return
+	if _held_items[hand] != null:
+		_put_down(hand)
+		return
+	if _press_button_on_ray(pointer) or _grab_with_hand(hand):
+		return
+	primary_action_pressed.emit(pointer)
+
+
+## Grip: press to pick up. Let go after holding to put the item down; a
+## quick click keeps it in the hand until the next grip click or trigger
+## (except something fixed, like a door handle, which is let go at once).
+func _on_grip(hand: Types.Hand, is_pressed: bool) -> void:
+	if is_pressed:
+		if get_tree().paused:
+			return
+		if _held_items[hand] != null:
+			_put_down(hand)
+			_ignores_grip_release[hand] = true
+		elif _grab_with_hand(hand):
+			_grip_grabbed_at_msec[hand] = Time.get_ticks_msec()
+		return
+	if _ignores_grip_release[hand]:
+		_ignores_grip_release[hand] = false
+		return
+	var held_item: Grabbable = _held_items[hand]
+	if held_item == null or get_tree().paused or _grip_grabbed_at_msec[hand] == NOT_GRIP_GRABBED:
+		return
+	var held_milliseconds: int = Time.get_ticks_msec() - _grip_grabbed_at_msec[hand]
+	if held_item.is_fixed or held_milliseconds >= roundi(GRIP_CLICK_SECONDS * 1000.0):
+		_put_down(hand)
+
+
+## Takes the item at the hand, or else under its beam (a crate hands out a
+## new one and charges for it). Returns true when the hand now holds it.
+func _grab_with_hand(hand: Types.Hand) -> bool:
+	if _held_items[hand] != null or get_tree().paused:
+		return false
 	var anchor: Node3D = _get_hold_anchor(hand)
 	var pointer: XRPointer = _get_pointer(hand)
 	var target: Node3D = InteractionQuery.find_grab_target_near(get_tree(), anchor.global_position, HAND_GRAB_REACH)
@@ -407,24 +512,42 @@ func _grab_with_hand(hand: Types.Hand) -> void:
 		target = InteractionQuery.find_grab_target_on_ray(get_tree(), pointer.ray_origin, pointer.ray_direction, POINTER_REACH)
 	var item: Grabbable = InteractionQuery.take_from(target)
 	if item == null:
-		return
+		return false
 	item.attach_to(anchor)
 	_held_items[hand] = item
+	# The grip stamps its own grabs right after this; a trigger grab stays unstamped.
+	_grip_grabbed_at_msec[hand] = NOT_GRIP_GRABBED
 	pulse(pointer, Types.HapticStrength.LIGHT)
 	item_grabbed.emit(item)
+	return true
 
 
-func _release_hand(hand: Types.Hand) -> void:
+## Lets go of what [param hand] holds: into the socket it would snap to
+## (the highlighted one), otherwise wherever a dropped item goes.
+func _put_down(hand: Types.Hand) -> void:
 	var item: Grabbable = _held_items[hand]
 	if item == null:
 		return
 	_held_items[hand] = null
-	var socket: ItemSocket = InteractionQuery.find_socket_near(get_tree(), item, item.global_position)
+	var socket: ItemSocket = _find_drop_socket(hand, item)
 	if socket != null:
 		_place(item, socket)
 		pulse(_get_pointer(hand), Types.HapticStrength.MEDIUM)
 	else:
 		item.drop_nowhere()
+
+
+## Socket a held item would go into: the one next to it, or else the one
+## under the hand's beam (so the player can point instead of reaching).
+## Fixed things never go into sockets.
+func _find_drop_socket(hand: Types.Hand, item: Grabbable) -> ItemSocket:
+	if item.is_fixed:
+		return null
+	var socket: ItemSocket = InteractionQuery.find_socket_near(get_tree(), item, item.global_position)
+	if socket == null:
+		var pointer: XRPointer = _get_pointer(hand)
+		socket = InteractionQuery.find_socket_on_ray(get_tree(), item, pointer.ray_origin, pointer.ray_direction, POINTER_REACH)
+	return socket
 
 
 ## Puts the popup screen straight ahead of where the player looks right now.
@@ -458,7 +581,7 @@ func _update_socket_highlights() -> void:
 	for hand: Types.Hand in _held_items:
 		var item: Grabbable = _held_items[hand]
 		if item != null:
-			var socket: ItemSocket = InteractionQuery.find_socket_near(get_tree(), item, item.global_position)
+			var socket: ItemSocket = _find_drop_socket(hand, item)
 			if socket != null:
 				wanted.append(socket)
 	if _flat_held_item != null:
@@ -489,19 +612,19 @@ func _handle_thumbstick(hand: Types.Hand, action_name: StringName, value: Vector
 
 
 func _on_left_hand_button_pressed(action_name: String) -> void:
-	_handle_controller_button(Types.Hand.LEFT, StringName(action_name), true)
+	handle_controller_button(Types.Hand.LEFT, StringName(action_name), true)
 
 
 func _on_left_hand_button_released(action_name: String) -> void:
-	_handle_controller_button(Types.Hand.LEFT, StringName(action_name), false)
+	handle_controller_button(Types.Hand.LEFT, StringName(action_name), false)
 
 
 func _on_right_hand_button_pressed(action_name: String) -> void:
-	_handle_controller_button(Types.Hand.RIGHT, StringName(action_name), true)
+	handle_controller_button(Types.Hand.RIGHT, StringName(action_name), true)
 
 
 func _on_right_hand_button_released(action_name: String) -> void:
-	_handle_controller_button(Types.Hand.RIGHT, StringName(action_name), false)
+	handle_controller_button(Types.Hand.RIGHT, StringName(action_name), false)
 
 
 func _on_left_hand_input_vector2_changed(action_name: String, value: Vector2) -> void:
@@ -518,11 +641,30 @@ func _on_xr_session_begun() -> void:
 
 ## Headset taken off or system menu opened: treat it like the app going to the background.
 func _on_xr_session_visible() -> void:
+	_forget_grip_state()
 	Events.app_paused.emit()
 
 
 func _on_xr_session_focussed() -> void:
+	_forget_grip_state()
 	Events.app_resumed.emit()
+
+
+## Button releases are lost while the system has focus: don't wait for them.
+func _forget_grip_state() -> void:
+	for hand: Types.Hand in _ignores_grip_release:
+		_ignores_grip_release[hand] = false
+
+
+## The player held the system button to recenter: measure their height again
+## (they may have sat down or stood up).
+func _on_xr_pose_recentered() -> void:
+	_needs_height_calibration = true
+
+
+func _on_setting_changed(setting_key: StringName, _value: Variant) -> void:
+	if setting_key == Settings.KEY_STANDING_VIEW:
+		_needs_height_calibration = true
 
 # ============================================
 # FLAT SIMULATOR

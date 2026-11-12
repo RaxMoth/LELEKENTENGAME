@@ -14,6 +14,7 @@ const LOCALE_OPTIONS: PackedStringArray = ["", "en", "de"]
 @onready var _haptics_toggle: CheckButton = %HapticsToggle
 @onready var _smooth_move_toggle: CheckButton = %SmoothMoveToggle
 @onready var _smooth_turn_toggle: CheckButton = %SmoothTurnToggle
+@onready var _standing_view_toggle: CheckButton = %StandingViewToggle
 @onready var _fps_toggle: CheckButton = %FpsToggle
 @onready var _language_option: OptionButton = %LanguageOption
 @onready var _privacy_button: Button = %PrivacyButton
@@ -26,6 +27,7 @@ func _on_opened(_data: Dictionary) -> void:
 	_haptics_toggle.button_pressed = Settings.get_bool(Settings.KEY_HAPTICS_ENABLED)
 	_smooth_move_toggle.button_pressed = Settings.get_bool(Settings.KEY_SMOOTH_MOVEMENT)
 	_smooth_turn_toggle.button_pressed = Settings.get_bool(Settings.KEY_SMOOTH_TURNING)
+	_standing_view_toggle.button_pressed = Settings.get_bool(Settings.KEY_STANDING_VIEW)
 	_fps_toggle.button_pressed = Settings.get_bool(Settings.KEY_SHOW_FPS)
 	_language_option.clear()
 	_language_option.add_item(tr("System"))
@@ -40,6 +42,7 @@ func _on_opened(_data: Dictionary) -> void:
 	_haptics_toggle.toggled.connect(func(enabled: bool) -> void: Settings.set_value(Settings.KEY_HAPTICS_ENABLED, enabled))
 	_smooth_move_toggle.toggled.connect(func(enabled: bool) -> void: Settings.set_value(Settings.KEY_SMOOTH_MOVEMENT, enabled))
 	_smooth_turn_toggle.toggled.connect(func(enabled: bool) -> void: Settings.set_value(Settings.KEY_SMOOTH_TURNING, enabled))
+	_standing_view_toggle.toggled.connect(func(enabled: bool) -> void: Settings.set_value(Settings.KEY_STANDING_VIEW, enabled))
 	_fps_toggle.toggled.connect(func(enabled: bool) -> void: Settings.set_value(Settings.KEY_SHOW_FPS, enabled))
 	_language_option.item_selected.connect(func(index: int) -> void: Settings.set_value(Settings.KEY_LOCALE, LOCALE_OPTIONS[index]))
 

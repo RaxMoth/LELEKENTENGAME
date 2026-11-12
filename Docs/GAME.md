@@ -71,13 +71,16 @@ raid is fought again).
 
 | | Headset | Flat simulator (no headset) |
 |---|---|---|
-| Grab / let go | Grip (at the hand, or along the beam) | Click an item / click where to put it |
+| Pick up / put in | Dominant-hand trigger: point at a crate, ingredient or batch and pull; point at a station slot and pull again | Click an item / click where to put it |
+| Carry by hand | Grip (either hand, at the hand or along the beam): hold to carry, let go at — or pointing at — a slot; a quick grip click keeps holding until the next click | — |
 | Use (station buttons, screens, door bolt) | Dominant-hand trigger | Click |
 | Fire your gun | Off-hand trigger (from the front room or porch); the gun sits in that hand | Right-click, or click a raider |
-| Front door | Trigger on a handle swings it open / shut; or grip a handle and swing it by hand | Click a handle |
+| Front door | Trigger on a handle swings it fully open / shut; grip a handle to swing it by hand | Click a handle |
+| Walk | Dominant-hand stick walks where you look (like VRChat; "Smooth Movement", on by default) | WASD / arrows; 1–4 jump to lab, front, window, office |
+| Reposition | Off-hand stick forward: aim a teleport, release to jump | — |
+| Turn | Off-hand stick left / right: 30° snaps (or smooth turning) | Drag |
+| Seated play | "Standing View When Seated" (on by default) lifts a seated player to standing eye height; after sitting down or standing up, hold the headset's system button to recenter | — |
 | Admin (debug builds) | Terminal on the office wall | Same, or F3 |
-| Move | Off-hand stick forward: aim a teleport, release to jump (or smooth movement in Settings) | WASD / arrows; 1–4 jump to lab, front, window, office |
-| Turn | Dominant-hand stick: 30° snaps (or smooth turning) | Drag |
 | Pause | Menu or B / Y | Esc |
 | Status | Look at your off-hand wrist | Lower left of the view |
 
@@ -111,6 +114,11 @@ the better.
 Quality = average step accuracy plus equipment → tiers **Cut, Street, Pure,
 Premium** (`QualityMath`). Customers care: each wants a minimum tier and
 pays more for better.
+
+The **recipe book** on the wall above the crates lists every product as
+ingredients → product. Until you cook a product for the first time its row
+is question marks (a lock while the recipe isn't unlocked); the first batch
+fills it in for good (`Profile.operation.discovered_recipe_ids`).
 
 ### Back window (inside, west-back)
 
@@ -287,7 +295,8 @@ Scenes/Levels/House/House.tscn                inherits LevelBase; house_level.gd
     │   ├── Operation          the shared house state: stash, heat, cash flow, prices, recipes, upgrade effects
     │   ├── DayCycle           DayClock + sun / sky / lamps; StateChart Day -> Night
     │   ├── HouseCycle         Cycle/HouseCycle.tscn: the 3-day cycle; StateChart Selling -> Raid { WaveBreak <-> WaveActive } -> Cleared
-    │   ├── HouseShell         walls / doors / windows / floor built from a few numbers
+    │   ├── Surroundings       HOUSE     Surroundings/Surroundings.tscn: lawn, approach path, trees, weeds, junk (its yard trees are COVER_ONLY obstacles in the Yard)
+    │   ├── HouseShell         walls / doors / windows (framed) / floor / ceiling / gable roof built from a few numbers
     │   ├── FrontGarden        DEFENSE   Garden/FrontGarden.tscn: open yard (Yard), swinging / bolting door, porch, roof turrets, Security PC, guards, raid squads, guns in hand
     │   ├── SalesWindow        CUSTOMERS Sales/SalesWindow.tscn: window, queue, board, dealers, CustomerFlow
     │   ├── Lab                HOUSE     Lab/Lab.tscn: crates, grinder, cooker, press, crafters, recipes
@@ -335,13 +344,17 @@ raiders as exports on their scenes, the yard's obstacles on `Yard`, pacing on `A
   falling are announced in front of you with sound and a heavy rumble.
 - **Readable yard.** The front room has two wide windows over the yard;
   raiders' glowing visors stand out at night, and cover is big and simple.
-- **Hands.** Grip always grabs (either hand). Triggers: dominant uses,
-  off-hand shoots (the gun sits in that hand) — a missed shot never presses
-  something.
-  Distance grab along the beam keeps reach comfortable.
-- **Comfort.** Teleport and snap turning by default, smooth movement /
-  turning in Settings, no camera motion the player didn't make, popups and
-  announcements appear where you look and stay world-locked.
+- **Hands.** The dominant trigger picks up and puts in by pointing, like
+  the flat cursor's clicks; grip grabs with either hand (hold to carry, a
+  quick click to keep holding). The off-hand trigger only shoots (the gun
+  sits in that hand) or clicks a screen / button — it never picks anything
+  up, so aiming past the door handle still fires. Distance grab along the
+  beam keeps reach comfortable.
+- **Comfort.** Stick walking where you look plus teleport and snap turning
+  on the off-hand stick; smooth turning in Settings. Seated players are
+  lifted to standing height (re-measured on recenter). No camera motion the
+  player didn't make; popups and announcements appear where you look and
+  stay world-locked.
 - **Performance** (standalone headsets are phones): no physics for
   interaction or combat, pooled spawns, shared meshes and materials, blob
   shadows, one unshadowed light, fog instead of far draw distance, a few
@@ -358,6 +371,6 @@ raiders as exports on their scenes, the yard's obstacles on `Yard`, pacing on `A
 - **Yard overview:** a tabletop miniature of the yard in the hall.
 - **More content:** recipes, customer types, traps, more raider types,
   more lab rooms; worker skill per person; raiders that also try windows.
-- **Comfort:** a vignette for smooth movement; height calibration.
+- **Comfort:** a vignette for smooth movement.
 - **On device:** tune reach, station heights, screen sizes and text, haptics.
 - **Art and audio:** stand-in meshes and synthesized sounds; no music.

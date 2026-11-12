@@ -114,6 +114,12 @@ and the README in your area's folder.
 - **Placeholder art:** `PlaceholderMesh3D` + `BlobShadow3D` — replace with
   imported meshes (glTF) when real art arrives; keep draw calls and
   materials few (standalone headsets are phones).
+- **Real art:** CC0 textures in `Assets/Textures/`, shared materials in
+  `Assets/Materials/`, models and impostors in `Assets/Models/`; build
+  surfaces with `TexturedBox3D` / `GroundPlane3D` / `HouseShell` and scatter
+  trees with `PropScatter3D`. Budgets and the workflow are in
+  [DESIGN.md](DESIGN.md) ("Real art"); credit every download in
+  `Assets/CREDITS.md`.
 - **Sounds:** `Audio.play_sfx_at(preload("res://Assets/Audio/hit.ogg"), global_position)`
   (positional, so the player hears where it happened), `Audio.play_music(...)`.
   The synthesized presets (`SfxSynth`) are just stand-ins.

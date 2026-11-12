@@ -1,10 +1,11 @@
-## Moves the player around the level as the comfort settings choose:
-## teleport (push a thumbstick forward to aim, let go to jump) or smooth
-## movement, and snap or smooth turning. Never leaves the WalkableArea.
+## Moves the player around the level. Never leaves the WalkableArea.
 ## In the flat simulator WASD walks and keys 1-4 jump to the travel spots.
 ##
-## The off-hand stick moves (or aims the teleport), the dominant-hand stick
-## turns. A trackpad click up teleports, left / right snap-turns.
+## Like VRChat: the dominant-hand stick (right by default) walks where the
+## head looks, as long as smooth movement is on in the comfort settings.
+## The off-hand stick repositions: push it forward to aim a teleport and let
+## go to jump, flick it left / right to snap-turn (or hold it to turn
+## smoothly). A trackpad click up teleports, left / right snap-turns.
 ##
 ## Dependencies: XRPlayerRig, XRPointer, WalkableArea, RayMath, Settings,
 ##               PlaceholderMesh3D, Palette, Types autoloads
@@ -35,8 +36,8 @@ var travel_spots: Array[Node3D] = []
 var _aiming_pointer: XRPointer = null
 var _teleport_target: Vector3 = Vector3.ZERO
 var _is_target_valid: bool = false
-var _move_stick: Vector2 = Vector2.ZERO
-var _turn_stick: Vector2 = Vector2.ZERO
+var _walk_stick: Vector2 = Vector2.ZERO
+var _reposition_stick: Vector2 = Vector2.ZERO
 var _is_turn_flicked: bool = false
 
 
@@ -52,21 +53,23 @@ func _ready() -> void:
 ## Thumbstick moved on a controller (called by the rig).
 func handle_stick(hand: Types.Hand, value: Vector2, pointer: XRPointer) -> void:
 	if hand == rig.dominant_hand:
-		_turn_stick = value
-		_handle_turn_stick()
+		_walk_stick = value
 		return
-	_move_stick = value
-	if is_smooth_movement():
-		_cancel_aim()
+	_reposition_stick = value
+	if _aiming_pointer != null:
+		if value.length() <= STICK_RELEASE_THRESHOLD:
+			_aiming_pointer = null
+			if _is_target_valid:
+				teleport_to(_teleport_target)
+			_hide_marker()
 		return
-	if _aiming_pointer == null and value.y >= STICK_PRESS_THRESHOLD:
+	if _is_turn_gesture(value):
+		_handle_snap_turn(value)
+	elif not _is_turn_flicked and value.y >= STICK_PRESS_THRESHOLD:
 		_aiming_pointer = pointer
 		_is_target_valid = false
-	elif _aiming_pointer != null and value.length() <= STICK_RELEASE_THRESHOLD:
-		_aiming_pointer = null
-		if _is_target_valid:
-			teleport_to(_teleport_target)
-		_hide_marker()
+	elif _is_turn_flicked and value.length() <= STICK_RELEASE_THRESHOLD:
+		_is_turn_flicked = false
 
 
 ## Trackpad click (HTC Vive wands): up teleports along the pointer, sides turn.
@@ -123,13 +126,14 @@ func is_smooth_turning() -> bool:
 # ============================================
 
 func _step_xr(delta: float) -> void:
-	if is_smooth_movement() and _move_stick.length() > STICK_DEADZONE:
+	if is_smooth_movement() and _walk_stick.length() > STICK_DEADZONE:
 		var head_basis: Basis = rig.get_head_transform().basis
 		var forward: Vector3 = Vector3(-head_basis.z.x, 0.0, -head_basis.z.z).normalized()
 		var right: Vector3 = Vector3(head_basis.x.x, 0.0, head_basis.x.z).normalized()
-		_walk((right * _move_stick.x + forward * _move_stick.y) * move_speed * delta)
-	if is_smooth_turning() and absf(_turn_stick.x) > STICK_DEADZONE:
-		turn_by(-_turn_stick.x * smooth_turn_degrees_per_second * delta)
+		_walk((right * _walk_stick.x + forward * _walk_stick.y) * move_speed * delta)
+	var is_turning_smoothly: bool = is_smooth_turning() and _aiming_pointer == null and _is_turn_gesture(_reposition_stick)
+	if is_turning_smoothly and absf(_reposition_stick.x) > STICK_DEADZONE:
+		turn_by(-_reposition_stick.x * smooth_turn_degrees_per_second * delta)
 	if _aiming_pointer != null:
 		_teleport_target = _find_teleport_target(_aiming_pointer)
 		_is_target_valid = _is_valid_target(_teleport_target)
@@ -154,18 +158,26 @@ func _walk(offset: Vector3) -> void:
 	rig.move_origin_by(Vector3(target.x - feet.x, 0.0, target.z - feet.z))
 
 
-func _handle_turn_stick() -> void:
+## The off-hand stick points more sideways than forward: it turns rather
+## than aims a teleport.
+func _is_turn_gesture(stick: Vector2) -> bool:
+	return absf(stick.x) > absf(stick.y)
+
+
+## One snap per flick: turn when the stick passes the press threshold, and
+## again only after it came back to the middle.
+func _handle_snap_turn(stick: Vector2) -> void:
 	if is_smooth_turning():
 		return
-	if not _is_turn_flicked and absf(_turn_stick.x) >= STICK_PRESS_THRESHOLD:
+	if not _is_turn_flicked and absf(stick.x) >= STICK_PRESS_THRESHOLD:
 		_is_turn_flicked = true
-		turn_by(-snap_turn_degrees if _turn_stick.x > 0.0 else snap_turn_degrees)
-	elif _is_turn_flicked and absf(_turn_stick.x) <= STICK_RELEASE_THRESHOLD:
+		turn_by(-snap_turn_degrees if stick.x > 0.0 else snap_turn_degrees)
+	elif _is_turn_flicked and absf(stick.x) <= STICK_RELEASE_THRESHOLD:
 		_is_turn_flicked = false
 
 
 func _find_teleport_target(pointer: XRPointer) -> Vector3:
-	var floor_height: float = walkable_area.floor_height if walkable_area != null else rig.global_position.y
+	var floor_height: float = walkable_area.floor_height if walkable_area != null else rig.get_feet_position().y
 	var distance: float = RayMath.intersect_ground(pointer.ray_origin, pointer.ray_direction, floor_height)
 	if distance == RayMath.NO_HIT or distance > teleport_range:
 		return Vector3(INF, INF, INF)
@@ -174,12 +186,6 @@ func _find_teleport_target(pointer: XRPointer) -> Vector3:
 
 func _is_valid_target(target: Vector3) -> bool:
 	return target.is_finite() and (walkable_area == null or walkable_area.contains(target))
-
-
-func _cancel_aim() -> void:
-	_aiming_pointer = null
-	_is_target_valid = false
-	_hide_marker()
 
 
 func _show_marker(target: Vector3, is_valid: bool) -> void:

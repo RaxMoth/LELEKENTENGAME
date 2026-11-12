@@ -190,6 +190,9 @@ Details and setup: [GAME.md](GAME.md).
 | `RayMath` (`Scripts/Utils/`) | static | `intersect_plane` / `intersect_ground` / `intersect_sphere` / `distance_to_point`: picking without physics |
 | `YardNavigation` (`Scripts/Game/`) | static | Steering around round obstacles, overlap, line of sight, cover spots, door spots — no physics |
 | `PlaceholderMesh3D`, `BlobShadow3D` (`Scripts/Utils/`) | MeshInstance3D | 3D art stand-ins with shared meshes / materials and a soft contact shadow |
+| `TexturedBox3D`, `GroundPlane3D` (`Scripts/Utils/`) | MeshInstance3D | A box / a flat patch of ground with a real material (`Assets/Materials/`), UVs in meters so `uv1_scale` = 1 / tile size; the ground can bake soft darker patches into vertex colors |
+| `PropScatter3D` (`Scripts/Utils/`) | MultiMeshInstance3D | Many copies of one mesh (impostor trees, weeds) from a list of (x, z, scale, yaw) placements, one draw call |
+| `WorldUVMesh` (`Scripts/Utils/`) | static | Box faces, polygons and planes with UVs in meters, normals and tangents (used by `HouseShell` and the two above) |
 | `HitFlash3DComponent` | Node | Flashes every mesh under a Node3D on damage |
 | `FloatingText3D`, `PopEffect3D` (`Scenes/Entities/`) | pooled | `FloatingText3D.spawn("+25", position, color, parent)`, `PopEffect3D.spawn(position, color, diameter, parent)` |
 
@@ -219,7 +222,10 @@ build the 2D menus and popups, and in-world screens shown on a `WorldScreen`.
 `Palette` (design color tokens — see [DESIGN.md](DESIGN.md)), `NumberFormat`
 (1.2K, 1,234, 2:05), `TweenFX` (UI tweens: pop, bounce_in, shake, pulse,
 count_label…), `RayMath`, `PlaceholderMesh3D` & `BlobShadow3D`
-(3D art stand-ins), `SfxSynth` (generated sounds).
+(3D art stand-ins), `WorldUVMesh`, `TexturedBox3D`, `GroundPlane3D` and
+`PropScatter3D` (real-art set dressing, see DESIGN.md), `SfxSynth`
+(generated sounds). `Tools/bake_impostor.gd` turns a heavy glTF tree or plant
+into a few textured quads for them.
 
 ## Data resources (`Scripts/Resources/`)
 

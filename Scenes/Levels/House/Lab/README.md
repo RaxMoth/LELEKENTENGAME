@@ -5,7 +5,8 @@ timing skill check that sets the quality. Product goes into the shared stash.
 
 | Files | What |
 |---|---|
-| `Lab.tscn`, `lab.gd` | The front: stations, crates, crafters; registers the recipes with the Operation |
+| `Lab.tscn`, `lab.gd` | The front: stations, crates, crafters, recipe book; registers the recipes with the Operation |
+| `RecipeBoard.tscn`, `recipe_board.gd` | The recipe book on the wall (static WorldScreen): question marks until a product is first cooked, saved in `Profile.operation.discovered_recipe_ids` |
 | `Workstation.tscn` + `Grinder/Cooker/Press.tscn`, `workstation.gd` | Stations (StateChart Idle ⇄ Running) |
 | `IngredientCrate.tscn`, `IngredientItem.tscn`, `BatchItem.tscn` | Crates and the items you carry |
 | `Ressources/Ingredients/`, `Ressources/Recipes/` | Ingredients and products (add recipes to `Lab.recipes`) |

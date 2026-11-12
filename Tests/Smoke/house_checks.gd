@@ -146,6 +146,12 @@ static func _check_controllers(test: SmokeTest, level: HouseLevel) -> void:
 	var action_counts: Dictionary[StringName, int] = {&"primary": 0, &"secondary": 0}
 	rig.primary_action_pressed.connect(func(_pointer: XRPointer) -> void: action_counts[&"primary"] += 1)
 	rig.secondary_action_pressed.connect(func(_pointer: XRPointer) -> void: action_counts[&"secondary"] += 1)
+	# Beams at the ceiling: a trigger on an item or button would use that instead.
+	var head: Vector3 = rig.get_head_transform().origin
+	for hand: Types.Hand in [Types.Hand.LEFT, Types.Hand.RIGHT]:
+		var pointer: XRPointer = rig.get_hand_pointer(hand)
+		pointer.get_parent_node_3d().global_position = head
+		pointer.set_ray(head, Vector3.UP)
 	rig.call("_on_right_hand_button_pressed", String(Types.XR_ACTION_TRIGGER_CLICK))
 	rig.call("_on_right_hand_button_released", String(Types.XR_ACTION_TRIGGER_CLICK))
 	rig.call("_on_left_hand_button_pressed", String(Types.XR_ACTION_TRIGGER_CLICK))
@@ -154,9 +160,13 @@ static func _check_controllers(test: SmokeTest, level: HouseLevel) -> void:
 	var forward_before: Vector3 = -rig.get_head_transform().basis.z
 	rig.call("_on_right_hand_input_vector2_changed", String(Types.XR_ACTION_THUMBSTICK), Vector2(0.9, 0.0))
 	rig.call("_on_right_hand_input_vector2_changed", String(Types.XR_ACTION_THUMBSTICK), Vector2.ZERO)
+	var forward_walk_stick: Vector3 = -rig.get_head_transform().basis.z
+	test.check(forward_walk_stick.is_equal_approx(forward_before), "the dominant (walking) stick doesn't turn the player")
+	rig.call("_on_left_hand_input_vector2_changed", String(Types.XR_ACTION_THUMBSTICK), Vector2(0.9, 0.0))
+	rig.call("_on_left_hand_input_vector2_changed", String(Types.XR_ACTION_THUMBSTICK), Vector2.ZERO)
 	var forward_after: Vector3 = -rig.get_head_transform().basis.z
 	var turned_degrees: float = rad_to_deg(Vector2(forward_before.x, forward_before.z).angle_to(Vector2(forward_after.x, forward_after.z)))
-	test.check(absf(absf(turned_degrees) - rig.locomotion.snap_turn_degrees) < 1.0, "a dominant-stick flick snap-turns the player")
+	test.check(absf(absf(turned_degrees) - rig.locomotion.snap_turn_degrees) < 1.0, "an off-hand stick flick sideways snap-turns the player")
 	rig.call("_on_left_hand_button_pressed", String(Types.XR_ACTION_MENU_BUTTON))
 	await test.frames(30)
 	test.check(level.get_tree().paused and UI.has_open_popup(), "controller menu button pauses")

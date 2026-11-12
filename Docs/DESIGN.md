@@ -96,9 +96,13 @@ flame, sun, moon, person, plus, minus. App icon and logo:
 
 ## Gameplay art
 
-Until final art exists, the world is built from `PlaceholderMesh3D`
-primitives in `Palette` colors: matte, lit from above, grounded by a
-`BlobShadow3D`.
+The **set** is real: the house shell, ground, front door, trees, weeds and
+a little junk use photo-scanned CC0 textures and models (ambientCG, Poly
+Haven; sources and licences in `Assets/CREDITS.md`), so the house reads as a
+dirty, shabby, lived-in place. The **gameplay pieces** (stations, crates,
+crew, attackers, towers, items, boards) are still `PlaceholderMesh3D`
+primitives in `Palette` colors — matte, lit from above, grounded by a
+`BlobShadow3D` — and they must stay clearly readable on top of the set.
 
 - Player hands / beams and the crew `PRIMARY`, threats `ENEMY*`, money and
   quality `GOLD` / `SUCCESS`; products use one distinct hue each.
@@ -109,16 +113,48 @@ primitives in `Palette` colors: matte, lit from above, grounded by a
   `MOONLIGHT`, `AMBIENT_*`) so day and night stay calm and on palette.
 - `glow` is for the few things the player must notice (products, lamps,
   projectiles). Keep it below 1 on lit shapes so their shading stays readable.
-- Terrain uses `WORLD` tones and fades into fog of the horizon color; never
-  a bright or textured sky behind gameplay.
+- Terrain fades into fog of the horizon color; never a bright or textured
+  sky behind gameplay. The set stays muted and dirty (worn wood, grimy
+  plaster, old brick, patchy lawn, dark dirt lanes) so saturated gameplay
+  colors pop against it; the lanes keep a soft checker of their cells.
 - Floating numbers: `FloatingText3D` in `TEXT`, `GOLD` or `DANGER`;
   announcements: `LevelBase.announce()` (Label3D, `TEXT` or `DANGER`).
 - UI in the world is the same theme on a `WorldScreen`; size type for the
   viewing distance (text should span at least 0.6° — about 1 cm per meter).
 
-Replacing with real art: swap `PlaceholderMesh3D` for imported meshes, keep
-the palette for UI and accents, and match the art's light direction (from
-above) and shadow softness. Keep real-time shadows off (standalone headsets).
+### Real art (set dressing)
+
+| Piece | How it is built |
+|---|---|
+| Walls, floor, ceiling, frames, roof | `HouseShell` from lists, one surface per material (inside plaster, outside brick, floor planks, ceiling concrete, wood trim, roof tiles) |
+| Boxes with a real surface (door leaf, fence, gate) | `TexturedBox3D` (`is_grain_vertical` for posts) |
+| Lawn, lanes, path, yard | `GroundPlane3D` (soft darker patches in vertex colors break up the tile); the lane board multiplies its cell checker over `ground_material` |
+| Trees and weeds | Impostors from `Tools/bake_impostor.gd`, placed with `PropScatter3D` (one draw call per kind) in `Scenes/Levels/House/Surroundings/` |
+| Junk (rubbish bags, tyres, chair, cans) | Poly Haven glTF props, instanced as they are |
+
+- **Textures in meters.** Everything above has UVs in meters (`WorldUVMesh`),
+  so a material's `uv1_scale` is 1 / its real tile size and the same brick
+  is the same size on every wall. No triplanar mapping (too expensive).
+- **Shared materials** live in `Assets/Materials/` (one `StandardMaterial3D`
+  per surface type). Color + NormalGL (+ Roughness where it shows); no
+  displacement, AO or metalness maps. Ground and floor materials use
+  anisotropic filtering (seen at grazing angles).
+- **Budgets (Quest at 72–90 Hz):** textures at most 1K, imported
+  VRAM-compressed with mipmaps (ETC2/ASTC on Android); props under ~5k
+  triangles with 512 px textures; trees and plants as impostors (6 / 4
+  triangles, alpha scissor + alpha to coverage, both sides, never alpha
+  blend); no new lights, no real-time shadows, no full-screen effects.
+  Keep the repository addition small: no file over 10 MB, sources and
+  heavy originals stay out of the project.
+- **Licences:** CC0 only; every downloaded asset goes into
+  `Assets/CREDITS.md` with its source URL. Downloads go to a scratch folder;
+  only the image / model files the game uses are copied in, under
+  `Assets/Textures/<Category>/<AssetId>/` or `Assets/Models/<Kind>/<Name>/`.
+
+Replacing a placeholder gameplay piece with real art: swap
+`PlaceholderMesh3D` for an imported mesh under the same budgets, keep the
+palette for UI and accents, and match the light direction (from above) and
+shadow softness. Keep real-time shadows off (standalone headsets).
 
 ## Motion
 

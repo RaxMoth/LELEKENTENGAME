@@ -19,10 +19,12 @@ extends Node3D
 ## A raider went down (score, stats).
 signal raider_defeated(raider: Raider)
 
-enum ObstacleKind { PINE, TREE, ROCK, BUSH, CAR }
+## COVER_ONLY: cover without a model of its own (a tree the Surroundings
+## already show as real art).
+enum ObstacleKind { PINE, TREE, ROCK, BUSH, CAR, COVER_ONLY }
 
 ## Height (meters) each kind of obstacle covers a shot up to.
-const COVER_HEIGHTS: Array[float] = [5.0, 4.2, 0.85, 1.0, 1.45]
+const COVER_HEIGHTS: Array[float] = [5.0, 4.2, 0.85, 1.0, 1.45, 4.5]
 const FENCE_HEIGHT: float = 1.1
 const FENCE_POST_SPACING: float = 2.4
 
@@ -33,7 +35,8 @@ const FENCE_POST_SPACING: float = 2.4
 	set(value):
 		bounds = value
 		_queue_rebuild()
-## Obstacles (x, z, radius, ObstacleKind) — trees, rocks, bushes, a car.
+## Obstacles (x, z, radius, ObstacleKind) — trees, rocks, bushes, a car, and
+## cover for the Surroundings' art trees (COVER_ONLY, no model here).
 @export var obstacles: Array[Vector4] = []:
 	set(value):
 		obstacles = value

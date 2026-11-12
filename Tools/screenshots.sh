@@ -37,6 +37,8 @@ shot level_7_portrait level=house showcase=house spot=2 frames=200
 SHOT_RESOLUTION=$WIDE shot level_8_armory level=house showcase=house stand=-3,-3.3 look=-3,1.4,-2.1 frames=120
 SHOT_RESOLUTION=$WIDE shot level_9_door level=house showcase=house stand=0.3,-3.7 look=0,1.1,-5 frames=120
 SHOT_RESOLUTION=$WIDE shot level_10_raid level=house showcase=house_raid spot=2 frames=600
+# The lab's recipe book on the wall above the ingredient crates.
+SHOT_RESOLUTION=$WIDE shot level_11_recipes level=house showcase=house stand=-2.6,0 look=-4.9,1.55,0 frames=120
 "$TOOLS_DIR/godot.sh" --headless --script "$TOOLS_DIR/contact_sheet.gd" -- "$OUT_DIR/sheet_menus.png" 5 360 640 \
 	"$OUT_DIR"/0*.png >/dev/null 2>&1
 "$TOOLS_DIR/godot.sh" --headless --script "$TOOLS_DIR/contact_sheet.gd" -- "$OUT_DIR/sheet_levels.png" 3 640 360 \
