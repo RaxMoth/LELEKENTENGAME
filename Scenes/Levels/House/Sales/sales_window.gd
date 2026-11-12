@@ -1,15 +1,17 @@
-## The back window: customers queue in the yard, the one at the window
+## The customer front: the back window and the yard behind it. Customers
+## (sent by its CustomerFlow) queue in the yard, the one at the window
 ## places an order, and the player sets a price and sells — or declines.
 ## Hagglers answer a price that is a little high with a counteroffer.
-## Dealers (workers) serve through the same calls.
+## Dealers (crew, in this scene) serve through the same calls. Reports to
+## the House level only through HouseFront's signals (sales are score).
 ##
 ## The window's local +Z points out into the yard; the board faces inside.
 ##
-## Dependencies: Customer, CustomerOrder, SalesBoard, Operation, SalesMath,
-##               QualityMath, WorldScreen, FloatingText3D, Pools, Profile,
-##               Audio, Types autoloads, Palette, SfxSynth
+## Dependencies: HouseFront, Customer, CustomerFlow, CustomerOrder, SalesBoard,
+##               Operation, SalesMath, QualityMath, WorldScreen, FloatingText3D,
+##               Pools, Profile, Audio, Types autoloads, Palette, SfxSynth
 class_name SalesWindow
-extends Node3D
+extends HouseFront
 
 signal sale_completed(order: CustomerOrder, cash_earned: int)
 ## A customer left without buying (refused, declined or tired of waiting).
@@ -17,9 +19,11 @@ signal customer_lost(customer: Customer)
 
 const CUSTOMER_SCENE: PackedScene = preload("res://Scenes/Levels/House/Sales/Customer.tscn")
 
-@export var operation: Operation
 ## Customers that can wait at once before upgrades.
 @export var base_capacity: int = 3
+
+## The house's shared state (from the context at setup).
+var operation: Operation = null
 
 var _queue: Array[Customer] = []
 ## Unit price a haggling customer offered back (0 = no counteroffer pending).
@@ -29,23 +33,46 @@ var _board: SalesBoard = null
 @onready var _spots: Node3D = %QueueSpots
 @onready var _entry: Marker3D = %Entry
 @onready var _exit: Marker3D = %Exit
+@onready var flow: CustomerFlow = %CustomerFlow
 @onready var _screen: WorldScreen = %SalesScreen
+@onready var _dealers: Node3D = %Dealers
 
+# ============================================
+# FRONT HOOKS
+# ============================================
 
-func _ready() -> void:
+func _on_setup() -> void:
+	operation = context.operation
 	_board = _screen.content as SalesBoard
 	_board.price_step_requested.connect(_on_price_step_requested)
 	_board.sell_pressed.connect(func() -> void: sell_to_front())
 	_board.decline_pressed.connect(decline_front)
 	_board.accept_counter_pressed.connect(accept_counter)
 	operation.stash_changed.connect(_refresh_board)
+	sale_completed.connect(func(_order: CustomerOrder, cash_earned: int) -> void: score_earned.emit(cash_earned))
+	flow.setup(context, self)
+	for dealer: Node in _dealers.get_children():
+		(dealer as Worker).operation = operation
 	_refresh_board()
 
 
-func _process(_delta: float) -> void:
+func _shift_process(delta: float) -> void:
+	flow.step(delta)
 	var front: Customer = get_front_customer()
 	if front != null:
 		_board.set_patience(front.get_patience_ratio())
+
+
+func _refresh_displays() -> void:
+	update_screen_rendering(_screen)
+
+
+func finish_shift(_result: LevelResult) -> void:
+	clear_queue()
+
+
+func get_status_line() -> String:
+	return tr("Queue %d/%d") % [get_queue_size(), get_capacity()]
 
 # ============================================
 # PUBLIC API

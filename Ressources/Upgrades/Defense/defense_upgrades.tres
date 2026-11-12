@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="UpgradeCatalog" format=3]
+
+[ext_resource type="Script" path="res://Scripts/Resources/upgrade_catalog.gd" id="catalog"]
+[ext_resource type="Script" path="res://Scripts/Resources/upgrade_data.gd" id="upgrade"]
+[ext_resource type="Resource" path="res://Ressources/Upgrades/Defense/def_door.tres" id="def_door"]
+[ext_resource type="Resource" path="res://Ressources/Upgrades/Defense/def_blaster.tres" id="def_blaster"]
+[ext_resource type="Resource" path="res://Ressources/Upgrades/Defense/def_heavy_gun.tres" id="def_heavy_gun"]
+[ext_resource type="Resource" path="res://Ressources/Upgrades/Defense/work_guard.tres" id="work_guard"]
+
+[resource]
+script = ExtResource("catalog")
+area_name = "Defense"
+upgrades = Array[ExtResource("upgrade")]([ExtResource("def_door"), ExtResource("def_blaster"), ExtResource("def_heavy_gun"), ExtResource("work_guard")])

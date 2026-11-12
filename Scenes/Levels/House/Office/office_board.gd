@@ -55,7 +55,7 @@ func refresh() -> void:
 	_reputation_label.text = NumberFormat.with_separators(Profile.operation.reputation)
 	_cash_label.text = NumberFormat.compact(Profile.wallet.get_amount(Types.CURRENCY_CASH))
 	Global.remove_all_children(_rows)
-	for upgrade: UpgradeData in GameConfig.get_default().upgrades:
+	for upgrade: UpgradeData in GameConfig.get_default().get_upgrades():
 		if upgrade.branch != _branch:
 			continue
 		var row: ShopItemRow = ROW_SCENE.instantiate() as ShopItemRow

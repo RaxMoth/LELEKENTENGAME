@@ -67,25 +67,32 @@ click to act), which is also what the smoke test drives — keep it playable.
 
 ## 3. Grow the operation
 
-- **Products:** an `IngredientData` per new ingredient (`Ressources/Ingredients/`,
-  plus an `IngredientCrate` in the lab of `House.tscn`) and a `RecipeData`
-  (`Ressources/Recipes/`) added to `Operation.recipes`. Gate it with an
-  unlock upgrade (`unlock_upgrade_id`).
+The house is split into three areas — **defense**, **customers** and the
+**house** (lab, office, crew, the shift) — each with its own scene, data,
+upgrade catalog and smoke checks, so two people can work at the same time.
+Start with [`Scenes/Levels/House/README.md`](../Scenes/Levels/House/README.md)
+and the README in your area's folder.
+
+- **Products (house / lab):** an `IngredientData` per new ingredient
+  (`Ressources/Ingredients/`, plus an `IngredientCrate` in `Lab.tscn`) and a
+  `RecipeData` (`Ressources/Recipes/`) added to `Lab.recipes`. Gate it with
+  an unlock upgrade (`unlock_upgrade_id`).
 - **Customers:** a `CustomerTypeData` in `Ressources/Customers/` added to
-  `PressureDirector.customer_types` (wants, budget, haggling, patience,
-  day / night weights, reputation or upgrade gates).
-- **Attackers:** an inherited scene of `Garden/Attacker.tscn` (see
-  `Junkie.tscn`): health, speed, armor, tower resistance, theft. Send it
-  from `PressureDirector`.
-- **Towers:** a scene extending `LaneDefender` (`Turret` for shooters) and a
-  `TowerData` in `Ressources/Towers/`, added to the level's `towers`.
+  `CustomerFlow.customer_types` in `Sales/SalesWindow.tscn`.
+- **Attackers (defense):** an inherited scene of `Garden/Attacker.tscn` (see
+  `Junkie.tscn`), sent by `AttackerDirector` in `Garden/FrontGarden.tscn`.
+- **Towers (defense):** a scene extending `LaneDefender` (`Turret` for
+  shooters) and a `TowerData` in `Ressources/Towers/`, added to
+  `FrontGarden.towers`.
 - **Upgrades:** an `UpgradeData` (`branch`, `required_reputation`, cost
-  curve) in `Ressources/Upgrades/`, listed in `game_config.tres → upgrades`
-  and read where it matters with `Operation.get_upgrade_value(id)` (add its
-  id to `Types.UPGRADE_*`). It shows up in the office and the Shop.
-- **Pressure and pacing:** exports on `PressureDirector`, `DayCycle` and
-  `Operation` in `House.tscn`.
-- Run `Tools/unit_tests.sh` and `Tools/smoke_test.sh` afterwards.
+  curve) in your area's `Ressources/Upgrades/<Area>/`, added to that
+  folder's catalog (`<area>_upgrades.tres`); its id goes into your area's
+  block in `Types`. Read it with `operation.get_upgrade_value(id)`. It shows
+  up in the office and the Shop.
+- **Pacing:** exports on `AttackerDirector` (defense), `CustomerFlow`
+  (customers), `DayCycle` and `Operation` (house).
+- Add checks for your change to your area's file in `Tests/Smoke/`, then
+  run `Tools/unit_tests.sh` and `Tools/smoke_test.sh`.
 
 ## 4. Art, fonts, audio
 
@@ -117,7 +124,7 @@ All in `game_config.tres`:
 | What | Where |
 |---|---|
 | Currencies + starting amounts | `currencies` |
-| Shop upgrades (cost curve, max level, value per level) | `upgrades` (`show_in_shop = false` for in-level upgrades) |
+| Shop upgrades (cost curve, max level, value per level) | one catalog per area in `Ressources/Upgrades/<Area>/`, listed in `upgrade_catalogs` (`show_in_shop = false` hides one from the 2D Shop) |
 | Level rewards (first clear + every clear) | each `LevelData` |
 | Achievements (stat id + target + reward) | `achievements` |
 | 7-day login streak | `daily_rewards` |

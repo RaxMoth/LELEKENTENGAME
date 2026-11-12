@@ -222,7 +222,7 @@ count_label…), `RayMath`, `LaneGrid`, `PlaceholderMesh3D` & `BlobShadow3D`
 ## Data resources (`Scripts/Resources/`)
 
 `GameConfig`, `LevelData`, `CurrencyData`, `UpgradeData` (with `branch` and
-`required_reputation`), `ProductData` (in-app products), `AchievementData`,
+`required_reputation`), `UpgradeCatalog` (one per area), `ProductData` (in-app products), `AchievementData`,
 `RewardBundle`, `WaveData`/`WaveEntry`, and the game's own: `IngredientData`,
 `RecipeData`, `CustomerTypeData`, `TowerData`.
 
@@ -239,12 +239,22 @@ clock.advance(delta) / get_hour() / get_phase() / just_passed_hour(25.0, delta)
 
 ## The House (`Scenes/Levels/House/`)
 
+Three areas — defense (`FrontGarden`), customers (`SalesWindow`) and the house
+(`Lab`, `Office`, the shift) — each a `HouseFront` scene that gets a
+`HouseContext` at setup and talks back only through signals; everything shared
+goes through `Operation`. See `Scenes/Levels/House/README.md`.
+
 ```gdscript
-operation.stash / heat / get_cash() / spend_cash(n, reason) / complete_sale(order, price)
-operation.get_upgrade_value(Types.UPGRADE_BATCH) / get_unlocked_recipes() / bribe()
-sales_window.spawn_customer(order) / get_front_customer() / sell_to_front() / accept_counter()
-director.spawn_customer() / spawn_attacker(scene) / start_raid(level) / start_boss_wave()
-board.place_tower(tower_data, cell) / spawn_enemy(scene) / pick_enemy(ray...)
+var garden: FrontGarden = house_level.get_front(FrontGarden) as FrontGarden
+context.operation.stash / heat / get_cash() / spend_cash(n, reason) / complete_sale(order, price)
+context.operation.get_upgrade_value(Types.UPGRADE_BATCH) / get_unlocked_recipes() / bribe()
+warning_requested.emit(tr("Police raid!"))     # from any front; score_earned / shift_lost likewise
+window.spawn_customer(order) / get_front_customer() / sell_to_front() / accept_counter()   # SalesWindow
+window.flow.spawn_customer() / is_active                                                   # CustomerFlow
+garden.try_build(cell) / fire_blaster(pointer) / board.spawn_enemy(scene)                  # FrontGarden
+garden.director.spawn_attacker(scene) / start_raid(level) / start_boss_wave() / is_active   # AttackerDirector
+lab.get_station(&"Cooker") / get_crate(&"glowcap")                                          # Lab
+GameConfig.get_default().get_upgrades() / find_upgrade(id)   # all area catalogs
 ```
 See [GAME.md](GAME.md) for the scene tree and the design.
 

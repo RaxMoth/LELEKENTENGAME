@@ -1,0 +1,63 @@
+[gd_scene format=3]
+
+[ext_resource type="PackedScene" path="res://Scenes/Levels/House/Lab/Grinder.tscn" id="grinder"]
+[ext_resource type="PackedScene" path="res://Scenes/Levels/House/Lab/Cooker.tscn" id="cooker"]
+[ext_resource type="PackedScene" path="res://Scenes/Levels/House/Lab/Press.tscn" id="press"]
+[ext_resource type="PackedScene" path="res://Scenes/Levels/House/Lab/IngredientCrate.tscn" id="crate"]
+[ext_resource type="PackedScene" path="res://Scenes/Levels/House/Workers/Worker.tscn" id="worker"]
+[ext_resource type="Script" path="res://Scripts/Resources/recipe_data.gd" id="recipe_script"]
+[ext_resource type="Resource" path="res://Ressources/Recipes/glow.tres" id="r_glow"]
+[ext_resource type="Resource" path="res://Ressources/Recipes/fizz.tres" id="r_fizz"]
+[ext_resource type="Resource" path="res://Ressources/Recipes/haze.tres" id="r_haze"]
+[ext_resource type="Resource" path="res://Ressources/Ingredients/glowcap.tres" id="i_glowcap"]
+[ext_resource type="Resource" path="res://Ressources/Ingredients/sugarsalt.tres" id="i_sugarsalt"]
+[ext_resource type="Resource" path="res://Ressources/Ingredients/fizzroot.tres" id="i_fizzroot"]
+[ext_resource type="Resource" path="res://Ressources/Ingredients/duskleaf.tres" id="i_duskleaf"]
+[ext_resource type="Script" path="res://Scenes/Levels/House/Lab/lab.gd" id="lab"]
+
+[node name="Lab" type="Node3D"]
+script = ExtResource("lab")
+recipes = Array[ExtResource("recipe_script")]([ExtResource("r_glow"), ExtResource("r_fizz"), ExtResource("r_haze")])
+
+[node name="Grinder" parent="." instance=ExtResource("grinder")]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.4, 0, -1.55)
+
+[node name="Cooker" parent="." instance=ExtResource("cooker")]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.0, 0, -1.55)
+
+[node name="Press" parent="." instance=ExtResource("press")]
+unique_name_in_owner = true
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, -3.0, 0, 1.55)
+
+[node name="CrateGlowcap" parent="." instance=ExtResource("crate")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.55, 0, -1.2)
+ingredient = ExtResource("i_glowcap")
+
+[node name="CrateSugarsalt" parent="." instance=ExtResource("crate")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.55, 0, -0.4)
+ingredient = ExtResource("i_sugarsalt")
+
+[node name="CrateFizzroot" parent="." instance=ExtResource("crate")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.55, 0, 0.4)
+ingredient = ExtResource("i_fizzroot")
+
+[node name="CrateDuskleaf" parent="." instance=ExtResource("crate")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.55, 0, 1.2)
+ingredient = ExtResource("i_duskleaf")
+
+[node name="Crafters" type="Node3D" parent="."]
+unique_name_in_owner = true
+
+[node name="CrafterA" parent="Crafters" instance=ExtResource("worker")]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, -1.5, 0, 1.2)
+role = 0
+slot = 1
+wage_per_hour = 14
+
+[node name="CrafterB" parent="Crafters" instance=ExtResource("worker")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.4, 0, -0.9)
+role = 0
+slot = 2
+wage_per_hour = 14

@@ -174,6 +174,14 @@ and announcer, override hooks (`_on_level_setup`, `_on_level_started`,
 `_level_physics_process`, ...) and call `add_score()`, `win()`, `lose()`,
 `end_run()`.
 
+### The House: fronts
+The House level is split into fronts (`FrontGarden`, `SalesWindow`, `Lab`,
+`Office`), each a `HouseFront` scene owned by one area. A front gets a
+`HouseContext` (level, rig, `Operation`, `DayCycle`) at setup, keeps its own
+nodes, data and logic, and reports back only through `HouseFront`'s signals.
+Fronts never reference each other; shared state goes through `Operation`.
+New area data goes into the area's own folders and upgrade catalog.
+
 ### Composition over inheritance
 - Entities are composed of components from `Scripts/Components/`
   (Health, HitFlash3D, WaveSpawner...) plus small scene-local scripts.

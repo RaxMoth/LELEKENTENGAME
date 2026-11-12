@@ -20,12 +20,14 @@ const GAUGE_LENGTH: float = 0.5
 const GAUGE_THICKNESS: float = 0.035
 
 @export var step: Types.CraftStep = Types.CraftStep.PROCESS
-@export var operation: Operation
 @export var station_name: String = "Station"
 ## Needle sweeps per second (the cooker uses the recipe's own).
 @export var sweeps_per_second: float = 0.6
 ## Width of the sweet zone before equipment upgrades (the cooker uses the recipe's).
 @export var zone_width: float = 0.22
+
+## The house's shared state (handed over by the Lab at setup).
+var operation: Operation = null
 
 var _gauge: TimingGauge = null
 var _active_recipe: RecipeData = null
@@ -49,13 +51,17 @@ func _ready() -> void:
 	_output.accept_rule = func(item: Grabbable) -> bool: return item.home_socket == _output
 	_output.item_removed.connect(func(_item: Grabbable) -> void: _try_start.call_deferred())
 	_stop_button.pressed.connect(_on_stop_pressed)
-	# A full stash holds the press back; start as soon as there is room again.
-	operation.stash_changed.connect(func() -> void: _try_start.call_deferred())
 	_build_gauge()
 
 # ============================================
 # PUBLIC API
 # ============================================
+
+## Called by the Lab at the start of a shift.
+func setup(house_operation: Operation) -> void:
+	operation = house_operation
+	# A full stash holds the press back; start as soon as there is room again.
+	operation.stash_changed.connect(func() -> void: _try_start.call_deferred())
 
 func get_input_sockets() -> Array[ItemSocket]:
 	var sockets: Array[ItemSocket] = []
@@ -119,7 +125,7 @@ func _on_running_state_processing(delta: float) -> void:
 # ============================================
 
 func _accepts_input(item: Grabbable) -> bool:
-	if is_running():
+	if is_running() or operation == null:
 		return false
 	match step:
 		Types.CraftStep.PROCESS:
@@ -141,6 +147,8 @@ func _accepts_input(item: Grabbable) -> bool:
 
 
 func _try_start() -> void:
+	if operation == null:
+		return
 	if is_running() or not _output.is_empty():
 		_update_idle_status()
 		return

@@ -17,8 +17,6 @@ signal sale_made(order: CustomerOrder, units: int, cash_earned: int)
 ## Cash paid for upkeep (ingredients, wages, repairs, bribes).
 signal cash_spent(amount: int, reason: String)
 
-## Every product the house can make, in unlock order.
-@export var recipes: Array[RecipeData] = []
 @export var base_stash_capacity: int = 30
 
 @export_group("Heat")
@@ -31,6 +29,8 @@ signal cash_spent(amount: int, reason: String)
 ## Heat a bribe removes.
 @export var bribe_heat_reduction: float = 40.0
 
+## Every product the house can make, in unlock order (registered by the Lab).
+var recipes: Array[RecipeData] = []
 var stash: Stash = Stash.new()
 var heat: HeatMeter = null
 ## This shift's totals (score, results).

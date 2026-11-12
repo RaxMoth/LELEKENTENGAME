@@ -24,7 +24,7 @@ func _rebuild() -> void:
 	var config: GameConfig = GameConfig.get_default()
 	for branch: StringName in UpgradeData.BRANCHES:
 		var branch_upgrades: Array[UpgradeData] = []
-		for upgrade: UpgradeData in config.upgrades:
+		for upgrade: UpgradeData in config.get_upgrades():
 			if upgrade.show_in_shop and upgrade.branch == branch:
 				branch_upgrades.append(upgrade)
 		if branch_upgrades.is_empty():

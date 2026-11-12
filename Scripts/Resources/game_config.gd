@@ -24,7 +24,9 @@ static var _default_instance: GameConfig = null
 
 @export_group("Economy")
 @export var currencies: Array[CurrencyData] = []
-@export var upgrades: Array[UpgradeData] = []
+## One catalog per area (lab, sales, defense, house); each area edits only
+## its own catalog file. Read them all with get_upgrades().
+@export var upgrade_catalogs: Array[UpgradeCatalog] = []
 @export var products: Array[ProductData] = []
 
 @export_group("Progression")
@@ -102,8 +104,17 @@ func find_currency(currency_id: StringName) -> CurrencyData:
 	return null
 
 
+## Every upgrade of every catalog, in catalog order.
+func get_upgrades() -> Array[UpgradeData]:
+	var all_upgrades: Array[UpgradeData] = []
+	for catalog: UpgradeCatalog in upgrade_catalogs:
+		if catalog != null:
+			all_upgrades.append_array(catalog.upgrades)
+	return all_upgrades
+
+
 func find_upgrade(upgrade_id: StringName) -> UpgradeData:
-	for upgrade: UpgradeData in upgrades:
+	for upgrade: UpgradeData in get_upgrades():
 		if upgrade.id == upgrade_id:
 			return upgrade
 	return null

@@ -34,6 +34,11 @@
   `/new-popup <Name>`. Review before committing with the `godot-reviewer` agent.
 - Scene/resource file rules load from `.claude/rules/godot-scene-files.md`
   when you touch `.tscn`/`.tres` files.
+- The game is split into three areas that two people develop in parallel:
+  defense (`Scenes/Levels/House/Garden/`), customers (`.../Sales/`) and the
+  house (`.../Lab/`, `.../Office/`, the level). Stay inside the area you were
+  asked to work on; the contract between areas is in
+  `Scenes/Levels/House/README.md`.
 - The `godot` MCP server (`.mcp.json`) gives GDScript diagnostics from the
   running editor's language server (`get_diagnostics`,
   `scan_workspace_diagnostics`) and its console output. It needs the Godot

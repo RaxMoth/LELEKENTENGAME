@@ -3,8 +3,7 @@
 ## station running in the lab, a stocked stash and hired crew.
 ## Loaded by Tests/screenshot_tool.gd with `showcase=house`.
 ##
-## Dependencies: the House level (Operation, LaneBoard, SalesWindow,
-##               PressureDirector, Workstation, IngredientCrate)
+## Dependencies: HouseLevel and its fronts (FrontGarden, SalesWindow, Lab)
 extends RefCounted
 
 const JUNKIE: PackedScene = preload("res://Scenes/Levels/House/Garden/Junkie.tscn")
@@ -18,17 +17,20 @@ const CUSTOMER_TYPES: Array[String] = ["regular", "connoisseur", "haggler", "bul
 
 
 static func apply(scene: Node) -> void:
-	var level: LevelBase = scene as LevelBase
-	var operation: Operation = level.get_node("%Operation") as Operation
-	var board: LaneBoard = level.get_node("%LaneBoard") as LaneBoard
-	var sales_window: SalesWindow = level.get_node("%SalesWindow") as SalesWindow
-	(level.get_node("%PressureDirector") as PressureDirector).is_active = false
+	var level: HouseLevel = scene as HouseLevel
+	var operation: Operation = level.operation
+	var garden: FrontGarden = level.get_front(FrontGarden) as FrontGarden
+	var window: SalesWindow = level.get_front(SalesWindow) as SalesWindow
+	var lab: Lab = level.get_front(Lab) as Lab
+	var board: LaneBoard = garden.board
+	garden.director.is_active = false
+	window.flow.is_active = false
 	Profile.wallet.add(Types.CURRENCY_CASH, 4000)
 	Profile.operation.add_reputation(60)
 	var config: GameConfig = GameConfig.get_default()
 	for upgrade_id: StringName in [Types.UPGRADE_CRAFTER, Types.UPGRADE_DEALER, Types.UPGRADE_GUARD, Types.UPGRADE_GUARD, Types.UPGRADE_HEAVY_GUN, Types.UPGRADE_RECIPE_FIZZ]:
 		Profile.upgrades.purchase(config.find_upgrade(upgrade_id))
-	level.call("apply_upgrades")
+	level.apply_upgrades()
 	for lane: int in board.lane_count:
 		board.place_tower(TURRET, Vector2i(lane, 0))
 	board.place_tower(HEAVY_GUN, Vector2i(1, 1))
@@ -46,7 +48,5 @@ static func apply(scene: Node) -> void:
 	random.seed = 11
 	for type_name: String in CUSTOMER_TYPES:
 		var customer_type: CustomerTypeData = load("res://Ressources/Customers/%s.tres" % type_name) as CustomerTypeData
-		sales_window.spawn_customer(customer_type.create_order(recipes, random))
-	var grinder: Workstation = level.get_node("%Grinder") as Workstation
-	var crate: IngredientCrate = level.get_node("World/Stage/Lab/CrateGlowcap") as IngredientCrate
-	grinder.get_input_sockets()[0].insert(crate.take_item())
+		window.spawn_customer(customer_type.create_order(recipes, random))
+	lab.get_station(&"Grinder").get_input_sockets()[0].insert(lab.get_crate(&"glowcap").take_item())
