@@ -44,3 +44,19 @@ func test_walking_into_a_blocker_slides_around_it() -> void:
 	# Heading straight at the trunk: stopped there, sideways part kept.
 	assert_vector(WalkableArea.resolve_move(garden, Vector2(5.0, 3.6), Vector2(5.0, 4.0), tree)).is_equal(Vector2(5.0, 3.6))
 	assert_vector(WalkableArea.resolve_move(garden, Vector2(5.0, 3.6), Vector2(5.2, 3.9), tree)).is_equal(Vector2(5.2, 3.6))
+
+
+func test_rectangular_blockers_keep_the_player_out() -> void:
+	var town: Array[Rect2] = [Rect2(0.0, 0.0, 20.0, 20.0)]
+	var building: Array[Rect2] = [Rect2(5.0, 5.0, 4.0, 4.0)]
+	assert_bool(WalkableArea.contains_point(town, Vector2(7.0, 7.0), [], building)).is_false()
+	# The body keeps its width from the wall too.
+	assert_bool(WalkableArea.contains_point(town, Vector2(9.1, 7.0), [], building)).is_false()
+	assert_bool(WalkableArea.contains_point(town, Vector2(9.5, 7.0), [], building)).is_true()
+
+
+func test_walking_into_a_wall_slides_along_it() -> void:
+	var town: Array[Rect2] = [Rect2(0.0, 0.0, 20.0, 20.0)]
+	var building: Array[Rect2] = [Rect2(5.0, 5.0, 4.0, 4.0)]
+	# Diagonally into the west wall: the move along the wall is kept.
+	assert_vector(WalkableArea.resolve_move(town, Vector2(4.6, 6.0), Vector2(4.9, 6.4), [], building)).is_equal(Vector2(4.6, 6.4))

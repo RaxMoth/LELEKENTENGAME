@@ -1,6 +1,7 @@
 [gd_resource type="Resource" script_class="CustomerTypeData" format=3]
 
 [ext_resource type="Script" path="res://Scripts/Resources/customer_type_data.gd" id="script"]
+[ext_resource type="Resource" path="res://Ressources/Voices/influencerin.tres" id="voice"]
 
 [resource]
 script = ExtResource("script")
@@ -17,3 +18,4 @@ dealer_can_serve = false
 day_weight = 0.0
 night_weight = 1.2
 required_upgrade_id = &"sales_vip"
+voice = ExtResource("voice")

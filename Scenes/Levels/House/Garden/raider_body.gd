@@ -1,4 +1,5 @@
-## The body of a raider: hips, torso with vest, head with balaclava, visor
+## The body of a raider (or, as a civilian, of a customer or a passer-by):
+## hips, torso with vest, head with balaclava, visor
 ## and cap or helmet, arms with elbows, legs with knees and boots, and what
 ## it carries (pistol, rifle, riot shield or a share of a battering ram).
 ## Built from a few exports at load and animated procedurally — a walk cycle
@@ -15,8 +16,8 @@
 class_name RaiderBody
 extends Node3D
 
-enum Headgear { CAP, HELMET }
-enum Carry { PISTOL, RIFLE, SHIELD, RAM }
+enum Headgear { CAP, HELMET, HAIR, BEANIE }
+enum Carry { PISTOL, RIFLE, SHIELD, RAM, EMPTY_HANDS }
 
 const HIP_HEIGHT: float = 0.95
 const CROUCH_HIP_HEIGHT: float = 0.66
@@ -45,6 +46,34 @@ const STRIDES_PER_METER: float = 0.85
 @export var carry: Carry = Carry.RIFLE:
 	set(value):
 		carry = value
+		_queue_rebuild()
+
+@export_group("Civilian")
+## A person in the street or a customer instead of an officer: no vest or
+## visor — a face with eyes, a jacket (uniform_color) and trousers.
+@export var is_civilian: bool = false:
+	set(value):
+		is_civilian = value
+		_queue_rebuild()
+@export var skin_color: Color = Palette.BACKGROUND_RAISED:
+	set(value):
+		skin_color = value
+		_queue_rebuild()
+## Trousers (transparent = the same as uniform_color).
+@export var legs_color: Color = Color(0.0, 0.0, 0.0, 0.0):
+	set(value):
+		legs_color = value
+		_queue_rebuild()
+## Hair, or the beanie's color.
+@export var hair_color: Color = Palette.BACKGROUND:
+	set(value):
+		hair_color = value
+		_queue_rebuild()
+## Body parts farther from the camera than this (meters) are not drawn
+## (0 = always): crowds in a big town stay cheap.
+@export var visibility_meters: float = 0.0:
+	set(value):
+		visibility_meters = value
 		_queue_rebuild()
 
 var _hips: Node3D = null
@@ -174,23 +203,38 @@ func rebuild() -> void:
 	_elbows.clear()
 	_thighs.clear()
 	_knees.clear()
-	var skin: Color = Palette.BACKGROUND_RAISED
+	var skin: Color = skin_color
+	var legs: Color = uniform_color if legs_color.a <= 0.0 else legs_color
 	_hips = _joint(self, Vector3(0.0, HIP_HEIGHT, 0.0))
-	_part(_hips, Vector3(0.0, 0.0, 0.0), PlaceholderMesh3D.ShapeKind.BOX, Vector3(0.36, 0.16, 0.22), uniform_color)
+	_part(_hips, Vector3(0.0, 0.0, 0.0), PlaceholderMesh3D.ShapeKind.BOX, Vector3(0.36, 0.16, 0.22), legs)
 	_torso = _joint(_hips, Vector3(0.0, 0.08, 0.0))
 	_part(_torso, Vector3(0.0, 0.25, 0.0), PlaceholderMesh3D.ShapeKind.BOX, Vector3(0.4, 0.46, 0.22), uniform_color)
-	_part(_torso, Vector3(0.0, 0.25, 0.005), PlaceholderMesh3D.ShapeKind.BOX, Vector3(0.43, 0.36, 0.26), vest_color)
-	# The reflective band across the vest.
-	_part(_torso, Vector3(0.0, 0.33, 0.133), PlaceholderMesh3D.ShapeKind.BOX, Vector3(0.42, 0.035, 0.01), accent_color, 0.5)
+	if is_civilian:
+		# An open jacket over a shirt.
+		_part(_torso, Vector3(0.0, 0.27, 0.112), PlaceholderMesh3D.ShapeKind.BOX, Vector3(0.14, 0.4, 0.01), vest_color)
+	else:
+		_part(_torso, Vector3(0.0, 0.25, 0.005), PlaceholderMesh3D.ShapeKind.BOX, Vector3(0.43, 0.36, 0.26), vest_color)
+		# The reflective band across the vest.
+		_part(_torso, Vector3(0.0, 0.33, 0.133), PlaceholderMesh3D.ShapeKind.BOX, Vector3(0.42, 0.035, 0.01), accent_color, 0.5)
 	_part(_torso, Vector3(0.0, 0.5, 0.0), PlaceholderMesh3D.ShapeKind.CYLINDER, Vector3(0.1, 0.06, 0.1), skin)
 	_head = _joint(_torso, Vector3(0.0, 0.62, 0.01))
 	_part(_head, Vector3.ZERO, PlaceholderMesh3D.ShapeKind.SPHERE, Vector3(0.22, 0.25, 0.23), skin)
-	# Visor / eye slit: the one thing that glows, so raiders read at night.
-	_part(_head, Vector3(0.0, 0.02, 0.105), PlaceholderMesh3D.ShapeKind.BOX, Vector3(0.15, 0.035, 0.02), accent_color, 0.9)
+	if is_civilian:
+		for eye_side: float in [-1.0, 1.0]:
+			_part(_head, Vector3(0.045 * eye_side, 0.025, 0.104), PlaceholderMesh3D.ShapeKind.BOX, Vector3(0.03, 0.02, 0.01), Palette.BACKGROUND)
+		_part(_head, Vector3(0.0, -0.01, 0.112), PlaceholderMesh3D.ShapeKind.BOX, Vector3(0.025, 0.04, 0.02), skin.darkened(0.08))
+	else:
+		# Visor / eye slit: the one thing that glows, so raiders read at night.
+		_part(_head, Vector3(0.0, 0.02, 0.105), PlaceholderMesh3D.ShapeKind.BOX, Vector3(0.15, 0.035, 0.02), accent_color, 0.9)
 	match headgear:
 		Headgear.HELMET:
 			_part(_head, Vector3(0.0, 0.07, -0.01), PlaceholderMesh3D.ShapeKind.SPHERE, Vector3(0.27, 0.2, 0.28), vest_color)
 			_part(_head, Vector3(0.0, 0.0, -0.13), PlaceholderMesh3D.ShapeKind.BOX, Vector3(0.22, 0.1, 0.04), vest_color)
+		Headgear.HAIR:
+			_part(_head, Vector3(0.0, 0.055, -0.015), PlaceholderMesh3D.ShapeKind.SPHERE, Vector3(0.235, 0.18, 0.24), hair_color)
+		Headgear.BEANIE:
+			_part(_head, Vector3(0.0, 0.07, -0.005), PlaceholderMesh3D.ShapeKind.SPHERE, Vector3(0.245, 0.17, 0.245), hair_color)
+			_part(_head, Vector3(0.0, 0.03, 0.0), PlaceholderMesh3D.ShapeKind.CYLINDER, Vector3(0.25, 0.05, 0.25), hair_color.lightened(0.1))
 		_:
 			_part(_head, Vector3(0.0, 0.1, 0.0), PlaceholderMesh3D.ShapeKind.CYLINDER, Vector3(0.24, 0.08, 0.24), Palette.BACKGROUND)
 			_part(_head, Vector3(0.0, 0.07, 0.13), PlaceholderMesh3D.ShapeKind.BOX, Vector3(0.2, 0.015, 0.09), Palette.BACKGROUND)
@@ -200,13 +244,13 @@ func rebuild() -> void:
 		_part(shoulder, Vector3(0.0, -0.14, 0.0), PlaceholderMesh3D.ShapeKind.CAPSULE, Vector3(0.11, 0.32, 0.11), uniform_color)
 		var elbow: Node3D = _joint(shoulder, Vector3(0.0, -0.29, 0.0))
 		_part(elbow, Vector3(0.0, -0.13, 0.0), PlaceholderMesh3D.ShapeKind.CAPSULE, Vector3(0.095, 0.28, 0.095), uniform_color)
-		_part(elbow, Vector3(0.0, -0.29, 0.0), PlaceholderMesh3D.ShapeKind.SPHERE, Vector3(0.085, 0.1, 0.085), Palette.BACKGROUND)
+		_part(elbow, Vector3(0.0, -0.29, 0.0), PlaceholderMesh3D.ShapeKind.SPHERE, Vector3(0.085, 0.1, 0.085), skin if is_civilian else Palette.BACKGROUND)
 		_shoulders.append(shoulder)
 		_elbows.append(elbow)
 		var thigh: Node3D = _joint(_hips, Vector3(0.1 * direction, -0.04, 0.0))
-		_part(thigh, Vector3(0.0, -0.22, 0.0), PlaceholderMesh3D.ShapeKind.CAPSULE, Vector3(0.15, 0.46, 0.15), uniform_color)
+		_part(thigh, Vector3(0.0, -0.22, 0.0), PlaceholderMesh3D.ShapeKind.CAPSULE, Vector3(0.15, 0.46, 0.15), legs)
 		var knee: Node3D = _joint(thigh, Vector3(0.0, -0.44, 0.0))
-		_part(knee, Vector3(0.0, -0.2, 0.0), PlaceholderMesh3D.ShapeKind.CAPSULE, Vector3(0.12, 0.42, 0.12), uniform_color)
+		_part(knee, Vector3(0.0, -0.2, 0.0), PlaceholderMesh3D.ShapeKind.CAPSULE, Vector3(0.12, 0.42, 0.12), legs)
 		_part(knee, Vector3(0.0, -0.44, 0.04), PlaceholderMesh3D.ShapeKind.BOX, Vector3(0.12, 0.09, 0.24), Palette.BACKGROUND)
 		_thighs.append(thigh)
 		_knees.append(knee)
@@ -250,5 +294,6 @@ func _part(parent: Node3D, local_position: Vector3, shape: PlaceholderMesh3D.Sha
 	part.color = color
 	part.glow = glow
 	part.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	part.visibility_range_end = visibility_meters
 	part.position = local_position
 	parent.add_child(part)

@@ -193,6 +193,9 @@ const EVENT_DOOR_UNLOCKED: StringName = &"door_unlocked"
 const EVENT_WALK: StringName = &"walk"
 const EVENT_ARRIVED: StringName = &"arrived"
 const EVENT_LEAVE: StringName = &"leave"
+## A person in the street stops to talk with the player (Town/Pedestrian.tscn;
+## EVENT_WALK sends them on, EVENT_ARRIVED pauses them at a corner).
+const EVENT_TALK: StringName = &"talk"
 
 # --- Lab: workstations (Lab/Workstation.tscn) ---
 ## A station has its inputs and starts / finishes its timing step.

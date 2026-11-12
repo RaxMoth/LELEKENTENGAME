@@ -1,0 +1,45 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://Scenes/Levels/House/Town/town.gd" id="town"]
+[ext_resource type="Resource" path="res://Ressources/Town/town.tres" id="town_data"]
+[ext_resource type="Material" path="res://Assets/Materials/town_wall_brick.tres" id="brick"]
+[ext_resource type="Material" path="res://Assets/Materials/town_wall_plaster.tres" id="plaster"]
+[ext_resource type="Material" path="res://Assets/Materials/town_wall_concrete.tres" id="concrete"]
+[ext_resource type="Material" path="res://Assets/Materials/town_roof.tres" id="roof"]
+[ext_resource type="Material" path="res://Assets/Materials/town_sidewalk.tres" id="sidewalk"]
+[ext_resource type="Material" path="res://Assets/Materials/town_asphalt.tres" id="asphalt"]
+[ext_resource type="Material" path="res://Assets/Materials/ground_lawn.tres" id="lawn"]
+[ext_resource type="ArrayMesh" path="res://Assets/Models/Trees/IslandTree01/IslandTree01_Impostor.tres" id="tree_a_mesh"]
+[ext_resource type="Material" path="res://Assets/Models/Trees/IslandTree01/IslandTree01_Material.tres" id="tree_a_material"]
+[ext_resource type="ArrayMesh" path="res://Assets/Models/Trees/IslandTree02/IslandTree02_Impostor.tres" id="tree_b_mesh"]
+[ext_resource type="Material" path="res://Assets/Models/Trees/IslandTree02/IslandTree02_Material.tres" id="tree_b_material"]
+[ext_resource type="ArrayMesh" path="res://Assets/Models/Trees/SmallTree02/SmallTree02_Impostor.tres" id="tree_c_mesh"]
+[ext_resource type="Material" path="res://Assets/Models/Trees/SmallTree02/SmallTree02_Material.tres" id="tree_c_material"]
+[ext_resource type="Script" path="res://Scripts/XR/world_screen.gd" id="world_screen"]
+[ext_resource type="PackedScene" path="res://Scenes/Levels/House/Town/DialogueBoard.tscn" id="dialogue_board"]
+
+[node name="Town" type="Node3D"]
+script = ExtResource("town")
+town_data = ExtResource("town_data")
+brick_material = ExtResource("brick")
+plaster_material = ExtResource("plaster")
+concrete_material = ExtResource("concrete")
+roof_material = ExtResource("roof")
+sidewalk_material = ExtResource("sidewalk")
+asphalt_material = ExtResource("asphalt")
+lawn_material = ExtResource("lawn")
+tree_meshes = Array[Mesh]([ExtResource("tree_a_mesh"), ExtResource("tree_b_mesh"), ExtResource("tree_c_mesh")])
+tree_materials = Array[Material]([ExtResource("tree_a_material"), ExtResource("tree_b_material"), ExtResource("tree_c_material")])
+
+[node name="Visuals" type="Node3D" parent="."]
+unique_name_in_owner = true
+
+[node name="People" type="Node3D" parent="."]
+unique_name_in_owner = true
+
+[node name="DialogueScreen" type="Node3D" parent="."]
+unique_name_in_owner = true
+script = ExtResource("world_screen")
+content_scene = ExtResource("dialogue_board")
+resolution = Vector2i(720, 560)
+width_meters = 0.7

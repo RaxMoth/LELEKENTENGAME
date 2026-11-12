@@ -9,7 +9,7 @@
 ##
 ## Dependencies: HouseFront, Customer, CustomerFlow, CustomerOrder, SalesBoard,
 ##               Operation, SalesMath, QualityMath, WorldScreen, FloatingText3D,
-##               Pools, Profile, Audio, Types autoloads, Palette, SfxSynth
+##               VoiceLineData, Pools, Profile, Audio, Types autoloads, Palette, SfxSynth
 class_name SalesWindow
 extends HouseFront
 
@@ -18,6 +18,8 @@ signal sale_completed(order: CustomerOrder, cash_earned: int)
 signal customer_lost(customer: Customer)
 
 const CUSTOMER_SCENE: PackedScene = preload("res://Scenes/Levels/House/Sales/Customer.tscn")
+## Share of patience left when the customer at the window starts complaining.
+const IMPATIENT_RATIO: float = 0.3
 
 ## Customers that can wait at once before upgrades.
 @export var base_capacity: int = 3
@@ -61,6 +63,12 @@ func _shift_process(delta: float) -> void:
 	var front: Customer = get_front_customer()
 	if front != null:
 		_board.set_patience(front.get_patience_ratio())
+		# Whoever reaches the window (first in line or moved up) says hello once.
+		front.greet_and_order()
+		# Running out of patience: they say so (once).
+		if front.get_patience_ratio() < IMPATIENT_RATIO and not front.has_complained:
+			front.has_complained = true
+			front.say(VoiceLineData.IMPATIENT)
 
 
 func _refresh_displays() -> void:
@@ -152,9 +160,11 @@ func sell_to_front() -> SalesMath.Verdict:
 			_complete(front, asked_price)
 		SalesMath.Verdict.COUNTER:
 			_counter_offer = front.order.get_max_unit_price(tier)
+			front.say(VoiceLineData.HAGGLE)
 			Audio.play_ui(Audio.UI_CLICK)
 			_refresh_board()
 		SalesMath.Verdict.REFUSE:
+			front.say(VoiceLineData.ANGRY)
 			FloatingText3D.spawn(tr("Too expensive"), front.global_position + Vector3(0.0, 2.4, 0.0), Palette.DANGER, Global.get_world_root())
 			_lose(front)
 	return verdict
@@ -172,6 +182,7 @@ func accept_counter() -> void:
 func decline_front() -> void:
 	var front: Customer = get_front_customer()
 	if front != null:
+		front.say(VoiceLineData.SENT_AWAY)
 		_lose(front)
 
 
@@ -193,6 +204,7 @@ func _complete(customer: Customer, unit_price: int) -> void:
 		return
 	FloatingText3D.spawn("+$%d" % cash_earned, global_position + Vector3(0.0, 1.9, 0.2), Palette.SUCCESS, Global.get_world_root())
 	Audio.play_sfx_at(SfxSynth.get_preset(&"coin"), global_position + Vector3(0.0, 1.2, 0.0), 0.05)
+	customer.say(VoiceLineData.HAPPY)
 	sale_completed.emit(customer.order, cash_earned)
 	_remove(customer, true)
 
@@ -238,6 +250,8 @@ func _on_customer_arrived(customer: Customer) -> void:
 
 func _on_customer_patience_ran_out(customer: Customer) -> void:
 	if _queue.has(customer) and not customer.is_leaving:
+		if not customer.has_complained:
+			customer.say(VoiceLineData.IMPATIENT)
 		FloatingText3D.spawn(tr("Too slow"), customer.global_position + Vector3(0.0, 2.4, 0.0), Palette.DANGER, Global.get_world_root())
 		_lose(customer)
 

@@ -1,0 +1,151 @@
+[gd_resource type="Resource" script_class="VoiceData" format=3]
+
+[ext_resource type="Script" path="res://Scripts/Resources/voice_data.gd" id="voice_script"]
+[ext_resource type="Script" path="res://Scripts/Resources/voice_line_data.gd" id="line_script"]
+[ext_resource type="AudioStream" path="res://Assets/Audio/Voices/polizist/raid_01.wav" id="stream_0"]
+[ext_resource type="AudioStream" path="res://Assets/Audio/Voices/polizist/raid_02.wav" id="stream_1"]
+[ext_resource type="AudioStream" path="res://Assets/Audio/Voices/polizist/raid_03.wav" id="stream_2"]
+[ext_resource type="AudioStream" path="res://Assets/Audio/Voices/polizist/raid_04.wav" id="stream_3"]
+[ext_resource type="AudioStream" path="res://Assets/Audio/Voices/polizist/advance_01.wav" id="stream_4"]
+[ext_resource type="AudioStream" path="res://Assets/Audio/Voices/polizist/advance_02.wav" id="stream_5"]
+[ext_resource type="AudioStream" path="res://Assets/Audio/Voices/polizist/advance_03.wav" id="stream_6"]
+[ext_resource type="AudioStream" path="res://Assets/Audio/Voices/polizist/cover_01.wav" id="stream_7"]
+[ext_resource type="AudioStream" path="res://Assets/Audio/Voices/polizist/cover_02.wav" id="stream_8"]
+[ext_resource type="AudioStream" path="res://Assets/Audio/Voices/polizist/cover_03.wav" id="stream_9"]
+[ext_resource type="AudioStream" path="res://Assets/Audio/Voices/polizist/hit_01.wav" id="stream_10"]
+[ext_resource type="AudioStream" path="res://Assets/Audio/Voices/polizist/hit_02.wav" id="stream_11"]
+[ext_resource type="AudioStream" path="res://Assets/Audio/Voices/polizist/hit_03.wav" id="stream_12"]
+[ext_resource type="AudioStream" path="res://Assets/Audio/Voices/polizist/down_01.wav" id="stream_13"]
+[ext_resource type="AudioStream" path="res://Assets/Audio/Voices/polizist/down_02.wav" id="stream_14"]
+[ext_resource type="AudioStream" path="res://Assets/Audio/Voices/polizist/down_03.wav" id="stream_15"]
+[ext_resource type="AudioStream" path="res://Assets/Audio/Voices/polizist/down_04.wav" id="stream_16"]
+[ext_resource type="AudioStream" path="res://Assets/Audio/Voices/polizist/ram_01.wav" id="stream_17"]
+[ext_resource type="AudioStream" path="res://Assets/Audio/Voices/polizist/ram_02.wav" id="stream_18"]
+[ext_resource type="AudioStream" path="res://Assets/Audio/Voices/polizist/ram_03.wav" id="stream_19"]
+
+[sub_resource type="Resource" id="line_0"]
+script = ExtResource("line_script")
+category = &"raid"
+text = "Polizei! Aufmachen, sofort!"
+stream = ExtResource("stream_0")
+
+[sub_resource type="Resource" id="line_1"]
+script = ExtResource("line_script")
+category = &"raid"
+text = "Hier spricht die Polizei. Das Haus ist umstellt!"
+stream = ExtResource("stream_1")
+
+[sub_resource type="Resource" id="line_2"]
+script = ExtResource("line_script")
+category = &"raid"
+text = "Zugriff, Zugriff, Zugriff!"
+stream = ExtResource("stream_2")
+
+[sub_resource type="Resource" id="line_3"]
+script = ExtResource("line_script")
+category = &"raid"
+text = "Wir haben einen Durchsuchungsbefehl. Und Hunger."
+stream = ExtResource("stream_3")
+
+[sub_resource type="Resource" id="line_4"]
+script = ExtResource("line_script")
+category = &"advance"
+text = "Vorrücken, Leute!"
+stream = ExtResource("stream_4")
+
+[sub_resource type="Resource" id="line_5"]
+script = ExtResource("line_script")
+category = &"advance"
+text = "Los, los, los!"
+stream = ExtResource("stream_5")
+
+[sub_resource type="Resource" id="line_6"]
+script = ExtResource("line_script")
+category = &"advance"
+text = "Ich geh vor, ihr deckt mich. Oder so."
+stream = ExtResource("stream_6")
+
+[sub_resource type="Resource" id="line_7"]
+script = ExtResource("line_script")
+category = &"cover"
+text = "Deckung!"
+stream = ExtResource("stream_7")
+
+[sub_resource type="Resource" id="line_8"]
+script = ExtResource("line_script")
+category = &"cover"
+text = "Der schießt ja wirklich!"
+stream = ExtResource("stream_8")
+
+[sub_resource type="Resource" id="line_9"]
+script = ExtResource("line_script")
+category = &"cover"
+text = "Ich bin zu alt für diesen Mist."
+stream = ExtResource("stream_9")
+
+[sub_resource type="Resource" id="line_10"]
+script = ExtResource("line_script")
+category = &"hit"
+text = "Au! Das gibt eine Anzeige!"
+stream = ExtResource("stream_10")
+
+[sub_resource type="Resource" id="line_11"]
+script = ExtResource("line_script")
+category = &"hit"
+text = "Mein Knie! Ich hatte doch Urlaub beantragt!"
+stream = ExtResource("stream_11")
+
+[sub_resource type="Resource" id="line_12"]
+script = ExtResource("line_script")
+category = &"hit"
+text = "Autsch! Dafür gibt's ein Formular!"
+stream = ExtResource("stream_12")
+
+[sub_resource type="Resource" id="line_13"]
+script = ExtResource("line_script")
+category = &"down"
+text = "Sagt meiner Frau, die Spülmaschine ist noch voll."
+stream = ExtResource("stream_13")
+
+[sub_resource type="Resource" id="line_14"]
+script = ExtResource("line_script")
+category = &"down"
+text = "Ich hab Rücken."
+stream = ExtResource("stream_14")
+
+[sub_resource type="Resource" id="line_15"]
+script = ExtResource("line_script")
+category = &"down"
+text = "Das war's mit dem Feierabendbier."
+stream = ExtResource("stream_15")
+
+[sub_resource type="Resource" id="line_16"]
+script = ExtResource("line_script")
+category = &"down"
+text = "Ich will zu meiner Mama."
+stream = ExtResource("stream_16")
+
+[sub_resource type="Resource" id="line_17"]
+script = ExtResource("line_script")
+category = &"ram"
+text = "Ramme nach vorne!"
+stream = ExtResource("stream_17")
+
+[sub_resource type="Resource" id="line_18"]
+script = ExtResource("line_script")
+category = &"ram"
+text = "Klopf, klopf! Wer ist da? Die Ramme!"
+stream = ExtResource("stream_18")
+
+[sub_resource type="Resource" id="line_19"]
+script = ExtResource("line_script")
+category = &"ram"
+text = "Eins, zwei, und rein!"
+stream = ExtResource("stream_19")
+
+[resource]
+script = ExtResource("voice_script")
+id = &"polizist"
+display_name = "Polizist"
+volume_db = 3
+lines = Array[ExtResource("line_script")]([SubResource("line_0"), SubResource("line_1"), SubResource("line_2"), SubResource("line_3"), SubResource("line_4"), SubResource("line_5"), SubResource("line_6"), SubResource("line_7"), SubResource("line_8"), SubResource("line_9"), SubResource("line_10"), SubResource("line_11"), SubResource("line_12"), SubResource("line_13"), SubResource("line_14"), SubResource("line_15"), SubResource("line_16"), SubResource("line_17"), SubResource("line_18"), SubResource("line_19")])

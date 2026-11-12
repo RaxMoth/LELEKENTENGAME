@@ -38,6 +38,10 @@ func step(delta: float) -> void:
 	# During a police raid nobody comes to buy (HouseCycle).
 	if not is_active or _context == null or not _context.allows_customers():
 		return
+	# Someone talked into it in the street comes first (Town, via Operation).
+	if _context.operation.referred_customers > 0 and _window.has_room():
+		if spawn_customer() != null:
+			_context.operation.take_referred_customer()
 	_seconds_until_customer -= delta
 	if _seconds_until_customer <= 0.0:
 		_seconds_until_customer = _get_interval()
