@@ -1,9 +1,12 @@
 ## Smoke checks of the house itself: walking and travel, the office (buying
-## upgrades, bribes, reputation gates), crew wages and strikes, controller
-## mapping, popups on the in-world screen, nightfall and losing the shift.
+## upgrades, bribes, reputation gates), how upgrades change the house's look
+## (renovations, door straps, steel frame, stash shelves), crew wages and
+## strikes, controller mapping, popups on the in-world screen, nightfall and
+## losing the shift.
 ## Owned by whoever works on the house (level, office, crew, XR).
 ##
-## Dependencies: SmokeTest, HouseLevel, Office, FrontGarden, Worker, DayCycle
+## Dependencies: SmokeTest, HouseLevel, Office, FrontGarden, Worker, DayCycle,
+##               HouseShell, ShellRenovation, UpgradeLook
 class_name HouseSmokeChecks
 extends RefCounted
 
@@ -30,6 +33,7 @@ static func run_start(test: SmokeTest, level: HouseLevel) -> void:
 static func run_end(test: SmokeTest, level: HouseLevel) -> void:
 	await _check_admin(test, level)
 	await _check_office(test, level)
+	await _check_house_looks(test, level)
 	_check_crew_wages(test, level)
 	await _check_controllers(test, level)
 	await _check_world_popup(test, level)
@@ -91,6 +95,73 @@ static func _check_office(test: SmokeTest, level: HouseLevel) -> void:
 	test.check(operation.bribe() and operation.heat.value < heat_before, "a bribe cools the heat")
 	Profile.operation.add_reputation(-Profile.operation.reputation)
 	test.check(not Profile.upgrades.can_purchase(GameConfig.get_default().find_upgrade(Types.UPGRADE_VIP)), "upgrades stay locked until the reputation is there")
+
+
+## Upgrades change how the house looks: a renovation swaps a shell surface
+## to its next material (and cools heat faster), Reinforced Door bolts iron
+## straps on, Steel Door Frame shows its frame, Bigger Stash real shelves.
+static func _check_house_looks(test: SmokeTest, level: HouseLevel) -> void:
+	var office: Office = level.get_front(Office) as Office
+	var config: GameConfig = GameConfig.get_default()
+	var shell: HouseShell = level.get_house_shell()
+	var door: FrontDoor = (level.get_front(FrontGarden) as FrontGarden).door
+	var straps: UpgradeLook = door.find_child("Straps", true, false) as UpgradeLook
+	var middle_strap: UpgradeLook = door.find_child("MiddleStrap", true, false) as UpgradeLook
+	test.check(straps != null and straps.is_shown() and straps.visible and not middle_strap.is_shown(), "Reinforced Door level 1 bolts the first iron straps on the door")
+	var reputation_before: int = Profile.operation.reputation
+	Profile.operation.add_reputation(20)
+	var shabby_wall: Material = shell.get_surface_material(HouseShell.SurfaceKind.INSIDE_WALL)
+	var cooling_before: float = level.operation.heat.cooling_per_second
+	var walls: UpgradeData = config.find_upgrade(Types.UPGRADE_RENOVATE_WALLS)
+	var walls_renovation: ShellRenovation = _find_renovation(shell, Types.UPGRADE_RENOVATE_WALLS, HouseShell.SurfaceKind.INSIDE_WALL)
+	_buy(office, walls)
+	await test.frames(2)
+	test.check(walls_renovation != null and shell.get_surface_material(HouseShell.SurfaceKind.INSIDE_WALL) == walls_renovation.get_material(1) and shell.get_surface_material(HouseShell.SurfaceKind.INSIDE_WALL) != shabby_wall, "Patch the Walls plasters the inside walls")
+	test.check(level.operation.heat.cooling_per_second > cooling_before, "a renovation makes heat cool faster")
+	_buy(office, walls)
+	await test.frames(2)
+	test.check(shell.get_surface_material(HouseShell.SurfaceKind.INSIDE_WALL) == walls_renovation.get_material(2), "the second level paints them")
+	var ceiling_renovation: ShellRenovation = _find_renovation(shell, Types.UPGRADE_RENOVATE_WALLS, HouseShell.SurfaceKind.CEILING)
+	test.check(ceiling_renovation != null and shell.get_surface_material(HouseShell.SurfaceKind.CEILING) == ceiling_renovation.get_material(2), "painting the walls paints the ceiling too")
+	for upgrade_id: StringName in [Types.UPGRADE_RENOVATE_FLOOR, Types.UPGRADE_RENOVATE_FACADE, Types.UPGRADE_RENOVATE_ROOF]:
+		_buy(office, config.find_upgrade(upgrade_id))
+	await test.frames(2)
+	var renovated_surfaces: int = 0
+	for kind: HouseShell.SurfaceKind in [HouseShell.SurfaceKind.FLOOR, HouseShell.SurfaceKind.OUTSIDE_WALL, HouseShell.SurfaceKind.ROOF]:
+		var renovation: ShellRenovation = _find_renovation(shell, &"", kind)
+		if renovation != null and shell.get_surface_material(kind) == renovation.get_material(1):
+			renovated_surfaces += 1
+	test.check(renovated_surfaces == 3, "the floor, brickwork and roof renovations change their surfaces")
+	var steel_frame: UpgradeLook = level.find_child("SteelDoorFrame", true, false) as UpgradeLook
+	test.check(steel_frame != null and not steel_frame.is_shown(), "no steel door frame before it is bought")
+	_buy(office, config.find_upgrade(Types.UPGRADE_SECURITY))
+	await test.frames(2)
+	test.check(steel_frame.is_shown() and steel_frame.visible, "Steel Door Frame shows a steel frame around the front door")
+	var shelf: Node3D = level.get_node("%StashShelf") as Node3D
+	var wooden_shelf: UpgradeLook = shelf.get_node("WoodenShelf") as UpgradeLook
+	var rack: Node3D = shelf.get_node("Rack") as Node3D
+	var had_wooden_shelf: bool = wooden_shelf.is_shown()
+	if not had_wooden_shelf:
+		test.check(rack.visible, "the stash starts on boards and blocks")
+		_buy(office, config.find_upgrade(Types.UPGRADE_STORAGE))
+		await test.frames(2)
+	test.check(wooden_shelf.is_shown() and wooden_shelf.visible and not rack.visible, "Bigger Stash swaps the boards and blocks for a real wooden shelf")
+	Profile.operation.add_reputation(reputation_before - Profile.operation.reputation)
+
+
+## Buys [param upgrade] at the office with cash added for it (the checks
+## before may have spent the budget).
+static func _buy(office: Office, upgrade: UpgradeData) -> void:
+	Profile.wallet.add(Types.CURRENCY_CASH, Profile.upgrades.get_next_cost(upgrade), false)
+	office.buy_upgrade(upgrade)
+
+
+## The shell's renovation for [param kind] (and [param upgrade_id] unless empty).
+static func _find_renovation(shell: HouseShell, upgrade_id: StringName, kind: HouseShell.SurfaceKind) -> ShellRenovation:
+	for renovation: ShellRenovation in shell.renovations:
+		if renovation.surface == kind and (upgrade_id.is_empty() or renovation.upgrade_id == upgrade_id):
+			return renovation
+	return null
 
 
 static func _check_crew_wages(test: SmokeTest, level: HouseLevel) -> void:

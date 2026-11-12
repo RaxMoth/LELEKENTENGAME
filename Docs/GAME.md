@@ -255,7 +255,29 @@ reputation and change how you play:
 | Sales | Bigger Yard (queue spots), Waiting Bench (patience), VIP Access |
 | Defense | Reinforced Door, Better Rounds, Roof Turrets (up to 3), Security PC |
 | Workforce | Hire Crafter, Hire Dealer, Hire Guard, Crew Training |
-| House | Bigger Stash, Steel Door Frame (less door damage) |
+| House | Bigger Stash, Steel Door Frame (less door damage), Patch the Walls, Fix the Floor, Clean the Brickwork, Repair the Roof (heat cools faster) |
+
+### Renovating the house
+
+A new operation moves into a shabby house: grimy green plaster, rotten
+boards, dirty brick, a mossy roof, a rack of planks on concrete blocks. The
+House branch fixes it up in two steps per part — **patched up**, then **well
+kept** — until it is a nice old house (cream-painted plaster and ceiling,
+varnished plank floor, clean red brick, new clay tiles), never a modern one:
+
+| Upgrade | Level 1 | Level 2 | Bonus |
+|---|---|---|---|
+| Patch the Walls | Fresh plaster over the cracks | Painted walls and ceiling, refinished door and window frames | Heat cools 10% faster per level |
+| Fix the Floor | New boards | Sanded and varnished | 〃 |
+| Clean the Brickwork | Repointed, still grimy | Clean red brick | 〃 |
+| Repair the Roof | Patched tiles | New tiles | 〃 |
+
+A kept-up house looks like any other on the street, so the police lose
+interest faster (`Operation.get_heat_cooling_multiplier()`). Other upgrades
+show too: **Reinforced Door** bolts an iron strap pair, a middle strap and a
+kick plate onto the door (one per level), **Steel Door Frame** puts a steel
+frame and then heavy locks around it, and **Bigger Stash** swaps the boards
+and blocks for a real wooden shelf, then adds crates beside it.
 
 ### Crew
 
@@ -282,7 +304,7 @@ These are the defaults this build uses; all are easy to change.
   bought, not upgraded; the free pistol keeps the player armed.
 - **Tone:** stylized (the existing palette and placeholder art).
 - **First playable size:** 3 products, 4 ingredients, 5 customer types,
-  3 raiders (cop, SWAT, battering ram), 4 guns, 3 roof turrets, 17 upgrades.
+  3 raiders (cop, SWAT, battering ram), 4 guns, 3 roof turrets, 25 upgrades.
 - **Platform:** both — Meta Quest (standalone) and PC VR (SteamVR).
 
 ## Running it
@@ -333,14 +355,15 @@ Scenes/Levels/House/House.tscn                inherits LevelBase; house_level.gd
     │   ├── DayCycle           DayClock + sun / sky / lamps; StateChart Day -> Night
     │   ├── HouseCycle         Cycle/HouseCycle.tscn: the 3-day cycle; StateChart Selling -> Raid { WaveBreak <-> WaveActive } -> Cleared
     │   ├── Surroundings       HOUSE     Surroundings/Surroundings.tscn: lawn, approach path, trees, weeds, junk (its yard trees are COVER_ONLY obstacles in the Yard)
-    │   ├── HouseShell         walls / doors / windows (framed) / floor / ceiling / gable roof built from a few numbers
+    │   ├── HouseShell         walls / doors / windows (framed) / floor / ceiling / gable roof built from a few numbers; renovations swap its materials
     │   ├── FrontGarden        DEFENSE   Garden/FrontGarden.tscn: open yard (Yard), swinging / bolting door, porch, roof turrets, Security PC, guards, raid squads, guns in hand
     │   ├── SalesWindow        CUSTOMERS Sales/SalesWindow.tscn: window, queue, board, dealers, CustomerFlow
     │   ├── Lab                HOUSE     Lab/Lab.tscn: crates, grinder, cooker, press, crafters, recipes
     │   ├── Office             HOUSE     Office/Office.tscn: upgrade board, bribes
     │   ├── Admin              HOUSE     Admin/Admin.tscn: admin terminal for testing (debug builds only)
     │   ├── Armory             DEFENSE   Armory/Armory.tscn: terminal for guns and ammo
-    │   ├── StashShelf         one bag per unit in stock
+    │   ├── StashShelf         StashShelf.tscn: one bag per unit in stock; boards on blocks, a wooden shelf and crates (Bigger Stash)
+    │   ├── SteelDoorFrame     SteelDoorFrame.tscn: steel frame and locks around the front door (Steel Door Frame)
     │   ├── WalkableArea       floor rectangles the player may stand on
     │   ├── TravelSpots        lab, front, window, office (flat keys 1-4)
     │   └── WristStatus        moved onto the off-hand wrist at setup

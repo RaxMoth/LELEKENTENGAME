@@ -377,3 +377,12 @@ Which mix? See the recipe book.,Which mix? See the recipe book.,Welche Mischung?
 Buy the Grinder in the office.,Buy the Grinder in the office.,Kauf die Mühle im Büro.
 Buy the Cooker in the office.,Buy the Cooker in the office.,Kauf den Kocher im Büro.
 Buy the Press in the office.,Buy the Press in the office.,Kauf die Presse im Büro.
+Patch the Walls,Patch the Walls,Wände ausbessern
+Fix the Floor,Fix the Floor,Boden erneuern
+Clean the Brickwork,Clean the Brickwork,Mauerwerk reinigen
+Repair the Roof,Repair the Roof,Dach reparieren
+"Fresh plaster over the cracks, then a coat of paint. A lived-in home draws less attention: heat cools 10% faster per level.","Fresh plaster over the cracks, then a coat of paint. A lived-in home draws less attention: heat cools 10% faster per level.","Frischer Putz über die Risse, dann ein Anstrich. Ein bewohntes Zuhause fällt weniger auf: Hitze kühlt pro Stufe 10 % schneller ab."
+"New boards for the rotten ones, then sanded and varnished. Heat cools 10% faster per level.","New boards for the rotten ones, then sanded and varnished. Heat cools 10% faster per level.","Neue Dielen für die morschen, dann geschliffen und lackiert. Hitze kühlt pro Stufe 10 % schneller ab."
+"Fresh mortar, then a good scrub: the house looks like any other on the street. Heat cools 10% faster per level.","Fresh mortar, then a good scrub: the house looks like any other on the street. Heat cools 10% faster per level.","Frischer Mörtel, dann gründlich geschrubbt: Das Haus sieht aus wie jedes andere in der Straße. Hitze kühlt pro Stufe 10 % schneller ab."
+"Patch the holes, then new tiles. Heat cools 10% faster per level.","Patch the holes, then new tiles. Heat cools 10% faster per level.","Erst die Löcher flicken, dann neue Ziegel. Hitze kühlt pro Stufe 10 % schneller ab."
++%s%% heat cooling,+%s%% heat cooling,+%s%% Hitzeabbau

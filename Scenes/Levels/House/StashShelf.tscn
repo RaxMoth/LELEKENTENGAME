@@ -1,0 +1,176 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://Scenes/Levels/House/stash_shelf.gd" id="stash_shelf"]
+[ext_resource type="Script" path="res://Scripts/Utils/textured_box_3d.gd" id="box"]
+[ext_resource type="Script" path="res://Scripts/Components/upgrade_look.gd" id="look"]
+[ext_resource type="Material" path="res://Assets/Materials/wood_trim.tres" id="old_wood"]
+[ext_resource type="Material" path="res://Assets/Materials/house_ceiling.tres" id="concrete"]
+[ext_resource type="Material" path="res://Assets/Materials/wood_refinished.tres" id="new_wood"]
+
+[node name="StashShelf" type="Node3D"]
+script = ExtResource("stash_shelf")
+
+[node name="Rack" type="Node3D" parent="."]
+
+[node name="Board1" type="MeshInstance3D" parent="Rack"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+cast_shadow = 0
+script = ExtResource("box")
+size = Vector3(1.8, 0.04, 0.4)
+box_material = ExtResource("old_wood")
+
+[node name="Board2" type="MeshInstance3D" parent="Rack"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.92, 0)
+cast_shadow = 0
+script = ExtResource("box")
+size = Vector3(1.8, 0.04, 0.4)
+box_material = ExtResource("old_wood")
+
+[node name="Board3" type="MeshInstance3D" parent="Rack"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.34, 0)
+cast_shadow = 0
+script = ExtResource("box")
+size = Vector3(1.8, 0.04, 0.4)
+box_material = ExtResource("old_wood")
+
+[node name="Board4" type="MeshInstance3D" parent="Rack"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.76, 0)
+cast_shadow = 0
+script = ExtResource("box")
+size = Vector3(1.8, 0.04, 0.4)
+box_material = ExtResource("old_wood")
+
+[node name="BlocksLeft" type="MeshInstance3D" parent="Rack"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.74, 0.87, 0)
+cast_shadow = 0
+script = ExtResource("box")
+size = Vector3(0.2, 1.74, 0.36)
+box_material = ExtResource("concrete")
+
+[node name="BlocksRight" type="MeshInstance3D" parent="Rack"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.74, 0.87, 0)
+cast_shadow = 0
+script = ExtResource("box")
+size = Vector3(0.2, 1.74, 0.36)
+box_material = ExtResource("concrete")
+
+[node name="WoodenShelf" type="Node3D" parent="." node_paths=PackedStringArray("replaces")]
+script = ExtResource("look")
+upgrade_id = &"house_storage"
+replaces = [NodePath("../Rack")]
+
+[node name="Plinth" type="MeshInstance3D" parent="WoodenShelf"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.05, 0.02)
+cast_shadow = 0
+script = ExtResource("box")
+size = Vector3(1.8, 0.1, 0.38)
+box_material = ExtResource("new_wood")
+
+[node name="Board1" type="MeshInstance3D" parent="WoodenShelf"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+cast_shadow = 0
+script = ExtResource("box")
+size = Vector3(1.8, 0.04, 0.42)
+box_material = ExtResource("new_wood")
+
+[node name="Board2" type="MeshInstance3D" parent="WoodenShelf"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.92, 0)
+cast_shadow = 0
+script = ExtResource("box")
+size = Vector3(1.8, 0.04, 0.42)
+box_material = ExtResource("new_wood")
+
+[node name="Board3" type="MeshInstance3D" parent="WoodenShelf"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.34, 0)
+cast_shadow = 0
+script = ExtResource("box")
+size = Vector3(1.8, 0.04, 0.42)
+box_material = ExtResource("new_wood")
+
+[node name="Board4" type="MeshInstance3D" parent="WoodenShelf"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.76, 0)
+cast_shadow = 0
+script = ExtResource("box")
+size = Vector3(1.8, 0.04, 0.42)
+box_material = ExtResource("new_wood")
+
+[node name="Top" type="MeshInstance3D" parent="WoodenShelf"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.98, 0)
+cast_shadow = 0
+script = ExtResource("box")
+size = Vector3(1.92, 0.04, 0.44)
+box_material = ExtResource("new_wood")
+
+[node name="SideLeft" type="MeshInstance3D" parent="WoodenShelf"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.92, 0.98, 0)
+cast_shadow = 0
+script = ExtResource("box")
+size = Vector3(0.04, 1.96, 0.42)
+box_material = ExtResource("new_wood")
+is_grain_vertical = true
+
+[node name="SideRight" type="MeshInstance3D" parent="WoodenShelf"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.92, 0.98, 0)
+cast_shadow = 0
+script = ExtResource("box")
+size = Vector3(0.04, 1.96, 0.42)
+box_material = ExtResource("new_wood")
+is_grain_vertical = true
+
+[node name="Back" type="MeshInstance3D" parent="WoodenShelf"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.98, -0.2)
+cast_shadow = 0
+script = ExtResource("box")
+size = Vector3(1.8, 1.96, 0.02)
+box_material = ExtResource("new_wood")
+is_grain_vertical = true
+
+[node name="Crates" type="Node3D" parent="."]
+script = ExtResource("look")
+upgrade_id = &"house_storage"
+min_level = 2
+
+[node name="CrateLow" type="MeshInstance3D" parent="Crates"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.36, 0.2, -0.04)
+cast_shadow = 0
+script = ExtResource("box")
+size = Vector3(0.6, 0.4, 0.46)
+box_material = ExtResource("old_wood")
+
+[node name="CrateHigh" type="MeshInstance3D" parent="Crates"]
+transform = Transform3D(0.9903, 0, 0.1392, 0, 1, 0, -0.1392, 0, 0.9903, 1.34, 0.575, -0.04)
+cast_shadow = 0
+script = ExtResource("box")
+size = Vector3(0.5, 0.35, 0.4)
+box_material = ExtResource("old_wood")
+
+[node name="MoreCrates" type="Node3D" parent="."]
+script = ExtResource("look")
+upgrade_id = &"house_storage"
+min_level = 3
+
+[node name="CrateLow" type="MeshInstance3D" parent="MoreCrates"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.36, 0.2, -0.04)
+cast_shadow = 0
+script = ExtResource("box")
+size = Vector3(0.6, 0.4, 0.46)
+box_material = ExtResource("old_wood")
+
+[node name="CrateHigh" type="MeshInstance3D" parent="MoreCrates"]
+transform = Transform3D(0.9945, 0, -0.1045, 0, 1, 0, 0.1045, 0, 0.9945, -1.38, 0.575, -0.04)
+cast_shadow = 0
+script = ExtResource("box")
+size = Vector3(0.5, 0.35, 0.4)
+box_material = ExtResource("old_wood")
+
+[node name="CountLabel" type="Label3D" parent="."]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.2, 0.1)
+pixel_size = 0.0035
+render_priority = 2
+outline_render_priority = 1
+modulate = Color(0.9333, 0.9451, 0.9686, 1)
+outline_modulate = Color(0.051, 0.0627, 0.0902, 0.9)
+text = "Stash 0 / 30"
+font_size = 56
+outline_size = 14

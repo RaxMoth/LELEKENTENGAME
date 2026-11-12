@@ -20,8 +20,13 @@ them VRAM-compressed with mipmaps (ETC2/ASTC on Quest, S3TC/BPTC on desktop).
 | Inside walls | Painted Plaster 011 | <https://ambientcg.com/view?id=PaintedPlaster011> | CC0 | Color + NormalGL, re-encoded |
 | Outside walls, gables | Bricks 097 | <https://ambientcg.com/view?id=Bricks097> | CC0 | Color + NormalGL, re-encoded |
 | Roof | Roofing Tiles 015 C | <https://ambientcg.com/view?id=RoofingTiles015C> | CC0 | Color + NormalGL, re-encoded |
-| Floor, door and window frames, eaves, garden fence and gate | Planks 037 A | <https://ambientcg.com/view?id=Planks037A> | CC0 | Color + NormalGL + Roughness, re-encoded |
-| Ceiling | Concrete 035 | <https://ambientcg.com/view?id=Concrete035> | CC0 | Color + NormalGL, re-encoded |
+| Floor, door and window frames, eaves, garden fence and gate, stash boards and crates | Planks 037 A | <https://ambientcg.com/view?id=Planks037A> | CC0 | Color + NormalGL + Roughness, re-encoded |
+| Ceiling, stash shelf blocks | Concrete 035 | <https://ambientcg.com/view?id=Concrete035> | CC0 | Color + NormalGL, re-encoded |
+| Patched inside walls (renovation level 1) | Plaster 006 | <https://ambientcg.com/view?id=Plaster006> | CC0 | Color + NormalGL, re-encoded |
+| Painted inside walls and ceiling (renovation level 2) | Painted Plaster 017 | <https://ambientcg.com/view?id=PaintedPlaster017> | CC0 | Color + NormalGL, re-encoded |
+| Renovated floor, refinished frames, wooden stash shelf | Wood Floor 043 | <https://ambientcg.com/view?id=WoodFloor043> | CC0 | Color + NormalGL + Roughness, re-encoded |
+| Renovated outside walls | Bricks 059 | <https://ambientcg.com/view?id=Bricks059> | CC0 | Color + NormalGL, re-encoded |
+| Renovated roof | Roofing Tiles 015 A | <https://ambientcg.com/view?id=RoofingTiles015A> | CC0 | Color + NormalGL, re-encoded |
 | Lawn | Ground 037 | <https://ambientcg.com/view?id=Ground037> | CC0 | Color + NormalGL, re-encoded |
 | Garden path, lanes | Ground 023 | <https://ambientcg.com/view?id=Ground023> | CC0 | Color + NormalGL, re-encoded |
 | Back yard | Gravel 032 | <https://ambientcg.com/view?id=Gravel032> | CC0 | Color + NormalGL, re-encoded |

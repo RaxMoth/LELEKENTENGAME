@@ -20,7 +20,7 @@
 ## host's world — time, money, stash, items, stations — instead.
 ##
 ## Dependencies: LevelBase, HouseFront, HouseContext, HouseCycle, Operation, DayCycle,
-##               Worker, WristStatus, XRPlayerRig, HouseCoopSync, Profile, Audio,
+##               HouseShell, UpgradeLook, Worker, WristStatus, XRPlayerRig, HouseCoopSync, Profile, Audio,
 ##               Events, Platform, Coop, Types autoloads, Palette, SfxSynth
 class_name HouseLevel
 extends LevelBase
@@ -60,6 +60,7 @@ var _mirrored_wrist_lines: PackedStringArray = PackedStringArray()
 @onready var _travel_spots: Node3D = %TravelSpots
 @onready var _world_environment: WorldEnvironment = %WorldEnvironment
 @onready var _coop_sync: HouseCoopSync = %CoopSync
+@onready var _house_shell: HouseShell = %HouseShell
 
 # ============================================
 # LEVEL HOOKS
@@ -176,6 +177,11 @@ func _present_result(_result: LevelResult) -> void:
 # PUBLIC API
 # ============================================
 
+## The house's walls, floor, ceiling and roof (renovations change their materials).
+func get_house_shell() -> HouseShell:
+	return _house_shell
+
+
 ## The front of [param front_script] (FrontGarden, SalesWindow, Lab, Office), or null.
 func get_front(front_script: Script) -> HouseFront:
 	for front: HouseFront in _fronts:
@@ -184,9 +190,16 @@ func get_front(front_script: Script) -> HouseFront:
 	return null
 
 
-## Re-applies everything upgrades change: the operation, hired crew, every front.
+## Re-applies everything upgrades change: the operation, how the house
+## looks (renovated walls, floor, facade and roof; every UpgradeLook such as
+## door straps or stash shelves), hired crew, every front.
 func apply_upgrades() -> void:
 	operation.apply_upgrades()
+	_house_shell.apply_renovations(Profile.upgrades)
+	for node: Node in get_tree().get_nodes_in_group(Types.GROUP_UPGRADE_LOOK):
+		var look: UpgradeLook = node as UpgradeLook
+		if look != null and is_ancestor_of(look):
+			look.apply_level(Profile.upgrades.get_level(look.upgrade_id))
 	for worker: Node in get_tree().get_nodes_in_group(Types.GROUP_CREW):
 		(worker as Worker).refresh_hired()
 	for front: HouseFront in _fronts:

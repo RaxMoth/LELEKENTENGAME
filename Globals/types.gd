@@ -49,6 +49,9 @@ const GROUP_NET_ENTITY: StringName = &"net_entity"
 ## Co-op: scene nodes whose look the host streams (stations); they offer
 ## get_net_state() / apply_net_state(state).
 const GROUP_NET_NODE: StringName = &"net_node"
+## Parts of the house that show with an upgrade's level (UpgradeLook):
+## door straps, the steel door frame, stash shelves.
+const GROUP_UPGRADE_LOOK: StringName = &"upgrade_look"
 
 # ============================================
 # INPUT ACTIONS (defined in Project Settings > Input Map)
@@ -145,6 +148,18 @@ const UPGRADE_TRAINING: StringName = &"work_training"
 const UPGRADE_STORAGE: StringName = &"house_storage"
 ## A steel door frame: raiders do less damage to the front door (value = share).
 const UPGRADE_SECURITY: StringName = &"house_security"
+## Renovations: each makes one part of the house nicer (shabby -> patched
+## up -> well kept) and heat cool down faster (value = percent per level).
+## Inside walls (and, at level 2, the ceiling and frames).
+const UPGRADE_RENOVATE_WALLS: StringName = &"house_walls"
+## The floor boards.
+const UPGRADE_RENOVATE_FLOOR: StringName = &"house_floor"
+## The outside brickwork.
+const UPGRADE_RENOVATE_FACADE: StringName = &"house_facade"
+## The roof tiles.
+const UPGRADE_RENOVATE_ROOF: StringName = &"house_roof"
+## Every renovation (Operation sums their values into the heat cooling bonus).
+const RENOVATION_UPGRADES: Array[StringName] = [UPGRADE_RENOVATE_WALLS, UPGRADE_RENOVATE_FLOOR, UPGRADE_RENOVATE_FACADE, UPGRADE_RENOVATE_ROOF]
 const ITEM_NO_ADS: StringName = &"no_ads"
 
 # ============================================

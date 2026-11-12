@@ -189,6 +189,7 @@ the House's sales board and armory, or a `Label3D`), driven by `score_changed`.
 | `HealthComponent` | Node | `apply_damage`, `heal`, `revive`, i-frames; signals `damaged`, `died` |
 | `DamageInfo` | RefCounted | amount, type, source, crit, `knockback` (Vector3) for one hit |
 | `HitFlash3DComponent` | Node | Flashes every mesh under a Node3D on damage |
+| `UpgradeLook` | Node3D | A part that shows once an upgrade reaches `min_level` (iron door straps, a steel frame, real shelves); hides the old look it `replaces` and can restyle meshes with another material. The House level applies every look in `Types.GROUP_UPGRADE_LOOK` when upgrades change |
 | `WaveSpawner` | Node | `WaveData` waves; spawns at `Marker3D`s by default; endless scaling; override `_create_enemy()` for other spawn rules |
 
 Component wiring in scenes uses exported node references (e.g. a hit
@@ -255,7 +256,9 @@ into a few textured quads for them.
 `GameConfig`, `LevelData`, `CurrencyData`, `UpgradeData` (with `branch` and
 `required_reputation`), `UpgradeCatalog` (one per area), `ProductData` (in-app products), `AchievementData`,
 `RewardBundle`, `WaveData`/`WaveEntry`, and the game's own: `IngredientData`,
-`RecipeData`, `CustomerTypeData`, `WeaponData` / `WeaponCatalog`, `RaidData`.
+`RecipeData`, `CustomerTypeData`, `WeaponData` / `WeaponCatalog`, `RaidData`,
+`ShellRenovation` (one `HouseShell` surface's material per renovation level;
+`HouseShell.apply_renovations(Profile.upgrades)` swaps them without a rebuild).
 
 ## Game rules (`Scripts/Game/`, pure, unit-tested)
 

@@ -99,7 +99,9 @@ flame, sun, moon, person, plus, minus. App icon and logo:
 The **set** is real: the house shell, ground, front door, trees, weeds and
 a little junk use photo-scanned CC0 textures and models (ambientCG, Poly
 Haven; sources and licences in `Assets/CREDITS.md`), so the house reads as a
-dirty, shabby, lived-in place. The **gameplay pieces** (stations, crates,
+dirty, shabby, lived-in place — until the renovation upgrades turn it, step
+by step, into a well-kept *old* house (painted plaster, varnished planks,
+clean brick, new clay tiles; never modern or glossy). The **gameplay pieces** (stations, crates,
 crew, attackers, towers, items, boards) are still `PlaceholderMesh3D`
 primitives in `Palette` colors — matte, lit from above, grounded by a
 `BlobShadow3D` — and they must stay clearly readable on top of the set.
@@ -128,6 +130,8 @@ primitives in `Palette` colors — matte, lit from above, grounded by a
 |---|---|
 | Walls, floor, ceiling, frames, roof | `HouseShell` from lists, one surface per material (inside plaster, outside brick, floor planks, ceiling concrete, wood trim, roof tiles) |
 | Boxes with a real surface (door leaf, fence, gate) | `TexturedBox3D` (`is_grain_vertical` for posts) |
+| Renovated surfaces | A `ShellRenovation` per surface (`Ressources/Renovations/`): the shell's material per upgrade level, two steps (patched up, well kept); the next material is a cleaner texture or the same one less grimy, kept muted and warm |
+| Parts an upgrade adds (door straps, steel frame, shelves, crates) | An `UpgradeLook` node with `TexturedBox3D` children in real materials (`iron_strap`, `steel_frame`, `wood_refinished`), not Palette primitives |
 | Lawn, lanes, path, yard | `GroundPlane3D` (soft darker patches in vertex colors break up the tile); the lane board multiplies its cell checker over `ground_material` |
 | Trees and weeds | Impostors from `Tools/bake_impostor.gd`, placed with `PropScatter3D` (one draw call per kind) in `Scenes/Levels/House/Surroundings/` |
 | Junk (rubbish bags, tyres, chair, cans) | Poly Haven glTF props, instanced as they are |

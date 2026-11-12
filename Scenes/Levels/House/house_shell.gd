@@ -13,7 +13,17 @@
 ## size in meters. A wall face is "outside" when it lies beyond floor_rect.
 ## Without a material a surface falls back to its matte Palette color.
 ##
-## Dependencies: WorldUVMesh, PlaceholderMesh3D (fallback materials), Palette
+## Renovations: the materials above are the shabby house a new operation
+## moves into. Each ShellRenovation in [member renovations] gives one surface
+## a better material per level of a renovation upgrade; the level calls
+## apply_renovations() whenever upgrades change, which only swaps the
+## surfaces' materials (no rebuild).
+##
+##   shell.apply_renovations(Profile.upgrades)
+##   shell.get_surface_material(HouseShell.SurfaceKind.FLOOR)
+##
+## Dependencies: WorldUVMesh, ShellRenovation, UpgradeLevels,
+##               PlaceholderMesh3D (fallback materials), Palette
 @tool
 class_name HouseShell
 extends Node3D
@@ -75,6 +85,10 @@ const OUTSIDE_TOLERANCE: float = 0.01
 @export var frame_material: Material
 @export var roof_material: Material
 
+@export_group("Renovations")
+## Better materials per renovation level (walls, floor, facade, roof...).
+@export var renovations: Array[ShellRenovation] = []
+
 @export_group("Fallback colors")
 @export var wall_color: Color = Palette.SURFACE_RAISED
 @export var floor_color: Color = Palette.STROKE
@@ -84,6 +98,11 @@ const OUTSIDE_TOLERANCE: float = 0.01
 
 var _is_rebuild_queued: bool = false
 var _surfaces: Dictionary[SurfaceKind, SurfaceTool] = {}
+## Materials set by renovations, in place of the exported ones.
+var _material_overrides: Dictionary[SurfaceKind, Material] = {}
+## Where each non-empty surface ended up in the shell mesh.
+var _surface_indices: Dictionary[SurfaceKind, int] = {}
+var _shell_mesh: ArrayMesh = null
 
 
 func _ready() -> void:
@@ -108,15 +127,43 @@ func rebuild() -> void:
 		_build_wall(wall)
 	if has_roof:
 		_build_roof()
-	var shell_mesh: ArrayMesh = ArrayMesh.new()
+	_shell_mesh = ArrayMesh.new()
+	_surface_indices.clear()
 	for kind: SurfaceKind in SurfaceKind.values():
-		WorldUVMesh.commit_surface(_surfaces[kind], shell_mesh, _get_material(kind))
+		var surface_count: int = _shell_mesh.get_surface_count()
+		WorldUVMesh.commit_surface(_surfaces[kind], _shell_mesh, _get_material(kind))
+		if _shell_mesh.get_surface_count() > surface_count:
+			_surface_indices[kind] = surface_count
 	_surfaces.clear()
 	var shell: MeshInstance3D = MeshInstance3D.new()
 	shell.name = "ShellMesh"
-	shell.mesh = shell_mesh
+	shell.mesh = _shell_mesh
 	shell.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	add_child(shell)
+
+
+## Puts every renovated surface in the look its upgrade's bought level gives
+## (the exported shabby material at level 0).
+func apply_renovations(upgrade_levels: UpgradeLevels) -> void:
+	for renovation: ShellRenovation in renovations:
+		if renovation != null:
+			set_surface_material(renovation.surface, renovation.get_material(upgrade_levels.get_level(renovation.upgrade_id)))
+
+
+## Gives one surface [param material] in place of its exported one; null
+## brings the exported material back. Swaps the material only (no rebuild).
+func set_surface_material(kind: SurfaceKind, material: Material) -> void:
+	if material != null:
+		_material_overrides[kind] = material
+	else:
+		_material_overrides.erase(kind)
+	if _shell_mesh != null and _surface_indices.has(kind):
+		_shell_mesh.surface_set_material(_surface_indices[kind], _get_material(kind))
+
+
+## The material a surface shows right now (renovated or exported).
+func get_surface_material(kind: SurfaceKind) -> Material:
+	return _get_material(kind)
 
 
 func _queue_rebuild() -> void:
@@ -126,6 +173,8 @@ func _queue_rebuild() -> void:
 
 
 func _get_material(kind: SurfaceKind) -> Material:
+	if _material_overrides.has(kind):
+		return _material_overrides[kind]
 	match kind:
 		SurfaceKind.INSIDE_WALL:
 			return inside_wall_material if inside_wall_material != null else PlaceholderMesh3D.get_shared_material(wall_color)

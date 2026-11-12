@@ -56,6 +56,7 @@ func _ready() -> void:
 ## Re-reads everything upgrades change (called on setup and after a purchase).
 func apply_upgrades() -> void:
 	stash.capacity = base_stash_capacity + roundi(get_upgrade_value(Types.UPGRADE_STORAGE))
+	heat.cooling_per_second = heat_cooling_per_second * get_heat_cooling_multiplier()
 	stash_changed.emit()
 
 # ============================================
@@ -70,6 +71,15 @@ func get_upgrade_value(upgrade_id: StringName) -> float:
 
 func get_upgrade_level(upgrade_id: StringName) -> int:
 	return Profile.upgrades.get_level(upgrade_id)
+
+
+## How much faster heat cools (1 = base rate): a kept-up house draws less
+## attention, so every renovation level adds its percent (Types.RENOVATION_UPGRADES).
+func get_heat_cooling_multiplier() -> float:
+	var bonus_percent: float = 0.0
+	for upgrade_id: StringName in Types.RENOVATION_UPGRADES:
+		bonus_percent += get_upgrade_value(upgrade_id)
+	return 1.0 + bonus_percent / 100.0
 
 
 ## Quality bonus of the lab equipment.

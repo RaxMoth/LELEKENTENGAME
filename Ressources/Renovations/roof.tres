@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="ShellRenovation" format=3]
+
+[ext_resource type="Script" path="res://Scripts/Resources/shell_renovation.gd" id="script"]
+[ext_resource type="Material" path="res://Assets/Materials/house_roof_patched.tres" id="level_1"]
+[ext_resource type="Material" path="res://Assets/Materials/house_roof_retiled.tres" id="level_2"]
+
+[resource]
+script = ExtResource("script")
+upgrade_id = &"house_roof"
+surface = 5
+level_materials = Array[Material]([ExtResource("level_1"), ExtResource("level_2")])

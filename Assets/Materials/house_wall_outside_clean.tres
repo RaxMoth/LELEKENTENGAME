@@ -1,0 +1,14 @@
+[gd_resource type="StandardMaterial3D" format=3]
+
+[ext_resource type="Texture2D" path="res://Assets/Textures/Bricks/Bricks059/Bricks059_Color.jpg" id="color"]
+[ext_resource type="Texture2D" path="res://Assets/Textures/Bricks/Bricks059/Bricks059_NormalGL.jpg" id="normal"]
+
+[resource]
+resource_name = "HouseWallOutsideClean"
+albedo_color = Color(1, 1, 1, 1)
+albedo_texture = ExtResource("color")
+normal_enabled = true
+normal_texture = ExtResource("normal")
+metallic_specular = 0.3
+roughness = 0.9
+uv1_scale = Vector3(0.88, 0.88, 1)
