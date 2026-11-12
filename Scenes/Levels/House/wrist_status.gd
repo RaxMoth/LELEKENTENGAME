@@ -1,7 +1,7 @@
 ## A small status panel on the off-hand wrist (lower left of the view in the
-## flat simulator): time of day, cash, reputation, stash, heat, door and the
-## queue at the window — everything the player splits attention between,
-## one glance away.
+## flat simulator): time of day, cash, reputation, stash and heat, plus one
+## line from each front (door health, the queue at the window) — everything
+## the player splits attention between, one glance away.
 ##
 ## Dependencies: Palette
 class_name WristStatus
@@ -24,12 +24,12 @@ func attach_to(anchor: Node3D) -> void:
 	transform = Transform3D.IDENTITY
 
 
-func show_status(time_text: String, is_night: bool, cash: int, reputation: int, stash_units: int, stash_capacity: int, heat: float, door_ratio: float, queue_size: int) -> void:
+## [param front_lines] are the fronts' own short status lines ("Door 80%", "Queue 2/3").
+func show_status(time_text: String, is_night: bool, cash: int, reputation: int, stash_units: int, stash_capacity: int, heat: float, front_lines: PackedStringArray) -> void:
 	_time_label.text = "%s  %s" % [time_text, tr("Night") if is_night else tr("Day")]
 	_time_label.modulate = Palette.MOONLIGHT if is_night else Palette.GOLD
-	_details_label.text = "%s $%s   %s %d\n%s %d/%d   %s %d\n%s %d%%   %s %d" % [
+	_details_label.text = "%s $%s   %s %d\n%s %d/%d   %s %d\n%s" % [
 		tr("Cash"), NumberFormat.compact(cash), tr("Rep"), reputation,
 		tr("Stash"), stash_units, stash_capacity, tr("Heat"), roundi(heat),
-		tr("Door"), roundi(door_ratio * 100.0), tr("Queue"), queue_size,
+		"   ".join(front_lines),
 	]
-	_details_label.modulate = Palette.DANGER if door_ratio < 0.3 else Palette.TEXT

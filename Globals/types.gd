@@ -35,6 +35,10 @@ const GROUP_GRAB_SOURCE: StringName = &"grab_source"
 const GROUP_ITEM_SOCKET: StringName = &"item_socket"
 ## 3D buttons a pointer can press (PointerButton).
 const GROUP_POINTER_BUTTON: StringName = &"pointer_button"
+## Every front of the house (HouseFront): lab, garden, back window, office.
+const GROUP_HOUSE_FRONT: StringName = &"house_front"
+## Every hired-crew slot (Worker), whichever front it works in.
+const GROUP_CREW: StringName = &"crew"
 ## Node that pooled entities and effects are spawned under (LevelBase's World).
 const GROUP_WORLD_ROOT: StringName = &"world_root"
 ## Every active WorldScreen (2D UI shown in 3D); XRPointer looks its targets up here.
@@ -86,35 +90,45 @@ const XR_ACTION_HAPTIC: StringName = &"haptic"
 const CURRENCY_CASH: StringName = &"cash"
 
 # ============================================
-# UPGRADE IDS (UpgradeData ids in Ressources/Upgrades, listed in game_config.tres)
+# UPGRADE IDS — one block per area, matching Ressources/Upgrades/<Area>/.
+# Add a new id at the end of your own area's block (keeps merges clean).
 # ============================================
 
-## Production: better lab gear (quality bonus, wider sweet zones).
+# --- Lab (production) ---
+## Better lab gear (quality bonus, wider sweet zones).
 const UPGRADE_EQUIPMENT: StringName = &"prod_equipment"
-## Production: more units per packaged batch.
+## More units per packaged batch.
 const UPGRADE_BATCH: StringName = &"prod_batch"
 const UPGRADE_RECIPE_FIZZ: StringName = &"prod_recipe_fizz"
 const UPGRADE_RECIPE_HAZE: StringName = &"prod_recipe_haze"
-## Sales: more customers can wait at the window.
+## Hired crafters (level = how many).
+const UPGRADE_CRAFTER: StringName = &"work_crafter"
+
+# --- Sales (customers) ---
+## More customers can wait at the window.
 const UPGRADE_QUEUE: StringName = &"sales_queue"
-## Sales: customers wait longer.
+## Customers wait longer.
 const UPGRADE_PATIENCE: StringName = &"sales_patience"
-## Sales: VIP buyers show up at night.
+## VIP buyers show up at night.
 const UPGRADE_VIP: StringName = &"sales_vip"
-## Defense: more door health.
+## Hired dealers (level = how many).
+const UPGRADE_DEALER: StringName = &"work_dealer"
+
+# --- Defense (front garden) ---
+## More door health.
 const UPGRADE_DOOR: StringName = &"def_door"
-## Defense: stronger blaster.
+## Stronger blaster.
 const UPGRADE_BLASTER: StringName = &"def_blaster"
 const UPGRADE_HEAVY_GUN: StringName = &"def_heavy_gun"
-## Workforce: hired crew (level = how many).
-const UPGRADE_CRAFTER: StringName = &"work_crafter"
-const UPGRADE_DEALER: StringName = &"work_dealer"
+## Hired guards (level = how many).
 const UPGRADE_GUARD: StringName = &"work_guard"
-## Workforce: crew skill.
+
+# --- House (crew, storage, security) ---
+## Crew skill.
 const UPGRADE_TRAINING: StringName = &"work_training"
-## House: bigger stash.
+## Bigger stash.
 const UPGRADE_STORAGE: StringName = &"house_storage"
-## House: locks and cameras make thieves take less.
+## Locks and cameras make thieves take less.
 const UPGRADE_SECURITY: StringName = &"house_security"
 const ITEM_NO_ADS: StringName = &"no_ads"
 
@@ -140,20 +154,28 @@ const EVENT_WIN: StringName = &"win"
 const EVENT_LOSE: StringName = &"lose"
 
 # ============================================
-# STATE CHART EVENTS — entities (Scenes/Levels/House)
+# STATE CHART EVENTS — one block per area (Scenes/Levels/House/<Area>/).
+# Add a new event at the end of your own area's block.
 # ============================================
 
+# --- Defense: attackers (Garden/Attacker.tscn) ---
 const EVENT_TARGET_IN_RANGE: StringName = &"target_in_range"
 const EVENT_TARGET_OUT_OF_RANGE: StringName = &"target_out_of_range"
 const EVENT_DIED: StringName = &"died"
 const EVENT_RESPAWN: StringName = &"respawn"
+
+# --- Sales: customers (Sales/Customer.tscn) ---
 ## A customer starts walking to a spot / reached it / was served or gave up.
 const EVENT_WALK: StringName = &"walk"
 const EVENT_ARRIVED: StringName = &"arrived"
 const EVENT_LEAVE: StringName = &"leave"
-## A lab workstation has its inputs and starts / finishes its timing step.
+
+# --- Lab: workstations (Lab/Workstation.tscn) ---
+## A station has its inputs and starts / finishes its timing step.
 const EVENT_STATION_START: StringName = &"station_start"
 const EVENT_STATION_DONE: StringName = &"station_done"
+
+# --- House: crew and the day (Workers/Worker.tscn, House.tscn) ---
 ## Crew: hired, wage paid on time / missed.
 const EVENT_HIRED: StringName = &"hired"
 const EVENT_WAGE_PAID: StringName = &"wage_paid"

@@ -1,7 +1,10 @@
 ## A hired crew member. Crafters turn cash into standard product, dealers
 ## serve the regular customers at the window, guards shoot attackers near the
-## front door. Each draws a wage every in-game hour and goes on strike while
-## the operation can't pay. The player stays better: crew make lower quality,
+## front door. Each works inside its own front's scene (crafters in the Lab,
+## dealers at the SalesWindow, guards in the FrontGarden), which hands it the
+## operation at setup. Each draws a wage every in-game hour (the House level
+## pays everyone in Types.GROUP_CREW) and goes on strike while the operation
+## can't pay. The player stays better: crew make lower quality,
 ## can't serve VIPs or bulk buyers and are weaker against bosses.
 ## State: Absent (not hired) -> Working <-> Striking.
 ##
@@ -27,9 +30,13 @@ const SKILLED_TRAINING_LEVEL: int = 2
 @export var guard_range: float = 10.0
 
 @export_group("Links")
-@export var operation: Operation
+## Dealers: the window they serve at (same scene).
 @export var sales_window: SalesWindow
+## Guards: the garden they defend (same scene).
 @export var board: LaneBoard
+
+## The house's shared state; set by the worker's front at setup.
+var operation: Operation = null
 
 var _seconds_until_work: float = 0.0
 var _is_striking: bool = false
@@ -40,6 +47,7 @@ var _is_striking: bool = false
 
 
 func _ready() -> void:
+	add_to_group(Types.GROUP_CREW)
 	visible = false
 	_role_label.text = tr(get_role_name())
 

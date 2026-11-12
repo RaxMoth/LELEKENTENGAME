@@ -5,49 +5,19 @@
 [ext_resource type="Resource" path="res://Ressources/Levels/house.tres" id="level_data"]
 [ext_resource type="Script" path="res://Scenes/Levels/House/operation.gd" id="operation"]
 [ext_resource type="Script" path="res://Scenes/Levels/House/day_cycle.gd" id="day_cycle"]
-[ext_resource type="Script" path="res://Scenes/Levels/House/pressure_director.gd" id="director"]
 [ext_resource type="Script" path="res://Scenes/Levels/House/house_shell.gd" id="shell"]
 [ext_resource type="Script" path="res://Scenes/Levels/House/stash_shelf.gd" id="stash_shelf"]
 [ext_resource type="Script" path="res://Scenes/Levels/House/wrist_status.gd" id="wrist"]
 [ext_resource type="Script" path="res://Scripts/XR/walkable_area.gd" id="walkable"]
-[ext_resource type="Script" path="res://Scripts/XR/world_screen.gd" id="screen"]
 [ext_resource type="Script" path="res://Scripts/Utils/placeholder_mesh_3d.gd" id="mesh"]
 [ext_resource type="Script" path="res://addons/godot_state_charts/state_chart.gd" id="chart"]
 [ext_resource type="Script" path="res://addons/godot_state_charts/compound_state.gd" id="compound"]
 [ext_resource type="Script" path="res://addons/godot_state_charts/atomic_state.gd" id="atomic"]
 [ext_resource type="Script" path="res://addons/godot_state_charts/transition.gd" id="transition"]
-[ext_resource type="PackedScene" path="res://Scenes/Levels/House/Garden/LaneBoard.tscn" id="lane_board"]
-[ext_resource type="PackedScene" path="res://Scenes/Levels/House/Garden/FrontDoor.tscn" id="front_door"]
-[ext_resource type="PackedScene" path="res://Scenes/Levels/House/Garden/BuildBoard.tscn" id="build_board"]
-[ext_resource type="PackedScene" path="res://Scenes/Levels/House/Office/OfficeBoard.tscn" id="office_board"]
 [ext_resource type="PackedScene" path="res://Scenes/Levels/House/Sales/SalesWindow.tscn" id="sales_window"]
-[ext_resource type="PackedScene" path="res://Scenes/Levels/House/Lab/Grinder.tscn" id="grinder"]
-[ext_resource type="PackedScene" path="res://Scenes/Levels/House/Lab/Cooker.tscn" id="cooker"]
-[ext_resource type="PackedScene" path="res://Scenes/Levels/House/Lab/Press.tscn" id="press"]
-[ext_resource type="PackedScene" path="res://Scenes/Levels/House/Lab/IngredientCrate.tscn" id="crate"]
-[ext_resource type="PackedScene" path="res://Scenes/Levels/House/Workers/Worker.tscn" id="worker"]
-[ext_resource type="PackedScene" path="res://Scenes/Levels/House/Garden/Junkie.tscn" id="junkie"]
-[ext_resource type="PackedScene" path="res://Scenes/Levels/House/Garden/Cop.tscn" id="cop"]
-[ext_resource type="PackedScene" path="res://Scenes/Levels/House/Garden/Goon.tscn" id="goon"]
-[ext_resource type="PackedScene" path="res://Scenes/Levels/House/Garden/Boss.tscn" id="boss"]
-[ext_resource type="Script" path="res://Scripts/Resources/recipe_data.gd" id="recipe_script"]
-[ext_resource type="Script" path="res://Scripts/Resources/customer_type_data.gd" id="customer_script"]
-[ext_resource type="Script" path="res://Scripts/Resources/tower_data.gd" id="tower_script"]
-[ext_resource type="Resource" path="res://Ressources/Recipes/glow.tres" id="r_glow"]
-[ext_resource type="Resource" path="res://Ressources/Recipes/fizz.tres" id="r_fizz"]
-[ext_resource type="Resource" path="res://Ressources/Recipes/haze.tres" id="r_haze"]
-[ext_resource type="Resource" path="res://Ressources/Ingredients/glowcap.tres" id="i_glowcap"]
-[ext_resource type="Resource" path="res://Ressources/Ingredients/sugarsalt.tres" id="i_sugarsalt"]
-[ext_resource type="Resource" path="res://Ressources/Ingredients/fizzroot.tres" id="i_fizzroot"]
-[ext_resource type="Resource" path="res://Ressources/Ingredients/duskleaf.tres" id="i_duskleaf"]
-[ext_resource type="Resource" path="res://Ressources/Customers/regular.tres" id="c_regular"]
-[ext_resource type="Resource" path="res://Ressources/Customers/bulk_buyer.tres" id="c_bulk_buyer"]
-[ext_resource type="Resource" path="res://Ressources/Customers/connoisseur.tres" id="c_connoisseur"]
-[ext_resource type="Resource" path="res://Ressources/Customers/haggler.tres" id="c_haggler"]
-[ext_resource type="Resource" path="res://Ressources/Customers/vip.tres" id="c_vip"]
-[ext_resource type="Resource" path="res://Ressources/Towers/turret.tres" id="t_turret"]
-[ext_resource type="Resource" path="res://Ressources/Towers/heavy_gun.tres" id="t_heavy_gun"]
-[ext_resource type="Resource" path="res://Ressources/Towers/barricade.tres" id="t_barricade"]
+[ext_resource type="PackedScene" path="res://Scenes/Levels/House/Garden/FrontGarden.tscn" id="front_garden_scene"]
+[ext_resource type="PackedScene" path="res://Scenes/Levels/House/Lab/Lab.tscn" id="lab_scene"]
+[ext_resource type="PackedScene" path="res://Scenes/Levels/House/Office/Office.tscn" id="office_scene"]
 
 [sub_resource type="ProceduralSkyMaterial" id="sky_material"]
 sky_top_color = Color(0.051, 0.0627, 0.0902, 1)
@@ -84,8 +54,6 @@ size = Vector2(0.17, 0.1)
 
 [node name="House" instance=ExtResource("base")]
 script = ExtResource("level")
-towers = Array[ExtResource("tower_script")]([ExtResource("t_turret"), ExtResource("t_heavy_gun"), ExtResource("t_barricade")])
-defense_zone = Rect2(-5, -5, 10, 3)
 level_data = ExtResource("level_data")
 show_intro_countdown = false
 
@@ -100,7 +68,6 @@ pixel_size = 0.0035
 [node name="Operation" type="Node" parent="World/Stage"]
 unique_name_in_owner = true
 script = ExtResource("operation")
-recipes = Array[ExtResource("recipe_script")]([ExtResource("r_glow"), ExtResource("r_fizz"), ExtResource("r_haze")])
 
 [node name="DayCycle" type="Node" parent="World/Stage" node_paths=PackedStringArray("cycle_chart", "sun", "world_environment", "lamps")]
 unique_name_in_owner = true
@@ -129,19 +96,6 @@ delay_in_seconds = "0.0"
 [node name="Night" type="Node" parent="World/Stage/DayCycle/CycleChart/Root"]
 script = ExtResource("atomic")
 
-[node name="PressureDirector" type="Node" parent="World/Stage" node_paths=PackedStringArray("operation", "sales_window", "board", "day_cycle")]
-unique_name_in_owner = true
-script = ExtResource("director")
-operation = NodePath("../Operation")
-sales_window = NodePath("../SalesWindow")
-board = NodePath("../Garden/LaneBoard")
-day_cycle = NodePath("../DayCycle")
-customer_types = Array[ExtResource("customer_script")]([ExtResource("c_regular"), ExtResource("c_bulk_buyer"), ExtResource("c_connoisseur"), ExtResource("c_haggler"), ExtResource("c_vip")])
-junkie_scene = ExtResource("junkie")
-cop_scene = ExtResource("cop")
-goon_scene = ExtResource("goon")
-boss_scene = ExtResource("boss")
-
 [node name="WorldEnvironment" type="WorldEnvironment" parent="World/Stage"]
 unique_name_in_owner = true
 environment = SubResource("environment")
@@ -159,262 +113,24 @@ shape_kind = 1
 size = Vector3(90, 0.04, 90)
 color = Color(0.0824, 0.1059, 0.1569, 1)
 
-[node name="BackYard" type="MeshInstance3D" parent="World/Stage"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.0, -0.035, 9.5)
-cast_shadow = 0
-script = ExtResource("mesh")
-shape_kind = 1
-size = Vector3(11, 0.02, 9)
-color = Color(0.1176, 0.149, 0.2157, 1)
-
 [node name="HouseShell" type="Node3D" parent="World/Stage"]
 script = ExtResource("shell")
 walls = Array[Vector4]([Vector4(-5, -5, 5, -5), Vector4(-5, 5, 5, 5), Vector4(-5, -5, -5, 5), Vector4(5, -5, 5, 5), Vector4(-5, -2, 5, -2), Vector4(-0.8, -2, -0.8, 5), Vector4(0.8, -2, 0.8, 5), Vector4(-5, 2, -0.8, 2), Vector4(0.8, 1.5, 5, 1.5)])
 doors = Array[Vector4]([Vector4(-0.6, -5, 0.6, -5), Vector4(-0.7, -2, 0.7, -2), Vector4(-0.8, -0.5, -0.8, 0.5), Vector4(-0.8, 3, -0.8, 4), Vector4(0.8, -0.5, 0.8, 0.5), Vector4(0.8, 3, 0.8, 4)])
 windows = Array[Vector4]([Vector4(-4.2, -5, -1.6, -5), Vector4(1.6, -5, 4.2, -5), Vector4(-3.9, 5, -2.1, 5)])
 
-[node name="Garden" type="Node3D" parent="World/Stage"]
-
-[node name="FrontDoor" parent="World/Stage/Garden" instance=ExtResource("front_door")]
+[node name="FrontGarden" parent="World/Stage" instance=ExtResource("front_garden_scene")]
 unique_name_in_owner = true
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -5)
 
-[node name="LaneBoard" parent="World/Stage/Garden" node_paths=PackedStringArray("door") instance=ExtResource("lane_board")]
+[node name="Lab" parent="World/Stage" instance=ExtResource("lab_scene")]
 unique_name_in_owner = true
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -5.25)
-door = NodePath("../FrontDoor")
 
-[node name="RailLeft" type="MeshInstance3D" parent="World/Stage/Garden"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.45, 0.45, -9.35)
-cast_shadow = 0
-script = ExtResource("mesh")
-shape_kind = 1
-size = Vector3(0.08, 0.9, 8.1)
-color = Color(0.1804, 0.2118, 0.2941, 1)
-
-[node name="RailRight" type="MeshInstance3D" parent="World/Stage/Garden"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.45, 0.45, -9.35)
-cast_shadow = 0
-script = ExtResource("mesh")
-shape_kind = 1
-size = Vector3(0.08, 0.9, 8.1)
-color = Color(0.1804, 0.2118, 0.2941, 1)
-
-[node name="GatePostLeft" type="MeshInstance3D" parent="World/Stage/Garden"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.45, 1.1, -13.5)
-cast_shadow = 0
-script = ExtResource("mesh")
-shape_kind = 1
-size = Vector3(0.22, 2.2, 0.22)
-color = Color(0.3569, 0.3922, 0.4824, 1)
-
-[node name="GatePostRight" type="MeshInstance3D" parent="World/Stage/Garden"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.45, 1.1, -13.5)
-cast_shadow = 0
-script = ExtResource("mesh")
-shape_kind = 1
-size = Vector3(0.22, 2.2, 0.22)
-color = Color(0.3569, 0.3922, 0.4824, 1)
-
-[node name="GateLintel" type="MeshInstance3D" parent="World/Stage/Garden"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.25, -13.5)
-cast_shadow = 0
-script = ExtResource("mesh")
-shape_kind = 1
-size = Vector3(5.12, 0.16, 0.2)
-color = Color(0.3569, 0.3922, 0.4824, 1)
-
-[node name="BuildScreen" type="Node3D" parent="World/Stage/Garden"]
+[node name="Office" parent="World/Stage" instance=ExtResource("office_scene")]
 unique_name_in_owner = true
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.35, -13.6)
-script = ExtResource("screen")
-content_scene = ExtResource("build_board")
-resolution = Vector2i(1280, 400)
-width_meters = 5.0
 
-[node name="Pine1" type="MeshInstance3D" parent="World/Stage/Garden"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.5, 2.25, -8)
-cast_shadow = 0
-script = ExtResource("mesh")
-shape_kind = 3
-size = Vector3(1.8, 4.5, 1.8)
-color = Color(0.1412, 0.1686, 0.2431, 1)
-top_scale = 0
-
-[node name="Pine2" type="MeshInstance3D" parent="World/Stage/Garden"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.2, 2.85, -12)
-cast_shadow = 0
-script = ExtResource("mesh")
-shape_kind = 3
-size = Vector3(1.8, 5.7, 1.8)
-color = Color(0.1412, 0.1686, 0.2431, 1)
-top_scale = 0
-
-[node name="Pine3" type="MeshInstance3D" parent="World/Stage/Garden"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.8, 3.45, -15.5)
-cast_shadow = 0
-script = ExtResource("mesh")
-shape_kind = 3
-size = Vector3(1.8, 6.9, 1.8)
-color = Color(0.1412, 0.1686, 0.2431, 1)
-top_scale = 0
-
-[node name="Pine4" type="MeshInstance3D" parent="World/Stage/Garden"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.6, 2.25, -9)
-cast_shadow = 0
-script = ExtResource("mesh")
-shape_kind = 3
-size = Vector3(1.8, 4.5, 1.8)
-color = Color(0.1412, 0.1686, 0.2431, 1)
-top_scale = 0
-
-[node name="Pine5" type="MeshInstance3D" parent="World/Stage/Garden"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.3, 2.85, -13)
-cast_shadow = 0
-script = ExtResource("mesh")
-shape_kind = 3
-size = Vector3(1.8, 5.7, 1.8)
-color = Color(0.1412, 0.1686, 0.2431, 1)
-top_scale = 0
-
-[node name="Pine6" type="MeshInstance3D" parent="World/Stage/Garden"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.6, 3.45, -16)
-cast_shadow = 0
-script = ExtResource("mesh")
-shape_kind = 3
-size = Vector3(1.8, 6.9, 1.8)
-color = Color(0.1412, 0.1686, 0.2431, 1)
-top_scale = 0
-
-[node name="Pine7" type="MeshInstance3D" parent="World/Stage/Garden"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7.5, 2.25, 2)
-cast_shadow = 0
-script = ExtResource("mesh")
-shape_kind = 3
-size = Vector3(1.8, 4.5, 1.8)
-color = Color(0.1412, 0.1686, 0.2431, 1)
-top_scale = 0
-
-[node name="Pine8" type="MeshInstance3D" parent="World/Stage/Garden"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.6, 2.85, -3)
-cast_shadow = 0
-script = ExtResource("mesh")
-shape_kind = 3
-size = Vector3(1.8, 5.7, 1.8)
-color = Color(0.1412, 0.1686, 0.2431, 1)
-top_scale = 0
-
-[node name="Pine9" type="MeshInstance3D" parent="World/Stage/Garden"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 3.45, 4)
-cast_shadow = 0
-script = ExtResource("mesh")
-shape_kind = 3
-size = Vector3(1.8, 6.9, 1.8)
-color = Color(0.1412, 0.1686, 0.2431, 1)
-top_scale = 0
-
-[node name="Pine10" type="MeshInstance3D" parent="World/Stage/Garden"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8.2, 2.25, 8)
-cast_shadow = 0
-script = ExtResource("mesh")
-shape_kind = 3
-size = Vector3(1.8, 4.5, 1.8)
-color = Color(0.1412, 0.1686, 0.2431, 1)
-top_scale = 0
-
-[node name="Pine11" type="MeshInstance3D" parent="World/Stage/Garden"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.5, 2.85, 10)
-cast_shadow = 0
-script = ExtResource("mesh")
-shape_kind = 3
-size = Vector3(1.8, 5.7, 1.8)
-color = Color(0.1412, 0.1686, 0.2431, 1)
-top_scale = 0
-
-[node name="Pine12" type="MeshInstance3D" parent="World/Stage/Garden"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1, 3.45, -18)
-cast_shadow = 0
-script = ExtResource("mesh")
-shape_kind = 3
-size = Vector3(1.8, 6.9, 1.8)
-color = Color(0.1412, 0.1686, 0.2431, 1)
-top_scale = 0
-
-[node name="Lab" type="Node3D" parent="World/Stage"]
-
-[node name="Grinder" parent="World/Stage/Lab" node_paths=PackedStringArray("operation") instance=ExtResource("grinder")]
-unique_name_in_owner = true
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.4, 0, -1.55)
-operation = NodePath("../../Operation")
-
-[node name="Cooker" parent="World/Stage/Lab" node_paths=PackedStringArray("operation") instance=ExtResource("cooker")]
-unique_name_in_owner = true
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.0, 0, -1.55)
-operation = NodePath("../../Operation")
-
-[node name="Press" parent="World/Stage/Lab" node_paths=PackedStringArray("operation") instance=ExtResource("press")]
-unique_name_in_owner = true
-transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, -3.0, 0, 1.55)
-operation = NodePath("../../Operation")
-
-[node name="CrateGlowcap" parent="World/Stage/Lab" node_paths=PackedStringArray("operation") instance=ExtResource("crate")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.55, 0, -1.2)
-ingredient = ExtResource("i_glowcap")
-operation = NodePath("../../Operation")
-
-[node name="CrateSugarsalt" parent="World/Stage/Lab" node_paths=PackedStringArray("operation") instance=ExtResource("crate")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.55, 0, -0.4)
-ingredient = ExtResource("i_sugarsalt")
-operation = NodePath("../../Operation")
-
-[node name="CrateFizzroot" parent="World/Stage/Lab" node_paths=PackedStringArray("operation") instance=ExtResource("crate")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.55, 0, 0.4)
-ingredient = ExtResource("i_fizzroot")
-operation = NodePath("../../Operation")
-
-[node name="CrateDuskleaf" parent="World/Stage/Lab" node_paths=PackedStringArray("operation") instance=ExtResource("crate")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.55, 0, 1.2)
-ingredient = ExtResource("i_duskleaf")
-operation = NodePath("../../Operation")
-
-[node name="SalesWindow" parent="World/Stage" node_paths=PackedStringArray("operation") instance=ExtResource("sales_window")]
+[node name="SalesWindow" parent="World/Stage" instance=ExtResource("sales_window")]
 unique_name_in_owner = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, 0, 5)
-operation = NodePath("../Operation")
-
-[node name="Office" type="Node3D" parent="World/Stage"]
-
-[node name="Desk" type="MeshInstance3D" parent="World/Stage/Office"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.4, 0.38, -1.3)
-cast_shadow = 0
-script = ExtResource("mesh")
-shape_kind = 1
-size = Vector3(1.6, 0.76, 0.8)
-color = Color(0.1412, 0.1686, 0.2431, 1)
-
-[node name="DeskTop" type="MeshInstance3D" parent="World/Stage/Office"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.4, 0.78, -1.3)
-cast_shadow = 0
-script = ExtResource("mesh")
-shape_kind = 1
-size = Vector3(1.66, 0.04, 0.86)
-color = Color(0.5529, 0.5882, 0.6745, 1)
-
-[node name="Chair" type="MeshInstance3D" parent="World/Stage/Office"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.4, 0.25, -0.6)
-cast_shadow = 0
-script = ExtResource("mesh")
-shape_kind = 1
-size = Vector3(0.5, 0.5, 0.5)
-color = Color(0.1804, 0.2118, 0.2941, 1)
-
-[node name="OfficeScreen" type="Node3D" parent="World/Stage/Office"]
-unique_name_in_owner = true
-transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 4.9, 1.45, -0.2)
-script = ExtResource("screen")
-content_scene = ExtResource("office_board")
-resolution = Vector2i(1100, 820)
-width_meters = 1.7
 
 [node name="StashShelf" type="Node3D" parent="World/Stage" node_paths=PackedStringArray("operation")]
 unique_name_in_owner = true
@@ -603,72 +319,6 @@ text = "Front"
 font_size = 56
 outline_size = 14
 
-[node name="Workers" type="Node3D" parent="World/Stage"]
-unique_name_in_owner = true
-
-[node name="CrafterA" parent="World/Stage/Workers" node_paths=PackedStringArray("operation", "sales_window", "board") instance=ExtResource("worker")]
-transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, -1.5, 0, 1.2)
-role = 0
-slot = 1
-wage_per_hour = 14
-operation = NodePath("../../Operation")
-sales_window = NodePath("../../SalesWindow")
-board = NodePath("../../Garden/LaneBoard")
-
-[node name="CrafterB" parent="World/Stage/Workers" node_paths=PackedStringArray("operation", "sales_window", "board") instance=ExtResource("worker")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.4, 0, -0.9)
-role = 0
-slot = 2
-wage_per_hour = 14
-operation = NodePath("../../Operation")
-sales_window = NodePath("../../SalesWindow")
-board = NodePath("../../Garden/LaneBoard")
-
-[node name="DealerA" parent="World/Stage/Workers" node_paths=PackedStringArray("operation", "sales_window", "board") instance=ExtResource("worker")]
-transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, -4.35, 0, 4.3)
-role = 1
-slot = 1
-wage_per_hour = 10
-operation = NodePath("../../Operation")
-sales_window = NodePath("../../SalesWindow")
-board = NodePath("../../Garden/LaneBoard")
-
-[node name="DealerB" parent="World/Stage/Workers" node_paths=PackedStringArray("operation", "sales_window", "board") instance=ExtResource("worker")]
-transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, -4.4, 0, 2.9)
-role = 1
-slot = 2
-wage_per_hour = 10
-operation = NodePath("../../Operation")
-sales_window = NodePath("../../SalesWindow")
-board = NodePath("../../Garden/LaneBoard")
-
-[node name="GuardA" parent="World/Stage/Workers" node_paths=PackedStringArray("operation", "sales_window", "board") instance=ExtResource("worker")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.6, 0, -4.6)
-role = 2
-slot = 1
-wage_per_hour = 12
-operation = NodePath("../../Operation")
-sales_window = NodePath("../../SalesWindow")
-board = NodePath("../../Garden/LaneBoard")
-
-[node name="GuardB" parent="World/Stage/Workers" node_paths=PackedStringArray("operation", "sales_window", "board") instance=ExtResource("worker")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.6, 0, -4.6)
-role = 2
-slot = 2
-wage_per_hour = 12
-operation = NodePath("../../Operation")
-sales_window = NodePath("../../SalesWindow")
-board = NodePath("../../Garden/LaneBoard")
-
-[node name="GuardC" parent="World/Stage/Workers" node_paths=PackedStringArray("operation", "sales_window", "board") instance=ExtResource("worker")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.95, 0, -4.7)
-role = 2
-slot = 3
-wage_per_hour = 12
-operation = NodePath("../../Operation")
-sales_window = NodePath("../../SalesWindow")
-board = NodePath("../../Garden/LaneBoard")
-
 [node name="WalkableArea" type="Node3D" parent="World/Stage"]
 unique_name_in_owner = true
 script = ExtResource("walkable")
@@ -724,6 +374,4 @@ text = "Cash $0   Rep 0"
 font_size = 36
 outline_size = 8
 
-[connection signal="primary_action_pressed" from="World/XRPlayerRig" to="." method="_on_rig_primary_action_pressed"]
-[connection signal="secondary_action_pressed" from="World/XRPlayerRig" to="." method="_on_rig_secondary_action_pressed"]
 [connection signal="state_entered" from="World/Stage/DayCycle/CycleChart/Root/Night" to="World/Stage/DayCycle" method="_on_night_state_entered"]

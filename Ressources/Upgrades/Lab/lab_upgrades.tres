@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="UpgradeCatalog" format=3]
+
+[ext_resource type="Script" path="res://Scripts/Resources/upgrade_catalog.gd" id="catalog"]
+[ext_resource type="Script" path="res://Scripts/Resources/upgrade_data.gd" id="upgrade"]
+[ext_resource type="Resource" path="res://Ressources/Upgrades/Lab/prod_equipment.tres" id="prod_equipment"]
+[ext_resource type="Resource" path="res://Ressources/Upgrades/Lab/prod_batch.tres" id="prod_batch"]
+[ext_resource type="Resource" path="res://Ressources/Upgrades/Lab/prod_recipe_fizz.tres" id="prod_recipe_fizz"]
+[ext_resource type="Resource" path="res://Ressources/Upgrades/Lab/prod_recipe_haze.tres" id="prod_recipe_haze"]
+[ext_resource type="Resource" path="res://Ressources/Upgrades/Lab/work_crafter.tres" id="work_crafter"]
+
+[resource]
+script = ExtResource("catalog")
+area_name = "Lab"
+upgrades = Array[ExtResource("upgrade")]([ExtResource("prod_equipment"), ExtResource("prod_batch"), ExtResource("prod_recipe_fizz"), ExtResource("prod_recipe_haze"), ExtResource("work_crafter")])

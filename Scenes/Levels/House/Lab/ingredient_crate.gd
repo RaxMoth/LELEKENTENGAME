@@ -9,7 +9,9 @@ extends Node3D
 const ITEM_SCENE: PackedScene = preload("res://Scenes/Levels/House/Lab/IngredientItem.tscn")
 
 @export var ingredient: IngredientData
-@export var operation: Operation
+
+## The house's shared state (handed over by the Lab at setup); pays for pieces.
+var operation: Operation = null
 ## Radius of the sphere hands and pointers grab it with.
 @export var grab_radius: float = 0.3
 

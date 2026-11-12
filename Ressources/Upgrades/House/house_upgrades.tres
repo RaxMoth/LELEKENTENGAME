@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="UpgradeCatalog" format=3]
+
+[ext_resource type="Script" path="res://Scripts/Resources/upgrade_catalog.gd" id="catalog"]
+[ext_resource type="Script" path="res://Scripts/Resources/upgrade_data.gd" id="upgrade"]
+[ext_resource type="Resource" path="res://Ressources/Upgrades/House/work_training.tres" id="work_training"]
+[ext_resource type="Resource" path="res://Ressources/Upgrades/House/house_storage.tres" id="house_storage"]
+[ext_resource type="Resource" path="res://Ressources/Upgrades/House/house_security.tres" id="house_security"]
+
+[resource]
+script = ExtResource("catalog")
+area_name = "House"
+upgrades = Array[ExtResource("upgrade")]([ExtResource("work_training"), ExtResource("house_storage"), ExtResource("house_security")])

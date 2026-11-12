@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="UpgradeCatalog" format=3]
+
+[ext_resource type="Script" path="res://Scripts/Resources/upgrade_catalog.gd" id="catalog"]
+[ext_resource type="Script" path="res://Scripts/Resources/upgrade_data.gd" id="upgrade"]
+[ext_resource type="Resource" path="res://Ressources/Upgrades/Sales/sales_queue.tres" id="sales_queue"]
+[ext_resource type="Resource" path="res://Ressources/Upgrades/Sales/sales_patience.tres" id="sales_patience"]
+[ext_resource type="Resource" path="res://Ressources/Upgrades/Sales/sales_vip.tres" id="sales_vip"]
+[ext_resource type="Resource" path="res://Ressources/Upgrades/Sales/work_dealer.tres" id="work_dealer"]
+
+[resource]
+script = ExtResource("catalog")
+area_name = "Sales"
+upgrades = Array[ExtResource("upgrade")]([ExtResource("sales_queue"), ExtResource("sales_patience"), ExtResource("sales_vip"), ExtResource("work_dealer")])

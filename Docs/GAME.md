@@ -128,7 +128,8 @@ mostly needs your blaster.
 
 ### Office (inside, east)
 
-The wall screen sells the five branches (also in the 2D Shop) and lets you
+The wall screen sells the five branches (also in the 2D Shop; each area
+keeps its upgrades in its own catalog under `Ressources/Upgrades/`) and lets you
 **bribe** the police (cost grows with heat). Upgrades need cash and
 reputation and change how you play:
 
@@ -198,20 +199,24 @@ there (`xr/openxr/enabled.macos=false`).
 
 ## How it is built
 
+The level is split into **three areas** that can be developed in parallel —
+defense, customers and the house — each a self-contained scene with its own
+script, data, upgrade catalog and smoke checks. The contract between them is
+`HouseFront` + `HouseContext` + `Operation`; see
+[`Scenes/Levels/House/README.md`](../Scenes/Levels/House/README.md).
+
 ```
-Scenes/Levels/House/House.tscn               inherits LevelBase
+Scenes/Levels/House/House.tscn                inherits LevelBase; house_level.gd (HouseLevel) runs the shift
 └── World
     ├── Stage
-    │   ├── Operation          the shared house state: stash, heat, cash flow, prices, upgrade effects
+    │   ├── Operation          the shared house state: stash, heat, cash flow, prices, recipes, upgrade effects
     │   ├── DayCycle           DayClock + sun / sky / lamps; StateChart Day -> Night
-    │   ├── PressureDirector   spawns customers and attackers by time, heat, stash, reputation
     │   ├── HouseShell         walls / doors / windows / floor built from a few numbers
-    │   ├── Garden             LaneBoard (3 lanes), FrontDoor, BuildScreen (BuildBoard), fence, gate
-    │   ├── Lab                Grinder, Cooker, Press (Workstation), four IngredientCrates
-    │   ├── SalesWindow        counter, queue spots, SalesScreen (SalesBoard)
-    │   ├── Office             desk, OfficeScreen (OfficeBoard)
+    │   ├── FrontGarden        DEFENSE   Garden/FrontGarden.tscn: lanes, door, towers, build board, guards, AttackerDirector
+    │   ├── SalesWindow        CUSTOMERS Sales/SalesWindow.tscn: window, queue, board, dealers, CustomerFlow
+    │   ├── Lab                HOUSE     Lab/Lab.tscn: crates, grinder, cooker, press, crafters, recipes
+    │   ├── Office             HOUSE     Office/Office.tscn: upgrade board, bribes
     │   ├── StashShelf         one bag per unit in stock
-    │   ├── Workers            crafters, dealers, guards (hidden until hired)
     │   ├── WalkableArea       floor rectangles the player may stand on
     │   ├── TravelSpots        lab, front, window, office (flat keys 1-4)
     │   └── WristStatus        moved onto the off-hand wrist at setup
@@ -221,19 +226,21 @@ Scenes/Levels/House/House.tscn               inherits LevelBase
 
 | Piece | Role |
 |---|---|
-| `Operation` | One node every front reads and writes — the natural place to replicate for co-op |
+| `HouseFront` / `HouseContext` | The front contract: setup with the context, hooks the level calls, signals back (announce, warn, score, lose) |
+| `Operation` | One node every front reads and writes — the only shared state, and the natural place to replicate for co-op |
+| `HouseLevel` | Runs the shift: time, wages for `Types.GROUP_CREW`, win at dawn, lose on `shift_lost`, wrist status from the fronts' status lines |
 | `Grabbable`, `ItemSocket`, `PointerButton`, `InteractionQuery` (`Scripts/XR/`) | Physics-free hand interaction: grab at the hand or along the beam, drop into sockets, press 3D buttons |
 | `XRLocomotion` | Teleport, smooth movement, snap / smooth turning, flat WASD and travel spots; never leaves the `WalkableArea` |
 | `Workstation` | StateChart Idle ⇄ Running; `TimingGauge` skill check; grinder / cooker / press by `step` |
-| `Customer`, `SalesWindow`, `SalesBoard` | Pooled customers with StateChart Walking ⇄ Waiting → Leaving; the window runs the sale rules (`SalesMath`) |
-| `LaneBoard`, `LaneEnemy`, `Turret`, `LaneDefender`, `FrontDoor` | Lane math defense; attackers are pooled with StateChart Alive { Advancing ⇄ Attacking } → Dead |
-| `Worker` | StateChart Absent → Working ⇄ Striking |
+| `Customer`, `CustomerFlow`, `SalesWindow`, `SalesBoard` | Pooled customers with StateChart Walking ⇄ Waiting → Leaving; the window runs the sale rules (`SalesMath`) |
+| `LaneBoard`, `LaneEnemy`, `Turret`, `LaneDefender`, `FrontDoor`, `AttackerDirector` | Lane math defense; attackers are pooled with StateChart Alive { Advancing ⇄ Attacking } → Dead |
+| `Worker` | StateChart Absent → Working ⇄ Striking; lives in its front's scene |
 | Pure logic (`Scripts/Game/`) | `TimingGauge`, `QualityMath`, `Stash`, `SalesMath`, `CustomerOrder`, `HeatMeter`, `DayClock` — unit-tested |
 
-All numbers are data: ingredients, recipes, customer types, towers and
-upgrades in `Ressources/`, attackers as exports on their scenes in
-`Scenes/Levels/House/Garden/`, pressure and timing on `PressureDirector`,
-`DayCycle` and `Operation` in `House.tscn`.
+All numbers are data: ingredients, recipes, customer types and towers in
+`Ressources/`, upgrades in one catalog per area (`Ressources/Upgrades/<Area>/`),
+attackers as exports on their scenes, pacing on `AttackerDirector`,
+`CustomerFlow`, `DayCycle` and `Operation`.
 
 ## VR design decisions
 

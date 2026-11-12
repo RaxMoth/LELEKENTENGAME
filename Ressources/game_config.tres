@@ -7,24 +7,12 @@
 [ext_resource type="Resource" path="res://Ressources/Levels/house.tres" id="5_house"]
 [ext_resource type="Script" uid="uid://bejsij112wfse" path="res://Scripts/Resources/product_data.gd" id="10_n01iv"]
 [ext_resource type="Script" uid="uid://blem8amxm8bbh" path="res://Scripts/Resources/game_config.gd" id="11_hlth3"]
-[ext_resource type="Script" uid="uid://bjps7qydt4qxq" path="res://Scripts/Resources/upgrade_data.gd" id="12_452dx"]
+[ext_resource type="Script" path="res://Scripts/Resources/upgrade_catalog.gd" id="12_catalog"]
+[ext_resource type="Resource" path="res://Ressources/Upgrades/Lab/lab_upgrades.tres" id="catalog_lab"]
+[ext_resource type="Resource" path="res://Ressources/Upgrades/Sales/sales_upgrades.tres" id="catalog_sales"]
+[ext_resource type="Resource" path="res://Ressources/Upgrades/Defense/defense_upgrades.tres" id="catalog_defense"]
+[ext_resource type="Resource" path="res://Ressources/Upgrades/House/house_upgrades.tres" id="catalog_house"]
 [ext_resource type="Texture2D" path="res://Assets/Icons/cash.svg" id="18_cash"]
-[ext_resource type="Resource" path="res://Ressources/Upgrades/prod_equipment.tres" id="u_prod_equipment"]
-[ext_resource type="Resource" path="res://Ressources/Upgrades/prod_batch.tres" id="u_prod_batch"]
-[ext_resource type="Resource" path="res://Ressources/Upgrades/prod_recipe_fizz.tres" id="u_prod_recipe_fizz"]
-[ext_resource type="Resource" path="res://Ressources/Upgrades/prod_recipe_haze.tres" id="u_prod_recipe_haze"]
-[ext_resource type="Resource" path="res://Ressources/Upgrades/sales_queue.tres" id="u_sales_queue"]
-[ext_resource type="Resource" path="res://Ressources/Upgrades/sales_patience.tres" id="u_sales_patience"]
-[ext_resource type="Resource" path="res://Ressources/Upgrades/sales_vip.tres" id="u_sales_vip"]
-[ext_resource type="Resource" path="res://Ressources/Upgrades/def_door.tres" id="u_def_door"]
-[ext_resource type="Resource" path="res://Ressources/Upgrades/def_blaster.tres" id="u_def_blaster"]
-[ext_resource type="Resource" path="res://Ressources/Upgrades/def_heavy_gun.tres" id="u_def_heavy_gun"]
-[ext_resource type="Resource" path="res://Ressources/Upgrades/work_crafter.tres" id="u_work_crafter"]
-[ext_resource type="Resource" path="res://Ressources/Upgrades/work_dealer.tres" id="u_work_dealer"]
-[ext_resource type="Resource" path="res://Ressources/Upgrades/work_guard.tres" id="u_work_guard"]
-[ext_resource type="Resource" path="res://Ressources/Upgrades/work_training.tres" id="u_work_training"]
-[ext_resource type="Resource" path="res://Ressources/Upgrades/house_storage.tres" id="u_house_storage"]
-[ext_resource type="Resource" path="res://Ressources/Upgrades/house_security.tres" id="u_house_security"]
 
 [sub_resource type="Resource" id="Resource_first_dawn"]
 script = ExtResource("1_tv74q")
@@ -159,7 +147,7 @@ fallback_price_text = "$2.99"
 script = ExtResource("11_hlth3")
 game_title = "Porchlight VR"
 currencies = Array[ExtResource("2_uypxx")]([SubResource("Resource_cash")])
-upgrades = Array[ExtResource("12_452dx")]([ExtResource("u_prod_equipment"), ExtResource("u_prod_batch"), ExtResource("u_prod_recipe_fizz"), ExtResource("u_prod_recipe_haze"), ExtResource("u_sales_queue"), ExtResource("u_sales_patience"), ExtResource("u_sales_vip"), ExtResource("u_def_door"), ExtResource("u_def_blaster"), ExtResource("u_def_heavy_gun"), ExtResource("u_work_crafter"), ExtResource("u_work_dealer"), ExtResource("u_work_guard"), ExtResource("u_work_training"), ExtResource("u_house_storage"), ExtResource("u_house_security")])
+upgrade_catalogs = Array[ExtResource("12_catalog")]([ExtResource("catalog_lab"), ExtResource("catalog_sales"), ExtResource("catalog_defense"), ExtResource("catalog_house")])
 products = Array[ExtResource("10_n01iv")]([SubResource("Resource_starter_pack"), SubResource("Resource_no_ads")])
 levels = Array[ExtResource("4_00tpa")]([ExtResource("5_house")])
 xr_start_level_id = &"house"
