@@ -2,7 +2,8 @@
 ## front room and the porch. It swings on a hinge — grip a handle (inside or
 ## outside) and pull or push it open, walk through, swing it shut; it latches
 ## when nearly closed. A deadbolt on each side locks it (only when closed).
-## In the flat simulator a click on a handle opens / closes it.
+## Pulling the trigger on a handle (or a click in the flat simulator) swings
+## it fully open or shut.
 ##
 ## The door matters in a raid: officers hammer it, and an open or unlocked
 ## door gives way much faster (get_damage_multiplier). When its health runs
@@ -66,6 +67,8 @@ var _last_rattle_msec: int = -100000
 @onready var _panel: Node3D = %Panel
 @onready var _inside_handle: HingeHandle = %InsideHandle
 @onready var _outside_handle: HingeHandle = %OutsideHandle
+@onready var _inside_handle_press: PointerButton = %InsideHandlePress
+@onready var _outside_handle_press: PointerButton = %OutsideHandlePress
 @onready var _inside_lock: PointerButton = %InsideLock
 @onready var _outside_lock: PointerButton = %OutsideLock
 @onready var _bar_fill: MeshInstance3D = %BarFill
@@ -82,6 +85,9 @@ func _ready() -> void:
 		handle.angle_dragged.connect(drag_to_angle)
 		handle.toggle_requested.connect(toggle_open)
 		handle.released.connect(func(_item: Grabbable) -> void: end_drag())
+	# The trigger on a handle swings the door fully (grip still drags it by hand).
+	for handle_press: PointerButton in [_inside_handle_press, _outside_handle_press]:
+		handle_press.pressed.connect(func(_button: PointerButton) -> void: toggle_open())
 	for lock_button: PointerButton in [_inside_lock, _outside_lock]:
 		lock_button.pressed.connect(func(_button: PointerButton) -> void: toggle_lock())
 	set_max_health(base_max_health)

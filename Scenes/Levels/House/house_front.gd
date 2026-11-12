@@ -114,6 +114,11 @@ func get_raiders_left() -> int:
 	return 0
 
 
+## @virtual Admin / tests: take every raider of the current wave out at once.
+func remove_raiders() -> void:
+	pass
+
+
 ## @virtual Every wave of the raid is beaten.
 func on_raid_cleared(_raid_number: int) -> void:
 	pass

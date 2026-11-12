@@ -123,6 +123,13 @@ func get_raiders_left() -> int:
 	return director.get_raiders_left()
 
 
+func remove_raiders() -> void:
+	director.clear_pending()
+	for enemy: LaneEnemy in board.get_enemies().duplicate():
+		if enemy.is_alive():
+			enemy.take_hit(1000000.0, self, false, true)
+
+
 func get_status_line() -> String:
 	var door_state: String = tr("open") if door.is_open() else (tr("locked") if door.is_locked() else tr("unlocked"))
 	return tr("Door %d%% %s") % [roundi(door.get_health_ratio() * 100.0), door_state]

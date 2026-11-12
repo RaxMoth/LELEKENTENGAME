@@ -20,6 +20,7 @@
 [ext_resource type="PackedScene" path="res://Scenes/Levels/House/Office/Office.tscn" id="office_scene"]
 [ext_resource type="PackedScene" path="res://Scenes/Levels/House/Cycle/HouseCycle.tscn" id="house_cycle_scene"]
 [ext_resource type="PackedScene" path="res://Scenes/Levels/House/Armory/Armory.tscn" id="armory_scene"]
+[ext_resource type="PackedScene" path="res://Scenes/Levels/House/Admin/Admin.tscn" id="admin_scene"]
 
 [sub_resource type="ProceduralSkyMaterial" id="sky_material"]
 sky_top_color = Color(0.051, 0.0627, 0.0902, 1)
@@ -135,6 +136,9 @@ unique_name_in_owner = true
 unique_name_in_owner = true
 
 [node name="Armory" parent="World/Stage" instance=ExtResource("armory_scene")]
+unique_name_in_owner = true
+
+[node name="Admin" parent="World/Stage" instance=ExtResource("admin_scene")]
 unique_name_in_owner = true
 
 [node name="SalesWindow" parent="World/Stage" instance=ExtResource("sales_window")]

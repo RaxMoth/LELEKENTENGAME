@@ -243,3 +243,18 @@ locked,locked,verriegelt
 open,open,offen
 unlocked,unlocked,entriegelt
 unlimited ammo,unlimited ammo,unbegrenzte Munition
+Admin,Admin,Admin
+"+$1,000","+$1,000","+1.000 $"
+"+$10,000","+$10,000","+10.000 $"
+Day -1,Day -1,Tag -1
+Day +1,Day +1,Tag +1
+Start raid now,Start raid now,Razzia jetzt starten
+Next wave now,Next wave now,Nächste Welle jetzt
+Clear wave,Clear wave,Welle beseitigen
++50 reputation,+50 reputation,+50 Ruf
+Time x1 / x3,Time x1 / x3,Zeit x1 / x3
+Win shift,Win shift,Schicht gewinnen
+"Day %d · day %d of %d · raid %d · %s
+Cash $%d · time x%d","Day %d · day %d of %d · raid %d · %s
+Cash $%d · time x%d","Tag %d · Tag %d von %d · Razzia %d · %s
+Geld %d $ · Zeit x%d"

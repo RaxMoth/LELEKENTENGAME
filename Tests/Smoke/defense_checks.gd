@@ -169,6 +169,29 @@ static func _check_front_door(test: SmokeTest, level: HouseLevel) -> void:
 	await test.frames(3)
 	test.check(door.is_locked() and door.get_damage_multiplier() < door.unlocked_damage_multiplier, "bolted from inside, the door holds best")
 	door.set_locked(false)
+	await _check_door_with_tracked_hand(test, rig, door)
+
+
+## The headset path: a tracked hand grips the handle and swings the door
+## around its hinge, lets go, and the door stays where it was pulled to.
+static func _check_door_with_tracked_hand(test: SmokeTest, rig: XRPlayerRig, door: FrontDoor) -> void:
+	var hand: XRController3D = rig.get_node("LeftHand") as XRController3D
+	var hand_transform: Transform3D = hand.global_transform
+	hand.global_position = door.get_inside_handle().global_position
+	await test.frames(1)
+	rig.call("_on_left_hand_button_pressed", String(Types.XR_ACTION_GRIP_CLICK))
+	await test.frames(1)
+	var hinge: Vector3 = door.global_position + Vector3(-0.55, 1.0, 0.0)
+	for step: int in 30:
+		var angle: float = deg_to_rad(step * 3.0)
+		hand.global_position = hinge + Vector3(cos(angle), 0.0, sin(angle)) * 0.95
+		await test.frames(1)
+	rig.call("_on_left_hand_button_released", String(Types.XR_ACTION_GRIP_CLICK))
+	await test.frames(2)
+	test.check(door.get_open_angle() > 60.0 and door.is_passable(), "a tracked hand gripping the handle swings the door open")
+	hand.global_transform = hand_transform
+	door.close_fully()
+	await test.wait_until(func() -> bool: return not door.is_open())
 
 
 ## Points the flat cursor at an attacker and returns the cursor's pointer.
