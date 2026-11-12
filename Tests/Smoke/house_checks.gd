@@ -27,6 +27,7 @@ static func run_start(test: SmokeTest, level: HouseLevel) -> void:
 
 ## After the fronts' checks: office, crew, controllers, popups, night, losing.
 static func run_end(test: SmokeTest, level: HouseLevel) -> void:
+	await _check_admin(test, level)
 	await _check_office(test, level)
 	_check_crew_wages(test, level)
 	await _check_controllers(test, level)
@@ -46,6 +47,27 @@ static func run_end(test: SmokeTest, level: HouseLevel) -> void:
 	test.check(operation.stash.get_total() == 0, "losing the door loses the stash")
 	await test.frames(30)
 	UI.close_top_popup()
+
+
+## The admin terminal in the office (debug builds): cash and day by pointer.
+static func _check_admin(test: SmokeTest, level: HouseLevel) -> void:
+	var rig: XRPlayerRig = level.rig
+	var admin: AdminPanel = level.get_front(AdminPanel) as AdminPanel
+	test.check(admin != null and admin.visible, "the admin terminal is there in debug builds")
+	rig.locomotion.teleport_to(Vector3(2.4, 0.0, -0.4), 0.0)
+	await test.frames(3)
+	var screen: WorldScreen = admin.get_screen()
+	var board: AdminBoard = admin.get_board()
+	var cash_before: int = level.operation.get_cash()
+	rig.tap_world_point(screen.pixel_to_world(board.get_button(AdminBoard.ACTION_CASH_SMALL).get_global_rect().get_center()))
+	await test.frames(3)
+	test.check(level.operation.get_cash() == cash_before + AdminPanel.SMALL_CASH, "admin: pointing at +$1,000 gives cash")
+	var day_before: int = Profile.operation.day_number
+	rig.tap_world_point(screen.pixel_to_world(board.get_button(AdminBoard.ACTION_DAY_FORWARD).get_global_rect().get_center()))
+	await test.frames(3)
+	test.check(Profile.operation.day_number == day_before + 1 and level.cycle.get_day_in_cycle() == RaidPlanner.get_day_in_cycle(day_before + 1, level.cycle.raid_data), "admin: Day +1 moves the cycle on")
+	test.check(admin.run_action(AdminBoard.ACTION_DAY_BACK) and Profile.operation.day_number == day_before, "admin: Day -1 moves it back")
+	test.check(not admin.run_action(AdminBoard.ACTION_NEXT_WAVE), "admin: wave actions wait for a raid")
 
 
 static func _check_office(test: SmokeTest, level: HouseLevel) -> void:
@@ -94,7 +116,7 @@ static func _check_raid_waves(test: SmokeTest, level: HouseLevel) -> void:
 	var cycle: HouseCycle = level.cycle
 	var garden: FrontGarden = level.get_front(FrontGarden) as FrontGarden
 	var window: SalesWindow = level.get_front(SalesWindow) as SalesWindow
-	for enemy: LaneEnemy in garden.board.get_enemies().duplicate():
+	for enemy: Raider in garden.yard.get_raiders().duplicate():
 		enemy.take_hit(1000000.0)
 	Profile.operation.day_number = cycle.get_days_per_cycle()
 	test.check(cycle.is_raid_day() and cycle.get_day_in_cycle() == cycle.get_days_per_cycle(), "day 3 of the cycle is the raid day")
@@ -111,7 +133,7 @@ static func _check_raid_waves(test: SmokeTest, level: HouseLevel) -> void:
 	test.check(await test.wait_until(func() -> bool: return cycle.is_wave_active()), "the first wave starts")
 	await test.wait_until(func() -> bool: return garden.director.get_pending_spawn_count() == 0)
 	test.check(garden.director.get_raiders_left() == 3, "the first wave brings three cops")
-	for raider: LaneEnemy in garden.board.get_enemies().duplicate():
+	for raider: Raider in garden.yard.get_raiders().duplicate():
 		raider.take_hit(1000000.0)
 	test.check(await test.wait_until(func() -> bool: return not cycle.is_wave_active() and cycle.is_raid_active()), "beating every officer ends the wave, the raid goes on")
 	cycle.skip_wave_break()

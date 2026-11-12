@@ -118,6 +118,12 @@ func skip_wave_break() -> void:
 		_seconds_until_wave = 0.0
 
 
+## Admin / tests: every raider of the current wave is taken out at once.
+func remove_raiders() -> void:
+	for front: HouseFront in _fronts:
+		front.remove_raiders()
+
+
 ## What the shift is about today, for the announcement at its start.
 func get_day_announcement() -> String:
 	var day_line: String = tr("Day %d") % Profile.operation.day_number

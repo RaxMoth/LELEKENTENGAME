@@ -5,13 +5,13 @@
 [resource]
 script = ExtResource("script")
 id = &"house_security"
-title = "Locks & Cameras"
-description = "Thieves get away with one unit less."
+title = "Steel Door Frame"
+description = "A steel frame and heavy locks: raiders and rams do 25% less damage to the front door."
 base_cost = 250
 cost_growth = 2.0
-max_level = 1
+max_level = 2
 base_value = 0.0
-value_per_level = 1.0
-value_format = "-%s stolen"
+value_per_level = 0.25
+value_format = "-%s door damage"
 branch = &"house"
 required_reputation = 8

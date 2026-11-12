@@ -6,7 +6,7 @@ the same files.
 
 | Area | Scene + script | Data | Upgrades | Smoke checks |
 |---|---|---|---|---|
-| **Defense** (tower defense in the front garden, the door, the armory) | `Garden/FrontGarden.tscn` · `front_garden.gd` (+ `attacker_director.gd`, attackers, towers, door, build board), `Armory/Armory.tscn` | `Ressources/Towers/`, `Ressources/Weapons/`, attacker exports in `Garden/*.tscn` | `Ressources/Upgrades/Defense/` | `Tests/Smoke/defense_checks.gd` |
+| **Defense** (the yard and its raids, the door, roof turrets, the Security PC, the armory) | `Garden/FrontGarden.tscn` · `front_garden.gd` (+ yard, raiders, squads, director, door, turrets, PC), `Armory/Armory.tscn` | `Ressources/Weapons/`, `Ressources/Raids/`, raider exports in `Garden/*.tscn`, yard obstacles | `Ressources/Upgrades/Defense/` | `Tests/Smoke/defense_checks.gd` |
 | **Customers** (back window and yard) | `Sales/SalesWindow.tscn` · `sales_window.gd` (+ `customer_flow.gd`, customers, sales board) | `Ressources/Customers/`, `CustomerFlow` exports | `Ressources/Upgrades/Sales/` | `Tests/Smoke/sales_checks.gd` |
 | **House** (lab, office, stash, crew, the shift, the 3-day cycle) | `House.tscn` · `house_level.gd`, `Cycle/HouseCycle.tscn`, `Lab/Lab.tscn`, `Office/Office.tscn`, `Workers/`, `operation.gd`, `day_cycle.gd`, `house_shell.gd`, `Surroundings/Surroundings.tscn` (lawn, trees, weeds, junk) | `Ressources/Ingredients/`, `Ressources/Recipes/`, `Lab.tscn` recipes | `Ressources/Upgrades/Lab/`, `Ressources/Upgrades/House/` | `Tests/Smoke/lab_checks.gd`, `house_checks.gd` |
 
@@ -14,7 +14,7 @@ Each area folder has its own README with the details.
 
 ## The contract
 
-Every front (`FrontGarden`, `SalesWindow`, `Lab`, `Office`, `Armory`) extends
+Every front (`FrontGarden`, `SalesWindow`, `Lab`, `Office`, `Armory`, `AdminPanel`) extends
 **`HouseFront`** and is its own scene, instanced once in `House.tscn`.
 
 - At setup it receives a **`HouseContext`**: `level` (is a shift
@@ -28,7 +28,8 @@ Every front (`FrontGarden`, `SalesWindow`, `Lab`, `Office`, `Armory`) extends
   `process_shift` (→ `_shift_process`, `_refresh_displays`),
   `on_nightfall`, `apply_upgrades`, `finish_shift`, `get_status_line`, and
   through `HouseCycle` the raid hooks `on_raid_started`,
-  `on_raid_wave_started(RaidWave)`, `get_raiders_left`, `on_raid_cleared`.
+  `on_raid_wave_started(RaidWave)`, `get_raiders_left`, `remove_raiders`,
+  `on_raid_cleared`.
 - **Fronts never reference each other.** Everything shared goes through
   **`Operation`** (stash, heat, cash, prices, recipes, upgrade values).
   Crew live inside their front's scene; the House pays everyone in

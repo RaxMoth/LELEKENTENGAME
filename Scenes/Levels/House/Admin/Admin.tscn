@@ -1,0 +1,16 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://Scenes/Levels/House/Admin/admin_panel.gd" id="admin"]
+[ext_resource type="Script" path="res://Scripts/XR/world_screen.gd" id="screen"]
+[ext_resource type="PackedScene" path="res://Scenes/Levels/House/Admin/AdminBoard.tscn" id="admin_board"]
+
+[node name="Admin" type="Node3D"]
+script = ExtResource("admin")
+
+[node name="AdminScreen" type="Node3D" parent="."]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.85, 1.95, -1.9)
+script = ExtResource("screen")
+content_scene = ExtResource("admin_board")
+resolution = Vector2i(1100, 860)
+width_meters = 1.0

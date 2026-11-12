@@ -1,6 +1,7 @@
 [gd_resource type="Resource" script_class="WeaponData" format=3]
 
 [ext_resource type="Script" path="res://Scripts/Resources/weapon_data.gd" id="script"]
+[ext_resource type="PackedScene" path="res://Scenes/Levels/House/Armory/Guns/Shotgun.tscn" id="model"]
 
 [resource]
 script = ExtResource("script")
@@ -8,6 +9,7 @@ id = &"shotgun"
 display_name = "Shotgun"
 description = "One heavy blast at short range. Stops anyone near the door."
 cost = 500
+model_scene = ExtResource("model")
 damage = 90.0
 fire_interval_seconds = 0.85
 range_meters = 12.0

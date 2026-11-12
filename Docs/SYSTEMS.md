@@ -83,9 +83,9 @@ SfxSynth.get_preset(&"coin")     # placeholder sounds: coin hit shoot jump explo
 
 ### Pools
 ```gdscript
-var bolt: LaneBolt = Pools.spawn(BOLT_SCENE, effects_root, muzzle.global_position) as LaneBolt   # Node3D scenes
-Pools.despawn(bolt)              # never queue_free pooled nodes
-Pools.prewarm(BOLT_SCENE, 30)
+var tracer: BeamTracer = Pools.spawn(TRACER_SCENE, effects_root, muzzle.global_position) as BeamTracer   # Node3D scenes
+Pools.despawn(tracer)            # never queue_free pooled nodes
+Pools.prewarm(TRACER_SCENE, 30)
 ```
 Pooled scripts may implement `_on_pool_spawned()` / `_on_pool_despawned()` to reset.
 Pools are cleared on every scene change.
@@ -158,7 +158,7 @@ LevelBase (Node3D)
 The controller menu / B / Y button toggles the pause menu (connected in
 `LevelBase.tscn`). There is no screen-space HUD — a headset can't see one.
 Show score, timer and status on in-world UI (a `WorldScreen` like
-the House's sales and build boards, or a `Label3D`), driven by `score_changed`.
+the House's sales board and armory, or a `Label3D`), driven by `score_changed`.
 
 ## Components (`Scripts/Components/`)
 
@@ -167,7 +167,7 @@ the House's sales and build boards, or a `Label3D`), driven by `score_changed`.
 | `HealthComponent` | Node | `apply_damage`, `heal`, `revive`, i-frames; signals `damaged`, `died` |
 | `DamageInfo` | RefCounted | amount, type, source, crit, `knockback` (Vector3) for one hit |
 | `HitFlash3DComponent` | Node | Flashes every mesh under a Node3D on damage |
-| `WaveSpawner` | Node | `WaveData` waves; spawns at `Marker3D`s by default; endless scaling; override `_create_enemy()` for other spawn rules (`LaneWaveSpawner` uses lanes) |
+| `WaveSpawner` | Node | `WaveData` waves; spawns at `Marker3D`s by default; endless scaling; override `_create_enemy()` for other spawn rules |
 
 Component wiring in scenes uses exported node references (e.g. a hit
 flash's `health_component`), not `get_parent()`.
@@ -188,7 +188,7 @@ Details and setup: [GAME.md](GAME.md).
 | `XRPointer` | Node3D | Ray along -Z. Clicks `WorldScreen`s itself; game code reads `ray_origin` / `ray_direction` and reports hits with `set_world_hit_distance()` |
 | `WorldScreen` | Node3D | Shows a Control scene (`content_scene`) or an existing viewport (`attach_viewport`) on a panel in the world and forwards pointer input as mouse events |
 | `RayMath` (`Scripts/Utils/`) | static | `intersect_plane` / `intersect_ground` / `intersect_sphere` / `distance_to_point`: picking without physics |
-| `LaneGrid` (`Scripts/Utils/`) | RefCounted | Lane-defense board: cell ↔ world, occupancy, `get_blocker()` |
+| `YardNavigation` (`Scripts/Game/`) | static | Steering around round obstacles, overlap, line of sight, cover spots, door spots — no physics |
 | `PlaceholderMesh3D`, `BlobShadow3D` (`Scripts/Utils/`) | MeshInstance3D | 3D art stand-ins with shared meshes / materials and a soft contact shadow |
 | `TexturedBox3D`, `GroundPlane3D` (`Scripts/Utils/`) | MeshInstance3D | A box / a flat patch of ground with a real material (`Assets/Materials/`), UVs in meters so `uv1_scale` = 1 / tile size; the ground can bake soft darker patches into vertex colors |
 | `PropScatter3D` (`Scripts/Utils/`) | MultiMeshInstance3D | Many copies of one mesh (impostor trees, weeds) from a list of (x, z, scale, yaw) placements, one draw call |
@@ -221,7 +221,7 @@ build the 2D menus and popups, and in-world screens shown on a `WorldScreen`.
 
 `Palette` (design color tokens — see [DESIGN.md](DESIGN.md)), `NumberFormat`
 (1.2K, 1,234, 2:05), `TweenFX` (UI tweens: pop, bounce_in, shake, pulse,
-count_label…), `RayMath`, `LaneGrid`, `PlaceholderMesh3D` & `BlobShadow3D`
+count_label…), `RayMath`, `PlaceholderMesh3D` & `BlobShadow3D`
 (3D art stand-ins), `WorldUVMesh`, `TexturedBox3D`, `GroundPlane3D` and
 `PropScatter3D` (real-art set dressing, see DESIGN.md), `SfxSynth`
 (generated sounds). `Tools/bake_impostor.gd` turns a heavy glTF tree or plant
@@ -232,7 +232,7 @@ into a few textured quads for them.
 `GameConfig`, `LevelData`, `CurrencyData`, `UpgradeData` (with `branch` and
 `required_reputation`), `UpgradeCatalog` (one per area), `ProductData` (in-app products), `AchievementData`,
 `RewardBundle`, `WaveData`/`WaveEntry`, and the game's own: `IngredientData`,
-`RecipeData`, `CustomerTypeData`, `TowerData`.
+`RecipeData`, `CustomerTypeData`, `WeaponData` / `WeaponCatalog`, `RaidData`.
 
 ## Game rules (`Scripts/Game/`, pure, unit-tested)
 
@@ -241,7 +241,10 @@ var gauge: TimingGauge = TimingGauge.new(0.7, 0.2)   # gauge.advance(delta); gau
 QualityMath.tier_from_score(QualityMath.combine(accuracies, equipment_bonus))   # 1..4: Cut, Street, Pure, Premium
 stash.add(&"glow", tier, units) / take(&"glow", min_tier, amount) / steal(n) / count(id, min_tier)
 SalesMath.evaluate(asked_price, max_price, haggles)   # Verdict.ACCEPT / COUNTER / REFUSE
-heat.add(n) / cool(delta) / take_pending_raid()
+heat.add(n) / cool(delta) / get_ratio()
+RaidPlanner.build_raid(data, raid_number, heat_ratio) / is_raid_day(day, data)   # waves of cops, SWAT, rams
+YardNavigation.steer(position, target, obstacles) / find_cover_spot(position, door, obstacles)
+loadout.buy_weapon(gun) / equip(gun) / try_fire(gun) / add_ammo(gun, rounds)   # WeaponLoadout
 clock.advance(delta) / get_hour() / get_phase() / just_passed_hour(25.0, delta)
 ```
 
@@ -261,8 +264,9 @@ RaidPlanner.build_raid(raid_data, raid_number, heat_ratio) -> Array[RaidWave]
 warning_requested.emit(tr("Police raid!"))     # from any front; score_earned / shift_lost likewise
 window.spawn_customer(order) / get_front_customer() / sell_to_front() / accept_counter()   # SalesWindow
 window.flow.spawn_customer() / is_active                                                   # CustomerFlow
-garden.try_build(cell) / fire_blaster(pointer) / board.spawn_enemy(scene)                  # FrontGarden
-garden.director.spawn_attacker(scene) / start_raid(level) / start_boss_wave() / is_active   # AttackerDirector
+garden.fire_weapon(pointer) / yard.spawn_raider(scene) / yard.pick_raider(origin, dir, range)   # FrontGarden, Yard
+garden.get_turrets() / security_pc.toggle_control() / turret.set_manual_aim(point)             # roof turrets, Security PC
+garden.director.queue_wave(wave) / spawn_raider(scene) / get_raiders_left() / is_active   # AttackerDirector
 lab.get_station(&"Cooker") / get_crate(&"glowcap")                                          # Lab
 GameConfig.get_default().get_upgrades() / find_upgrade(id)   # all area catalogs
 ```
@@ -270,7 +274,7 @@ See [GAME.md](GAME.md) for the scene tree and the design.
 
 ## Physics
 
-Combat and picking are ray / lane math (`RayMath`, `LaneGrid`), not physics
+Combat, picking and movement are ray / circle math (`RayMath`, `YardNavigation`), not physics
 bodies — cheaper on standalone headsets. If you add 3D physics, name its
 layers under `layer_names/3d_physics` in Project Settings and add matching
 `Types.LAYER_*` constants.

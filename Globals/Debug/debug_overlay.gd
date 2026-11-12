@@ -77,6 +77,10 @@ func _build_cheats() -> void:
 	_add_cheat("+50 reputation", func() -> void: Profile.operation.add_reputation(50))
 	_add_cheat("Unlock all levels", func() -> void: Profile.levels.unlock_all_for_debug())
 	_add_cheat("Refill energy", func() -> void: Profile.energy.refill())
+	# The house's admin terminal does the work (debug builds only).
+	_add_cheat("Day +1", func() -> void: _call_admin_action(AdminBoard.ACTION_DAY_FORWARD))
+	_add_cheat("Start raid now", func() -> void: _call_admin_action(AdminBoard.ACTION_RAID_NOW))
+	_add_cheat("Clear raid wave", func() -> void: _call_admin_action(AdminBoard.ACTION_CLEAR_WAVE))
 	_add_cheat("Win level", func() -> void: _call_on_level(&"win"))
 	_add_cheat("Lose level", func() -> void: _call_on_level(&"lose"))
 	_add_cheat("Time scale x1 / x3", func() -> void: Engine.time_scale = 3.0 if Engine.time_scale < 2.0 else 1.0)
@@ -94,6 +98,15 @@ func _add_cheat(label_text: String, action: Callable) -> void:
 	cheat_button.add_theme_font_size_override("font_size", 24)
 	cheat_button.pressed.connect(action)
 	_cheat_list.add_child(cheat_button)
+
+
+## Runs an AdminBoard action on the level's admin terminal, if there is one.
+func _call_admin_action(action_id: StringName) -> void:
+	for node: Node in get_tree().get_nodes_in_group(Types.GROUP_HOUSE_FRONT):
+		var admin_panel: AdminPanel = node as AdminPanel
+		if admin_panel != null:
+			admin_panel.run_action(action_id)
+			return
 
 
 func _call_on_level(method_name: StringName) -> void:

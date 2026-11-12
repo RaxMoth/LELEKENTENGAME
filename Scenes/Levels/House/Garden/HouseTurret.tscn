@@ -1,0 +1,68 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://Scenes/Levels/House/Garden/house_turret.gd" id="turret"]
+[ext_resource type="Script" path="res://Scripts/Utils/placeholder_mesh_3d.gd" id="mesh"]
+
+[node name="HouseTurret" type="Node3D"]
+script = ExtResource("turret")
+
+[node name="Mount" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.05, 0)
+cast_shadow = 0
+script = ExtResource("mesh")
+shape_kind = 1
+size = Vector3(0.6, 0.1, 0.6)
+color = Color(0.1412, 0.1686, 0.2431, 1)
+
+[node name="Head" type="Node3D" parent="."]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 0)
+
+[node name="Housing" type="MeshInstance3D" parent="Head"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.2, 0.04)
+cast_shadow = 0
+script = ExtResource("mesh")
+shape_kind = 1
+size = Vector3(0.42, 0.32, 0.5)
+color = Color(0.3569, 0.3922, 0.4824, 1)
+
+[node name="Sensor" type="MeshInstance3D" parent="Head"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.12, 0.39, -0.12)
+cast_shadow = 0
+script = ExtResource("mesh")
+size = Vector3(0.08, 0.08, 0.08)
+color = Color(0.898, 0.2824, 0.302, 1)
+glow = 1.2
+
+[node name="BarrelPivot" type="Node3D" parent="Head"]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.22, -0.1)
+
+[node name="Barrel" type="Node3D" parent="Head/BarrelPivot"]
+unique_name_in_owner = true
+
+[node name="Tube" type="MeshInstance3D" parent="Head/BarrelPivot/Barrel"]
+transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, 0, 0, -0.35)
+cast_shadow = 0
+script = ExtResource("mesh")
+shape_kind = 3
+size = Vector3(0.09, 0.7, 0.09)
+color = Color(0.1804, 0.2118, 0.2941, 1)
+
+[node name="Muzzle" type="Marker3D" parent="Head/BarrelPivot/Barrel"]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.74)
+
+[node name="Flash" type="MeshInstance3D" parent="Head/BarrelPivot/Barrel"]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.78)
+cast_shadow = 0
+script = ExtResource("mesh")
+size = Vector3(0.16, 0.16, 0.2)
+color = Color(1, 0.8784, 0.5412, 1)
+glow = 2.5
+unshaded = true
+
+[node name="CameraMount" type="Marker3D" parent="Head/BarrelPivot"]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.14, -0.05)

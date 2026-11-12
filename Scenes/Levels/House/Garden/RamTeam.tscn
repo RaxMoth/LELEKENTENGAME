@@ -1,0 +1,77 @@
+[gd_scene format=3]
+
+[ext_resource type="PackedScene" path="res://Scenes/Levels/House/Garden/Raider.tscn" id="base"]
+[ext_resource type="Script" path="res://Scripts/Utils/placeholder_mesh_3d.gd" id="mesh"]
+
+[node name="RamTeam" instance=ExtResource("base")]
+base_max_health = 420.0
+move_speed = 1.2
+rush_speed = 1.9
+door_damage = 90.0
+hit_interval_seconds = 2.4
+score_value = 50
+faction_name = "Battering ram"
+armor = 8.0
+is_battering_ram = true
+stage_distance = 7.5
+hit_radius = 0.8
+hit_height = 0.85
+body_radius = 0.6
+
+[node name="Body" parent="Visual"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.42, 0.55, 0)
+size = Vector3(0.5, 0.96, 0.5)
+color = Color(0.1804, 0.2118, 0.2941, 1)
+
+[node name="Head" parent="Visual"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.42, 1.2, 0.02)
+color = Color(0.1804, 0.2118, 0.2941, 1)
+
+[node name="Face" parent="Visual"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.42, 1.27, 0.07)
+color = Color(0.9608, 0.7216, 0.2549, 1)
+
+[node name="SecondBody" type="MeshInstance3D" parent="Visual"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.42, 0.55, -0.5)
+cast_shadow = 0
+script = ExtResource("mesh")
+shape_kind = 2
+size = Vector3(0.5, 0.96, 0.5)
+color = Color(0.1804, 0.2118, 0.2941, 1)
+
+[node name="SecondHead" type="MeshInstance3D" parent="Visual"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.42, 1.2, -0.48)
+cast_shadow = 0
+script = ExtResource("mesh")
+size = Vector3(0.46, 0.46, 0.46)
+color = Color(0.1804, 0.2118, 0.2941, 1)
+
+[node name="SecondFace" type="MeshInstance3D" parent="Visual"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.42, 1.27, -0.43)
+cast_shadow = 0
+script = ExtResource("mesh")
+size = Vector3(0.44, 0.0484, 0.44)
+color = Color(0.9608, 0.7216, 0.2549, 1)
+glow = 0.9
+
+[node name="Ram" type="MeshInstance3D" parent="Visual"]
+transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0.75, 0.1)
+cast_shadow = 0
+script = ExtResource("mesh")
+shape_kind = 3
+size = Vector3(0.24, 1.7, 0.24)
+color = Color(0.3569, 0.3922, 0.4824, 1)
+
+[node name="RamHead" type="MeshInstance3D" parent="Visual"]
+transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0.75, 0.98)
+cast_shadow = 0
+script = ExtResource("mesh")
+shape_kind = 3
+size = Vector3(0.34, 0.12, 0.34)
+color = Color(0.9608, 0.7216, 0.2549, 1)
+
+[node name="Shadow" parent="."]
+diameter = 1.5
+
+[node name="HealthComponent" parent="."]
+max_health = 420.0

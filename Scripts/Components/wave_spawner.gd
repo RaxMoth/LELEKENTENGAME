@@ -6,8 +6,8 @@
 ##   spawner.wave_started.connect(...); spawner.all_waves_cleared.connect(...)
 ##
 ## Spawned enemies may implement apply_wave_modifiers(health_multiplier, speed_multiplier).
-## Subclasses override _create_enemy() to spawn differently (LaneWaveSpawner
-## sends every enemy down a lane of the LaneBoard).
+## Subclasses override _create_enemy() to spawn differently (e.g. along a
+## level's own paths).
 ##
 ## Dependencies: WaveData, Pools, Global, Types autoloads
 class_name WaveSpawner

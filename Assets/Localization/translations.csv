@@ -243,6 +243,42 @@ locked,locked,verriegelt
 open,open,offen
 unlocked,unlocked,entriegelt
 unlimited ammo,unlimited ammo,unbegrenzte Munition
+Admin,Admin,Admin
+"+$1,000","+$1,000","+1.000 $"
+"+$10,000","+$10,000","+10.000 $"
+Day -1,Day -1,Tag -1
+Day +1,Day +1,Tag +1
+Start raid now,Start raid now,Razzia jetzt starten
+Next wave now,Next wave now,Nächste Welle jetzt
+Clear wave,Clear wave,Welle beseitigen
++50 reputation,+50 reputation,+50 Ruf
+Time x1 / x3,Time x1 / x3,Zeit x1 / x3
+Win shift,Win shift,Schicht gewinnen
+"Day %d · day %d of %d · raid %d · %s
+Cash $%d · time x%d","Day %d · day %d of %d · raid %d · %s
+Cash $%d · time x%d","Tag %d · Tag %d von %d · Razzia %d · %s
+Geld %d $ · Zeit x%d"
+Battering ram incoming!,Battering ram incoming!,Rammbock im Anmarsch!
+Turret %d of %d · %s,Turret %d of %d · %s,Turm %d von %d · %s
+manual,manual,manuell
+automatic,automatic,automatisch
+Release turret,Release turret,Turm freigeben
+Take control,Take control,Steuern
+Point to aim · trigger on the view fires,Point to aim · trigger on the view fires,Zeigen zum Zielen · Abzug auf dem Bild feuert
+Take control to aim it yourself,Take control to aim it yourself,Übernimm den Turm und ziele selbst
+No turrets mounted,No turrets mounted,Keine Türme montiert
+Buy Roof Turrets at the office board,Buy Roof Turrets at the office board,Dachtürme im Büro kaufen
+Roof Turrets,Roof Turrets,Dachtürme
+Mounts one more automatic turret on the house front. They aim at the nearest raider in the open.,Mounts one more automatic turret on the house front. They aim at the nearest raider in the open.,Montiert einen weiteren automatischen Turm an der Hausfront. Er zielt auf den nächsten Angreifer ohne Deckung.
+%s turrets,%s turrets,%s Türme
+Security PC,Security PC,Sicherheits-PC
+"A PC on the office desk shows each turret's camera: take one over, aim and fire it yourself.","A PC on the office desk shows each turret's camera: take one over, aim and fire it yourself.","Ein PC auf dem Bürotisch zeigt die Kamera jedes Turms: übernimm einen, ziele und feuere selbst."
+Steel Door Frame,Steel Door Frame,Stahl-Türrahmen
+"A steel frame and heavy locks: raiders and rams do 25% less damage to the front door.","A steel frame and heavy locks: raiders and rams do 25% less damage to the front door.","Stahlrahmen und schwere Schlösser: Angreifer und Rammböcke machen 25 % weniger Schaden an der Haustür."
+-%s door damage,-%s door damage,-%s Türschaden
+Previous,Previous,Zurück
+Better Rounds,Better Rounds,Bessere Munition
+Every gun you fire hits 8 harder.,Every gun you fire hits 8 harder.,Jede deiner Waffen trifft 8 stärker.
 Standing View When Seated,Standing View When Seated,Stehende Sicht im Sitzen
 Recipe book,Recipe book,Rezeptbuch
 "%d / %d found","%d / %d found","%d / %d gefunden"

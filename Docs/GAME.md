@@ -29,15 +29,16 @@ The game runs in **3-day cycles** (`HouseCycle`, tuned by
    **Craft** in the lab (grab ingredients, grind, cook, press), **sell** at
    the back window, earn **cash** and **reputation** — every sale also adds
    **heat**. Spend it: **guns and ammo** at the armory terminal in the
-   front room, **towers** on the garden tiles, **upgrades** at the office.
+   front room, **house upgrades** at the office (roof turrets, the Security
+   PC, a stronger door).
 2. **Night 3 — the raid.** Your sales got you noticed. When night falls on
    day 3 the back window closes, the clock stops and the police storm the
-   house in **waves** (cops, later SWAT). Close and **bolt the front door**,
-   then hold it with your guns and towers. A wave ends when every officer is
-   down; a short break follows, then the next.
+   house in **waves** (cops, later SWAT and a battering ram). Close and
+   **bolt the front door**, then hold it with your guns and turrets. A wave
+   ends when every raider is down; a short break follows, then the next.
 3. **Raid beaten → next cycle.** The shift is won, the heat drops to 0 and
    the next three days of selling begin. Every raid is harder than the one
-   before (more waves, more cops, SWAT from raid 2, tougher officers), and
+   before (more waves, more cops, SWAT and a ram from raid 2, tougher officers), and
    the heat you have when the raid starts adds cops to its last wave —
    bribes at the office make the raid smaller.
 
@@ -56,8 +57,8 @@ until the last wave is beaten.
 | Raid | Waves | Officers |
 |---|---|---|
 | 1 (night 3) | 2 | 3 then 4 cops |
-| 2 (night 6) | 3 | 4–6 cops per wave, SWAT from wave 2 |
-| 3 (night 9) | 4 | 5–8 cops, 2 SWAT every wave, +30% health |
+| 2 (night 6) | 3 | 4–6 cops per wave, SWAT from wave 2, a battering ram in the last wave |
+| 3 (night 9) | 4 | 5–8 cops, 2 SWAT every wave, +30% health, a ram in the last wave |
 | every heat point | | up to 4 extra cops in the last wave at full heat |
 
 **Win:** reach dawn on a selling day, or beat every wave of the raid — the
@@ -72,13 +73,14 @@ raid is fought again).
 |---|---|---|
 | Pick up / put in | Dominant-hand trigger: point at a crate, ingredient or batch and pull; point at a station slot and pull again | Click an item / click where to put it |
 | Carry by hand | Grip (either hand, at the hand or along the beam): hold to carry, let go at — or pointing at — a slot; a quick grip click keeps holding until the next click | — |
-| Use (station buttons, screens, build, door bolt) | Dominant-hand trigger | Click |
-| Fire your gun | Off-hand trigger (from the front room or porch) | Right-click, or click an attacker |
-| Front door | Grip a handle (or hold the dominant trigger on it), swing the door open or shut | Click a handle |
+| Use (station buttons, screens, door bolt) | Dominant-hand trigger | Click |
+| Fire your gun | Off-hand trigger (from the front room or porch); the gun sits in that hand | Right-click, or click a raider |
+| Front door | Trigger on a handle swings it fully open / shut; grip a handle to swing it by hand | Click a handle |
 | Walk | Dominant-hand stick walks where you look (like VRChat; "Smooth Movement", on by default) | WASD / arrows; 1–4 jump to lab, front, window, office |
 | Reposition | Off-hand stick forward: aim a teleport, release to jump | — |
 | Turn | Off-hand stick left / right: 30° snaps (or smooth turning) | Drag |
 | Seated play | "Standing View When Seated" (on by default) lifts a seated player to standing eye height; after sitting down or standing up, hold the headset's system button to recenter | — |
+| Admin (debug builds) | Terminal on the office wall | Same, or F3 |
 | Pause | Menu or B / Y | Esc |
 | Status | Look at your off-hand wrist | Lower left of the view |
 
@@ -91,7 +93,9 @@ Vive wands: trackpad click up teleports, left / right snap-turns. Bindings:
 
 Ingredient crates charge their price when you take a piece (refunded if it
 goes back unused). Ground pieces and batches dropped away from a station go
-back to its tray; nothing you worked on is ever destroyed by dropping it. Every step is a skill check: press the station's button
+back to its tray, or — when that is taken — into the nearest free station
+slot that takes them; nothing you worked on is ever destroyed or left
+hanging in the air. Every step is a skill check: press the station's button
 while the sweeping needle is in the green zone — the closer to its middle,
 the better.
 
@@ -135,37 +139,60 @@ Too high a price and they leave (reputation drops); too low and you leave
 money on the table. Prices also change how many people come
 (`SalesMath.get_demand_multiplier`). Every sale adds heat.
 
-### Front garden (outside, in front of the door)
+### The yard (outside, in front of the door)
 
-Three lanes run from the gate to the front door. Defend from the **front
-room** or the **porch**: shoot through the windows with the gun in your
-hand and build on garden tiles (pick a card on the board above the gate,
-then point at a tile). Towers can be built on selling days to prepare.
+A wide open field in front of the house — trees, pines, rocks, bushes and a
+parked car, fenced at the far edges. Defend from the **front room** (shoot
+through the windows) or the **porch**, with the gun in your hand and the
+house's roof turrets.
+
+Raiders enter at random points of the far edge and the sides and work
+their way in **in squads of three**: they dash from cover to cover (only
+part of a squad moves at once, the rest waits crouched behind a tree, rock
+or the car — longer while being shot at), gather in the last cover before
+the house, then **rush the door together** and hammer it. Cover really
+covers: shots from the house, turrets and guards are stopped by anything
+tall enough between them and the raider (rocks and bushes only hide a
+crouching body from shots at the same height).
 
 | Raider | Behavior | Comes |
 |---|---|---|
-| Cop | Slow, armored (6 off every hit) | Every raid wave |
+| Cop | Armored (6 off every hit), uses cover | Every raid wave |
 | SWAT | Tougher, heavy armor (12 off every hit) — bring armor-piercing rounds | From the 2nd wave of raid 2, every wave after |
+| Battering ram | Two officers with a ram: no cover, wait at the house for the rush, then hit the door for 90 every 2.4 s | Last wave of raid 2, one more every 3 raids |
 
-Junkies (thieves), mafia goons and the boss stay in the project
-(`Garden/*.tscn`, used by tests and showcases) but no longer come on their
-own; the raid is police only.
+### Roof turrets and the Security PC
+
+Turrets are house upgrades, not things built in the yard: **Roof Turrets**
+(office, defense branch) mounts up to three on the house front — above the
+door, then left and right. Each swings toward the raider closest to the
+door that it can see and fires when lined up. The **Security PC** upgrade
+puts a monitor on the office desk with each turret's live camera view:
+switch turrets, **take control**, point at the view to aim and pull the
+trigger on it to fire (held = keeps firing); release it and it aims on its
+own again.
 
 ### The front door
 
-The door between the front room and the porch swings on a hinge. Grip a
-handle (inside or outside) and pull or push; let go nearly shut and it
+The door between the front room and the porch swings on a hinge. Pull the
+trigger on a handle (inside or outside) to swing it fully open or shut, or
+grip a handle and pull or push it by hand; let go nearly shut and it
 latches. While it stands open (from 60°) the doorway is walkable, so you can
 step onto the porch and back. Each side has a **bolt** (press it with the
 trigger): it locks only a shut door, and a bolted door doesn't open.
 In a raid the door's state matters — raiders hit an **open** door 3× and an
-**unbolted** one 1.5× as hard as a bolted one.
+**unbolted** one 1.5× as hard as a bolted one; the **Steel Door Frame**
+upgrade takes 25% off every hit per level.
 
 ### Armory (front room, back wall)
 
 A terminal sells guns and ammo; the gun you buy goes straight into your
 hand, and you can switch between guns you own. The pistol is free and never
-runs dry, so you are never unarmed. "Better Blaster" adds damage to every gun.
+runs dry, so you are never unarmed. "Better Rounds" adds damage to every gun.
+Each gun has its own model in the off hand (lower right of the view in the
+flat simulator) and is animated on every shot: kick, muzzle flash and its
+moving part — the pistol's slide, the SMG's charging handle, the shotgun's
+pump, the rifle's bolt. An empty gun only clicks.
 
 | Gun | Cost | Damage | Shots/s | Range | Ammo (box) |
 |---|---|---|---|---|---|
@@ -174,14 +201,9 @@ runs dry, so you are never unarmed. "Better Blaster" adds damage to every gun.
 | Shotgun | $500 | 90 | 1.2 | 12 m | 16 for $40 (max 64) |
 | Rifle | $800 | 60, pierces armor | 1.8 | 40 m | 20 for $50 (max 100) |
 
-| Tower | Cost | Good against |
-|---|---|---|
-| Turret | $120 | Junkies (fast, weak bolts) |
-| Heavy gun | $260 (unlock) | Cops (slow, strong, pierces armor) |
-| Barricade | $80 | Holds anything in its lane |
-
-No single answer works: cops come in numbers, SWAT shrug off light bolts
-and the SMG, and the shotgun only reaches the door.
+No single answer works: cops come in numbers and hide, SWAT shrug off the
+SMG, the ram must die before it reaches the door, and the shotgun only
+reaches the porch.
 
 ### Office (inside, east)
 
@@ -194,9 +216,9 @@ reputation and change how you play:
 |---|---|
 | Production | Better Equipment (quality, wider green zones), Bigger Batches, Recipe: Fizz, Recipe: Haze |
 | Sales | Bigger Yard (queue spots), Waiting Bench (patience), VIP Access |
-| Defense | Reinforced Door, Better Blaster, Heavy Gun |
+| Defense | Reinforced Door, Better Rounds, Roof Turrets (up to 3), Security PC |
 | Workforce | Hire Crafter, Hire Dealer, Hire Guard, Crew Training |
-| House | Bigger Stash, Locks & Cameras (thieves take less) |
+| House | Bigger Stash, Steel Door Frame (less door damage) |
 
 ### Crew
 
@@ -204,7 +226,7 @@ reputation and change how you play:
 |---|---|---|
 | Crafter | Makes Street product (Pure after training) from cash | Lower quality than you |
 | Dealer | Serves regulars, hagglers (takes their counteroffer) | Not bulk buyers or VIPs |
-| Guard | Shoots attackers near the door | Bosses resist them |
+| Guard | Shoots raiders in the yard from the front room | Cover hides raiders from them |
 
 Wages are paid every in-game hour; unpaid crew strike until the next payday.
 
@@ -223,7 +245,7 @@ These are the defaults this build uses; all are easy to change.
   bought, not upgraded; the free pistol keeps the player armed.
 - **Tone:** stylized (the existing palette and placeholder art).
 - **First playable size:** 3 products, 4 ingredients, 5 customer types,
-  2 raid officers (cop, SWAT), 4 guns, 3 towers, 16 upgrades.
+  3 raiders (cop, SWAT, battering ram), 4 guns, 3 roof turrets, 17 upgrades.
 - **Platform:** both — Meta Quest (standalone) and PC VR (SteamVR).
 
 ## Running it
@@ -273,12 +295,13 @@ Scenes/Levels/House/House.tscn                inherits LevelBase; house_level.gd
     │   ├── Operation          the shared house state: stash, heat, cash flow, prices, recipes, upgrade effects
     │   ├── DayCycle           DayClock + sun / sky / lamps; StateChart Day -> Night
     │   ├── HouseCycle         Cycle/HouseCycle.tscn: the 3-day cycle; StateChart Selling -> Raid { WaveBreak <-> WaveActive } -> Cleared
-    │   ├── Surroundings       HOUSE     Surroundings/Surroundings.tscn: lawn, approach path, trees, weeds, junk (no gameplay)
+    │   ├── Surroundings       HOUSE     Surroundings/Surroundings.tscn: lawn, approach path, trees, weeds, junk (its yard trees are COVER_ONLY obstacles in the Yard)
     │   ├── HouseShell         walls / doors / windows (framed) / floor / ceiling / gable roof built from a few numbers
-    │   ├── FrontGarden        DEFENSE   Garden/FrontGarden.tscn: lanes, swinging / bolting door, porch, towers, build board, guards, raid waves, firing guns
+    │   ├── FrontGarden        DEFENSE   Garden/FrontGarden.tscn: open yard (Yard), swinging / bolting door, porch, roof turrets, Security PC, guards, raid squads, guns in hand
     │   ├── SalesWindow        CUSTOMERS Sales/SalesWindow.tscn: window, queue, board, dealers, CustomerFlow
     │   ├── Lab                HOUSE     Lab/Lab.tscn: crates, grinder, cooker, press, crafters, recipes
     │   ├── Office             HOUSE     Office/Office.tscn: upgrade board, bribes
+    │   ├── Admin              HOUSE     Admin/Admin.tscn: admin terminal for testing (debug builds only)
     │   ├── Armory             DEFENSE   Armory/Armory.tscn: terminal for guns and ammo
     │   ├── StashShelf         one bag per unit in stock
     │   ├── WalkableArea       floor rectangles the player may stand on
@@ -292,21 +315,23 @@ Scenes/Levels/House/House.tscn                inherits LevelBase; house_level.gd
 |---|---|
 | `HouseFront` / `HouseContext` | The front contract: setup with the context, hooks the level calls, signals back (announce, warn, score, lose) |
 | `Operation` | One node every front reads and writes — the only shared state, and the natural place to replicate for co-op |
-| `HouseLevel` | Runs the shift: time, wages for `Types.GROUP_CREW`, win at dawn (or when the raid is beaten), lose on `shift_lost`, wrist status from the cycle and the fronts. status lines |
+| `HouseLevel` | Runs the shift: time, wages for `Types.GROUP_CREW`, win at dawn (or when the raid is beaten), lose on `shift_lost`, wrist status from the cycle and the fronts' status lines |
 | `HouseCycle` | The 3-day cycle: raid day, raid waves (`RaidPlanner` → `RaidWave`), tells the fronts through the raid hooks, closes the window during a raid |
 | `Grabbable`, `ItemSocket`, `PointerButton`, `InteractionQuery` (`Scripts/XR/`) | Physics-free hand interaction: grab at the hand or along the beam, drop into sockets, press 3D buttons |
 | `XRLocomotion` | Teleport, smooth movement, snap / smooth turning, flat WASD and travel spots; never leaves the `WalkableArea` |
 | `Workstation` | StateChart Idle ⇄ Running; `TimingGauge` skill check; grinder / cooker / press by `step` |
 | `Customer`, `CustomerFlow`, `SalesWindow`, `SalesBoard` | Pooled customers with StateChart Walking ⇄ Waiting → Leaving; the window runs the sale rules (`SalesMath`) |
-| `LaneBoard`, `LaneEnemy`, `Turret`, `LaneDefender`, `AttackerDirector` | Lane math defense; raid officers are pooled with StateChart Alive { Advancing ⇄ Attacking } → Dead |
+| `Yard`, `Raider`, `RaidSquad`, `AttackerDirector` | The open yard (round obstacles, cover, line of sight; `YardNavigation`); pooled raiders with StateChart Alive { Moving ⇄ InCover, Attacking } → Dead, moving in squads that leapfrog and rush together |
+| `HouseTurret`, `SecurityPc`, `TurretConsole` | Roof turrets (house upgrade) that aim on their own or from the office PC's camera view |
+| `GunModel` | The animated gun in hand (slide, pump, bolt, flash, kick) |
 | `FrontDoor`, `HingeHandle` | The door: StateChart Closed { Unlocked ⇄ Locked } ⇄ Open; grab-and-swing handles, bolts on both sides, opens the doorway in the `WalkableArea` |
 | `Armory`, `WeaponData`, `WeaponLoadout`, `Profile.armory` | Guns and ammo: bought at the terminal, fired by the FrontGarden |
 | `Worker` | StateChart Absent → Working ⇄ Striking; lives in its front's scene |
-| Pure logic (`Scripts/Game/`) | `TimingGauge`, `QualityMath`, `Stash`, `SalesMath`, `CustomerOrder`, `HeatMeter`, `DayClock`, `RaidPlanner`, `WeaponLoadout` — unit-tested |
+| Pure logic (`Scripts/Game/`) | `TimingGauge`, `QualityMath`, `Stash`, `SalesMath`, `CustomerOrder`, `HeatMeter`, `DayClock`, `RaidPlanner`, `WeaponLoadout`, `YardNavigation` — unit-tested |
 
-All numbers are data: ingredients, recipes, customer types and towers in
+All numbers are data: ingredients, recipes, customer types, guns and raids in
 `Ressources/`, upgrades in one catalog per area (`Ressources/Upgrades/<Area>/`),
-attackers as exports on their scenes, pacing on `AttackerDirector`,
+raiders as exports on their scenes, the yard's obstacles on `Yard`, pacing on `AttackerDirector`,
 `CustomerFlow`, `DayCycle` and `Operation`.
 
 ## VR design decisions
@@ -315,15 +340,16 @@ attackers as exports on their scenes, pacing on `AttackerDirector`,
   connect through doorways; the walkable floor is a handful of rectangles.
 - **Splitting attention.** The wrist panel shows time, cash, reputation,
   stash, heat, door health and the queue, so you can decide where to go
-  next without walking there. Raids, crews, the boss, theft and the door
+  next without walking there. Raids, waves, rams and the door
   falling are announced in front of you with sound and a heavy rumble.
-- **Readable lane.** The front room has two wide windows down the garden;
-  the board above the gate shows door health and heat at a glance.
+- **Readable yard.** The front room has two wide windows over the yard;
+  raiders' glowing visors stand out at night, and cover is big and simple.
 - **Hands.** The dominant trigger picks up and puts in by pointing, like
   the flat cursor's clicks; grip grabs with either hand (hold to carry, a
-  quick click to keep holding). The off-hand trigger only shoots (or clicks
-  a screen / button) — it never picks anything up, so aiming past the door
-  handle still fires. Distance grab along the beam keeps reach comfortable.
+  quick click to keep holding). The off-hand trigger only shoots (the gun
+  sits in that hand) or clicks a screen / button — it never picks anything
+  up, so aiming past the door handle still fires. Distance grab along the
+  beam keeps reach comfortable.
 - **Comfort.** Stick walking where you look plus teleport and snap turning
   on the off-hand stick; smooth turning in Settings. Seated players are
   lifted to standing height (re-measured on recenter). No camera motion the
@@ -331,8 +357,9 @@ attackers as exports on their scenes, pacing on `AttackerDirector`,
   stay world-locked.
 - **Performance** (standalone headsets are phones): no physics for
   interaction or combat, pooled spawns, shared meshes and materials, blob
-  shadows, one unshadowed light, fog instead of far draw distance, three
-  in-world screens plus the popup screen.
+  shadows, one unshadowed light, fog instead of far draw distance, a few
+  in-world screens plus the popup screen; the Security PC's small camera
+  view renders only while someone looks at it.
 
 ## Not built yet / next steps
 
@@ -341,9 +368,9 @@ attackers as exports on their scenes, pacing on `AttackerDirector`,
   a host-authoritative `Operation`), avatars and drop-in.
 - **Meta layer:** contracts, rival territory, random events, the campaign
   and bosses that change the world.
-- **Lane overview:** a tabletop miniature of the garden in the hall.
-- **More content:** recipes, customer types, towers, traps, extra garden
-  lanes, more lab rooms; worker skill per person.
+- **Yard overview:** a tabletop miniature of the yard in the hall.
+- **More content:** recipes, customer types, traps, more raider types,
+  more lab rooms; worker skill per person; raiders that also try windows.
 - **Comfort:** a vignette for smooth movement.
 - **On device:** tune reach, station heights, screen sizes and text, haptics.
 - **Art and audio:** stand-in meshes and synthesized sounds; no music.

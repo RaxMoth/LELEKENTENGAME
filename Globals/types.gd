@@ -117,9 +117,12 @@ const UPGRADE_DEALER: StringName = &"work_dealer"
 # --- Defense (front garden) ---
 ## More door health.
 const UPGRADE_DOOR: StringName = &"def_door"
-## Stronger blaster.
+## Better rounds: every gun the player fires hits harder.
 const UPGRADE_BLASTER: StringName = &"def_blaster"
-const UPGRADE_HEAVY_GUN: StringName = &"def_heavy_gun"
+## Roof turrets on the house front (level = how many).
+const UPGRADE_TURRETS: StringName = &"def_turrets"
+## The office PC that takes turrets over by hand.
+const UPGRADE_SECURITY_PC: StringName = &"def_security_pc"
 ## Hired guards (level = how many).
 const UPGRADE_GUARD: StringName = &"work_guard"
 
@@ -128,7 +131,7 @@ const UPGRADE_GUARD: StringName = &"work_guard"
 const UPGRADE_TRAINING: StringName = &"work_training"
 ## Bigger stash.
 const UPGRADE_STORAGE: StringName = &"house_storage"
-## Locks and cameras make thieves take less.
+## A steel door frame: raiders do less damage to the front door (value = share).
 const UPGRADE_SECURITY: StringName = &"house_security"
 const ITEM_NO_ADS: StringName = &"no_ads"
 
@@ -163,6 +166,9 @@ const EVENT_TARGET_IN_RANGE: StringName = &"target_in_range"
 const EVENT_TARGET_OUT_OF_RANGE: StringName = &"target_out_of_range"
 const EVENT_DIED: StringName = &"died"
 const EVENT_RESPAWN: StringName = &"respawn"
+## Raiders in the yard (Garden/Raider.tscn): leave cover / reach cover.
+const EVENT_MOVE: StringName = &"move"
+const EVENT_TAKE_COVER: StringName = &"take_cover"
 # --- Defense: the front door (Garden/FrontDoor.tscn) ---
 ## The door swung open / fell shut and latched / was bolted / was unbolted.
 const EVENT_DOOR_OPENED: StringName = &"door_opened"

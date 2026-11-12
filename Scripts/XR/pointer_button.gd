@@ -24,6 +24,10 @@ const DISABLED_OPACITY: float = 0.35
 		color = value
 		_apply_color()
 
+## Off = no cap, base or caption: an invisible hot spot on something that
+## already looks pressable (a door handle that also takes the trigger).
+@export var has_visual: bool = true
+
 var is_enabled: bool = true:
 	set(value):
 		is_enabled = value
@@ -36,6 +40,8 @@ var _tween: Tween
 
 func _ready() -> void:
 	add_to_group(Types.GROUP_POINTER_BUTTON)
+	if not has_visual:
+		return
 	var base: MeshInstance3D = MeshInstance3D.new()
 	var base_mesh: CylinderMesh = CylinderMesh.new()
 	base_mesh.top_radius = press_radius * 1.15
@@ -71,17 +77,20 @@ func press() -> bool:
 	if not is_enabled:
 		Audio.play_ui(Audio.UI_ERROR)
 		return false
-	if _tween != null:
-		_tween.kill()
-	_tween = create_tween()
-	_tween.tween_property(_cap, "position:y", 0.045 - PRESS_DEPTH, PRESS_SECONDS)
-	_tween.tween_property(_cap, "position:y", 0.045, PRESS_SECONDS * 1.5)
+	if _cap != null:
+		if _tween != null:
+			_tween.kill()
+		_tween = create_tween()
+		_tween.tween_property(_cap, "position:y", 0.045 - PRESS_DEPTH, PRESS_SECONDS)
+		_tween.tween_property(_cap, "position:y", 0.045, PRESS_SECONDS * 1.5)
 	Audio.play_ui(Audio.UI_CLICK)
 	pressed.emit(self)
 	return true
 
 
 func get_press_center() -> Vector3:
+	if not has_visual:
+		return global_position
 	return global_position + global_transform.basis.y * 0.05
 
 

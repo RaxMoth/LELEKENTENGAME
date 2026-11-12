@@ -1,26 +1,19 @@
 [gd_scene format=3]
 
-[ext_resource type="Script" path="res://Scripts/XR/world_screen.gd" id="screen"]
-[ext_resource type="Script" path="res://Scripts/Utils/textured_box_3d.gd" id="textured_box"]
-[ext_resource type="Material" path="res://Assets/Materials/wood_trim.tres" id="wood_material"]
-[ext_resource type="Material" path="res://Assets/Materials/ground_path.tres" id="path_material"]
-[ext_resource type="PackedScene" path="res://Scenes/Levels/House/Garden/LaneBoard.tscn" id="lane_board"]
+[ext_resource type="Script" path="res://Scenes/Levels/House/Garden/front_garden.gd" id="front_garden"]
+[ext_resource type="Script" path="res://Scenes/Levels/House/Garden/attacker_director.gd" id="attacker_director"]
+[ext_resource type="Script" path="res://Scenes/Levels/House/Garden/yard.gd" id="yard"]
+[ext_resource type="Resource" path="res://Ressources/Weapons/weapon_catalog.tres" id="weapon_catalog"]
 [ext_resource type="PackedScene" path="res://Scenes/Levels/House/Garden/FrontDoor.tscn" id="front_door"]
-[ext_resource type="PackedScene" path="res://Scenes/Levels/House/Garden/BuildBoard.tscn" id="build_board"]
+[ext_resource type="PackedScene" path="res://Scenes/Levels/House/Garden/HouseTurret.tscn" id="house_turret"]
+[ext_resource type="PackedScene" path="res://Scenes/Levels/House/Garden/SecurityPc.tscn" id="security_pc"]
 [ext_resource type="PackedScene" path="res://Scenes/Levels/House/Workers/Worker.tscn" id="worker"]
 [ext_resource type="PackedScene" path="res://Scenes/Levels/House/Garden/Cop.tscn" id="cop"]
 [ext_resource type="PackedScene" path="res://Scenes/Levels/House/Garden/Swat.tscn" id="swat"]
-[ext_resource type="Script" path="res://Scripts/Resources/tower_data.gd" id="tower_script"]
-[ext_resource type="Resource" path="res://Ressources/Towers/turret.tres" id="t_turret"]
-[ext_resource type="Resource" path="res://Ressources/Towers/heavy_gun.tres" id="t_heavy_gun"]
-[ext_resource type="Resource" path="res://Ressources/Towers/barricade.tres" id="t_barricade"]
-[ext_resource type="Script" path="res://Scenes/Levels/House/Garden/front_garden.gd" id="front_garden"]
-[ext_resource type="Resource" path="res://Ressources/Weapons/weapon_catalog.tres" id="weapon_catalog"]
-[ext_resource type="Script" path="res://Scenes/Levels/House/Garden/attacker_director.gd" id="attacker_director"]
+[ext_resource type="PackedScene" path="res://Scenes/Levels/House/Garden/RamTeam.tscn" id="ram_team"]
 
 [node name="FrontGarden" type="Node3D"]
 script = ExtResource("front_garden")
-towers = Array[ExtResource("tower_script")]([ExtResource("t_turret"), ExtResource("t_heavy_gun"), ExtResource("t_barricade")])
 weapon_catalog = ExtResource("weapon_catalog")
 defense_zone = Rect2(-5, -5, 10, 3)
 
@@ -28,88 +21,68 @@ defense_zone = Rect2(-5, -5, 10, 3)
 unique_name_in_owner = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -5)
 
-[node name="LaneBoard" parent="." node_paths=PackedStringArray("door") instance=ExtResource("lane_board")]
+[node name="Yard" type="Node3D" parent="." node_paths=PackedStringArray("door")]
 unique_name_in_owner = true
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -5.25)
+script = ExtResource("yard")
 door = NodePath("../FrontDoor")
-ground_material = ExtResource("path_material")
+bounds = Rect2(-14, -27, 28, 21.3)
+obstacles = Array[Vector4]([Vector4(4.5, -12.6, 1.3, 4), Vector4(-3.5, -11.6, 0.7, 2), Vector4(-0.8, -13.1, 0.8, 3), Vector4(1.8, -11.9, 0.6, 2), Vector4(-6.6, -12.3, 0.9, 3), Vector4(7.6, -10.4, 0.7, 2), Vector4(-2.6, -16.6, 0.6, 1), Vector4(3.1, -17.1, 0.6, 1), Vector4(9.1, -17.6, 0.8, 0), Vector4(0.5, -19.6, 0.8, 2), Vector4(-5.6, -19.1, 0.9, 3), Vector4(6.1, -14.6, 0.9, 3), Vector4(-11.1, -12.6, 0.6, 1), Vector4(11.6, -13.1, 0.6, 1), Vector4(-4.1, -23.1, 0.8, 0), Vector4(5.6, -22.6, 0.8, 0), Vector4(-10.1, -21.1, 0.6, 1), Vector4(10.6, -23.6, 0.6, 1), Vector4(1.1, -24.6, 0.7, 2), Vector4(-1.6, -22.1, 0.8, 3), Vector4(12.1, -19.6, 0.8, 0), Vector4(-12.6, -24.1, 0.8, 0), Vector4(-8.6, -7.6, 0.6, 1), Vector4(8.6, -7.1, 0.9, 3), Vector4(-6.9, -9.4, 0.6, 5), Vector4(6.7, -7.6, 0.55, 5), Vector4(8, -15, 0.6, 5), Vector4(-8.2, -17.5, 0.7, 5), Vector4(-3.6, -21.5, 0.6, 5), Vector4(4.8, -22, 0.7, 5)])
 
-[node name="RailLeft" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.45, 0.45, -9.35)
-cast_shadow = 0
-script = ExtResource("textured_box")
-size = Vector3(0.08, 0.9, 8.1)
-box_material = ExtResource("wood_material")
-fallback_color = Color(0.1804, 0.2118, 0.2941, 1)
-
-[node name="RailRight" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.45, 0.45, -9.35)
-cast_shadow = 0
-script = ExtResource("textured_box")
-size = Vector3(0.08, 0.9, 8.1)
-box_material = ExtResource("wood_material")
-fallback_color = Color(0.1804, 0.2118, 0.2941, 1)
-
-[node name="GatePostLeft" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.45, 1.1, -13.5)
-cast_shadow = 0
-script = ExtResource("textured_box")
-size = Vector3(0.22, 2.2, 0.22)
-box_material = ExtResource("wood_material")
-fallback_color = Color(0.3569, 0.3922, 0.4824, 1)
-is_grain_vertical = true
-
-[node name="GatePostRight" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.45, 1.1, -13.5)
-cast_shadow = 0
-script = ExtResource("textured_box")
-size = Vector3(0.22, 2.2, 0.22)
-box_material = ExtResource("wood_material")
-fallback_color = Color(0.3569, 0.3922, 0.4824, 1)
-is_grain_vertical = true
-
-[node name="GateLintel" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.25, -13.5)
-cast_shadow = 0
-script = ExtResource("textured_box")
-size = Vector3(5.12, 0.16, 0.2)
-box_material = ExtResource("wood_material")
-fallback_color = Color(0.3569, 0.3922, 0.4824, 1)
-
-[node name="BuildScreen" type="Node3D" parent="."]
+[node name="Raiders" type="Node3D" parent="Yard"]
 unique_name_in_owner = true
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.35, -13.6)
-script = ExtResource("screen")
-content_scene = ExtResource("build_board")
-resolution = Vector2i(1280, 400)
-width_meters = 5.0
+
+[node name="Effects" type="Node3D" parent="Yard"]
+unique_name_in_owner = true
+
+[node name="Turrets" type="Node3D" parent="."]
+unique_name_in_owner = true
+
+[node name="TurretDoor" parent="Turrets" instance=ExtResource("house_turret")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.62, -5.05)
+mount_level = 1
+
+[node name="TurretLeft" parent="Turrets" instance=ExtResource("house_turret")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.6, 2.62, -5.05)
+mount_level = 2
+
+[node name="TurretRight" parent="Turrets" instance=ExtResource("house_turret")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.6, 2.62, -5.05)
+mount_level = 3
+
+[node name="SecurityPc" parent="." instance=ExtResource("security_pc")]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.4, 0.8, -1.6)
 
 [node name="AttackerDirector" type="Node" parent="."]
 unique_name_in_owner = true
 script = ExtResource("attacker_director")
 cop_scene = ExtResource("cop")
 swat_scene = ExtResource("swat")
+ram_scene = ExtResource("ram_team")
 
 [node name="Guards" type="Node3D" parent="."]
 unique_name_in_owner = true
 
-[node name="GuardA" parent="Guards" node_paths=PackedStringArray("board") instance=ExtResource("worker")]
+[node name="GuardA" parent="Guards" node_paths=PackedStringArray("yard") instance=ExtResource("worker")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.6, 0, -4.6)
 role = 2
 slot = 1
 wage_per_hour = 12
-board = NodePath("../../LaneBoard")
+guard_range = 16.0
+yard = NodePath("../../Yard")
 
-[node name="GuardB" parent="Guards" node_paths=PackedStringArray("board") instance=ExtResource("worker")]
+[node name="GuardB" parent="Guards" node_paths=PackedStringArray("yard") instance=ExtResource("worker")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.6, 0, -4.6)
 role = 2
 slot = 2
 wage_per_hour = 12
-board = NodePath("../../LaneBoard")
+guard_range = 16.0
+yard = NodePath("../../Yard")
 
-[node name="GuardC" parent="Guards" node_paths=PackedStringArray("board") instance=ExtResource("worker")]
+[node name="GuardC" parent="Guards" node_paths=PackedStringArray("yard") instance=ExtResource("worker")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.95, 0, -4.7)
 role = 2
 slot = 3
 wage_per_hour = 12
-board = NodePath("../../LaneBoard")
+guard_range = 16.0
+yard = NodePath("../../Yard")
