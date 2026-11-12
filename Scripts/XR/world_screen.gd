@@ -26,6 +26,9 @@ const OFFSCREEN_PIXEL: Vector2 = Vector2(-1000.0, -1000.0)
 @export var ignore_fog: bool = true
 ## Draw over everything in the world (popups that must never be hidden).
 @export var is_always_on_top: bool = false
+## Content that rarely changes (a poster, a recipe book): drawn once and
+## again only on request_redraw(), which saves a render pass every frame.
+@export var is_static: bool = false
 
 ## Root of the instantiated content_scene (null when showing an attached viewport).
 var content: Control = null
@@ -84,7 +87,7 @@ func set_active(should_be_active: bool) -> void:
 	if not should_be_active:
 		pointer_leave()
 	if _owns_viewport:
-		_viewport.render_target_update_mode = SubViewport.UPDATE_ALWAYS if should_be_active else SubViewport.UPDATE_DISABLED
+		_viewport.render_target_update_mode = _get_live_update_mode() if should_be_active else SubViewport.UPDATE_DISABLED
 
 
 ## Keeps the panel visible but stops (or resumes) redrawing its own
@@ -92,7 +95,13 @@ func set_active(should_be_active: bool) -> void:
 ## player is far from or facing away from (each redraw costs a render pass).
 func set_rendering(should_render: bool) -> void:
 	if _owns_viewport and is_active:
-		_viewport.render_target_update_mode = SubViewport.UPDATE_ALWAYS if should_render else SubViewport.UPDATE_DISABLED
+		_viewport.render_target_update_mode = _get_live_update_mode() if should_render else SubViewport.UPDATE_DISABLED
+
+
+## Draws the content once more (after a change on a static screen).
+func request_redraw() -> void:
+	if _owns_viewport and is_active and _viewport.render_target_update_mode != SubViewport.UPDATE_ALWAYS:
+		_viewport.render_target_update_mode = SubViewport.UPDATE_ONCE
 
 
 func is_rendering() -> bool:
@@ -165,12 +174,17 @@ func pointer_leave() -> void:
 # INTERNALS
 # ============================================
 
+## How the viewport redraws while it should: every frame, or (static) once.
+func _get_live_update_mode() -> SubViewport.UpdateMode:
+	return SubViewport.UPDATE_ONCE if is_static else SubViewport.UPDATE_ALWAYS
+
+
 func _create_own_viewport() -> void:
 	_viewport = SubViewport.new()
 	_viewport.size = resolution
 	_viewport.transparent_bg = true
 	_viewport.disable_3d = true
-	_viewport.render_target_update_mode = SubViewport.UPDATE_ALWAYS
+	_viewport.render_target_update_mode = _get_live_update_mode()
 	add_child(_viewport)
 	_owns_viewport = true
 	content = content_scene.instantiate() as Control

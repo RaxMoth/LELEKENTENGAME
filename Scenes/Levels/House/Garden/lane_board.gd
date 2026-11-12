@@ -7,8 +7,11 @@
 ## The node's origin is the middle of the door edge; lanes run toward -Z.
 ## The board must not be rotated (attackers walk along world +Z).
 ##
+## The ground is a real material (ground_material, UVs in meters) with a soft
+## checker of the cells multiplied over it, so the lanes stay readable.
+##
 ## Dependencies: LaneGrid, RayMath, LaneDefender, LaneEnemy, FrontDoor,
-##               TowerData, PlaceholderMesh3D, Palette, Pools autoload
+##               TowerData, WorldUVMesh, PlaceholderMesh3D, Palette, Pools autoload
 class_name LaneBoard
 extends Node3D
 
@@ -19,6 +22,8 @@ signal enemy_reached_home(enemy: LaneEnemy)
 const HIGHLIGHT_OPACITY: float = 0.38
 const HIGHLIGHT_INSET: float = 0.92
 const HIGHLIGHT_HEIGHT: float = 0.02
+## Pixels per cell in the checker overlay (enough for soft, not blurry, cell edges).
+const CHECKER_PIXELS_PER_CELL: int = 16
 
 @export var lane_count: int = 3
 @export var column_count: int = 6
@@ -30,6 +35,13 @@ const HIGHLIGHT_HEIGHT: float = 0.02
 @export var defender_stop_distance: float = 0.42
 ## The door every attacker is heading for.
 @export var door: FrontDoor
+
+@export_group("Look")
+## Ground of the lanes (Assets/Materials, uv1_scale = 1 / tile size in meters);
+## without one the board is a flat Palette checker.
+@export var ground_material: StandardMaterial3D
+## How much darker every other cell is drawn over the ground material.
+@export_range(0.0, 0.5, 0.01) var checker_darkening: float = 0.25
 
 var grid: LaneGrid = null
 
@@ -212,21 +224,47 @@ func _draw_lane() -> int:
 	return _lane_bag.pop_back()
 
 
-## One quad with a tiny checker texture (one pixel per cell) instead of a mesh per cell.
+## One quad (UVs in meters) with the ground material and a checker of the
+## cells over it, instead of a mesh per cell.
 func _build_ground() -> void:
+	_ground.mesh = WorldUVMesh.create_plane(Vector2(grid.get_width(), grid.get_depth()))
+	_ground.position = Vector3(0.0, 0.0, -grid.get_depth() * 0.5)
+	if ground_material == null:
+		_ground.material_override = _create_flat_checker_material()
+		return
+	# The cells as a soft multiply overlay on UV2 (0..1 across the board, V
+	# toward the home edge, so image rows run from the far column to column 0).
+	var checker: Image = Image.create(lane_count * CHECKER_PIXELS_PER_CELL, column_count * CHECKER_PIXELS_PER_CELL, false, Image.FORMAT_RGB8)
+	var shade: Color = Color.WHITE.darkened(checker_darkening)
+	for lane: int in lane_count:
+		for column: int in column_count:
+			var row: int = column_count - 1 - column
+			var cell_rect: Rect2i = Rect2i(lane * CHECKER_PIXELS_PER_CELL, row * CHECKER_PIXELS_PER_CELL, CHECKER_PIXELS_PER_CELL, CHECKER_PIXELS_PER_CELL)
+			checker.fill_rect(cell_rect, Color.WHITE if (lane + column) % 2 == 0 else shade)
+	checker.generate_mipmaps()
+	var material: StandardMaterial3D = ground_material.duplicate()
+	material.detail_enabled = true
+	material.detail_blend_mode = BaseMaterial3D.BLEND_MODE_MUL
+	material.detail_uv_layer = BaseMaterial3D.DETAIL_UV_2
+	material.detail_albedo = ImageTexture.create_from_image(checker)
+	_ground.material_override = material
+
+
+## Without a ground material: a tiny Palette checker texture (one pixel per
+## cell) stretched over the board.
+func _create_flat_checker_material() -> StandardMaterial3D:
 	var checker: Image = Image.create(lane_count, column_count, false, Image.FORMAT_RGB8)
 	for lane: int in lane_count:
 		for column: int in column_count:
-			checker.set_pixel(lane, column, Palette.WORLD_DETAIL if (lane + column) % 2 == 0 else Palette.SURFACE_RAISED)
+			checker.set_pixel(lane, column_count - 1 - column, Palette.WORLD_DETAIL if (lane + column) % 2 == 0 else Palette.SURFACE_RAISED)
 	var material: StandardMaterial3D = StandardMaterial3D.new()
 	material.albedo_texture = ImageTexture.create_from_image(checker)
 	material.texture_filter = BaseMaterial3D.TEXTURE_FILTER_NEAREST
 	material.roughness = 0.95
-	var plane: PlaneMesh = PlaneMesh.new()
-	plane.size = Vector2(grid.get_width(), grid.get_depth())
-	_ground.mesh = plane
-	_ground.material_override = material
-	_ground.position = Vector3(0.0, 0.0, -grid.get_depth() * 0.5)
+	# UV1 is in meters, centered on the board: map the whole board onto 0..1 once.
+	material.uv1_scale = Vector3(1.0 / grid.get_width(), 1.0 / grid.get_depth(), 1.0)
+	material.uv1_offset = Vector3(0.5, 0.5, 0.0)
+	return material
 
 
 func _build_highlight() -> void:

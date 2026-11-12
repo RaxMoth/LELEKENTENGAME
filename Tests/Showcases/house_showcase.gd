@@ -30,6 +30,8 @@ static func apply(scene: Node) -> void:
 	var config: GameConfig = GameConfig.get_default()
 	for upgrade_id: StringName in [Types.UPGRADE_CRAFTER, Types.UPGRADE_DEALER, Types.UPGRADE_GUARD, Types.UPGRADE_GUARD, Types.UPGRADE_HEAVY_GUN, Types.UPGRADE_RECIPE_FIZZ]:
 		Profile.upgrades.purchase(config.find_upgrade(upgrade_id))
+	# One product already cooked: the recipe book shows a found and a hidden entry.
+	Profile.operation.discover_recipe(&"glow")
 	level.apply_upgrades()
 	for lane: int in board.lane_count:
 		board.place_tower(TURRET, Vector2i(lane, 0))

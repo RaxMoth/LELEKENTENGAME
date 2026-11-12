@@ -14,6 +14,9 @@
 [ext_resource type="Resource" path="res://Ressources/Ingredients/fizzroot.tres" id="i_fizzroot"]
 [ext_resource type="Resource" path="res://Ressources/Ingredients/duskleaf.tres" id="i_duskleaf"]
 [ext_resource type="Script" path="res://Scenes/Levels/House/Lab/lab.gd" id="lab"]
+[ext_resource type="Script" path="res://Scripts/XR/world_screen.gd" id="screen"]
+[ext_resource type="PackedScene" path="res://Scenes/Levels/House/Lab/RecipeBoard.tscn" id="recipe_board"]
+[ext_resource type="Script" path="res://Scripts/Utils/placeholder_mesh_3d.gd" id="mesh"]
 
 [node name="Lab" type="Node3D"]
 script = ExtResource("lab")
@@ -61,3 +64,22 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.4, 0, -0.9)
 role = 0
 slot = 2
 wage_per_hour = 14
+
+[node name="RecipeBook" type="Node3D" parent="."]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -4.9, 1.62, 0)
+
+[node name="Frame" type="MeshInstance3D" parent="RecipeBook"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.015)
+script = ExtResource("mesh")
+shape_kind = 1
+size = Vector3(2.18, 1.16, 0.02)
+color = Color(0.051, 0.0627, 0.0902, 1)
+
+[node name="RecipeScreen" type="Node3D" parent="RecipeBook"]
+unique_name_in_owner = true
+script = ExtResource("screen")
+content_scene = ExtResource("recipe_board")
+resolution = Vector2i(1400, 720)
+width_meters = 2.1
+is_interactive = false
+is_static = true

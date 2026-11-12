@@ -82,6 +82,7 @@ func _exit_tree() -> void:
 				(instance as Node).free()
 	_idle_instances.clear()
 	PlaceholderMesh3D.clear_cache()
+	TexturedBox3D.clear_cache()
 	BlobShadow3D.clear_cache()
 
 

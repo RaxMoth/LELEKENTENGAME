@@ -142,7 +142,8 @@ The repo is ready for [Claude Code](https://claude.com/claude-code):
 ## Folder structure
 
 ```
-Assets/        Themes, icons, fonts, audio, sprites, localization CSV
+Assets/        Themes, icons, fonts, audio, sprites, localization CSV; CC0 textures,
+               materials and models (CREDITS.md)
 Docs/          GAME.md (the game), getting started, systems reference, coding rules, design system
 Globals/       Autoloads only (UI, SceneManager and Debug have scenes)
 Ressources/    .tres data: game_config, level, ingredients, recipes, customers, towers, upgrades

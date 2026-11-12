@@ -1,0 +1,14 @@
+[gd_resource type="ArrayMesh" format=4]
+
+[resource]
+_surfaces = [{
+"aabb": AABB(-2.9458601, -0.0203279, -2.5511897, 5.8917203, 5.1782703, 5.1023793),
+"attribute_data": PackedByteArray("AAAAAAAAAACrqqo+AAAAAKuqqj4AAIA/AAAAAAAAgD+rqqo+AAAAAKuqKj8AAAAAq6oqPwAAgD+rqqo+AACAP6uqKj8AAAAAAACAPwAAAAAAAIA/AACAP6uqKj8AAIA/"),
+"format": 34359742487,
+"index_count": 18,
+"index_data": PackedByteArray("AAABAAIAAAACAAMABAAFAAYABAAGAAcACAAJAAoACAAKAAsA"),
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 12,
+"vertex_data": PackedByteArray("+Yg8wN0NpUAAAAAA+Yg8QN0NpUAAAAAA+Yg8QLKGprwAAACA+Yg8wLKGprwAAAAA+Yi8v90NpUCxRiNA+Yi8P90NpUCxRiPA+Yi8P7KGpryxRiPA+Yi8v7KGpryxRiNA+Yi8P90NpUCxRiNA+Yi8v90NpUCxRiPA+Yi8v7KGpryxRiPA+Yi8P7KGpryxRiNA/3//f////7//f/9/////v/9//3////+//3//f////78l0f9///+S6CXR/3///5LoJdH/f///kugl0f9///+S6P//2a4AAJLo///ZrgAAkuj//9muAACS6P//2a4AAJLo")
+}]

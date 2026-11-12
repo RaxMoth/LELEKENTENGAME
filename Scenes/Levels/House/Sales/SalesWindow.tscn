@@ -2,6 +2,8 @@
 
 [ext_resource type="Script" path="res://Scenes/Levels/House/Sales/sales_window.gd" id="window"]
 [ext_resource type="Script" path="res://Scripts/Utils/placeholder_mesh_3d.gd" id="mesh"]
+[ext_resource type="Script" path="res://Scripts/Utils/ground_plane_3d.gd" id="ground_plane"]
+[ext_resource type="Material" path="res://Assets/Materials/ground_yard.tres" id="yard_material"]
 [ext_resource type="Script" path="res://Scripts/XR/world_screen.gd" id="screen"]
 [ext_resource type="PackedScene" path="res://Scenes/Levels/House/Sales/SalesBoard.tscn" id="board"]
 [ext_resource type="Resource" path="res://Ressources/Customers/bulk_buyer.tres" id="c_bulk_buyer"]
@@ -78,12 +80,16 @@ unique_name_in_owner = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.5, 0, 7)
 
 [node name="BackYard" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.0, -0.035, 4.5)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.0, -0.025, 4.5)
 cast_shadow = 0
-script = ExtResource("mesh")
-shape_kind = 1
-size = Vector3(11, 0.02, 9)
-color = Color(0.1176, 0.149, 0.2157, 1)
+script = ExtResource("ground_plane")
+size = Vector2(11, 9)
+ground_material = ExtResource("yard_material")
+fallback_color = Color(0.1176, 0.149, 0.2157, 1)
+patch_darkening = 0.3
+patch_size_meters = 5.0
+patch_resolution_meters = 1.0
+patch_seed = 7
 
 [node name="CustomerFlow" type="Node" parent="."]
 unique_name_in_owner = true
