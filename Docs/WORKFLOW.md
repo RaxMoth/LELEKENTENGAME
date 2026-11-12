@@ -57,7 +57,8 @@ gh pr create --fill                            # or ask Claude to open it
 ```
 
 - The template asks what changed, which area, which tests ran, screenshots
-  for visual changes and whether a shared hotspot was touched.
+  for visual changes and which shared files (contract, hotspots) were
+  touched.
 - **CI** (`.github/workflows/tests.yml`) runs the unit tests and the smoke
   test on Linux for every PR and every push to `main`.
 - **Review:** the other person reviews (Claude can do a first pass with the
@@ -66,21 +67,35 @@ gh pr create --fill                            # or ask Claude to open it
 
 ## Areas
 
-Agree on who owns which part of the game for the current milestone, so
-day-to-day work rarely touches the same files. For example:
+The game is split into three areas with their own scenes, data, upgrades
+and smoke checks, so whoever works on one doesn't edit the other's files.
+How the areas talk to each other is the contract in
+[`Scenes/Levels/House/README.md`](../Scenes/Levels/House/README.md); each
+area folder has a README listing its files and how to add things.
 
-| Area | Folders |
+| Area | Owns |
 |---|---|
-| Lab & production | `Scenes/Levels/House/Lab/`, `Ressources/Ingredients/`, `Ressources/Recipes/` |
-| Sales & customers | `Scenes/Levels/House/Sales/`, `Ressources/Customers/` |
-| Garden & defense | `Scenes/Levels/House/Garden/`, `Ressources/Towers/` |
-| Office, crew, economy | `Scenes/Levels/House/Office/`, `Scenes/Levels/House/Workers/`, `Ressources/Upgrades/`, `operation.gd` |
-| XR foundation | `Scripts/XR/`, `Scenes/Entities/XRPlayerRig/`, `Scenes/Game/LevelBase/` |
-| Menus & UI kit | `Scenes/Menus/`, `Scenes/UI/`, `Scripts/UI/`, `Assets/Themes/` |
+| **Defense** (tower defense in the front garden) | `Scenes/Levels/House/Garden/`, `Ressources/Towers/`, `Ressources/Upgrades/Defense/`, `Tests/Smoke/defense_checks.gd` |
+| **Customers** (the back sales window) | `Scenes/Levels/House/Sales/`, `Ressources/Customers/`, `Ressources/Upgrades/Sales/`, `Scripts/Game/sales_math.gd`, `customer_order.gd`, `Tests/Smoke/sales_checks.gd` |
+| **House** (lab, office, crew, the shift) | `Scenes/Levels/House/Lab/`, `Office/`, `Workers/`, `day_cycle.gd`, `house_shell.gd`, `stash_shelf.gd`, `wrist_status.gd`, `Ressources/Ingredients/`, `Ressources/Recipes/`, `Ressources/Upgrades/Lab/` and `House/`, `Scripts/Game/timing_gauge.gd`, `quality_math.gd`, `day_clock.gd`, `Tests/Smoke/lab_checks.gd`, `house_checks.gd` |
 
-Write the current split into the PR descriptions or an issue; change it
-whenever it suits you. Working in the other person's area is fine — say so
-first, so you don't both change the same file.
+With two people and three areas, one of you usually holds two. Agree who
+owns which for the current milestone, name the area in each PR, and tell
+Claude which area a task is in (`CLAUDE.md` asks it to stay inside it).
+Working in the other person's area is fine — say so first, so you don't
+both change the same file.
+
+Everything outside the three areas is shared. Change it in a small PR of
+its own and tell the other person:
+
+- **The contract:** `house_front.gd`, `house_context.gd`, `operation.gd`
+  (with its rules `Scripts/Game/stash.gd`, `heat_meter.gd`),
+  `house_level.gd`, `House.tscn`. A front that needs something new from
+  another area (a value in `Operation`, a new hook) gets it here.
+- **The foundation:** XR (`Scripts/XR/`, `Scenes/Entities/XRPlayerRig/`,
+  `Scenes/Game/LevelBase/`), menus and UI kit (`Scenes/Menus/`,
+  `Scenes/UI/`, `Scripts/UI/`, `Assets/Themes/`), autoloads (`Globals/`)
+  and tooling (`Tools/`, `Tests/smoke_test.gd`, CI).
 
 ## Shared hotspots
 
@@ -89,9 +104,9 @@ them in the right place, and expect to merge by hand now and then.
 
 | File | Why it conflicts | How to stay out of trouble |
 |---|---|---|
-| `Scenes/Levels/House/House.tscn` | The whole level in one file | Build features as their own scenes (like `SalesWindow.tscn`, `Workstation.tscn`) and only add an instance here. Don't both rearrange the house in parallel. |
-| `Ressources/game_config.tres` | Lists (`upgrades`, `achievements`) are single lines | Add new resources as their own `.tres` files; on a conflict keep **both** sides' entries in the list. |
-| `Globals/types.gd` | Everyone adds constants | Add yours at the end of the matching section; on a conflict keep both. |
+| `Scenes/Levels/House/House.tscn` | Places the house shell and all four fronts | Work inside your front's scene (`FrontGarden.tscn`, `SalesWindow.tscn`, `Lab.tscn`, `Office.tscn`). Touch `House.tscn` only to place a front or move the house, and don't both do that in parallel. |
+| `Ressources/game_config.tres` | Lists (`achievements`, `levels`) are single lines | A new upgrade goes into your area's catalog (`Ressources/Upgrades/<Area>/<area>_upgrades.tres`), not here. For the other lists, add the resource as its own `.tres` file; on a conflict keep **both** sides' entries. |
+| `Globals/types.gd` | Everyone adds constants | Upgrade ids and StateChart events have a block per area; add yours at the end of your area's block. On a conflict keep both. |
 | `Assets/Localization/translations.csv` | Everyone adds strings | Append rows at the end. Git merges this file by keeping both sides' lines (`merge=union` in `.gitattributes`); check for duplicate keys afterwards. The `.translation` files are generated on import and not committed. |
 | `project.godot` | The editor rewrites it | Change settings deliberately, one at a time; never commit incidental rewrites. |
 
