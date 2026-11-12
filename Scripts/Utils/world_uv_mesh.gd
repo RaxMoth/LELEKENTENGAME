@@ -149,29 +149,67 @@ static func commit_surface(surface_tool: SurfaceTool, mesh: ArrayMesh, material:
 ## across the whole plane (for overlays such as a lane checker). When
 ## [param shade] is valid it is called with each vertex's (x, z) and its
 ## Color becomes the vertex color (patches that break up tiling).
-static func create_plane(plane_size: Vector2, cells: Vector2i = Vector2i.ONE, shade: Callable = Callable()) -> ArrayMesh:
+## [param holes] (x, z rects around the plane's center) are left open, the
+## rest is covered exactly (a stairwell into a cellar under a lawn).
+static func create_plane(plane_size: Vector2, cells: Vector2i = Vector2i.ONE, shade: Callable = Callable(), holes: Array[Rect2] = []) -> ArrayMesh:
 	var cell_count: Vector2i = cells.max(Vector2i.ONE)
+	var cell_size: Vector2 = plane_size / Vector2(cell_count)
 	var surface_tool: SurfaceTool = SurfaceTool.new()
 	surface_tool.begin(Mesh.PRIMITIVE_TRIANGLES)
-	for row: int in cell_count.y + 1:
-		for column: int in cell_count.x + 1:
-			var fraction: Vector2 = Vector2(column, row) / Vector2(cell_count)
-			var point: Vector2 = (fraction - Vector2(0.5, 0.5)) * plane_size
-			surface_tool.set_normal(Vector3.UP)
-			surface_tool.set_uv(point)
-			surface_tool.set_uv2(fraction)
-			if shade.is_valid():
-				surface_tool.set_color(shade.call(point))
-			surface_tool.add_vertex(Vector3(point.x, 0.0, point.y))
-	var row_stride: int = cell_count.x + 1
-	for row: int in cell_count.y:
-		for column: int in cell_count.x:
-			var top_left: int = row * row_stride + column
-			var top_right: int = top_left + 1
-			var bottom_left: int = top_left + row_stride
-			var bottom_right: int = bottom_left + 1
-			# Clockwise seen from above (Godot's front-face winding).
-			for index: int in [top_left, top_right, bottom_right, top_left, bottom_right, bottom_left]:
-				surface_tool.add_index(index)
+	var vertex_count: int = 0
+	for piece: Rect2 in subtract_rects(Rect2(-plane_size * 0.5, plane_size), holes):
+		var piece_cells: Vector2i = Vector2i((piece.size / cell_size).round()).max(Vector2i.ONE)
+		for row: int in piece_cells.y + 1:
+			for column: int in piece_cells.x + 1:
+				var point: Vector2 = piece.position + piece.size * Vector2(column, row) / Vector2(piece_cells)
+				surface_tool.set_normal(Vector3.UP)
+				surface_tool.set_uv(point)
+				surface_tool.set_uv2(point / plane_size + Vector2(0.5, 0.5))
+				if shade.is_valid():
+					surface_tool.set_color(shade.call(point))
+				surface_tool.add_vertex(Vector3(point.x, 0.0, point.y))
+		var row_stride: int = piece_cells.x + 1
+		for row: int in piece_cells.y:
+			for column: int in piece_cells.x:
+				var top_left: int = vertex_count + row * row_stride + column
+				var top_right: int = top_left + 1
+				var bottom_left: int = top_left + row_stride
+				var bottom_right: int = bottom_left + 1
+				# Clockwise seen from above (Godot's front-face winding).
+				for index: int in [top_left, top_right, bottom_right, top_left, bottom_right, bottom_left]:
+					surface_tool.add_index(index)
+		vertex_count += row_stride * (piece_cells.y + 1)
 	surface_tool.generate_tangents()
 	return surface_tool.commit()
+
+
+## [param base] with every rect in [param cuts] cut out, as rects that
+## cover the rest exactly (a floor around a stairwell).
+static func subtract_rects(base: Rect2, cuts: Array[Rect2]) -> Array[Rect2]:
+	var pieces: Array[Rect2] = [base]
+	for cut: Rect2 in cuts:
+		var remaining: Array[Rect2] = []
+		for piece: Rect2 in pieces:
+			remaining.append_array(subtract_rect(piece, cut))
+		pieces = remaining
+	return pieces
+
+
+## [param piece] minus [param cut]: up to four rects (the strips before and
+## after the cut along Z, then its sides along X), or the piece itself when
+## they don't overlap.
+static func subtract_rect(piece: Rect2, cut: Rect2) -> Array[Rect2]:
+	var overlap: Rect2 = piece.intersection(cut)
+	if not overlap.has_area():
+		return [piece]
+	var candidates: Array[Rect2] = [
+		Rect2(piece.position.x, piece.position.y, piece.size.x, overlap.position.y - piece.position.y),
+		Rect2(piece.position.x, overlap.end.y, piece.size.x, piece.end.y - overlap.end.y),
+		Rect2(piece.position.x, overlap.position.y, overlap.position.x - piece.position.x, overlap.size.y),
+		Rect2(overlap.end.x, overlap.position.y, piece.end.x - overlap.end.x, overlap.size.y),
+	]
+	var pieces: Array[Rect2] = []
+	for candidate: Rect2 in candidates:
+		if candidate.has_area():
+			pieces.append(candidate)
+	return pieces

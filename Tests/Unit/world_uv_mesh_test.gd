@@ -137,3 +137,35 @@ func test_plane_shade_becomes_vertex_colors() -> void:
 	assert_int(colors.size()).is_equal(6)
 	assert_bool(colors.has(Color.BLACK)).is_true()
 	assert_bool(colors.has(Color.WHITE)).is_true()
+
+
+## Sum of the triangles' areas of a mesh surface (seen from above).
+func _get_covered_area(mesh: ArrayMesh) -> float:
+	var area: float = 0.0
+	for triangle: PackedVector3Array in _get_triangles(mesh, 0):
+		area += (triangle[1] - triangle[0]).cross(triangle[2] - triangle[0]).length() * 0.5
+	return area
+
+
+func test_plane_with_a_hole_covers_everything_else() -> void:
+	var hole: Rect2 = Rect2(-1.0, 0.5, 1.5, 1.0)
+	var mesh: ArrayMesh = WorldUVMesh.create_plane(Vector2(6.0, 4.0), Vector2i(3, 2), Callable(), [hole])
+	assert_float(_get_covered_area(mesh)).is_equal_approx(6.0 * 4.0 - hole.get_area(), TOLERANCE)
+	for triangle: PackedVector3Array in _get_triangles(mesh, 0):
+		var center: Vector3 = (triangle[0] + triangle[1] + triangle[2]) / 3.0
+		assert_bool(hole.has_point(Vector2(center.x, center.z))).is_false()
+
+
+func test_subtracting_overlapping_or_covering_cuts() -> void:
+	var base: Rect2 = Rect2(0.0, 0.0, 4.0, 4.0)
+	# Two cuts that overlap each other: the rest is covered once, exactly.
+	var cuts: Array[Rect2] = [Rect2(1.0, 1.0, 2.0, 1.0), Rect2(2.0, 1.5, 1.5, 2.0)]
+	var pieces: Array[Rect2] = WorldUVMesh.subtract_rects(base, cuts)
+	var covered: float = 0.0
+	for piece: Rect2 in pieces:
+		covered += piece.get_area()
+		for cut: Rect2 in cuts:
+			assert_bool(piece.intersection(cut).has_area()).is_false()
+	assert_float(covered).is_equal_approx(16.0 - 2.0 - 3.0 + 0.5, TOLERANCE)
+	# A cut covering it all leaves nothing.
+	assert_array(WorldUVMesh.subtract_rects(base, [Rect2(-1.0, -1.0, 6.0, 6.0)])).is_empty()

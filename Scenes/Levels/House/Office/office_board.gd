@@ -1,5 +1,6 @@
-## The office wall screen: spend cash on the five progression branches
-## (production, sales, defense, workforce, house) and pay off the police.
+## The office wall screen: spend cash on the progression branches (lab,
+## automation, production, sales, defense, workforce, house, perks; their
+## tabs wrap into rows of four) and pay off the police.
 ## Shown in the world on a WorldScreen. It displays Profile data and emits
 ## signals; the level does the buying.
 ##
@@ -21,7 +22,7 @@ var _is_refresh_queued: bool = false
 
 @onready var _reputation_label: IconLabel = %ReputationLabel
 @onready var _cash_label: IconLabel = %CashLabel
-@onready var _tabs: HBoxContainer = %Tabs
+@onready var _tabs: GridContainer = %Tabs
 @onready var _rows: VBoxContainer = %Rows
 @onready var _heat_label: Label = %HeatLabel
 @onready var _bribe_button: Button = %BribeButton

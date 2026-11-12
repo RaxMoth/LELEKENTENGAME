@@ -86,6 +86,33 @@ func get_heat_cooling_multiplier() -> float:
 	return 1.0 + bonus_percent / 100.0
 
 
+## Walking speed factor from Running Shoes (1 = base speed).
+func get_walk_speed_multiplier() -> float:
+	return 1.0 + get_upgrade_value(Types.UPGRADE_SHOES) / 100.0
+
+
+## Skill-check needle speed factor from Steady Hands (1 = base; never below a quarter).
+func get_needle_speed_multiplier() -> float:
+	return maxf(0.25, 1.0 - get_upgrade_value(Types.UPGRADE_STEADY_HANDS) / 100.0)
+
+
+## Extra units for every plant the player harvests by hand (Green Thumb).
+func get_hand_harvest_bonus() -> int:
+	return roundi(get_upgrade_value(Types.UPGRADE_GREEN_THUMB))
+
+
+## How much faster the cellar's plants grow under the grow lights (1 = base).
+func get_grow_light_multiplier() -> float:
+	return 1.0 + get_upgrade_value(Types.UPGRADE_GROW_LIGHTS) / 100.0
+
+
+## Seconds the auto picker takes for one plant, or 0 without a picker.
+func get_picker_seconds() -> float:
+	if get_upgrade_level(Types.UPGRADE_AUTO_PICKER) <= 0:
+		return 0.0
+	return maxf(1.0, get_upgrade_value(Types.UPGRADE_AUTO_PICKER))
+
+
 ## Quality bonus of the lab equipment.
 func get_equipment_bonus() -> float:
 	return get_upgrade_value(Types.UPGRADE_EQUIPMENT)

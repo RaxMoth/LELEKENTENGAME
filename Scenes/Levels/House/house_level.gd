@@ -20,7 +20,7 @@
 ## host's world — time, money, stash, items, stations — instead.
 ##
 ## Dependencies: LevelBase, HouseFront, HouseContext, HouseCycle, Operation, DayCycle,
-##               HouseShell, UpgradeLook, Worker, WristStatus, XRPlayerRig, HouseCoopSync, Profile, Audio,
+##               HouseShell, UpgradeLook, Ghost, Worker, WristStatus, XRPlayerRig, HouseCoopSync, Profile, Audio,
 ##               Events, Platform, Coop, Types autoloads, Palette, SfxSynth
 class_name HouseLevel
 extends LevelBase
@@ -61,6 +61,7 @@ var _mirrored_wrist_lines: PackedStringArray = PackedStringArray()
 @onready var _world_environment: WorldEnvironment = %WorldEnvironment
 @onready var _coop_sync: HouseCoopSync = %CoopSync
 @onready var _house_shell: HouseShell = %HouseShell
+@onready var _ghost: Ghost = %Ghost
 
 # ============================================
 # LEVEL HOOKS
@@ -177,6 +178,11 @@ func _present_result(_result: LevelResult) -> void:
 # PUBLIC API
 # ============================================
 
+## The night-4 ghost (tests).
+func get_ghost() -> Ghost:
+	return _ghost
+
+
 ## The house's walls, floor, ceiling and roof (renovations change their materials).
 func get_house_shell() -> HouseShell:
 	return _house_shell
@@ -190,11 +196,13 @@ func get_front(front_script: Script) -> HouseFront:
 	return null
 
 
-## Re-applies everything upgrades change: the operation, how the house
-## looks (renovated walls, floor, facade and roof; every UpgradeLook such as
-## door straps or stash shelves), hired crew, every front.
+## Re-applies everything upgrades change: the operation, the player's
+## perks (walking speed), how the house looks (renovated walls, floor,
+## facade and roof; every UpgradeLook such as door straps or stash shelves),
+## hired crew, every front.
 func apply_upgrades() -> void:
 	operation.apply_upgrades()
+	rig.locomotion.speed_multiplier = operation.get_walk_speed_multiplier()
 	_house_shell.apply_renovations(Profile.upgrades)
 	for node: Node in get_tree().get_nodes_in_group(Types.GROUP_UPGRADE_LOOK):
 		var look: UpgradeLook = node as UpgradeLook
@@ -250,6 +258,9 @@ func _on_shift_lost(reason: String) -> void:
 
 
 func _on_nightfall() -> void:
+	# Each player meets the ghost on their own (the guest's too).
+	if Profile.operation.day_number == _ghost.night_number:
+		_ghost.haunt(rig)
 	if is_mirror:
 		return
 	announce(tr("Night falls"), Palette.MOONLIGHT)

@@ -118,6 +118,23 @@ const UPGRADE_PLANTS: StringName = &"lab_plants"
 const UPGRADE_GRINDER: StringName = &"lab_grinder"
 const UPGRADE_COOKER: StringName = &"lab_cooker"
 const UPGRADE_PRESS: StringName = &"lab_press"
+## Automation (its own office tab). The cellar under the house, reached by
+## stairs from the stash room.
+const UPGRADE_CELLAR: StringName = &"lab_cellar"
+## Grow racks in the cellar (level = how many racks of plants).
+const UPGRADE_GROW_RACKS: StringName = &"lab_grow_racks"
+## Grow lights over the racks: cellar plants grow faster (value = percent).
+const UPGRADE_GROW_LIGHTS: StringName = &"lab_grow_lights"
+## The auto picker harvests ripe cellar plants on its own (level = speed).
+const UPGRADE_AUTO_PICKER: StringName = &"lab_auto_picker"
+## Motors: a station finishes its skill check on its own.
+const UPGRADE_GRINDER_MOTOR: StringName = &"lab_grinder_motor"
+const UPGRADE_COOKER_MOTOR: StringName = &"lab_cooker_motor"
+const UPGRADE_PRESS_MOTOR: StringName = &"lab_press_motor"
+## Conveyor belts carry a finished result on to the next station.
+const UPGRADE_CONVEYOR: StringName = &"lab_conveyor"
+## The hopper buys and feeds in the ingredients of the last cooked recipe.
+const UPGRADE_HOPPER: StringName = &"lab_hopper"
 
 # --- Sales (customers) ---
 ## More customers can wait at the window.
@@ -160,6 +177,12 @@ const UPGRADE_RENOVATE_FACADE: StringName = &"house_facade"
 const UPGRADE_RENOVATE_ROOF: StringName = &"house_roof"
 ## Every renovation (Operation sums their values into the heat cooling bonus).
 const RENOVATION_UPGRADES: Array[StringName] = [UPGRADE_RENOVATE_WALLS, UPGRADE_RENOVATE_FLOOR, UPGRADE_RENOVATE_FACADE, UPGRADE_RENOVATE_ROOF]
+## Perks for the player (their own office tab). Faster walking (value = percent).
+const UPGRADE_SHOES: StringName = &"perk_shoes"
+## Extra shrooms for every plant harvested by hand (value = units).
+const UPGRADE_GREEN_THUMB: StringName = &"perk_green_thumb"
+## The skill-check needle sweeps slower (value = percent).
+const UPGRADE_STEADY_HANDS: StringName = &"perk_steady_hands"
 const ITEM_NO_ADS: StringName = &"no_ads"
 
 # ============================================
@@ -219,6 +242,11 @@ const EVENT_STATION_DONE: StringName = &"station_done"
 ## A shroom plant's crop is ready / was harvested (Lab/ShroomPlant.tscn).
 const EVENT_PLANT_RIPE: StringName = &"plant_ripe"
 const EVENT_PLANT_HARVESTED: StringName = &"plant_harvested"
+## The cellar's auto picker (Cellar/AutoPicker.tscn): heads for a ripe
+## plant, reaches it, has picked it.
+const EVENT_PICKER_TARGET: StringName = &"picker_target"
+const EVENT_PICKER_ARRIVED: StringName = &"picker_arrived"
+const EVENT_PICKER_DONE: StringName = &"picker_done"
 
 # --- House: crew and the day (Workers/Worker.tscn, House.tscn) ---
 ## Crew: hired, wage paid on time / missed.
@@ -234,6 +262,11 @@ const EVENT_RAID_START: StringName = &"raid_start"
 const EVENT_WAVE_START: StringName = &"wave_start"
 const EVENT_WAVE_CLEARED: StringName = &"wave_cleared"
 const EVENT_RAID_CLEARED: StringName = &"raid_cleared"
+## The night-4 ghost (Ghost/Ghost.tscn): it shows up, the player looked at
+## it, it is gone.
+const EVENT_GHOST_APPEAR: StringName = &"ghost_appear"
+const EVENT_GHOST_SEEN: StringName = &"ghost_seen"
+const EVENT_GHOST_GONE: StringName = &"ghost_gone"
 
 # ============================================
 # DUCK-TYPED HOOKS (optional methods nodes may implement)

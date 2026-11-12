@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="UpgradeData" format=3]
+
+[ext_resource type="Script" path="res://Scripts/Resources/upgrade_data.gd" id="script"]
+
+[resource]
+script = ExtResource("script")
+id = &"lab_grow_racks"
+title = "Grow Racks"
+description = "A rack of four shroom plants in the cellar. They grow on their own, like the plant in the lab."
+base_cost = 300
+cost_growth = 1.7
+max_level = 3
+base_value = 0.0
+value_per_level = 4.0
+value_format = "+%s plants"
+branch = &"automation"
+required_reputation = 0
+required_upgrade_id = &"lab_cellar"

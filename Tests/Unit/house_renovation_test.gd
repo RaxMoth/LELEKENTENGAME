@@ -143,3 +143,23 @@ func test_look_level_threshold() -> void:
 	assert_bool(UpgradeLook.is_reached(0, 1)).is_false()
 	assert_bool(UpgradeLook.is_reached(1, 1)).is_true()
 	assert_bool(UpgradeLook.is_reached(3, 2)).is_true()
+
+
+func test_subtracting_a_hole_leaves_four_pieces_with_the_same_area() -> void:
+	var floor_area: Rect2 = Rect2(0.0, 0.0, 6.0, 4.0)
+	var stairwell: Rect2 = Rect2(1.0, 1.0, 3.0, 1.0)
+	var pieces: Array[Rect2] = WorldUVMesh.subtract_rects(floor_area, [stairwell])
+	assert_int(pieces.size()).is_equal(4)
+	var covered: float = 0.0
+	for piece: Rect2 in pieces:
+		covered += piece.get_area()
+		assert_bool(piece.intersection(stairwell).has_area()).is_false()
+	assert_float(covered).is_equal_approx(floor_area.get_area() - stairwell.get_area(), 0.0001)
+
+
+func test_a_hole_on_the_edge_or_outside_cuts_less() -> void:
+	var floor_area: Rect2 = Rect2(0.0, 0.0, 6.0, 4.0)
+	assert_int(WorldUVMesh.subtract_rects(floor_area, [Rect2(0.0, 0.0, 2.0, 1.0)]).size()).is_equal(2)
+	var untouched: Array[Rect2] = WorldUVMesh.subtract_rects(floor_area, [Rect2(10.0, 10.0, 1.0, 1.0)])
+	assert_int(untouched.size()).is_equal(1)
+	assert_bool(untouched[0] == floor_area).is_true()

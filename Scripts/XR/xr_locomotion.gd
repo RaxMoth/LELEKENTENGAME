@@ -12,7 +12,8 @@
 ## where the hands point. Walking eases in and out instead of jumping to
 ## full speed, a fully pushed stick sprints, and footsteps sound every stride
 ## (with a light tap in both hands while arm-swinging). No head bob: the
-## camera only ever moves as far as the player walks.
+## camera only ever moves as far as the player walks. Walking down stairs
+## (a WalkableRamp) lowers the player with each step, never on its own.
 ##
 ## Dependencies: XRPlayerRig, XRPointer, WalkableArea, WalkMotion, RayMath, Settings, Audio,
 ##               PlaceholderMesh3D, Palette, SfxSynth, Types autoloads
@@ -34,6 +35,9 @@ const MARKER_OPACITY: float = 0.7
 @export var snap_turn_degrees: float = 30.0
 @export var smooth_turn_degrees_per_second: float = 100.0
 @export var teleport_range: float = 9.0
+
+## Scales walking speed (stick, arm swing, WASD): faster shoes, an upgrade.
+var speed_multiplier: float = 1.0
 
 ## Where the player may stand (null = anywhere).
 var walkable_area: WalkableArea = null
@@ -117,12 +121,12 @@ func step(delta: float) -> void:
 		_step_flat(delta)
 
 
-## Puts the player's feet at [param target] (the head stays where it is
-## relative to the play space). [param facing] (radians, NAN = keep) turns
-## the view to that yaw.
+## Puts the player's feet at [param target], its height included (the head
+## stays where it is relative to the play space). [param facing] (radians,
+## NAN = keep) turns the view to that yaw.
 func teleport_to(target: Vector3, facing: float = NAN) -> void:
 	var feet: Vector3 = rig.get_feet_position()
-	rig.move_origin_by(Vector3(target.x - feet.x, 0.0, target.z - feet.z))
+	rig.move_origin_by(target - feet)
 	if not is_nan(facing):
 		rig.face_yaw(facing)
 	teleported.emit(target)
@@ -159,8 +163,8 @@ func _step_xr(delta: float) -> void:
 		var forward: Vector3 = Vector3(-head_basis.z.x, 0.0, -head_basis.z.z).normalized()
 		var right: Vector3 = Vector3(head_basis.x.x, 0.0, head_basis.x.z).normalized()
 		var stick_direction: Vector3 = (right * _walk_stick.x + forward * _walk_stick.y).normalized()
-		target_velocity = stick_direction * WalkMotion.get_stick_speed(_walk_stick, move_speed)
-	var swing_velocity: Vector3 = _get_arm_swing_velocity(delta)
+		target_velocity = stick_direction * WalkMotion.get_stick_speed(_walk_stick, move_speed * speed_multiplier)
+	var swing_velocity: Vector3 = _get_arm_swing_velocity(delta) * speed_multiplier
 	if swing_velocity.length() > target_velocity.length():
 		target_velocity = swing_velocity
 	_move_with(target_velocity, delta, swing_velocity != Vector3.ZERO)
@@ -178,7 +182,7 @@ func _step_flat(delta: float) -> void:
 	var view_basis: Basis = rig.get_head_transform().basis
 	var forward: Vector3 = Vector3(-view_basis.z.x, 0.0, -view_basis.z.z).normalized()
 	var right: Vector3 = Vector3(view_basis.x.x, 0.0, view_basis.x.z).normalized()
-	_move_with((right * input.x + forward * input.y) * flat_move_speed, delta, false)
+	_move_with((right * input.x + forward * input.y) * flat_move_speed * speed_multiplier, delta, false)
 
 
 ## Eases the walking velocity toward [param target_velocity], moves, and
@@ -240,8 +244,9 @@ func _walk(offset: Vector3) -> void:
 	var feet: Vector3 = rig.get_feet_position()
 	var target: Vector3 = feet + offset
 	if walkable_area != null:
+		# Also up or down to the floor there (stairs).
 		target = walkable_area.clamp_move(feet, target)
-	rig.move_origin_by(Vector3(target.x - feet.x, 0.0, target.z - feet.z))
+	rig.move_origin_by(target - feet)
 
 
 ## The off-hand stick points more sideways than forward: it turns rather
@@ -263,8 +268,8 @@ func _handle_snap_turn(stick: Vector2) -> void:
 
 
 func _find_teleport_target(pointer: XRPointer) -> Vector3:
-	var floor_height: float = walkable_area.floor_height if walkable_area != null else rig.get_feet_position().y
-	var distance: float = RayMath.intersect_ground(pointer.ray_origin, pointer.ray_direction, floor_height)
+	# Teleports stay on the floor the player stands on (the cellar or the house).
+	var distance: float = RayMath.intersect_ground(pointer.ray_origin, pointer.ray_direction, rig.get_feet_position().y)
 	if distance == RayMath.NO_HIT or distance > teleport_range:
 		return Vector3(INF, INF, INF)
 	return pointer.get_point(distance)

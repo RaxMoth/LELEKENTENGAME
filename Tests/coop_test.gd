@@ -63,9 +63,9 @@ func _run_host() -> void:
 	var crate: IngredientCrate = lab.get_crate(&"glowcap")
 	var grinder: Workstation = lab.get_station(&"Grinder")
 	# The lab's gadgets come from the office: buy them so the guest can grind
-	# (and patch the walls, so the guest's house shows the renovation).
+	# (and patch the walls and dig the cellar, so the guest's house shows them).
 	Profile.wallet.add(Types.CURRENCY_CASH, 5000)
-	for gadget_id: StringName in [Types.UPGRADE_GRINDER, Types.UPGRADE_COOKER, Types.UPGRADE_PRESS, Types.UPGRADE_RENOVATE_WALLS]:
+	for gadget_id: StringName in [Types.UPGRADE_GRINDER, Types.UPGRADE_COOKER, Types.UPGRADE_PRESS, Types.UPGRADE_RENOVATE_WALLS, Types.UPGRADE_PLANTS, Types.UPGRADE_CELLAR]:
 		Profile.upgrades.purchase(GameConfig.get_default().find_upgrade(gadget_id))
 	level.apply_upgrades()
 	var cash_before: int = level.operation.get_cash()
@@ -104,6 +104,8 @@ func _run_guest() -> void:
 	_check(await _wait_until(func() -> bool: return sync.get_remote_players().size() == 1), "guest: sees the host")
 	var shell: HouseShell = level.get_house_shell()
 	_check(await _wait_until(func() -> bool: return shell.get_surface_material(HouseShell.SurfaceKind.INSIDE_WALL) != shell.inside_wall_material), "guest: the host's renovated walls show here too")
+	var cellar: Cellar = level.get_front(Cellar) as Cellar
+	_check(cellar.is_open() and rig.walkable_area.contains(Vector3(2.6, -2.6, 0.0)), "guest: the host's cellar is open and walkable here too")
 	# Let the first shared state arrive before reading the cash.
 	await _seconds(1.0)
 	var cash_before: int = level.operation.get_cash()

@@ -153,6 +153,7 @@ func _test_house(level_data: LevelData) -> void:
 	Profile.wallet.add(Types.CURRENCY_CASH, 5000)
 	await HouseSmokeChecks.run_start(self, level)
 	await LabSmokeChecks.run(self, level)
+	await CellarSmokeChecks.run(self, level)
 	await SalesSmokeChecks.run(self, level)
 	await TownSmokeChecks.run(self, level)
 	await DefenseSmokeChecks.run(self, level)

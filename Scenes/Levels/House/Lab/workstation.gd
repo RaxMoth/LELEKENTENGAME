@@ -2,6 +2,8 @@
 ## (package). Put the right items into its sockets and it starts its skill
 ## check — a needle sweeping over a bar. Press the plunger while the needle
 ## is in the green zone; the closer to its middle, the better the product.
+## A bought motor (set_motorized) stops the needle on its own after
+## motor_seconds with a Good result; pressing Stop first can still do better.
 ## State: Idle (waiting for inputs) <-> Running (the gauge sweeps).
 ##
 ## Dependencies: TimingGauge, QualityMath, IngredientItem, BatchItem,
@@ -20,6 +22,8 @@ signal batch_cooked(recipe: RecipeData)
 const BATCH_SCENE: PackedScene = preload("res://Scenes/Levels/House/Lab/BatchItem.tscn")
 const GAUGE_LENGTH: float = 0.5
 const GAUGE_THICKNESS: float = 0.035
+## Accuracy a motor stops the needle at: a Good result, never Perfect.
+const MOTOR_ACCURACY: float = 0.6
 
 @export var step: Types.CraftStep = Types.CraftStep.PROCESS
 @export var station_name: String = "Station"
@@ -27,6 +31,8 @@ const GAUGE_THICKNESS: float = 0.035
 @export var sweeps_per_second: float = 0.6
 ## Width of the sweet zone before equipment upgrades (the cooker uses the recipe's).
 @export var zone_width: float = 0.22
+## Seconds a motor lets the needle sweep before it stops it.
+@export var motor_seconds: float = 4.0
 
 ## The house's shared state (handed over by the Lab at setup).
 var operation: Operation = null
@@ -35,6 +41,8 @@ var _gauge: TimingGauge = null
 var _active_recipe: RecipeData = null
 var _needle: MeshInstance3D = null
 var _zone: MeshInstance3D = null
+var _has_motor: bool = false
+var _running_seconds: float = 0.0
 
 @onready var _inputs: Node3D = %Inputs
 @onready var _output: ItemSocket = %Output
@@ -97,6 +105,15 @@ func set_active(is_active: bool) -> void:
 	process_mode = Node.PROCESS_MODE_INHERIT if is_active else Node.PROCESS_MODE_DISABLED
 
 
+## A bought motor finishes the skill check on its own (MOTOR_ACCURACY after motor_seconds).
+func set_motorized(has_motor: bool) -> void:
+	_has_motor = has_motor
+
+
+func is_motorized() -> bool:
+	return _has_motor
+
+
 ## The running skill check (tests and tutorials), or null while idle.
 func get_gauge() -> TimingGauge:
 	return _gauge
@@ -141,6 +158,8 @@ func _on_running_state_entered() -> void:
 	var sweep_rate: float = _active_recipe.cook_sweeps_per_second if step == Types.CraftStep.COMBINE and _active_recipe != null else sweeps_per_second
 	var base_width: float = _active_recipe.cook_zone_width if step == Types.CraftStep.COMBINE and _active_recipe != null else zone_width
 	var width: float = minf(0.8, base_width * operation.get_sweet_zone_multiplier())
+	sweep_rate *= operation.get_needle_speed_multiplier()
+	_running_seconds = 0.0
 	_gauge = TimingGauge.new(sweep_rate, width, randf_range(width * 0.5 + 0.1, 1.0 - width * 0.5 - 0.05))
 	_zone.scale.x = width * GAUGE_LENGTH
 	_zone.position.x = (_gauge.zone_center - 0.5) * GAUGE_LENGTH
@@ -148,7 +167,8 @@ func _on_running_state_entered() -> void:
 	_stop_button.visible = true
 	_stop_button.is_enabled = true
 	_set_inputs_removable(false)
-	_status_label.text = tr(station_name) + "\n" + tr("Press Stop when the needle is in the green")
+	var running_hint: String = tr("Press Stop in the green, or the motor stops it") if _has_motor else tr("Press Stop when the needle is in the green")
+	_status_label.text = tr(station_name) + "\n" + running_hint
 	Audio.play_sfx_at(SfxSynth.get_preset(&"pop"), global_position, 0.1, -10.0)
 
 
@@ -157,6 +177,9 @@ func _on_running_state_processing(delta: float) -> void:
 		return
 	_gauge.advance(delta)
 	_needle.position.x = (_gauge.get_needle() - 0.5) * GAUGE_LENGTH
+	_running_seconds += delta
+	if _has_motor and _running_seconds >= motor_seconds:
+		_finish(MOTOR_ACCURACY)
 
 # ============================================
 # INTERNALS
@@ -211,7 +234,15 @@ func _try_start() -> void:
 func _on_stop_pressed(_button: PointerButton) -> void:
 	if _gauge == null:
 		return
-	var accuracy: float = _gauge.stop()
+	_finish(_gauge.stop())
+
+
+## The skill check ended with [param accuracy] (the player's press or the motor).
+func _finish(accuracy: float) -> void:
+	if _gauge == null:
+		return
+	# Over: a motor must not finish it a second time before the state changes.
+	_gauge = null
 	_complete(accuracy)
 	step_finished.emit(step, accuracy)
 	state_chart.send_event(Types.EVENT_STATION_DONE)

@@ -4,11 +4,20 @@
 ## (buildings, fences). Teleports must land inside; smooth movement slides
 ## along edges and around blockers instead of passing through.
 ##
+## More floors: [member extra_floors] lie at other heights (the cellar),
+## [member ramps] slope between them (the cellar stairs) and [member holes]
+## cut openings into the main floor (the stairwell). A position counts as
+## walkable on the surface nearest its height, no more than MAX_STEP away,
+## so the player walks down a ramp onto the floor below but never steps off
+## an edge or through a ceiling. Blockers stand on every floor.
+##
 ##   rig.walkable_area = %WalkableArea
 ##   walkable.add_blockers(yard.get_obstacle_circles())   # Vector3(x, z, radius)
 ##   walkable.add_rect_blockers(town.get_building_footprints())
+##   walkable.add_hole(stairwell); walkable.add_ramp(stairs); walkable.add_floor(cellar)
+##   walkable.get_floor_height_at(feet)   # NAN off every floor
 ##
-## Dependencies: none
+## Dependencies: WalkableFloor, WalkableRamp
 class_name WalkableArea
 extends Node3D
 
@@ -19,9 +28,17 @@ extends Node3D
 @export var blockers: Array[Vector3] = []
 ## Rectangular things in the way (world X / Z), e.g. buildings and fences.
 @export var rect_blockers: Array[Rect2] = []
+## Openings in the main floor (a stairwell): not walkable at floor_height.
+@export var holes: Array[Rect2] = []
+## Floors at other heights (a cellar).
+@export var extra_floors: Array[WalkableFloor] = []
+## Slopes between floors (stairs).
+@export var ramps: Array[WalkableRamp] = []
 
 ## How far (meters) the player's body keeps from a blocker's edge.
 const BODY_RADIUS: float = 0.25
+## Highest step up or down a move may take; more is a wall, an edge or a ceiling.
+const MAX_STEP: float = 0.35
 
 
 ## Opens up a floor rectangle at runtime (an open door's threshold).
@@ -53,16 +70,98 @@ func add_rect_blockers(rects: Array[Rect2]) -> void:
 			rect_blockers.append(rect)
 
 
+## Cuts an opening into the main floor (a stairwell that was opened).
+func add_hole(hole: Rect2) -> void:
+	if not holes.has(hole):
+		holes.append(hole)
+
+
+func remove_hole(hole: Rect2) -> void:
+	holes.erase(hole)
+
+
+## Adds a floor at another height (the cellar).
+func add_floor(extra_floor: WalkableFloor) -> void:
+	if not extra_floors.has(extra_floor):
+		extra_floors.append(extra_floor)
+
+
+func remove_floor(extra_floor: WalkableFloor) -> void:
+	extra_floors.erase(extra_floor)
+
+
+## Adds a slope between floors (stairs).
+func add_ramp(ramp: WalkableRamp) -> void:
+	if not ramps.has(ramp):
+		ramps.append(ramp)
+
+
+func remove_ramp(ramp: WalkableRamp) -> void:
+	ramps.erase(ramp)
+
+
+## True when a player standing at [param world_position] (its y is their
+## feet) is on a floor: one within MAX_STEP of that height, off every blocker.
 func contains(world_position: Vector3) -> bool:
-	return contains_point(regions, Vector2(world_position.x, world_position.z), blockers, rect_blockers)
+	return not is_nan(get_floor_height_at(world_position))
+
+
+## Height of the walkable surface under [param world_position] — of the
+## floors, ramps and the main floor there, the one nearest its y and no more
+## than [param max_step] away — or NAN when there is none (off the floor, in
+## a hole, at a blocker, or a floor much higher or lower).
+func get_floor_height_at(world_position: Vector3, max_step: float = MAX_STEP) -> float:
+	var point: Vector2 = Vector2(world_position.x, world_position.z)
+	if _is_blocked(point):
+		return NAN
+	var best_height: float = NAN
+	var best_gap: float = max_step
+	var candidates: Array[float] = []
+	if _is_on_main_floor(point):
+		candidates.append(floor_height)
+	for extra_floor: WalkableFloor in extra_floors:
+		if extra_floor.has_point(point):
+			candidates.append(extra_floor.height)
+	for ramp: WalkableRamp in ramps:
+		if ramp.has_point(point):
+			candidates.append(ramp.get_height(point))
+	for height: float in candidates:
+		var gap: float = absf(height - world_position.y)
+		if gap <= best_gap:
+			best_gap = gap
+			best_height = height
+	return best_height
 
 
 ## Where a move from [param from_position] toward [param to_position] ends:
 ## the target when it is walkable, otherwise sliding along one axis, or no
-## move at all.
+## move at all. The result's y is the floor height there (down a ramp, it
+## goes down). From a spot with no floor under it (a hole opened beneath
+## the player) any floor counts, so nobody gets stuck.
 func clamp_move(from_position: Vector3, to_position: Vector3) -> Vector3:
-	var resolved: Vector2 = resolve_move(regions, Vector2(from_position.x, from_position.z), Vector2(to_position.x, to_position.z), blockers, rect_blockers)
-	return Vector3(resolved.x, to_position.y, resolved.y)
+	var step_limit: float = MAX_STEP if not is_nan(get_floor_height_at(from_position)) else INF
+	var candidates: Array[Vector2] = [Vector2(to_position.x, to_position.z), Vector2(to_position.x, from_position.z), Vector2(from_position.x, to_position.z)]
+	for candidate: Vector2 in candidates:
+		var height: float = get_floor_height_at(Vector3(candidate.x, from_position.y, candidate.y), step_limit)
+		if not is_nan(height):
+			return Vector3(candidate.x, height, candidate.y)
+	return from_position
+
+
+func _is_blocked(point: Vector2) -> bool:
+	return not contains_point([], point, blockers, rect_blockers)
+
+
+func _is_on_main_floor(point: Vector2) -> bool:
+	for hole: Rect2 in holes:
+		if hole.has_point(point):
+			return false
+	if regions.is_empty():
+		return true
+	for region: Rect2 in regions:
+		if region.has_point(point):
+			return true
+	return false
 
 
 ## True when [param point] is on a floor region (any point without regions)

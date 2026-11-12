@@ -55,6 +55,16 @@ const OUTSIDE_TOLERANCE: float = 0.01
 	set(value):
 		floor_rect = value
 		_queue_rebuild()
+## Openings cut out of the floor (x, z rects): the stairwell down to the cellar.
+@export var floor_openings: Array[Rect2] = []:
+	set(value):
+		floor_openings = value
+		_queue_rebuild()
+## Openings cut out of the ceiling: a cellar's stairwell up into the house.
+@export var ceiling_openings: Array[Rect2] = []:
+	set(value):
+		ceiling_openings = value
+		_queue_rebuild()
 @export var wall_height: float = 2.6
 @export var wall_thickness: float = 0.16
 @export var door_height: float = 2.1
@@ -118,11 +128,11 @@ func rebuild() -> void:
 	_surfaces.clear()
 	for kind: SurfaceKind in SurfaceKind.values():
 		_surfaces[kind] = WorldUVMesh.begin_surface()
-	var floor_center: Vector3 = Vector3(floor_rect.get_center().x, 0.0, floor_rect.get_center().y)
-	var slab_size: Vector3 = Vector3(floor_rect.size.x, 0.0, floor_rect.size.y)
-	WorldUVMesh.add_box_face(_surfaces[SurfaceKind.FLOOR], floor_center, slab_size, WorldUVMesh.Face.POSITIVE_Y)
+	for floor_piece: Rect2 in WorldUVMesh.subtract_rects(floor_rect, floor_openings):
+		_add_slab(_surfaces[SurfaceKind.FLOOR], floor_piece, 0.0, WorldUVMesh.Face.POSITIVE_Y)
 	if has_ceiling:
-		WorldUVMesh.add_box_face(_surfaces[SurfaceKind.CEILING], floor_center + Vector3.UP * wall_height, slab_size, WorldUVMesh.Face.NEGATIVE_Y)
+		for ceiling_piece: Rect2 in WorldUVMesh.subtract_rects(floor_rect, ceiling_openings):
+			_add_slab(_surfaces[SurfaceKind.CEILING], ceiling_piece, wall_height, WorldUVMesh.Face.NEGATIVE_Y)
 	for wall: Vector4 in walls:
 		_build_wall(wall)
 	if has_roof:
@@ -164,6 +174,12 @@ func set_surface_material(kind: SurfaceKind, material: Material) -> void:
 ## The material a surface shows right now (renovated or exported).
 func get_surface_material(kind: SurfaceKind) -> Material:
 	return _get_material(kind)
+
+
+## A horizontal face over [param area] (x, z) at [param height].
+func _add_slab(surface_tool: SurfaceTool, area: Rect2, height: float, face: WorldUVMesh.Face) -> void:
+	var center: Vector3 = Vector3(area.get_center().x, height, area.get_center().y)
+	WorldUVMesh.add_box_face(surface_tool, center, Vector3(area.size.x, 0.0, area.size.y), face)
 
 
 func _queue_rebuild() -> void:
