@@ -34,8 +34,8 @@ func setup(title: String, description: String, detail: String, button_text: Stri
 	_buy_button.disabled = not is_enabled
 
 
-## Shows an upgrade: level, value and price; locked until the operation has
-## the reputation it needs.
+## Shows an upgrade: level, value and price; locked until what it builds on
+## is bought and the operation has the reputation it needs.
 func setup_upgrade(upgrade: UpgradeData) -> void:
 	var current_level: int = Profile.upgrades.get_level(upgrade.id)
 	var detail: String = tr("Level %d") % current_level
@@ -43,6 +43,11 @@ func setup_upgrade(upgrade: UpgradeData) -> void:
 		detail += "  ·  " + upgrade.value_format % NumberFormat.compact(upgrade.get_value(current_level))
 	if upgrade.is_maxed(current_level):
 		setup(tr(upgrade.title), tr(upgrade.description), detail, tr("Max"), false)
+		return
+	if not Profile.upgrades.is_requirement_met(upgrade):
+		var required: UpgradeData = GameConfig.get_default().find_upgrade(upgrade.required_upgrade_id)
+		var required_title: String = tr(required.title) if required != null else String(upgrade.required_upgrade_id)
+		setup(tr(upgrade.title), tr(upgrade.description), tr("Needs %s first") % required_title, "", false, LOCK_ICON)
 		return
 	if not Profile.upgrades.is_reputation_met(upgrade):
 		setup(tr(upgrade.title), tr(upgrade.description), tr("Needs %d reputation") % upgrade.required_reputation, str(upgrade.required_reputation), false, LOCK_ICON)

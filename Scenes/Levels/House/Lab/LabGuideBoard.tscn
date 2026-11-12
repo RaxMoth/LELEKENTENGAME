@@ -1,5 +1,6 @@
 [gd_scene format=3]
 
+[ext_resource type="Script" path="res://Scenes/Levels/House/Lab/lab_guide_board.gd" id="board"]
 [ext_resource type="Texture2D" path="res://Assets/Icons/arrow.svg" id="arrow"]
 
 [node name="LabGuideBoard" type="Control"]
@@ -9,6 +10,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+script = ExtResource("board")
 
 [node name="Panel" type="PanelContainer" parent="."]
 layout_mode = 1
@@ -51,7 +53,69 @@ layout_mode = 2
 size_flags_vertical = 3
 theme_override_constants/separation = 16
 
+[node name="Plant" type="PanelContainer" parent="Panel/Margin/Column/Steps"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"ChipPanel"
+
+[node name="Column" type="VBoxContainer" parent="Panel/Margin/Column/Steps/Plant"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Title" type="HBoxContainer" parent="Panel/Margin/Column/Steps/Plant/Column"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="Number" type="Label" parent="Panel/Margin/Column/Steps/Plant/Column/Title"]
+layout_mode = 2
+theme_type_variation = &"AccentLabel"
+text = "1"
+
+[node name="Name" type="Label" parent="Panel/Margin/Column/Steps/Plant/Column/Title"]
+layout_mode = 2
+theme_type_variation = &"HeaderLabel"
+text = "Plant"
+
+[node name="Flow" type="HBoxContainer" parent="Panel/Margin/Column/Steps/Plant/Column"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="In" type="Label" parent="Panel/Margin/Column/Steps/Plant/Column/Flow"]
+layout_mode = 2
+text = "On its own"
+
+[node name="Arrow" type="TextureRect" parent="Panel/Margin/Column/Steps/Plant/Column/Flow"]
+self_modulate = Color(0.5529, 0.5882, 0.6745, 1)
+custom_minimum_size = Vector2(32, 32)
+layout_mode = 2
+size_flags_vertical = 4
+texture = ExtResource("arrow")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Out" type="Label" parent="Panel/Margin/Column/Steps/Plant/Column/Flow"]
+layout_mode = 2
+text = "shrooms"
+
+[node name="PlantNote" type="Label" parent="Panel/Margin/Column/Steps/Plant/Column"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"SmallLabel"
+text = "Harvest them, sell them at the window."
+autowrap_mode = 3
+
+[node name="Arrow1" type="TextureRect" parent="Panel/Margin/Column/Steps"]
+self_modulate = Color(0.3569, 0.4863, 0.9804, 1)
+custom_minimum_size = Vector2(40, 40)
+layout_mode = 2
+size_flags_vertical = 4
+texture = ExtResource("arrow")
+expand_mode = 1
+stretch_mode = 5
+
 [node name="Grind" type="PanelContainer" parent="Panel/Margin/Column/Steps"]
+unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 theme_type_variation = &"ChipPanel"
@@ -67,7 +131,7 @@ theme_override_constants/separation = 16
 [node name="Number" type="Label" parent="Panel/Margin/Column/Steps/Grind/Column/Title"]
 layout_mode = 2
 theme_type_variation = &"AccentLabel"
-text = "1"
+text = "2"
 
 [node name="Name" type="Label" parent="Panel/Margin/Column/Steps/Grind/Column/Title"]
 layout_mode = 2
@@ -80,7 +144,7 @@ theme_override_constants/separation = 16
 
 [node name="In" type="Label" parent="Panel/Margin/Column/Steps/Grind/Column/Flow"]
 layout_mode = 2
-text = "Raw ingredient"
+text = "Raw"
 
 [node name="Arrow" type="TextureRect" parent="Panel/Margin/Column/Steps/Grind/Column/Flow"]
 self_modulate = Color(0.5529, 0.5882, 0.6745, 1)
@@ -95,13 +159,14 @@ stretch_mode = 5
 layout_mode = 2
 text = "dust"
 
-[node name="Note" type="Label" parent="Panel/Margin/Column/Steps/Grind/Column"]
+[node name="GrindNote" type="Label" parent="Panel/Margin/Column/Steps/Grind/Column"]
+unique_name_in_owner = true
 layout_mode = 2
 theme_type_variation = &"SmallLabel"
 text = "Sugarsalt needs no grinding."
 autowrap_mode = 3
 
-[node name="ArrowA" type="TextureRect" parent="Panel/Margin/Column/Steps"]
+[node name="Arrow2" type="TextureRect" parent="Panel/Margin/Column/Steps"]
 self_modulate = Color(0.3569, 0.4863, 0.9804, 1)
 custom_minimum_size = Vector2(40, 40)
 layout_mode = 2
@@ -111,6 +176,7 @@ expand_mode = 1
 stretch_mode = 5
 
 [node name="Cook" type="PanelContainer" parent="Panel/Margin/Column/Steps"]
+unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 theme_type_variation = &"ChipPanel"
@@ -126,7 +192,7 @@ theme_override_constants/separation = 16
 [node name="Number" type="Label" parent="Panel/Margin/Column/Steps/Cook/Column/Title"]
 layout_mode = 2
 theme_type_variation = &"AccentLabel"
-text = "2"
+text = "3"
 
 [node name="Name" type="Label" parent="Panel/Margin/Column/Steps/Cook/Column/Title"]
 layout_mode = 2
@@ -139,7 +205,7 @@ theme_override_constants/separation = 16
 
 [node name="In" type="Label" parent="Panel/Margin/Column/Steps/Cook/Column/Flow"]
 layout_mode = 2
-text = "2 or 3 ingredients"
+text = "Dust"
 
 [node name="Arrow" type="TextureRect" parent="Panel/Margin/Column/Steps/Cook/Column/Flow"]
 self_modulate = Color(0.5529, 0.5882, 0.6745, 1)
@@ -154,13 +220,14 @@ stretch_mode = 5
 layout_mode = 2
 text = "batch"
 
-[node name="Note" type="Label" parent="Panel/Margin/Column/Steps/Cook/Column"]
+[node name="CookNote" type="Label" parent="Panel/Margin/Column/Steps/Cook/Column"]
+unique_name_in_owner = true
 layout_mode = 2
 theme_type_variation = &"SmallLabel"
-text = "Which mix? The recipe book is on the left wall."
+text = "Which mix? See the recipe book."
 autowrap_mode = 3
 
-[node name="ArrowB" type="TextureRect" parent="Panel/Margin/Column/Steps"]
+[node name="Arrow3" type="TextureRect" parent="Panel/Margin/Column/Steps"]
 self_modulate = Color(0.3569, 0.4863, 0.9804, 1)
 custom_minimum_size = Vector2(40, 40)
 layout_mode = 2
@@ -170,6 +237,7 @@ expand_mode = 1
 stretch_mode = 5
 
 [node name="Press" type="PanelContainer" parent="Panel/Margin/Column/Steps"]
+unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 theme_type_variation = &"ChipPanel"
@@ -185,7 +253,7 @@ theme_override_constants/separation = 16
 [node name="Number" type="Label" parent="Panel/Margin/Column/Steps/Press/Column/Title"]
 layout_mode = 2
 theme_type_variation = &"AccentLabel"
-text = "3"
+text = "4"
 
 [node name="Name" type="Label" parent="Panel/Margin/Column/Steps/Press/Column/Title"]
 layout_mode = 2
@@ -198,7 +266,7 @@ theme_override_constants/separation = 16
 
 [node name="In" type="Label" parent="Panel/Margin/Column/Steps/Press/Column/Flow"]
 layout_mode = 2
-text = "batch"
+text = "Batch"
 
 [node name="Arrow" type="TextureRect" parent="Panel/Margin/Column/Steps/Press/Column/Flow"]
 self_modulate = Color(0.5529, 0.5882, 0.6745, 1)
@@ -211,9 +279,10 @@ stretch_mode = 5
 
 [node name="Out" type="Label" parent="Panel/Margin/Column/Steps/Press/Column/Flow"]
 layout_mode = 2
-text = "product to sell"
+text = "stash"
 
-[node name="Note" type="Label" parent="Panel/Margin/Column/Steps/Press/Column"]
+[node name="PressNote" type="Label" parent="Panel/Margin/Column/Steps/Press/Column"]
+unique_name_in_owner = true
 layout_mode = 2
 theme_type_variation = &"SmallLabel"
 text = "The press is behind you."

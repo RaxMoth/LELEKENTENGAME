@@ -109,6 +109,12 @@ const UPGRADE_RECIPE_FIZZ: StringName = &"prod_recipe_fizz"
 const UPGRADE_RECIPE_HAZE: StringName = &"prod_recipe_haze"
 ## Hired crafters (level = how many).
 const UPGRADE_CRAFTER: StringName = &"work_crafter"
+## More shroom plants on the grow shelf (level = how many extra).
+const UPGRADE_PLANTS: StringName = &"lab_plants"
+## The lab's gadgets, bought one after the other.
+const UPGRADE_GRINDER: StringName = &"lab_grinder"
+const UPGRADE_COOKER: StringName = &"lab_cooker"
+const UPGRADE_PRESS: StringName = &"lab_press"
 
 # --- Sales (customers) ---
 ## More customers can wait at the window.
@@ -192,6 +198,9 @@ const EVENT_LEAVE: StringName = &"leave"
 ## A station has its inputs and starts / finishes its timing step.
 const EVENT_STATION_START: StringName = &"station_start"
 const EVENT_STATION_DONE: StringName = &"station_done"
+## A shroom plant's crop is ready / was harvested (Lab/ShroomPlant.tscn).
+const EVENT_PLANT_RIPE: StringName = &"plant_ripe"
+const EVENT_PLANT_HARVESTED: StringName = &"plant_harvested"
 
 # --- House: crew and the day (Workers/Worker.tscn, House.tscn) ---
 ## Crew: hired, wage paid on time / missed.

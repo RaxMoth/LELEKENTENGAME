@@ -14,5 +14,6 @@ ingredients = Array[ExtResource("ing_script")]([ExtResource("i_glowcap"), ExtRes
 base_price = 40
 base_batch_size = 4
 heat_per_unit = 1.2
+unlock_upgrade_id = &"lab_press"
 cook_sweeps_per_second = 0.6
 cook_zone_width = 0.24

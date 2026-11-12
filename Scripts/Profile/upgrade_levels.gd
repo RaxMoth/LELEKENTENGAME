@@ -39,11 +39,17 @@ func get_next_cost(upgrade: UpgradeData) -> int:
 
 func can_purchase(upgrade: UpgradeData) -> bool:
 	var current_level: int = get_level(upgrade.id)
-	return not upgrade.is_maxed(current_level) and is_reputation_met(upgrade) and Profile.wallet.can_afford(upgrade.currency_id, upgrade.get_cost(current_level))
+	return not upgrade.is_maxed(current_level) and is_reputation_met(upgrade) and is_requirement_met(upgrade) \
+		and Profile.wallet.can_afford(upgrade.currency_id, upgrade.get_cost(current_level))
 
 
 func is_reputation_met(upgrade: UpgradeData) -> bool:
 	return Profile.operation.reputation >= upgrade.required_reputation
+
+
+## True when the upgrade it builds on (UpgradeData.required_upgrade_id) is owned.
+func is_requirement_met(upgrade: UpgradeData) -> bool:
+	return is_owned(upgrade.required_upgrade_id)
 
 
 ## True when [param upgrade_id] is empty or bought at least once.

@@ -26,10 +26,8 @@ static func apply(scene: Node) -> void:
 	Profile.wallet.add(Types.CURRENCY_CASH, 4000)
 	Profile.operation.add_reputation(60)
 	var config: GameConfig = GameConfig.get_default()
-	for upgrade_id: StringName in [Types.UPGRADE_CRAFTER, Types.UPGRADE_DEALER, Types.UPGRADE_GUARD, Types.UPGRADE_GUARD, Types.UPGRADE_TURRETS, Types.UPGRADE_TURRETS, Types.UPGRADE_TURRETS, Types.UPGRADE_SECURITY_PC, Types.UPGRADE_RECIPE_FIZZ]:
+	for upgrade_id: StringName in [Types.UPGRADE_GRINDER, Types.UPGRADE_COOKER, Types.UPGRADE_PRESS, Types.UPGRADE_PLANTS, Types.UPGRADE_CRAFTER, Types.UPGRADE_DEALER, Types.UPGRADE_GUARD, Types.UPGRADE_GUARD, Types.UPGRADE_TURRETS, Types.UPGRADE_TURRETS, Types.UPGRADE_TURRETS, Types.UPGRADE_SECURITY_PC, Types.UPGRADE_RECIPE_FIZZ]:
 		Profile.upgrades.purchase(config.find_upgrade(upgrade_id))
-	# One product already cooked: the recipe book shows a found and a hidden entry.
-	Profile.operation.discover_recipe(&"glow")
 	level.apply_upgrades()
 	var raider_scenes: Array[PackedScene] = [COP, COP, SWAT, COP, SWAT, RAM_TEAM, COP]
 	for raider_index: int in raider_scenes.size():

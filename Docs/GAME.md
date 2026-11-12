@@ -98,6 +98,14 @@ Vive wands: trackpad click up teleports, left / right snap-turns. Bindings:
 
 ### Lab (inside, west)
 
+**A new operation starts small:** one **shroom plant** on the grow shelf by
+the back wall. It grows on its own (about 45 s); when it's ripe, point at
+it and pull the trigger (or click) to harvest the shrooms straight into the
+stash, then sell them at the back window. The office's **Lab** tab sells the
+rest, one after the other: **More Plants** (up to three), the **Grinder**
+(with the ingredient crates), then the **Cooker**, then the **Press** — each
+shows up in the lab when bought, and the press unlocks Glow.
+
 Ingredient crates charge their price when you take a piece (refunded if it
 goes back unused). Ground pieces and batches dropped away from a station go
 back to its tray, or — when that is taken — into the nearest free station
@@ -114,24 +122,27 @@ the better.
 
 | Product | Ingredients | Fair price | Heat / unit | Unlock |
 |---|---|---|---|---|
-| Glow | Glowcap + Sugarsalt | $40 | 1.2 | — |
-| Fizz | Fizzroot + Sugarsalt | $70 | 1.8 | Recipe: Fizz (15 rep) |
-| Haze | Duskleaf + Glowcap + Fizzroot | $120 | 2.6 | Recipe: Haze (45 rep) |
+| Shrooms | — (grow on the plants) | $18 | 0.6 | — |
+| Glow | Glowcap + Sugarsalt | $40 | 1.2 | Press |
+| Fizz | Fizzroot + Sugarsalt | $70 | 1.8 | Recipe: Fizz (15 rep, after the Press) |
+| Haze | Duskleaf + Glowcap + Fizzroot | $120 | 2.6 | Recipe: Haze (45 rep, after the Press) |
 
 Quality = average step accuracy plus equipment → tiers **Cut, Street, Pure,
 Premium** (`QualityMath`). Customers care: each wants a minimum tier and
 pays more for better.
 
-A **"How to cook" poster** above the grinder and cooker shows the three
-steps and the skill check. Empty station slots show a white ring; while you
+A **"How to cook" poster** above the grinder and cooker shows the plant and
+the three gadget steps and the skill check; a gadget not bought yet is
+dimmed and says where to get it. Empty station slots show a white ring; while you
 hold something the ring it would go into turns blue, and a slot it doesn't
 fit turns red — let go there and the station says why ("Grind it first").
 Stop buttons only appear while a skill check runs.
 
-The **recipe book** on the wall above the crates lists every product as
-ingredients → product. Until you cook a product for the first time its row
-is question marks (a lock while the recipe isn't unlocked); the first batch
-fills it in for good (`Profile.operation.discovered_recipe_ids`).
+The **recipe book** on the wall above the crates lists every product,
+open: ingredients → product (or "Grows on the plant"), and for one the lab
+can't make yet a lock with what it needs ("Needs Press", "Needs Recipe:
+Fizz"). An upgrade that builds on another (the cooker on the grinder) shows
+"Needs … first" in the office.
 
 ### Back window (inside, west-back)
 

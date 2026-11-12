@@ -20,6 +20,9 @@ extends Resource
 @export var heat_per_unit: float = 1.5
 ## UpgradeData id that unlocks it (empty = known from the start).
 @export var unlock_upgrade_id: StringName = &""
+## Grows on the lab's plants (shrooms) instead of being cooked: the cooker
+## never makes it, the plants do.
+@export var is_grown: bool = false
 
 @export_group("Cooking")
 ## Needle sweeps per second at the cooker (higher = harder).
