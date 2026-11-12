@@ -43,6 +43,15 @@ Every front (`FrontGarden`, `SalesWindow`, `Lab`, `Office`, `Armory`, `AdminPane
   level re-applies every look in `Types.GROUP_UPGRADE_LOOK` (and the
   shell's `ShellRenovation`s in `Ressources/Renovations/`) whenever upgrades
   change, on a co-op guest too — a front needs no code for it.
+- **The house grows:** `HouseStages` (in `House.tscn`) builds the cabin or
+  the full house from `Ressources/HouseLayouts/` by the level of "Extend the
+  House". Anything an area keeps in the house's right side must have a
+  place in the cabin too: an `UpgradePlacement` with a cabin marker (the
+  office board, the stash shelf, the right turret, the second guard), or an
+  upgrade that needs the house (the Security PC, the cellar).
+- **Furniture:** a `WalkBlocker` child keeps the player out of a table,
+  shelf or rack while it is shown (bought); the House level hands them to
+  the walkable area whenever upgrades change.
 - **More floors:** the player's `WalkableArea` can hold floors at other
   heights, ramps (stairs) and holes; the Cellar adds its own. A ground
   plane under the house leaves out every `GroundHole` (the cellar's

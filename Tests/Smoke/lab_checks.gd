@@ -159,10 +159,13 @@ static func _check_start_and_gadgets(test: SmokeTest, level: HouseLevel, lab: La
 	for upgrade_id: StringName in [Types.UPGRADE_GRINDER, Types.UPGRADE_COOKER, Types.UPGRADE_PRESS, Types.UPGRADE_PLANTS]:
 		Profile.wallet.add(Types.CURRENCY_CASH, config.find_upgrade(upgrade_id).get_cost(0))
 	test.check(not Profile.upgrades.can_purchase(config.find_upgrade(Types.UPGRADE_COOKER)), "the cooker needs the grinder first")
+	var grinder_floor: Vector3 = Vector3(grinder.global_position.x, 0.0, grinder.global_position.z)
+	test.check(level.rig.walkable_area.contains(grinder_floor), "a station not bought yet takes no room")
 	for gadget_id: StringName in [Types.UPGRADE_GRINDER, Types.UPGRADE_COOKER, Types.UPGRADE_PRESS]:
 		test.check(Profile.upgrades.purchase(config.find_upgrade(gadget_id)), "the office sells the %s" % gadget_id)
 	level.apply_upgrades()
 	await test.frames(2)
+	test.check(not level.rig.walkable_area.contains(grinder_floor), "a bought station can't be walked through")
 	test.check(grinder.visible and cooker.visible and press.visible and lab.get_crate(&"glowcap").visible, "bought gadgets and the ingredient crates show up in the lab")
 	test.check(recipe_board.get_unlocked_count() == 2 and lab.get_guide_board().is_step_unlocked(&"Press"), "the press unlocks Glow; the poster shows every step")
 	Profile.upgrades.purchase(config.find_upgrade(Types.UPGRADE_PLANTS))

@@ -288,8 +288,24 @@ reputation and change how you play:
 | Sales | Bigger Yard (queue spots), Waiting Bench (patience), VIP Access |
 | Defense | Reinforced Door, Better Rounds, Roof Turrets (up to 3), Security PC |
 | Workforce | Hire Crafter, Hire Dealer, Hire Guard, Crew Training |
-| House | Bigger Stash, Steel Door Frame (less door damage), Patch the Walls, Fix the Floor, Clean the Brickwork, Repair the Roof (heat cools faster) |
+| House | Extend the House (the cabin grows into the full house), Bigger Stash, Steel Door Frame (less door damage), Patch the Walls, Fix the Floor, Clean the Brickwork, Repair the Roof (heat cools faster) |
 | Perks | Running Shoes (walk faster), Green Thumb (more shrooms per hand harvest), Steady Hands (slower skill-check needle) |
+
+### The house grows
+
+A new operation starts in a **one-room cabin**: the left side of the
+house, with the front door, the lab corner, the sales window, the stash
+shelf and the office board in one room (two half walls hold the armory,
+the how-to poster and the lab tables). Beside it, planks cover an old
+cellar hatch in the grass. **Extend the House** builds the rest: the
+office with its desk, the stash room (the shelf moves in) and the hallway;
+the hatch is now under the stash-room floor. **Dig the Cellar** (needs the
+house) opens it. Things that need the house wait for it: the Security PC
+on the office desk; the third roof turret and the second guard stand by
+the cabin until then.
+
+Bought tables are solid: stations, crates, shelves, the desk and the grow
+racks can't be walked through (the player can still step right up to them).
 
 ### Renovating the house
 
@@ -380,7 +396,7 @@ These are the defaults this build uses; all are easy to change.
   bought, not upgraded; the free pistol keeps the player armed.
 - **Tone:** stylized (the existing palette and placeholder art).
 - **First playable size:** 3 products, 4 ingredients, 5 customer types,
-  3 raiders (cop, SWAT, battering ram), 4 guns, 3 roof turrets, 37 upgrades.
+  3 raiders (cop, SWAT, battering ram), 4 guns, 3 roof turrets, 38 upgrades.
 - **Platform:** both — Meta Quest (standalone) and PC VR (SteamVR).
 
 ## Running it
@@ -431,7 +447,8 @@ Scenes/Levels/House/House.tscn                inherits LevelBase; house_level.gd
     │   ├── DayCycle           DayClock + sun / sky / lamps; StateChart Day -> Night
     │   ├── HouseCycle         Cycle/HouseCycle.tscn: the 3-day cycle; StateChart Selling -> Raid { WaveBreak <-> WaveActive } -> Cleared
     │   ├── Surroundings       HOUSE     Surroundings/Surroundings.tscn: lawn, approach path, trees, weeds, junk (its yard trees are COVER_ONLY obstacles in the Yard)
-    │   ├── HouseShell         walls / doors / windows (framed) / floor / ceiling / gable roof built from a few numbers; renovations swap its materials
+    │   ├── HouseShell         walls / doors / windows (framed) / floor / ceiling / gable roof built from a HouseLayout; renovations swap its materials
+    │   ├── Stages             HouseStages: the cabin or the full house (Ressources/HouseLayouts/), cabin spots for what moves
     │   ├── FrontGarden        DEFENSE   Garden/FrontGarden.tscn: open yard (Yard), swinging / bolting door, porch, roof turrets, Security PC, guards, raid squads, guns in hand
     │   ├── SalesWindow        CUSTOMERS Sales/SalesWindow.tscn: window, queue, board, dealers, CustomerFlow
     │   ├── Lab                HOUSE     Lab/Lab.tscn: crates, grinder, cooker, press, crafters, recipes; motors, belts, hopper (LabAutomation)

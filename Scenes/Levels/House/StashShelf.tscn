@@ -6,6 +6,7 @@
 [ext_resource type="Material" path="res://Assets/Materials/wood_trim.tres" id="old_wood"]
 [ext_resource type="Material" path="res://Assets/Materials/house_ceiling.tres" id="concrete"]
 [ext_resource type="Material" path="res://Assets/Materials/wood_refinished.tres" id="new_wood"]
+[ext_resource type="Script" path="res://Scripts/Components/walk_blocker.gd" id="blocker"]
 
 [node name="StashShelf" type="Node3D"]
 script = ExtResource("stash_shelf")
@@ -162,6 +163,21 @@ cast_shadow = 0
 script = ExtResource("box")
 size = Vector3(0.5, 0.35, 0.4)
 box_material = ExtResource("old_wood")
+
+[node name="Footprint" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+script = ExtResource("blocker")
+size = Vector2(1.92, 0.44)
+
+[node name="Footprint" type="Node3D" parent="Crates"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.36, 0, -0.04)
+script = ExtResource("blocker")
+size = Vector2(0.6, 0.46)
+
+[node name="Footprint" type="Node3D" parent="MoreCrates"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.36, 0, -0.04)
+script = ExtResource("blocker")
+size = Vector2(0.6, 0.46)
 
 [node name="CountLabel" type="Label3D" parent="."]
 unique_name_in_owner = true

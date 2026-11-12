@@ -15,3 +15,4 @@ value_per_level = 1.0
 value_format = ""
 branch = &"defense"
 required_reputation = 10
+required_upgrade_id = &"house_extension"

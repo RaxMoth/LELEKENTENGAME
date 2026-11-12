@@ -8,6 +8,7 @@
 [ext_resource type="Script" path="res://addons/godot_state_charts/compound_state.gd" id="compound"]
 [ext_resource type="Script" path="res://addons/godot_state_charts/atomic_state.gd" id="atomic"]
 [ext_resource type="Script" path="res://addons/godot_state_charts/transition.gd" id="transition"]
+[ext_resource type="Script" path="res://Scripts/Components/walk_blocker.gd" id="blocker"]
 
 [node name="Workstation" type="Node3D"]
 script = ExtResource("station")
@@ -27,6 +28,11 @@ script = ExtResource("mesh")
 shape_kind = 1
 size = Vector3(1.24, 0.04, 0.66)
 color = Color(0.5529, 0.5882, 0.6745, 1)
+
+[node name="Footprint" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+script = ExtResource("blocker")
+size = Vector2(1.24, 0.66)
 
 [node name="Inputs" type="Node3D" parent="."]
 unique_name_in_owner = true

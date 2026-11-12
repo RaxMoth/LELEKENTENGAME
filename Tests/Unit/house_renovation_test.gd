@@ -163,3 +163,45 @@ func test_a_hole_on_the_edge_or_outside_cuts_less() -> void:
 	var untouched: Array[Rect2] = WorldUVMesh.subtract_rects(floor_area, [Rect2(10.0, 10.0, 1.0, 1.0)])
 	assert_int(untouched.size()).is_equal(1)
 	assert_bool(untouched[0] == floor_area).is_true()
+
+
+func test_placement_moves_the_target_until_the_upgrade_is_bought() -> void:
+	var root: Node3D = auto_free(Node3D.new()) as Node3D
+	var board: Node3D = Node3D.new()
+	var cabin_spot: Node3D = Node3D.new()
+	# Placements work on global transforms: in the tree.
+	add_child(root)
+	root.add_child(board)
+	root.add_child(cabin_spot)
+	board.position = Vector3(4.9, 1.5, 0.0)
+	cabin_spot.position = Vector3(0.9, 1.5, 0.0)
+	var placement: UpgradePlacement = auto_free(UpgradePlacement.new()) as UpgradePlacement
+	placement.target = board
+	placement.before = cabin_spot
+	placement.apply_level(0)
+	assert_vector(board.position).is_equal(Vector3(0.9, 1.5, 0.0))
+	assert_bool(placement.is_home()).is_false()
+	placement.apply_level(1)
+	assert_vector(board.position).is_equal(Vector3(4.9, 1.5, 0.0))
+	assert_bool(placement.is_home()).is_true()
+
+
+func test_look_also_shows_nodes_elsewhere() -> void:
+	var look: UpgradeLook = auto_free(UpgradeLook.new()) as UpgradeLook
+	var sign_node: Node3D = auto_free(Node3D.new()) as Node3D
+	look.also_shows = [sign_node]
+	look.apply_level(0)
+	assert_bool(sign_node.visible).is_false()
+	look.apply_level(1)
+	assert_bool(sign_node.visible).is_true()
+
+
+func test_shell_takes_a_layout_and_builds_it() -> void:
+	var shell: HouseShell = _make_shell()
+	var cabin: HouseLayout = HouseLayout.new()
+	cabin.walls = [Vector4(-1.0, -1.0, 1.0, -1.0), Vector4(-1.0, 1.0, 1.0, 1.0)]
+	cabin.floor_rect = Rect2(-1.0, -1.0, 2.0, 2.0)
+	shell.apply_layout(cabin)
+	assert_int(shell.walls.size()).is_equal(2)
+	assert_bool(shell.floor_rect == Rect2(-1.0, -1.0, 2.0, 2.0)).is_true()
+	assert_int(_get_shell_mesh(shell).get_surface_count()).is_greater(0)

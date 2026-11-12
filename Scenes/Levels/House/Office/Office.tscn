@@ -4,6 +4,9 @@
 [ext_resource type="Script" path="res://Scripts/Utils/placeholder_mesh_3d.gd" id="mesh"]
 [ext_resource type="PackedScene" path="res://Scenes/Levels/House/Office/OfficeBoard.tscn" id="office_board"]
 [ext_resource type="Script" path="res://Scenes/Levels/House/Office/office.gd" id="office"]
+[ext_resource type="Script" path="res://Scripts/Components/upgrade_placement.gd" id="placement"]
+[ext_resource type="Script" path="res://Scripts/Components/upgrade_look.gd" id="look"]
+[ext_resource type="Script" path="res://Scripts/Components/walk_blocker.gd" id="blocker"]
 
 [node name="Office" type="Node3D"]
 script = ExtResource("office")
@@ -39,3 +42,24 @@ script = ExtResource("screen")
 content_scene = ExtResource("office_board")
 resolution = Vector2i(1100, 1120)
 width_meters = 1.7
+
+[node name="CabinPlaces" type="Node3D" parent="."]
+
+[node name="OfficeScreen" type="Marker3D" parent="CabinPlaces"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 0.9, 1.53, -0.2)
+
+[node name="ScreenPlacement" type="Node3D" parent="." node_paths=PackedStringArray("target", "before")]
+script = ExtResource("placement")
+upgrade_id = &"house_extension"
+target = NodePath("../OfficeScreen")
+before = NodePath("../CabinPlaces/OfficeScreen")
+
+[node name="Furniture" type="Node3D" parent="." node_paths=PackedStringArray("also_shows")]
+script = ExtResource("look")
+upgrade_id = &"house_extension"
+also_shows = [NodePath("../Desk"), NodePath("../DeskTop"), NodePath("../Chair")]
+
+[node name="DeskBlocker" type="Node3D" parent="Furniture"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.4, 0, -1.3)
+script = ExtResource("blocker")
+size = Vector2(1.66, 0.86)

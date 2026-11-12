@@ -63,9 +63,9 @@ func _run_host() -> void:
 	var crate: IngredientCrate = lab.get_crate(&"glowcap")
 	var grinder: Workstation = lab.get_station(&"Grinder")
 	# The lab's gadgets come from the office: buy them so the guest can grind
-	# (and patch the walls and dig the cellar, so the guest's house shows them).
+	# (and patch the walls, extend the house and dig the cellar, so the guest's house shows them).
 	Profile.wallet.add(Types.CURRENCY_CASH, 5000)
-	for gadget_id: StringName in [Types.UPGRADE_GRINDER, Types.UPGRADE_COOKER, Types.UPGRADE_PRESS, Types.UPGRADE_RENOVATE_WALLS, Types.UPGRADE_PLANTS, Types.UPGRADE_CELLAR]:
+	for gadget_id: StringName in [Types.UPGRADE_GRINDER, Types.UPGRADE_COOKER, Types.UPGRADE_PRESS, Types.UPGRADE_RENOVATE_WALLS, Types.UPGRADE_PLANTS, Types.UPGRADE_HOUSE_EXTENSION, Types.UPGRADE_CELLAR]:
 		Profile.upgrades.purchase(GameConfig.get_default().find_upgrade(gadget_id))
 	level.apply_upgrades()
 	var cash_before: int = level.operation.get_cash()

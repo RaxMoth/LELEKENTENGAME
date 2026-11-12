@@ -12,6 +12,7 @@
 [ext_resource type="PackedScene" path="res://Scenes/Levels/House/Garden/Cop.tscn" id="cop"]
 [ext_resource type="PackedScene" path="res://Scenes/Levels/House/Garden/Swat.tscn" id="swat"]
 [ext_resource type="PackedScene" path="res://Scenes/Levels/House/Garden/RamTeam.tscn" id="ram_team"]
+[ext_resource type="Script" path="res://Scripts/Components/upgrade_placement.gd" id="placement"]
 
 [node name="FrontGarden" type="Node3D"]
 script = ExtResource("front_garden")
@@ -90,3 +91,23 @@ slot = 3
 wage_per_hour = 12
 guard_range = 16.0
 yard = NodePath("../../Yard")
+
+[node name="CabinPlaces" type="Node3D" parent="."]
+
+[node name="TurretRight" type="Marker3D" parent="CabinPlaces"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.8, 2.62, -5.05)
+
+[node name="GuardB" type="Marker3D" parent="CabinPlaces"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.8, 0, -4.55)
+
+[node name="TurretRightPlacement" type="Node3D" parent="." node_paths=PackedStringArray("target", "before")]
+script = ExtResource("placement")
+upgrade_id = &"house_extension"
+target = NodePath("../Turrets/TurretRight")
+before = NodePath("../CabinPlaces/TurretRight")
+
+[node name="GuardBPlacement" type="Node3D" parent="." node_paths=PackedStringArray("target", "before")]
+script = ExtResource("placement")
+upgrade_id = &"house_extension"
+target = NodePath("../Guards/GuardB")
+before = NodePath("../CabinPlaces/GuardB")

@@ -25,6 +25,7 @@
 [ext_resource type="Script" path="res://Scripts/Components/upgrade_look.gd" id="look"]
 [ext_resource type="Material" path="res://Assets/Materials/iron_strap.tres" id="iron"]
 [ext_resource type="Material" path="res://Assets/Materials/steel_frame.tres" id="steel"]
+[ext_resource type="Script" path="res://Scripts/Components/walk_blocker.gd" id="blocker"]
 
 [node name="Lab" type="Node3D"]
 script = ExtResource("lab")
@@ -310,6 +311,11 @@ script = ExtResource("mesh")
 shape_kind = 1
 size = Vector3(0.84, 0.04, 0.44)
 color = Color(0.5529, 0.5882, 0.6745, 1)
+
+[node name="GrowShelfFootprint" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.95, 0, 1.7)
+script = ExtResource("blocker")
+size = Vector2(0.84, 0.44)
 
 [node name="Plants" type="Node3D" parent="."]
 unique_name_in_owner = true

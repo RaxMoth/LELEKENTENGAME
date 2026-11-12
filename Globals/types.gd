@@ -49,9 +49,12 @@ const GROUP_NET_ENTITY: StringName = &"net_entity"
 ## Co-op: scene nodes whose look the host streams (stations); they offer
 ## get_net_state() / apply_net_state(state).
 const GROUP_NET_NODE: StringName = &"net_node"
-## Parts of the house that show with an upgrade's level (UpgradeLook):
-## door straps, the steel door frame, stash shelves.
+## Parts of the house that react to an upgrade's level (UpgradeReaction:
+## UpgradeLook, UpgradePlacement, HouseStages): door straps, the steel door
+## frame, stash shelves, the house growing from the cabin.
 const GROUP_UPGRADE_LOOK: StringName = &"upgrade_look"
+## Furniture the player can't walk through (WalkBlocker): stations, shelves, racks.
+const GROUP_WALK_BLOCKER: StringName = &"walk_blocker"
 
 # ============================================
 # INPUT ACTIONS (defined in Project Settings > Input Map)
@@ -165,6 +168,8 @@ const UPGRADE_TRAINING: StringName = &"work_training"
 const UPGRADE_STORAGE: StringName = &"house_storage"
 ## A steel door frame: raiders do less damage to the front door (value = share).
 const UPGRADE_SECURITY: StringName = &"house_security"
+## The house grows: level 0 = the one-room cabin, 1 = the full house (HouseStages).
+const UPGRADE_HOUSE_EXTENSION: StringName = &"house_extension"
 ## Renovations: each makes one part of the house nicer (shabby -> patched
 ## up -> well kept) and heat cool down faster (value = percent per level).
 ## Inside walls (and, at level 2, the ceiling and frames).

@@ -5,7 +5,7 @@
 ## losing the shift.
 ## Owned by whoever works on the house (level, office, crew, XR).
 ##
-## Dependencies: SmokeTest, HouseLevel, Office, FrontGarden, Worker, DayCycle,
+## Dependencies: SmokeTest, HouseLevel, HouseStages, Office, FrontGarden, Worker, DayCycle,
 ##               HouseShell, ShellRenovation, UpgradeLook, Ghost
 class_name HouseSmokeChecks
 extends RefCounted
@@ -31,6 +31,28 @@ static func run_start(test: SmokeTest, level: HouseLevel) -> void:
 	await test.physics_frames(20)
 	Input.action_release(Types.ACTION_MOVE_FORWARD)
 	test.check(rig.get_feet_position().distance_to(before) > 0.2 and walkable.contains(rig.get_feet_position()), "walking moves the player and stays on the floor")
+	await _check_house_stages(test, level)
+
+
+## A new operation starts in the one-room cabin; Extend the House builds the
+## full house (the rest of the checks run in it).
+static func _check_house_stages(test: SmokeTest, level: HouseLevel) -> void:
+	var stages: HouseStages = level.get_node("%Stages") as HouseStages
+	var walkable: WalkableArea = level.rig.walkable_area
+	var office: Office = level.get_front(Office) as Office
+	var shelf: Node3D = level.get_node("%StashShelf") as Node3D
+	var config: GameConfig = GameConfig.get_default()
+	var office_spot: Vector3 = Vector3(3.0, 0.0, -0.5)
+	test.check(stages.get_layout().stage_name == "Cabin" and level.get_house_shell().walls.size() == 6, "a new operation starts in a one-room cabin")
+	test.check(walkable.contains(Vector3(-0.3, 0.0, 0.0)) and not walkable.contains(office_spot), "the cabin's room is walkable; the house's office isn't there yet")
+	test.check(office.get_screen().global_position.x < 1.0 and shelf.global_position.x < 1.0, "the office board and the stash shelf stand in the cabin")
+	test.check(not Profile.upgrades.is_requirement_met(config.find_upgrade(Types.UPGRADE_CELLAR)), "the cellar needs the full house first")
+	var extension: UpgradeData = config.find_upgrade(Types.UPGRADE_HOUSE_EXTENSION)
+	Profile.wallet.add(Types.CURRENCY_CASH, Profile.upgrades.get_next_cost(extension), false)
+	office.buy_upgrade(extension)
+	await test.frames(2)
+	test.check(stages.get_layout().stage_name == "House" and level.get_house_shell().walls.size() == 9 and walkable.contains(office_spot), "Extend the House builds the office, the stash room and the hallway")
+	test.check(office.get_screen().global_position.x > 4.0 and shelf.global_position.x > 4.0, "the office board and the stash shelf move into their rooms")
 
 
 ## After the fronts' checks: office, crew, controllers, popups, night, losing.
