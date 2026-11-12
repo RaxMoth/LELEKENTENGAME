@@ -18,10 +18,18 @@ static func run(test: SmokeTest, level: HouseLevel) -> void:
 	test.check(town != null and town.layout.building_footprints.size() > 40, "the town is built around the house")
 	var pedestrians: Array[Pedestrian] = town.get_pedestrians()
 	test.check(pedestrians.size() == town.town_data.pedestrian_count, "people walk the town's sidewalks")
-	var walker: Pedestrian = pedestrians[pedestrians.size() - 1]
-	var start: Vector3 = walker.global_position
-	await test.physics_frames(30)
-	test.check(walker.global_position.distance_to(start) > 0.1, "people in the street keep walking")
+	# Anyone may be pausing at a corner for a few seconds: watch everybody and
+	# wait until most of them have moved.
+	var starts: Array[Vector3] = []
+	for pedestrian: Pedestrian in pedestrians:
+		starts.append(pedestrian.global_position)
+	var most_have_walked: Callable = func() -> bool:
+		var walked: int = 0
+		for person_index: int in pedestrians.size():
+			if pedestrians[person_index].global_position.distance_to(starts[person_index]) > 0.1:
+				walked += 1
+		return walked * 2 > pedestrians.size()
+	test.check(await test.wait_until(most_have_walked), "people in the street keep walking")
 
 	_place_player(rig, TALK_SPOT)
 	var partner: Pedestrian = pedestrians[0]
