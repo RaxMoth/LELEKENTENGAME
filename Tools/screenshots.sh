@@ -17,11 +17,11 @@ shot() {
 }
 MENU=res://Scenes/Menus/MainMenu/MainMenu.tscn
 shot 01_main_menu scene=$MENU frames=120
-shot 02_level_select scene=res://Scenes/Menus/LevelSelect/LevelSelect.tscn frames=90
 shot 03_shop scene=res://Scenes/Menus/Shop/Shop.tscn frames=90
 shot 04_settings scene=$MENU popup=res://Scenes/UI/Popups/SettingsPopup/SettingsPopup.tscn frames=60
 shot 05_achievements scene=$MENU popup=res://Scenes/UI/Popups/AchievementsPopup/AchievementsPopup.tscn frames=60
 shot 06_play_together scene=$MENU popup=res://Scenes/UI/Popups/CoopPopup/CoopPopup.tscn frames=60
+shot 07_day_summary scene=$MENU popup=res://Scenes/UI/Popups/DaySummaryPopup/DaySummaryPopup.tscn frames=60
 # The game in the rig's flat simulator, wide like a headset view: each front
 # from its travel spot (1 lab, 2 front, 3 back window, 4 office), the pause
 # menu on the in-world popup screen, the night, and one portrait phone shot.
@@ -42,6 +42,8 @@ SHOT_RESOLUTION=$WIDE shot level_10_raid level=house showcase=house_raid spot=2 
 SHOT_RESOLUTION=$WIDE shot level_11_recipes level=house showcase=house stand=-2.6,0 look=-4.9,1.55,0 frames=120
 # Co-op: a second player in the lab (head, hands, beam, name, a held glowcap).
 SHOT_RESOLUTION=$WIDE shot level_12_coop level=house showcase=house_coop stand=-1.6,0.4 look=-3.6,1.3,-0.3 frames=120
+# Out in the garden: the house from the yard, the player walks here through the front door.
+SHOT_RESOLUTION=$WIDE shot level_13_garden level=house stand=2.5,-11.5 look=0,1.6,-5 frames=150
 "$TOOLS_DIR/godot.sh" --headless --script "$TOOLS_DIR/contact_sheet.gd" -- "$OUT_DIR/sheet_menus.png" 5 360 640 \
 	"$OUT_DIR"/0*.png >/dev/null 2>&1
 "$TOOLS_DIR/godot.sh" --headless --script "$TOOLS_DIR/contact_sheet.gd" -- "$OUT_DIR/sheet_levels.png" 3 640 360 \

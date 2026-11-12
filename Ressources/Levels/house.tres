@@ -8,12 +8,5 @@ id = &"house"
 title = "The House"
 description = "Craft, sell and hold the door until dawn."
 scene_path = "res://Scenes/Levels/House/House.tscn"
-star_score_thresholds = Array[int]([400, 1200, 2500])
 always_unlocked = true
 energy_cost = 0
-first_clear_rewards = Dictionary[StringName, int]({
-&"cash": 300
-})
-completion_rewards = Dictionary[StringName, int]({
-&"cash": 100
-})

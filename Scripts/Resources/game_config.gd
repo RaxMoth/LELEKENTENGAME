@@ -17,7 +17,6 @@ static var _default_instance: GameConfig = null
 
 @export_group("Scenes")
 @export_file("*.tscn") var main_menu_scene: String = "res://Scenes/Menus/MainMenu/MainMenu.tscn"
-@export_file("*.tscn") var level_select_scene: String = "res://Scenes/Menus/LevelSelect/LevelSelect.tscn"
 @export_file("*.tscn") var shop_scene: String = "res://Scenes/Menus/Shop/Shop.tscn"
 ## Minimum time the boot splash stays visible.
 @export var boot_splash_seconds: float = 0.8

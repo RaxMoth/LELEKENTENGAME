@@ -8,12 +8,13 @@
    one primary action per screen, 8 px spacing. Verify visual changes with
    screenshots (`/design-review`) before calling them done.
 2. **VR only.** This repo is one game: a VR crime-sim run out of one house
-   (working title Porchlight VR, `Docs/GAME.md`). Levels are 3D scenes
-   inheriting `LevelBase` (which owns the `XRPlayerRig`); UI in levels lives
+   (working title Porchlight VR, `Docs/GAME.md`). The house is the only
+   world — no levels or level select, one day after another. It is a 3D
+   scene inheriting `LevelBase` (which owns the `XRPlayerRig`); UI in it lives
    in the world (no screen-space HUD); input is controller pointers; hold
    the headset refresh rate on a Quest; no camera motion the player didn't
    make; pooled spawning. Only the menus are 2D (the no-headset flow), and
-   every level must stay playable in the rig's flat simulator.
+   the house must stay playable in the rig's flat simulator.
 3. **Typed, documented GDScript** following `Docs/instructor.md`; state in StateCharts.
 4. **Nothing is done until the tests pass:** `Tools/unit_tests.sh`,
    `Tools/smoke_test.sh` and `Tools/coop_test.sh` (exit 0). New pure logic

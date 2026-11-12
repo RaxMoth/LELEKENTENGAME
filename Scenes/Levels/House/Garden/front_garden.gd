@@ -29,7 +29,8 @@ const TRACER_SCENE: PackedScene = preload("res://Scenes/Levels/House/Garden/Beam
 @export var weapon_catalog: WeaponCatalog
 
 @export_group("Defense zone")
-## Floor area (world X / Z) the player must stand in to shoot — the front room.
+## Floor area (world X / Z) the player may shoot from inside — the front
+## room (the porch and the garden count too).
 @export var defense_zone: Rect2 = Rect2(-5.0, -5.0, 10.0, 3.0)
 
 @export_group("Front door")
@@ -38,6 +39,11 @@ const TRACER_SCENE: PackedScene = preload("res://Scenes/Levels/House/Garden/Beam
 @export var porch_region: Rect2 = Rect2(-1.1, -6.3, 2.2, 1.0)
 ## The threshold (world X / Z): walkable only while the door stands open.
 @export var doorway_region: Rect2 = Rect2(-0.5, -5.35, 1.0, 0.7)
+
+@export_group("Garden")
+## The player may walk out into the yard (through the open front door) and
+## defend from there; the fence keeps them this far inside (meters).
+@export var garden_fence_margin: float = 0.35
 
 var _weapon_cooldown: float = 0.0
 ## The pointer whose trigger is held (automatic guns keep firing), or null.
@@ -86,6 +92,10 @@ func _on_setup() -> void:
 	door.passage_changed.connect(_on_door_passage_changed)
 	if context.rig.walkable_area != null:
 		context.rig.walkable_area.add_region(porch_region)
+		# The garden: out of the front door, across the yard up to its fence,
+		# around its trees, rocks and the car.
+		context.rig.walkable_area.add_region(get_garden_region())
+		context.rig.walkable_area.add_blockers(yard.get_obstacle_circles())
 	director.setup(context, yard)
 	for turret_node: Node in _turret_root.get_children():
 		var turret: HouseTurret = turret_node as HouseTurret
@@ -179,7 +189,16 @@ func is_in_defense_zone() -> bool:
 
 func _is_defense_spot(feet: Vector3) -> bool:
 	var floor_point: Vector2 = Vector2(feet.x, feet.z)
-	return defense_zone.has_point(floor_point) or porch_region.has_point(floor_point)
+	return defense_zone.has_point(floor_point) or porch_region.has_point(floor_point) or get_garden_region().has_point(floor_point)
+
+
+## The walkable garden (world X / Z): the yard inside its fence, from the
+## far edge up to the front of the house (the porch's outer side).
+func get_garden_region() -> Rect2:
+	var bounds: Rect2 = yard.bounds
+	var start: Vector2 = bounds.position + Vector2(garden_fence_margin, garden_fence_margin)
+	var house_side_z: float = porch_region.end.y
+	return Rect2(start, Vector2(bounds.size.x - garden_fence_margin * 2.0, house_side_z - start.y))
 
 
 ## The gun in the player's hand (Profile.armory), or null without a catalog.

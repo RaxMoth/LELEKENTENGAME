@@ -31,6 +31,9 @@ const ANNOUNCE_DISTANCE: float = 3.0
 const REPAIR_COST_SHARE: float = 0.2
 ## Seconds between wrist status refreshes.
 const WRIST_REFRESH_SECONDS: float = 0.25
+## Seconds the end of a day lingers before its summary shows.
+const DAY_END_HOLD_SECONDS: float = 1.2
+const DAY_SUMMARY_POPUP: PackedScene = preload("res://Scenes/UI/Popups/DaySummaryPopup/DaySummaryPopup.tscn")
 ## Seconds the "raid beaten" announcement shows before the shift's results.
 const RAID_CLEARED_HOLD_SECONDS: float = 2.5
 
@@ -45,6 +48,8 @@ var is_mirror: bool = false
 var _fronts: Array[HouseFront] = []
 var _last_paid_hour: int = 0
 var _seconds_until_wrist_refresh: float = 0.0
+## What the day that just ended brought (DaySummaryPopup keys).
+var _day_summary: Dictionary = {}
 ## Co-op guest: the host's wrist status lines (cycle and fronts).
 var _mirrored_wrist_lines: PackedStringArray = PackedStringArray()
 
@@ -132,15 +137,40 @@ func _level_process(delta: float) -> void:
 func _on_level_finished(result: LevelResult) -> void:
 	for front: HouseFront in _fronts:
 		front.finish_shift(result)
+	var day: int = Profile.operation.day_number
+	var is_raid_beaten: bool = result.is_won() and cycle.phase == HouseCycle.Phase.CLEARED
+	var units_lost: int = 0
+	var repair_cost: int = 0
 	if result.is_won():
-		if cycle.phase == HouseCycle.Phase.CLEARED:
+		if is_raid_beaten:
 			operation.clear_heat()
 		Profile.operation.complete_day()
 	else:
 		# The house was overrun: the stock is gone and the door needs fixing.
+		units_lost = operation.stash.get_total()
+		repair_cost = roundi(operation.get_cash() * REPAIR_COST_SHARE)
 		operation.stash.clear()
-		operation.spend_cash(roundi(operation.get_cash() * REPAIR_COST_SHARE), "repairs")
+		operation.spend_cash(repair_cost, "repairs")
 	operation.save()
+	_day_summary = {
+		DaySummaryPopup.KEY_DAY: day,
+		DaySummaryPopup.KEY_WON: result.is_won(),
+		DaySummaryPopup.KEY_RAID_BEATEN: is_raid_beaten,
+		DaySummaryPopup.KEY_CASH_EARNED: operation.shift_cash_earned,
+		DaySummaryPopup.KEY_UNITS_SOLD: operation.shift_units_sold,
+		DaySummaryPopup.KEY_UNITS_CRAFTED: operation.shift_units_crafted,
+		DaySummaryPopup.KEY_UNITS_LOST: units_lost,
+		DaySummaryPopup.KEY_REPAIR_COST: repair_cost,
+	}
+
+
+## The house is the only world: no level results, just the day's summary
+## and then the next morning (or the same day again after a loss). In
+## co-op the guest follows the host into the new day.
+func _present_result(_result: LevelResult) -> void:
+	await Global.wait(DAY_END_HOLD_SECONDS, false)
+	await UI.open_popup(DAY_SUMMARY_POPUP, _day_summary).closed
+	restart_level()
 
 # ============================================
 # PUBLIC API

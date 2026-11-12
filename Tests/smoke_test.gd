@@ -78,7 +78,7 @@ func _test_save_roundtrip() -> void:
 
 func _test_menus() -> void:
 	var config: GameConfig = GameConfig.get_default()
-	for scene_path: String in [config.main_menu_scene, config.level_select_scene, config.shop_scene]:
+	for scene_path: String in [config.main_menu_scene, config.shop_scene]:
 		SceneManager.change_scene(scene_path)
 		check(await _wait_for_scene(scene_path), "menu loads: " + scene_path)
 	check(SceneManager.go_back(), "back stack works")
@@ -133,12 +133,12 @@ func _test_level(level: LevelData, force_win: bool) -> void:
 			active_level.win()
 		else:
 			active_level.lose()
-	check(await wait_until(func() -> bool: return UI.has_open_popup() and active_level.phase == LevelBase.Phase.FINISHED), "results popup shows: " + level.id)
+	check(await wait_until(func() -> bool: return UI.has_open_popup() and active_level.phase == LevelBase.Phase.FINISHED), "the day's summary shows: " + level.id)
 	check(Profile.levels.get_attempts(level.id) == attempts_before + 1, "attempt recorded: " + level.id)
 	await frames(30)
 	UI.close_top_popup()
-	check(await wait_until(func() -> bool: return not (get_tree().current_scene is LevelBase) and not SceneManager.is_transitioning), "left level to menu: " + level.id)
-	await frames(5)
+	check(await _wait_for_next_day(active_level), "the next day starts in the same world: " + level.id)
+	await _leave_to_menu()
 
 
 ## Plays a whole shift at the house through the pointer paths a headset uses
@@ -162,8 +162,10 @@ func _test_house(level_data: LevelData) -> void:
 	await SalesSmokeChecks.run(self, level)
 	await DefenseSmokeChecks.run(self, level)
 	await HouseSmokeChecks.run_end(self, level)
-	check(await wait_until(func() -> bool: return not (get_tree().current_scene is LevelBase) and not SceneManager.is_transitioning), "left the house to the menu")
-	await frames(5)
+	# run_end loses the shift (the door breaks): no day is counted as done.
+	var lost_day: int = Profile.operation.day_number
+	check(await _wait_for_next_day(level) and Profile.operation.day_number == lost_day, "a lost day starts over in the house")
+	await _leave_to_menu()
 
 
 ## The raid night of a 3-day cycle, start to finish: night falls on day 3,
@@ -199,8 +201,8 @@ func _test_house_raid(level_data: LevelData) -> void:
 	check(level.operation.heat.value == 0.0, "the police heat is gone after the raid")
 	await frames(30)
 	UI.close_top_popup()
-	check(await wait_until(func() -> bool: return not (get_tree().current_scene is LevelBase) and not SceneManager.is_transitioning), "left the house after the raid")
-	await frames(5)
+	check(await _wait_for_next_day(level), "the morning after the raid starts in the house")
+	await _leave_to_menu()
 
 # ============================================
 # HELPERS FOR THE AREA CHECKS (Tests/Smoke/*.gd)
@@ -232,6 +234,22 @@ func wait_until(condition: Callable) -> bool:
 			return true
 		await get_tree().process_frame
 	return condition.call()
+
+
+## The house is the only world: after the day's summary it reloads as the
+## next morning (or the same day after a loss) instead of leaving.
+func _wait_for_next_day(previous_level: LevelBase) -> bool:
+	var reloaded: bool = await wait_until(func() -> bool:
+		var scene: LevelBase = get_tree().current_scene as LevelBase
+		return scene != null and scene != previous_level and not SceneManager.is_transitioning)
+	await frames(5)
+	return reloaded
+
+
+func _leave_to_menu() -> void:
+	SceneManager.go_to_main_menu()
+	check(await wait_until(func() -> bool: return not (get_tree().current_scene is LevelBase) and not SceneManager.is_transitioning), "back to the main menu")
+	await frames(5)
 
 
 func _wait_for_scene(scene_path: String) -> bool:

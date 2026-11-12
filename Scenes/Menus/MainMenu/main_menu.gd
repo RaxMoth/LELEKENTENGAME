@@ -1,7 +1,8 @@
-## Main menu (flat-screen flow, shown when no headset is active): play, shop,
-## achievements, daily reward and settings.
+## Main menu (flat-screen flow, shown when no headset is active): play —
+## straight into the house, the game's one world, on the day you're on —
+## shop, achievements, daily reward and settings.
 ##
-## Dependencies: Profile, SceneManager, UI, Platform, Audio autoloads
+## Dependencies: Profile, SceneManager, UI, Platform, Audio autoloads, LevelBase
 extends Control
 
 const SETTINGS_POPUP: PackedScene = preload("res://Scenes/UI/Popups/SettingsPopup/SettingsPopup.tscn")
@@ -9,7 +10,7 @@ const ACHIEVEMENTS_POPUP: PackedScene = preload("res://Scenes/UI/Popups/Achievem
 const REWARD_POPUP: PackedScene = preload("res://Scenes/UI/Popups/RewardPopup/RewardPopup.tscn")
 
 @onready var _title_label: Label = %TitleLabel
-@onready var _star_progress: IconLabel = %StarProgress
+@onready var _day_progress: IconLabel = %DayProgress
 @onready var _daily_button: Button = %DailyRewardButton
 @onready var _quit_button: Button = %QuitButton
 
@@ -17,8 +18,7 @@ const REWARD_POPUP: PackedScene = preload("res://Scenes/UI/Popups/RewardPopup/Re
 func _ready() -> void:
 	var config: GameConfig = GameConfig.get_default()
 	_title_label.text = config.game_title
-	var total_possible_stars: int = config.levels.size() * 3
-	_star_progress.text = "%d / %d" % [Profile.levels.get_total_stars(), total_possible_stars]
+	_day_progress.text = tr("Day %d") % Profile.operation.day_number
 	_quit_button.visible = Platform.can_quit_app()
 	_refresh_daily_button()
 
@@ -32,7 +32,9 @@ func _refresh_daily_button() -> void:
 
 
 func _on_play_button_pressed() -> void:
-	SceneManager.change_scene(GameConfig.get_default().level_select_scene)
+	var house: LevelData = GameConfig.get_default().get_xr_start_level()
+	if house != null:
+		LevelBase.start_level(house)
 
 
 func _on_shop_button_pressed() -> void:

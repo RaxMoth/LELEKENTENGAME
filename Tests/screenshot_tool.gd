@@ -35,6 +35,9 @@ func _run() -> void:
 	SceneManager.change_scene(str(arguments.get("scene", GameConfig.get_default().main_menu_scene)), scene_params)
 	for frame_index: int in 20:
 		await get_tree().process_frame
+	# A scene swap still running would close the popup again.
+	while SceneManager.is_transitioning:
+		await get_tree().process_frame
 	if arguments.has("popup"):
 		UI.open_popup(load(str(arguments["popup"])) as PackedScene)
 	if arguments.has("showcase"):

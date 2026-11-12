@@ -152,7 +152,7 @@ Globals/       Autoloads only (UI, SceneManager and Debug have scenes)
 Ressources/    .tres data: game_config, level, ingredients, recipes, customers, weapons, raids, upgrades
 Scenes/
   Boot/        Splash scene (main scene): headset → game, otherwise → menus
-  Menus/       MainMenu, LevelSelect, Shop (2D, flat-screen flow)
+  Menus/       MainMenu, Shop (2D, flat-screen flow)
   Game/        LevelBase — 3D, owns the XR rig; every level inherits it
   Entities/    XRPlayerRig, pooled 3D effects
   Levels/      House (the game): Lab, Sales, Garden (yard, door, turrets), Armory, Office, Cycle, Admin, Workers
