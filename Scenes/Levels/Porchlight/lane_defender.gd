@@ -63,7 +63,7 @@ func _on_damaged(_damage_info: DamageInfo) -> void:
 func _on_died() -> void:
 	set_physics_process(false)
 	destroyed.emit(self)
-	Audio.play_sfx_at_3d(SfxSynth.get_preset(&"hit"), global_position, 0.1)
+	Audio.play_sfx_at(SfxSynth.get_preset(&"hit"), global_position, 0.1)
 	if _punch_tween != null:
 		_punch_tween.kill()
 	var tween: Tween = create_tween()

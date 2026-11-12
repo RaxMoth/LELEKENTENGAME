@@ -3,6 +3,9 @@
 Every screen and every placeholder should look like a shipped, professional
 game: calm, consistent, readable. Never childish, noisy or "programmer art".
 This file is the reference for colors, type, icons, layout and gameplay art.
+Porchlight VR is played in a headset: the world is 3D and UI lives in it
+(WorldScreens, Label3Ds, the in-world popup screen). The menus are 2D
+screens for the flat (no headset) flow and share the same theme.
 Check visual work with screenshots (`/design-review`) before calling it done.
 
 ## Golden rules
@@ -24,8 +27,11 @@ Check visual work with screenshots (`/design-review`) before calling it done.
    primitives, no clutter, no pulsing UI that isn't asking for attention.
 6. **8 px grid.** Spacing is 8, 16, 24, 32 or 48. Radii are 12 (chips),
    16 (buttons), 20 (cards) and 28 (popups).
-7. **Touch first.** Interactive elements are at least 88 px tall (≈ 48 dp)
-   and sit inside a `SafeAreaContainer`.
+7. **Easy to point at.** UI is clicked with a controller ray (or a finger in
+   the flat menus): interactive elements are at least 88 px tall (≈ 48 dp),
+   and full-screen menus sit inside a `SafeAreaContainer`.
+8. **Nothing glued to the face.** No screen-space HUD in levels; status goes
+   on in-world UI placed where the player is already looking.
 
 ## Color tokens (`Palette`)
 
@@ -70,11 +76,11 @@ To re-skin a game, change `Palette` and regenerate the theme colors to match
 | Low-emphasis or destructive-but-rare action | `GhostButton` / `DangerGhostButton` |
 | Tappable list item | `CardButton` (see `LevelCard`) |
 | Square icon button | `IconButton` + `icon` + `expand_icon = true` |
-| Content group | `CardPanel`; small tag / counter: `ChipPanel`; HUD pill: `PillPanel` |
+| Content group | `CardPanel`; small tag / counter: `ChipPanel`; status pill: `PillPanel` |
 | Amount, price or total | `IconLabel` (icon + text, centered together) |
 | Reward line | `RewardList`; stars: `StarsDisplay`; balance: `CurrencyDisplay` |
 | Screen background | Flat `BACKGROUND` plus `Assets/Themes/screen_glow.tres` at the top |
-| Readability over gameplay | `Assets/Themes/top_scrim.tres` behind the HUD |
+| Readability over a busy background | `Assets/Themes/top_scrim.tres` |
 
 ## Icons (`Assets/Icons`)
 
@@ -89,43 +95,40 @@ lock, back, pause, settings, clock, sparkle. App icon and logo:
 
 ## Gameplay art
 
-Until final art exists, entities use `PlaceholderShape`, which draws clean
-vector shapes: rounded corners, top-light shading and a soft drop shadow.
+Until final art exists, the world is built from `PlaceholderMesh3D`
+primitives in `Palette` colors: matte, lit from above, grounded by a
+`BlobShadow3D`.
 
-- Player `PLAYER`, enemies `ENEMY*`, pickups in their reward color.
-- Backgrounds and terrain: `WORLD` tones, `shadow_enabled = false`, low shading.
-- Things that rotate every frame (projectiles, turret barrels) and
-  translucent shapes (range rings): `shading = 0`, `shadow_enabled = false`.
-- Floating numbers: `FloatingText` in `TEXT`, `GOLD` or `WARNING`.
-- Shapes ≥ 2 sizes apart for clear hierarchy (player > enemy > pickup).
-
-Replacing with real art: swap `PlaceholderShape` for `Sprite2D` /
-`AnimatedSprite2D`, keep the palette for UI, and match the art's light
-direction (from above) and shadow softness.
-
-### 3D scenes
-
-- Stand-ins are `PlaceholderMesh3D` primitives in `Palette` colors: matte,
-  lit from above, grounded by a `BlobShadow3D`. Same hierarchy rules as 2D
-  (player `PRIMARY`, threats `ENEMY*`, rewards `GOLD`).
+- Player hands / beams `PRIMARY`, threats `ENEMY*`, rewards `GOLD`.
+- Shapes ≥ 2 sizes apart for clear hierarchy (attacker > defender > spark).
 - `glow` is for the few things the player must notice (sparks, projectiles,
   lamps). Keep it below 1 on lit shapes so their shading stays readable.
 - Terrain uses `WORLD` tones and fades into fog of the horizon color; never
   a bright or textured sky behind gameplay.
+- Floating numbers: `FloatingText3D` in `TEXT`, `GOLD` or `DANGER`;
+  announcements: `LevelBase.announce()` (Label3D, `TEXT` or `DANGER`).
 - UI in the world is the same theme on a `WorldScreen`; size type for the
   viewing distance (text should span at least 0.6° — about 1 cm per meter).
+
+Replacing with real art: swap `PlaceholderMesh3D` for imported meshes, keep
+the palette for UI and accents, and match the art's light direction (from
+above) and shadow softness. Keep real-time shadows off (standalone headsets).
 
 ## Motion
 
 - Durations: 0.12–0.2 s for UI feedback, 0.25–0.35 s for popups, ≤ 0.6 s for
   celebrations. Ease out (`TRANS_QUAD`/`TRANS_BACK` + `EASE_OUT`).
-- Use `TweenFX` (pop, bounce_in, shake, count_label). Animate scale/alpha, not
-  layout. Don't loop animations on primary navigation buttons.
+- Use `TweenFX` (pop, bounce_in, shake, count_label) for UI. Animate
+  scale/alpha, not layout. Don't loop animations on primary navigation buttons.
+- In the world, move objects, never the camera: no screen shake, no forced
+  camera motion — the player's head owns the view.
 
 ## Checklist for any visual change
 
 - [ ] Only `Palette` colors and theme variations; no new hardcoded colors
 - [ ] Icons from `Assets/Icons`, no text glyphs
 - [ ] One primary action per screen; destructive actions are not primary
-- [ ] Spacing on the 8 px grid; touch targets ≥ 88 px
-- [ ] Screenshot checked at 720×1280 (and a tall 20:9 phone) with `/design-review`
+- [ ] Spacing on the 8 px grid; pointer / touch targets ≥ 88 px
+- [ ] In-world UI readable from where the player stands; nothing screen-space in levels
+- [ ] Screenshots checked with `/design-review` (menus at 720×1280, the game
+      wide in the flat simulator and its popup on the in-world screen)

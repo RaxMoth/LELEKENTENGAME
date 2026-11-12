@@ -1,9 +1,9 @@
-## Object pooling for anything spawned often (projectiles, pickups, damage
-## numbers, enemies). Avoids instantiate/queue_free spikes on mobile.
+## Object pooling for anything spawned often (attackers, bolts, sparks,
+## floating text, effects). Avoids instantiate/queue_free spikes, which show
+## up as dropped frames on standalone headsets.
 ##
-##   var bullet: Projectile = Pools.spawn(BULLET_SCENE, Global.get_world_root(), muzzle.global_position)
-##   Pools.despawn(bullet)   # instead of queue_free()
-##   Pools.spawn_3d(BOLT_SCENE, effects_root, muzzle.global_position)   # Node3D scenes
+##   var bolt: LaneBolt = Pools.spawn(BOLT_SCENE, effects_root, muzzle.global_position) as LaneBolt
+##   Pools.despawn(bolt)   # instead of queue_free()
 ##
 ## Pooled nodes may implement _on_pool_spawned() / _on_pool_despawned()
 ## (see Types.METHOD_POOL_*) to reset their state. Pools are cleared on every
@@ -19,22 +19,9 @@ const META_IN_POOL: StringName = &"_in_pool"
 var _idle_instances: Dictionary[String, Array] = {}
 
 
-## Returns a ready instance of [param scene] added under [param parent].
-func spawn(scene: PackedScene, parent: Node, spawn_position: Vector2 = Vector2.ZERO) -> Node:
-	var instance: Node = _take_instance(scene)
-	if instance is Node2D:
-		(instance as Node2D).position = spawn_position
-		(instance as Node2D).rotation = 0.0
-	parent.add_child(instance)
-	if instance is Node2D:
-		(instance as Node2D).global_position = spawn_position
-	if instance.has_method(Types.METHOD_POOL_SPAWNED):
-		instance.call(Types.METHOD_POOL_SPAWNED)
-	return instance
-
-
-## 3D twin of spawn(): places a [Node3D] instance at a global position.
-func spawn_3d(scene: PackedScene, parent: Node, spawn_position: Vector3 = Vector3.ZERO) -> Node:
+## Returns a ready instance of [param scene] added under [param parent], with
+## an unrotated [Node3D] root placed at the global [param spawn_position].
+func spawn(scene: PackedScene, parent: Node, spawn_position: Vector3 = Vector3.ZERO) -> Node:
 	var instance: Node = _take_instance(scene)
 	parent.add_child(instance)
 	if instance is Node3D:
@@ -57,9 +44,7 @@ func despawn(instance: Node) -> void:
 		instance.call(Types.METHOD_POOL_DESPAWNED)
 	# Hide now, detach at a safe point: removing collision objects inside a
 	# physics callback is not allowed. Pooled scripts guard with is_in_pool().
-	if instance is CanvasItem:
-		(instance as CanvasItem).visible = false
-	elif instance is Node3D:
+	if instance is Node3D:
 		(instance as Node3D).visible = false
 	_detach.call_deferred(instance)
 
@@ -120,9 +105,7 @@ func _take_instance(scene: PackedScene) -> Node:
 		instance = scene.instantiate()
 		instance.set_meta(META_POOL_KEY, pool_key)
 	instance.set_meta(META_IN_POOL, false)
-	if instance is CanvasItem:
-		(instance as CanvasItem).visible = true
-	elif instance is Node3D:
+	if instance is Node3D:
 		(instance as Node3D).visible = true
 	return instance
 

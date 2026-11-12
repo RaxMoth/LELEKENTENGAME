@@ -66,6 +66,7 @@ theme_type_variation = &"SecondaryButton"
 text = "Settings"
 
 [node name="MenuButton" type="Button" parent="CenterContainer/Panel/Content" unique_id=824304664]
+unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 100)
 layout_mode = 2
 theme_type_variation = &"SecondaryButton"

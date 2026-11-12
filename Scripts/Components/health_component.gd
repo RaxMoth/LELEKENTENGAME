@@ -1,5 +1,5 @@
-## Hit points for any entity. Owners react to its signals (play animation,
-## drop loot, send Types.EVENT_DIED to their StateChart...).
+## Hit points for any entity. Owners react to its signals (flash, play a
+## sound, send Types.EVENT_DIED to their StateChart...).
 ##
 ## Dependencies: DamageInfo
 class_name HealthComponent

@@ -1,4 +1,5 @@
-## Unit tests for progression data: upgrade cost curves and level stars.
+## Unit tests for progression data: upgrade cost curves, level stars and the
+## XR start level lookup.
 ##
 ## Dependencies: gdUnit4
 extends GdUnitTestSuite
@@ -44,3 +45,17 @@ func test_level_parameter_falls_back_to_default() -> void:
 	level.custom_parameters = {&"moves": 20}
 	assert_int(level.get_parameter(&"moves", 0)).is_equal(20)
 	assert_int(level.get_parameter(&"missing", 7)).is_equal(7)
+
+
+func test_xr_start_level_resolves_by_id() -> void:
+	var config: GameConfig = GameConfig.new()
+	var first_level: LevelData = LevelData.new()
+	first_level.id = &"first_night"
+	var second_level: LevelData = LevelData.new()
+	second_level.id = &"second_night"
+	config.levels = [first_level, second_level]
+	assert_object(config.get_xr_start_level()).is_null()
+	config.xr_start_level_id = &"second_night"
+	assert_object(config.get_xr_start_level()).is_same(second_level)
+	config.xr_start_level_id = &"missing"
+	assert_object(config.get_xr_start_level()).is_null()

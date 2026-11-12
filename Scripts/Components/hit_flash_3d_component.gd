@@ -1,5 +1,5 @@
 ## Flashes every mesh below a Node3D white when its HealthComponent takes
-## damage (3D twin of HitFlashComponent). Uses a shared overlay material, so
+## damage. Uses a shared overlay material, so
 ## the entity's own materials stay untouched and batchable.
 ##
 ## Dependencies: HealthComponent, Palette

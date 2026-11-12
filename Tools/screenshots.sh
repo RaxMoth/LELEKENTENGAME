@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# Captures every menu, popup and level at 720x1280 (opens a window, not
-# headless) and builds contact sheets for a quick visual review. The XR level
-# is also captured wide as xr_*.png (not part of the portrait sheets).
+# Captures every menu and popup at 720x1280 and the game in its flat
+# simulator (wide 1280x720, plus one portrait shot), then builds contact
+# sheets for a quick visual review. Opens a window, not headless.
 #   Tools/screenshots.sh [output_dir]   (default: build/screenshots)
 set -euo pipefail
 TOOLS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -19,16 +19,14 @@ shot 02_level_select scene=res://Scenes/Menus/LevelSelect/LevelSelect.tscn frame
 shot 03_shop scene=res://Scenes/Menus/Shop/Shop.tscn frames=90
 shot 04_settings scene=$MENU popup=res://Scenes/UI/Popups/SettingsPopup/SettingsPopup.tscn frames=60
 shot 05_achievements scene=$MENU popup=res://Scenes/UI/Popups/AchievementsPopup/AchievementsPopup.tscn frames=60
-for level in idle_tapper survivor tower_defense match3 runner; do
-	shot "level_$level" "level=$level" frames=420
-done
-# The XR level in its flat simulator: portrait like the rest, then the wide
-# view that is closer to a headset, and its pause menu on the in-world screen.
-shot level_porchlight level=porchlight showcase=porchlight frames=200
-SHOT_RESOLUTION=1280x720 shot xr_porchlight level=porchlight showcase=porchlight frames=200
-SHOT_RESOLUTION=1280x720 shot xr_porchlight_pause level=porchlight showcase=porchlight frames=120 pause=1 world_ui=1
-"$TOOLS_DIR/godot.sh" --headless --script "$TOOLS_DIR/contact_sheet.gd" -- "$OUT_DIR/sheet_menus.png" 5 360 \
+# The game in the rig's flat simulator: the wide view that is closest to a
+# headset, its pause menu on the in-world popup screen, and a portrait phone
+# window (the flat fallback must still be playable there).
+SHOT_RESOLUTION=1280x720 shot level_porchlight level=porchlight showcase=porchlight frames=200
+SHOT_RESOLUTION=1280x720 shot level_porchlight_pause level=porchlight showcase=porchlight frames=120 pause=1 world_ui=1
+shot level_porchlight_portrait level=porchlight showcase=porchlight frames=200
+"$TOOLS_DIR/godot.sh" --headless --script "$TOOLS_DIR/contact_sheet.gd" -- "$OUT_DIR/sheet_menus.png" 5 360 640 \
 	"$OUT_DIR"/0*.png >/dev/null 2>&1
-"$TOOLS_DIR/godot.sh" --headless --script "$TOOLS_DIR/contact_sheet.gd" -- "$OUT_DIR/sheet_levels.png" 5 360 \
+"$TOOLS_DIR/godot.sh" --headless --script "$TOOLS_DIR/contact_sheet.gd" -- "$OUT_DIR/sheet_levels.png" 3 640 360 \
 	"$OUT_DIR"/level_*.png >/dev/null 2>&1
 echo "$OUT_DIR"

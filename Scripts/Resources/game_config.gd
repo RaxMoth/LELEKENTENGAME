@@ -13,7 +13,7 @@ const DEFAULT_PATH: String = "res://Ressources/game_config.tres"
 static var _default_instance: GameConfig = null
 
 @export_group("Identity")
-@export var game_title: String = "Base Template"
+@export var game_title: String = "Porchlight VR"
 
 @export_group("Scenes")
 @export_file("*.tscn") var main_menu_scene: String = "res://Scenes/Menus/MainMenu/MainMenu.tscn"
@@ -35,8 +35,9 @@ static var _default_instance: GameConfig = null
 @export var daily_rewards: Array[RewardBundle] = []
 
 @export_group("XR")
-## Level started right after boot when an XR headset is active — the 2D menus
-## are not visible inside a headset. Empty = always use the menu flow.
+## Where a headset player starts and returns to: Boot starts it right away and
+## "Main Menu" leads back to it, because the 2D menus are not visible inside a
+## headset. The menus are the flat-screen (no headset) flow.
 @export var xr_start_level_id: StringName = &""
 
 @export_group("Energy")
@@ -87,6 +88,11 @@ func get_level_index(level_id: StringName) -> int:
 func get_next_level(level_id: StringName) -> LevelData:
 	var next_index: int = get_level_index(level_id) + 1
 	return levels[next_index] if next_index > 0 and next_index < levels.size() else null
+
+
+## The level a headset player starts in (null when none is configured).
+func get_xr_start_level() -> LevelData:
+	return find_level(xr_start_level_id) if not xr_start_level_id.is_empty() else null
 
 
 func find_currency(currency_id: StringName) -> CurrencyData:

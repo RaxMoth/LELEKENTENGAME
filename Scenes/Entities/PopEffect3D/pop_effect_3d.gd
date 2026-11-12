@@ -17,7 +17,7 @@ var _tween: Tween
 
 
 static func spawn(world_position: Vector3, color: Color, diameter: float, parent: Node) -> PopEffect3D:
-	var pop_effect: PopEffect3D = Pools.spawn_3d(load(SCENE_PATH) as PackedScene, parent, world_position) as PopEffect3D
+	var pop_effect: PopEffect3D = Pools.spawn(load(SCENE_PATH) as PackedScene, parent, world_position) as PopEffect3D
 	pop_effect.play(color, diameter)
 	return pop_effect
 

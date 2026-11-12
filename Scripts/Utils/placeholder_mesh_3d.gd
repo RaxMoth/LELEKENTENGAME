@@ -1,4 +1,4 @@
-## 3D twin of PlaceholderShape: a clean primitive (sphere, box, capsule,
+## Stand-in art: a clean primitive (sphere, box, capsule,
 ## cylinder / cone) with a matte Palette color and optional glow. Good enough
 ## for a minimalist low-poly look; swap for imported meshes when final art
 ## arrives.

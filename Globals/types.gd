@@ -12,36 +12,18 @@ extends Node
 # ============================================
 
 enum DamageType { PHYSICAL, FIRE, ICE, POISON, TRUE_DAMAGE }
-enum Team { NEUTRAL, PLAYER, ENEMY }
-enum TargetPriority { NEAREST, FARTHEST, STRONGEST, WEAKEST, FIRST_ON_PATH, LAST_ON_PATH }
 enum HapticStrength { LIGHT, MEDIUM, HEAVY }
 enum ProductType { CONSUMABLE, NON_CONSUMABLE, SUBSCRIPTION }
-enum SwipeDirection { NONE, UP, DOWN, LEFT, RIGHT }
 enum LevelOutcome { NONE, WON, LOST, QUIT }
-enum StatModifierKind { FLAT, PERCENT }
 ## Which hand a tracked XR controller belongs to.
 enum Hand { LEFT, RIGHT }
-
-# ============================================
-# PHYSICS LAYERS (bit values, keep in sync with [layer_names] in project.godot)
-# ============================================
-
-const LAYER_WORLD: int = 1 << 0
-const LAYER_PLAYER: int = 1 << 1
-const LAYER_ENEMY: int = 1 << 2
-const LAYER_PLAYER_HURTBOX: int = 1 << 3
-const LAYER_ENEMY_HURTBOX: int = 1 << 4
-const LAYER_PICKUP: int = 1 << 5
-const LAYER_INTERACTABLE: int = 1 << 6
 
 # ============================================
 # GROUPS
 # ============================================
 
-const GROUP_PLAYER: StringName = &"player"
 const GROUP_ENEMY: StringName = &"enemy"
-const GROUP_PICKUP: StringName = &"pickup"
-## Node that pooled projectiles, pickups and effects are spawned under.
+## Node that pooled entities and effects are spawned under (LevelBase's World).
 const GROUP_WORLD_ROOT: StringName = &"world_root"
 ## Every active WorldScreen (2D UI shown in 3D); XRPointer looks its targets up here.
 const GROUP_WORLD_SCREEN: StringName = &"world_screen"
@@ -50,11 +32,6 @@ const GROUP_WORLD_SCREEN: StringName = &"world_screen"
 # INPUT ACTIONS (defined in Project Settings > Input Map)
 # ============================================
 
-const ACTION_MOVE_LEFT: StringName = &"move_left"
-const ACTION_MOVE_RIGHT: StringName = &"move_right"
-const ACTION_MOVE_UP: StringName = &"move_up"
-const ACTION_MOVE_DOWN: StringName = &"move_down"
-const ACTION_JUMP: StringName = &"jump"
 const ACTION_PAUSE: StringName = &"pause"
 const ACTION_DEBUG_TOGGLE: StringName = &"debug_toggle"
 
@@ -93,20 +70,6 @@ const STAT_LEVELS_PLAYED: StringName = &"levels_played"
 const STAT_LEVELS_WON: StringName = &"levels_won"
 const STAT_ENEMIES_DEFEATED: StringName = &"enemies_defeated"
 const STAT_COINS_EARNED: StringName = &"coins_earned"
-const STAT_TAPS: StringName = &"taps"
-const STAT_BEST_RUNNER_SCORE: StringName = &"best_runner_score"
-const STAT_MATCHES_MADE: StringName = &"matches_made"
-
-# ============================================
-# ENTITY STAT IDS (used by StatsComponent / StatModifier / PerkData)
-# ============================================
-
-const ENTITY_STAT_MAX_HEALTH: StringName = &"max_health"
-const ENTITY_STAT_MOVE_SPEED: StringName = &"move_speed"
-const ENTITY_STAT_DAMAGE: StringName = &"damage"
-const ENTITY_STAT_FIRE_RATE: StringName = &"fire_rate"
-const ENTITY_STAT_PROJECTILE_COUNT: StringName = &"projectile_count"
-const ENTITY_STAT_PICKUP_RADIUS: StringName = &"pickup_radius"
 
 # ============================================
 # STATE CHART EVENTS — level flow (Scenes/Game/LevelBase.tscn)
@@ -119,13 +82,9 @@ const EVENT_WIN: StringName = &"win"
 const EVENT_LOSE: StringName = &"lose"
 
 # ============================================
-# STATE CHART EVENTS — entities (Scenes/Entities/*)
+# STATE CHART EVENTS — entities (attackers in Scenes/Levels/Porchlight)
 # ============================================
 
-const EVENT_MOVE_STARTED: StringName = &"move_started"
-const EVENT_MOVE_STOPPED: StringName = &"move_stopped"
-const EVENT_TARGET_ACQUIRED: StringName = &"target_acquired"
-const EVENT_TARGET_LOST: StringName = &"target_lost"
 const EVENT_TARGET_IN_RANGE: StringName = &"target_in_range"
 const EVENT_TARGET_OUT_OF_RANGE: StringName = &"target_out_of_range"
 const EVENT_DIED: StringName = &"died"
@@ -141,7 +100,8 @@ const METHOD_POOL_SPAWNED: StringName = &"_on_pool_spawned"
 const METHOD_POOL_DESPAWNED: StringName = &"_on_pool_despawned"
 ## Called on a new scene by SceneManager before it enters the tree.
 const METHOD_RECEIVE_SCENE_PARAMS: StringName = &"receive_scene_params"
-## Called on the current scene when the Android back button / Esc is pressed.
+## Called on the current scene when the Android back button / Esc is pressed
+## (a headset's menu button reaches levels through XRPlayerRig.menu_pressed).
 ## Return true when the scene consumed the request.
 const METHOD_HANDLE_BACK: StringName = &"handle_back"
 ## Called by WaveSpawner after spawning an enemy so it can scale itself.

@@ -1,7 +1,7 @@
 ## Shows a set of rewards with "Claim" and an optional rewarded-ad "Claim x2".
 ## The popup does not grant anything itself — the caller grants
 ## rewards * multiplier (the result), which keeps it reusable for daily
-## rewards, offline earnings, chests, etc.
+## rewards, chests, etc.
 ##
 ## popup_data keys: title, subtitle, rewards (Dictionary[StringName, int]), allow_double (bool)
 ## Result: int multiplier (1, or 2 after watching an ad).

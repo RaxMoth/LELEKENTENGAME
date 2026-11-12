@@ -1,4 +1,4 @@
-## Generates tiny placeholder sound effects at runtime so the template has
+## Generates tiny placeholder sound effects at runtime so the game has
 ## audio feedback without shipping any sound files. Results are cached.
 ##
 ## Swap for real assets whenever you have them — nothing depends on this

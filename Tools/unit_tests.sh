@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Runs the gdUnit4 unit tests in Tests/Unit headlessly. Exit code 0 = pass.
 # HTML/XML reports go to build/test-reports. Extra arguments go to gdUnit4
-# (e.g. -a res://Tests/Unit/grid_data_test.gd to run one suite).
+# (e.g. -a res://Tests/Unit/lane_grid_test.gd to run one suite).
 set -uo pipefail
 TOOLS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 "$TOOLS_DIR/godot.sh" --headless --import >/dev/null 2>&1

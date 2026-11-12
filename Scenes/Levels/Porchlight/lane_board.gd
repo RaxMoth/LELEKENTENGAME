@@ -127,7 +127,7 @@ func get_defender_count() -> int:
 func spawn_enemy(enemy_scene: PackedScene) -> LaneEnemy:
 	var lane: int = _draw_lane()
 	var spawn_position: Vector3 = Vector3(grid.get_lane_x(lane), grid.origin.y, get_spawn_z())
-	var enemy: LaneEnemy = Pools.spawn_3d(enemy_scene, _enemy_root, spawn_position) as LaneEnemy
+	var enemy: LaneEnemy = Pools.spawn(enemy_scene, _enemy_root, spawn_position) as LaneEnemy
 	if enemy.is_flying:
 		enemy.global_position.y += flyer_height
 	enemy.enter_lane(self, lane)
@@ -235,7 +235,7 @@ func _draw_lane() -> int:
 
 
 func _spawn_spark(from_position: Vector3, rest_position: Vector3, spark_value: int, fall_seconds: float) -> SparkOrb:
-	var orb: SparkOrb = Pools.spawn_3d(SPARK_SCENE, _effects_root, from_position) as SparkOrb
+	var orb: SparkOrb = Pools.spawn(SPARK_SCENE, _effects_root, from_position) as SparkOrb
 	orb.drop(from_position, rest_position, spark_value, fall_seconds)
 	_orbs.append(orb)
 	return orb

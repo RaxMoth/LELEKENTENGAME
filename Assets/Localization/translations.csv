@@ -29,9 +29,7 @@ No,No,Nein
 Music,Music,Musik
 Sound Effects,Sound Effects,Soundeffekte
 Master Volume,Master Volume,Gesamtlautstärke
-Vibration,Vibration,Vibration
-Screen Shake,Screen Shake,Bildschirmwackeln
-Battery Saver (30 FPS),Battery Saver (30 FPS),Akkusparmodus (30 FPS)
+Controller Haptics,Controller Haptics,Controller-Vibration
 Show FPS,Show FPS,FPS anzeigen
 Language,Language,Sprache
 System,System,System
@@ -55,16 +53,10 @@ Day %d,Day %d,Tag %d
 Ready?,Ready?,Bereit?
 Go!,Go!,Los!
 Wave %d,Wave %d,Welle %d
-Level Up!,Level Up!,Level aufgestiegen!
-Choose an upgrade,Choose an upgrade,Wähle eine Verbesserung
-Welcome back!,Welcome back!,Willkommen zurück!
-You earned %s while away.,You earned %s while away.,Du hast %s verdient während du weg warst.
 Playing ad…,Playing ad…,Werbung läuft…
 Advertisement,Advertisement,Werbung
 Connecting to store…,Connecting to store…,Verbinde mit Store…
 Not enough energy,Not enough energy,Nicht genug Energie
-Finish,Finish,Beenden
-Gold,Gold,Gold
 Awards,Awards,Erfolge
 Free,Free,Gratis
 "+%d coins","+%d coins","+%d Münzen"

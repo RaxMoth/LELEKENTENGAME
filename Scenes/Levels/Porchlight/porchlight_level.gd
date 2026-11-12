@@ -10,11 +10,12 @@
 ## Flat: tap a tile to plant, tap an attacker or right-click to shoot, hover
 ## or tap sparks, drag to look around.
 ##
-## Shows: XRPlayerRig, WorldScreen UI, LaneBoard / LaneGrid math picking,
-## pooled 3D entities, LaneWaveSpawner, level-local economy.
+## Built on: LevelBase (rig, announcer, flow), WorldScreen UI, LaneBoard /
+## LaneGrid math picking, pooled 3D entities, LaneWaveSpawner, level-local
+## economy, shop upgrades (UpgradeData) for starting sparks and lives.
 ##
 ## Dependencies: LevelBase, XRPlayerRig, LaneBoard, SeedBoard, WaveSpawner,
-##               Pools, Audio, UI, Platform autoloads
+##               Pools, Audio, Profile, Platform autoloads
 extends LevelBase
 
 const TRACER_SCENE: PackedScene = preload("res://Scenes/Levels/Porchlight/BeamTracer.tscn")
@@ -39,6 +40,12 @@ const PARAMETER_STARTING_LIVES: StringName = &"starting_lives"
 @export_group("Score")
 @export var score_per_life_left: int = 100
 
+@export_group("Upgrades")
+## Shop upgrade whose value is added to the starting sparks.
+@export var starting_sparks_upgrade: UpgradeData
+## Shop upgrade whose value is added to the starting lives.
+@export var starting_lives_upgrade: UpgradeData
+
 @export_group("Rendering")
 ## Bloom is a full-screen pass per eye: too expensive on standalone headsets and phones.
 @export var glow_on_mobile: bool = false
@@ -51,13 +58,10 @@ var selected_seed: int = 0
 var _seed_cooldowns: Array[float] = []
 var _seconds_until_sky_spark: float = 0.0
 var _blaster_cooldown: float = 0.0
-var _announce_tween: Tween
 
-@onready var rig: XRPlayerRig = %XRPlayerRig
 @onready var board: LaneBoard = %LaneBoard
 @onready var wave_spawner: WaveSpawner = %WaveSpawner
 @onready var _board_screen: WorldScreen = %BoardScreen
-@onready var _announcer: Label3D = %Announcer
 @onready var _world_environment: WorldEnvironment = %WorldEnvironment
 
 # ============================================
@@ -65,21 +69,21 @@ var _announce_tween: Tween
 # ============================================
 
 func _on_level_setup() -> void:
-	hud.set_currency_visible(false)
-	# A screen-space HUD is not visible inside a headset; the board in the world replaces it.
-	hud.visible = not rig.is_xr_active
 	score_changed.connect(func(new_score: int) -> void: _get_seed_board().set_score(new_score))
 	if Platform.is_mobile() and not glow_on_mobile:
 		_world_environment.environment.glow_enabled = false
 	if level_data != null:
 		starting_sparks = int(level_data.get_parameter(PARAMETER_STARTING_SPARKS, starting_sparks))
 		starting_lives = int(level_data.get_parameter(PARAMETER_STARTING_LIVES, starting_lives))
+	if starting_sparks_upgrade != null:
+		starting_sparks += roundi(Profile.upgrades.get_value(starting_sparks_upgrade))
+	if starting_lives_upgrade != null:
+		starting_lives += roundi(Profile.upgrades.get_value(starting_lives_upgrade))
 	sparks = starting_sparks
 	lives = starting_lives
 	_seed_cooldowns.resize(defenders.size())
 	_seed_cooldowns.fill(0.0)
 	_seconds_until_sky_spark = sky_spark_interval_seconds * 0.5
-	_announcer.hide()
 	var seed_board: SeedBoard = _get_seed_board()
 	seed_board.set_defenders(defenders)
 	seed_board.seed_chosen.connect(select_seed)
@@ -91,7 +95,7 @@ func _on_level_setup() -> void:
 
 
 func _on_level_started() -> void:
-	_announce(tr("Hold the porch!"), Palette.TEXT)
+	announce(tr("Hold the porch!"))
 	wave_spawner.start()
 
 
@@ -107,14 +111,6 @@ func _on_level_finished(_result: LevelResult) -> void:
 	board.freeze()
 	for pointer: XRPointer in rig.get_active_pointers():
 		pointer.set_world_hit_distance(RayMath.NO_HIT)
-
-
-## Inside a headset there is no 2D menu to return to, so leaving starts a new run.
-func quit_to_menu() -> void:
-	if rig.is_xr_active:
-		restart_level()
-	else:
-		super()
 
 # ============================================
 # PUBLIC API
@@ -152,7 +148,7 @@ func try_plant(cell: Vector2i, pointer: XRPointer = null) -> bool:
 	board.place_defender(defender_data, cell)
 	_seed_cooldowns[selected_seed] = defender_data.cooldown_seconds
 	add_sparks(-defender_data.cost)
-	Audio.play_sfx_at_3d(SfxSynth.get_preset(&"pop"), world_position, 0.05)
+	Audio.play_sfx_at(SfxSynth.get_preset(&"pop"), world_position, 0.05)
 	PopEffect3D.spawn(world_position + Vector3(0.0, 0.3, 0.0), defender_data.icon_color, 0.9, board.get_effects_root())
 	if pointer != null:
 		rig.pulse(pointer, Types.HapticStrength.MEDIUM)
@@ -174,9 +170,9 @@ func fire_blaster(pointer: XRPointer) -> LaneEnemy:
 		var ground_distance: float = board.get_ground_distance(pointer.ray_origin, pointer.ray_direction)
 		if ground_distance != RayMath.NO_HIT and ground_distance < blaster_range:
 			beam_end = pointer.get_point(ground_distance)
-	var tracer: BeamTracer = Pools.spawn_3d(TRACER_SCENE, board.get_effects_root(), pointer.ray_origin) as BeamTracer
+	var tracer: BeamTracer = Pools.spawn(TRACER_SCENE, board.get_effects_root(), pointer.ray_origin) as BeamTracer
 	tracer.fire(_get_muzzle_position(pointer), beam_end)
-	Audio.play_sfx_at_3d(SfxSynth.get_preset(&"shoot"), pointer.ray_origin, 0.1, -4.0)
+	Audio.play_sfx_at(SfxSynth.get_preset(&"shoot"), pointer.ray_origin, 0.1, -4.0)
 	rig.pulse(pointer, Types.HapticStrength.LIGHT)
 	return enemy
 
@@ -201,13 +197,6 @@ func _on_rig_secondary_action_pressed(pointer: XRPointer) -> void:
 	fire_blaster(pointer)
 
 
-func _on_rig_menu_pressed() -> void:
-	if phase == Phase.PAUSED:
-		UI.close_top_popup()
-	else:
-		pause_level()
-
-
 func _on_rig_selection_step_requested(step: int) -> void:
 	select_seed(selected_seed + step)
 	Audio.play_ui(Audio.UI_CLICK)
@@ -225,7 +214,7 @@ func _on_board_enemy_reached_home(_enemy: LaneEnemy) -> void:
 		return
 	lives -= 1
 	_refresh_status()
-	_announce(tr("Breach!"), Palette.DANGER)
+	announce(tr("Breach!"), Palette.DANGER)
 	Audio.play_sfx(SfxSynth.get_preset(&"explosion"))
 	for pointer: XRPointer in rig.get_active_pointers():
 		rig.pulse(pointer, Types.HapticStrength.HEAVY)
@@ -234,7 +223,7 @@ func _on_board_enemy_reached_home(_enemy: LaneEnemy) -> void:
 
 
 func _on_wave_spawner_wave_started(wave_number: int, _wave: WaveData) -> void:
-	_announce(tr("Wave %d") % wave_number, Palette.TEXT)
+	announce(tr("Wave %d") % wave_number)
 	_refresh_status()
 
 
@@ -298,7 +287,7 @@ func _catch_spark(pointer: XRPointer) -> bool:
 	orb.collect()
 	add_sparks(orb.value)
 	FloatingText3D.spawn("+%d" % orb.value, orb.global_position, Palette.GOLD, board.get_effects_root())
-	Audio.play_sfx_at_3d(SfxSynth.get_preset(&"coin"), orb.global_position, 0.08)
+	Audio.play_sfx_at(SfxSynth.get_preset(&"coin"), orb.global_position, 0.08)
 	rig.pulse(pointer, Types.HapticStrength.LIGHT)
 	return true
 
@@ -314,28 +303,9 @@ func _get_muzzle_position(pointer: XRPointer) -> Vector3:
 
 func _refresh_status() -> void:
 	var total_waves: int = wave_spawner.get_total_waves()
-	# The board in the world is the only status display; the flat HUD keeps the pause button.
+	# The board in the world is the only status display, in a headset and on a flat screen.
 	var seed_board: SeedBoard = _get_seed_board()
 	seed_board.set_sparks(sparks)
 	seed_board.set_lives(lives, starting_lives)
 	seed_board.set_wave(wave_spawner.current_wave_number, total_waves)
 
-
-## Big text over the lawn — in the world rather than on the HUD, so it is
-## also visible inside a headset.
-func _announce(message: String, color: Color) -> void:
-	if _announce_tween != null:
-		_announce_tween.kill()
-	_announcer.text = message
-	_announcer.modulate = color
-	_announcer.outline_modulate = Color(Palette.BACKGROUND, 0.9)
-	_announcer.scale = Vector3.ONE * 0.4
-	_announcer.show()
-	_announce_tween = create_tween()
-	_announce_tween.tween_property(_announcer, "scale", Vector3.ONE, 0.25).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-	_announce_tween.tween_interval(1.0)
-	_announce_tween.set_parallel(true)
-	_announce_tween.tween_property(_announcer, "modulate:a", 0.0, 0.25)
-	_announce_tween.tween_property(_announcer, "outline_modulate:a", 0.0, 0.25)
-	_announce_tween.set_parallel(false)
-	_announce_tween.tween_callback(_announcer.hide)

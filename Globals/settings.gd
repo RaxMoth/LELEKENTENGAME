@@ -1,5 +1,8 @@
-## Player preferences (audio, haptics, language, ...). Stored separately from
-## the savegame in user://settings.cfg so "reset progress" keeps preferences.
+## Player preferences (audio, controller haptics, language, ...). Stored
+## separately from the savegame in user://settings.cfg so "reset progress"
+## keeps preferences. There is deliberately no frame-rate cap or screen shake:
+## the headset paces the frames, and camera motion the player does not cause
+## is uncomfortable in VR.
 ##
 ## Add your own setting: put a KEY_ constant + default into DEFAULTS, then use
 ## Settings.get_value / set_value. Changes are applied immediately, persisted
@@ -15,9 +18,7 @@ const KEY_MASTER_VOLUME: StringName = &"master_volume"
 const KEY_MUSIC_VOLUME: StringName = &"music_volume"
 const KEY_SFX_VOLUME: StringName = &"sfx_volume"
 const KEY_HAPTICS_ENABLED: StringName = &"haptics_enabled"
-const KEY_SCREEN_SHAKE_ENABLED: StringName = &"screen_shake_enabled"
 const KEY_SHOW_FPS: StringName = &"show_fps"
-const KEY_BATTERY_SAVER: StringName = &"battery_saver"
 ## Empty string = follow the device language.
 const KEY_LOCALE: StringName = &"locale"
 
@@ -26,9 +27,7 @@ const DEFAULTS: Dictionary[StringName, Variant] = {
 	KEY_MUSIC_VOLUME: 0.7,
 	KEY_SFX_VOLUME: 0.9,
 	KEY_HAPTICS_ENABLED: true,
-	KEY_SCREEN_SHAKE_ENABLED: true,
 	KEY_SHOW_FPS: false,
-	KEY_BATTERY_SAVER: false,
 	KEY_LOCALE: "",
 }
 
@@ -85,9 +84,6 @@ func _apply(setting_key: StringName, value: Variant) -> void:
 			_set_bus_volume(BUS_MUSIC, float(value))
 		KEY_SFX_VOLUME:
 			_set_bus_volume(BUS_SFX, float(value))
-		KEY_BATTERY_SAVER:
-			# 30 FPS halves GPU work on phones; 0 = uncapped (vsync limited).
-			Engine.max_fps = 30 if bool(value) else 0
 		KEY_LOCALE:
 			var locale_code: String = str(value)
 			if locale_code.is_empty():

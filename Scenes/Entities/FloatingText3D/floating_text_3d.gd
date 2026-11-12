@@ -16,7 +16,7 @@ var _tween: Tween
 
 static func spawn(label_text: String, world_position: Vector3, color: Color, parent: Node) -> FloatingText3D:
 	# load() hits the resource cache after the first call, so this stays cheap.
-	var floating_text: FloatingText3D = Pools.spawn_3d(load(SCENE_PATH) as PackedScene, parent, world_position) as FloatingText3D
+	var floating_text: FloatingText3D = Pools.spawn(load(SCENE_PATH) as PackedScene, parent, world_position) as FloatingText3D
 	floating_text.play(label_text, color)
 	return floating_text
 

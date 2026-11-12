@@ -77,9 +77,16 @@ func go_back() -> bool:
 	return true
 
 
+## Returns to the main menu. Inside a headset the 2D menu can't be seen, so
+## "home" is the XR start level (GameConfig.xr_start_level_id) instead.
 func go_to_main_menu() -> void:
 	_history.clear()
-	change_scene(GameConfig.get_default().main_menu_scene, {}, false)
+	var config: GameConfig = GameConfig.get_default()
+	var xr_home_level: LevelData = config.get_xr_start_level()
+	if Platform.is_xr_active() and xr_home_level != null:
+		change_scene(xr_home_level.scene_path, {Types.PARAM_LEVEL_DATA: xr_home_level}, false)
+		return
+	change_scene(config.main_menu_scene, {}, false)
 
 
 func clear_history() -> void:

@@ -2,8 +2,8 @@
 ## The UI theme (Assets/Themes/main_theme.tres) is built from the same values;
 ## see Docs/DESIGN.md for when to use which. Re-skinning a game starts here.
 ##
-##   PlaceholderShape.color = Palette.ENEMY
-##   FloatingText.spawn("+5", position, Palette.GOLD)
+##   placeholder_mesh.color = Palette.ENEMY
+##   FloatingText3D.spawn("+5", position, Palette.GOLD, effects_root)
 ##
 ## Dependencies: none
 class_name Palette

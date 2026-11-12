@@ -1,6 +1,6 @@
 ---
 name: smoke-test
-description: Run the gdUnit4 unit tests and the headless Godot smoke test (boots every menu and level, pause/win/lose/results, popups, save round-trip) and report failures. Use after changing any .gd, .tscn or .tres file and before committing.
+description: Run the gdUnit4 unit tests and the headless Godot smoke test (boots every menu and level, plays the VR level through the XR pointer path in the flat simulator, pause/win/lose/results, popups, save round-trip) and report failures. Use after changing any .gd, .tscn or .tres file and before committing.
 allowed-tools:
   - Bash(Tools/unit_tests.sh*)
   - Bash(Tools/smoke_test.sh)
@@ -8,7 +8,7 @@ allowed-tools:
 Run from the project root, in this order (exit code 0 = pass):
 
 1. `Tools/unit_tests.sh`: gdUnit4 suites in `Tests/Unit/` (fast, pure logic).
-   One suite: `Tools/unit_tests.sh -a res://Tests/Unit/grid_data_test.gd`.
+   One suite: `Tools/unit_tests.sh -a res://Tests/Unit/lane_grid_test.gd`.
 2. `Tools/smoke_test.sh`: imports, then runs `res://Tests/SmokeTest.tscn`.
 
 - Pass: report the check count in one line.

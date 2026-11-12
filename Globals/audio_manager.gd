@@ -2,8 +2,7 @@
 ##
 ##   Audio.play_music(preload("res://Assets/Audio/theme.ogg"))
 ##   Audio.play_sfx(hit_sound, 0.1)            # 10% random pitch variation
-##   Audio.play_sfx_at(explosion, global_position)
-##   Audio.play_sfx_at_3d(explosion, global_position)   # 3D / XR scenes
+##   Audio.play_sfx_at(explosion, global_position)   # spatialized for the headset
 ##   Audio.play_ui(Audio.UI_CLICK)            # built-in synthesized UI sounds
 ##
 ## Volumes are controlled by Settings through the Music / SFX / UI buses.
@@ -13,10 +12,9 @@ extends Node
 
 const SFX_POOL_SIZE: int = 12
 const POSITIONAL_POOL_SIZE: int = 12
-const POSITIONAL_3D_POOL_SIZE: int = 12
-## Distance in meters at which a 3D sound has dropped to about half volume.
-const POSITIONAL_3D_UNIT_SIZE: float = 6.0
-const POSITIONAL_3D_MAX_DISTANCE: float = 40.0
+## Distance in meters at which a positional sound has dropped to about half volume.
+const POSITIONAL_UNIT_SIZE: float = 6.0
+const POSITIONAL_MAX_DISTANCE: float = 40.0
 const UI_CLICK: StringName = &"click"
 const UI_CONFIRM: StringName = &"confirm"
 const UI_ERROR: StringName = &"error"
@@ -26,10 +24,8 @@ var _music_players: Array[AudioStreamPlayer] = []
 var _active_music_index: int = 0
 var _music_tween: Tween
 var _sfx_players: Array[AudioStreamPlayer] = []
-var _positional_players: Array[AudioStreamPlayer2D] = []
-var _positional_players_3d: Array[AudioStreamPlayer3D] = []
+var _positional_players: Array[AudioStreamPlayer3D] = []
 var _next_sfx_index: int = 0
-var _next_positional_3d_index: int = 0
 var _next_positional_index: int = 0
 
 
@@ -46,17 +42,12 @@ func _ready() -> void:
 		add_child(sfx_player)
 		_sfx_players.append(sfx_player)
 	for positional_index: int in POSITIONAL_POOL_SIZE:
-		var positional_player: AudioStreamPlayer2D = AudioStreamPlayer2D.new()
+		var positional_player: AudioStreamPlayer3D = AudioStreamPlayer3D.new()
 		positional_player.bus = Settings.BUS_SFX
+		positional_player.unit_size = POSITIONAL_UNIT_SIZE
+		positional_player.max_distance = POSITIONAL_MAX_DISTANCE
 		add_child(positional_player)
 		_positional_players.append(positional_player)
-	for positional_index: int in POSITIONAL_3D_POOL_SIZE:
-		var positional_player_3d: AudioStreamPlayer3D = AudioStreamPlayer3D.new()
-		positional_player_3d.bus = Settings.BUS_SFX
-		positional_player_3d.unit_size = POSITIONAL_3D_UNIT_SIZE
-		positional_player_3d.max_distance = POSITIONAL_3D_MAX_DISTANCE
-		add_child(positional_player_3d)
-		_positional_players_3d.append(positional_player_3d)
 
 func _exit_tree() -> void:
 	SfxSynth.clear_cache()
@@ -114,25 +105,13 @@ func play_sfx(stream: AudioStream, pitch_variation: float = 0.0, volume_db: floa
 	sfx_player.play()
 
 
-## Plays a sound at a world position (panning/attenuation relative to the camera).
-func play_sfx_at(stream: AudioStream, world_position: Vector2, pitch_variation: float = 0.0, volume_db: float = 0.0) -> void:
+## Plays a sound at a world position, spatialized for the current Camera3D /
+## XR headset, so the player hears where it happened.
+func play_sfx_at(stream: AudioStream, world_position: Vector3, pitch_variation: float = 0.0, volume_db: float = 0.0) -> void:
 	if stream == null:
 		return
-	var positional_player: AudioStreamPlayer2D = _positional_players[_next_positional_index]
+	var positional_player: AudioStreamPlayer3D = _positional_players[_next_positional_index]
 	_next_positional_index = (_next_positional_index + 1) % _positional_players.size()
-	positional_player.stream = stream
-	positional_player.global_position = world_position
-	positional_player.volume_db = volume_db
-	positional_player.pitch_scale = 1.0 + randf_range(-pitch_variation, pitch_variation)
-	positional_player.play()
-
-
-## Plays a sound at a 3D world position (spatialized for the current Camera3D / XR headset).
-func play_sfx_at_3d(stream: AudioStream, world_position: Vector3, pitch_variation: float = 0.0, volume_db: float = 0.0) -> void:
-	if stream == null:
-		return
-	var positional_player: AudioStreamPlayer3D = _positional_players_3d[_next_positional_3d_index]
-	_next_positional_3d_index = (_next_positional_3d_index + 1) % _positional_players_3d.size()
 	positional_player.stream = stream
 	positional_player.global_position = world_position
 	positional_player.volume_db = volume_db

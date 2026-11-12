@@ -1,15 +1,22 @@
-## Base class for every playable level / game mode. Owns the level flow
-## through a StateChart (Intro -> Playing <-> Paused -> Won | Lost), score,
-## timer, HUD, pause menu, results, rewards, progress saving and analytics.
+## Base class for every playable level. A level is a 3D place the player
+## stands in: LevelBase owns the XRPlayerRig (headset and controllers, or the
+## flat simulator without one), an in-world Announcer and the level flow
+## through a StateChart (Intro -> Playing <-> Paused -> Won | Lost): score,
+## time limit, pause menu, results, rewards, progress saving and analytics.
 ##
 ## Make a new level: create an inherited scene from LevelBase.tscn, attach a
-## script that `extends LevelBase`, put gameplay nodes under World and
-## override the virtual hooks below. Call win() / lose() / add_score().
+## script that `extends LevelBase`, build the stage under World, move
+## World/XRPlayerRig to where the player stands and override the virtual hooks
+## below. Call win() / lose() / add_score() / announce().
+##
+## There is no screen-space HUD: a headset can't see one. Show status on
+## in-world UI (a WorldScreen or a Label3D); popups reach the player through
+## the rig's in-world popup screen.
 ##
 ## Dependencies: Events, Profile, SceneManager, UI, Ads, Global, Types autoloads,
-##               godot_state_charts addon
+##               XRPlayerRig, godot_state_charts addon
 class_name LevelBase
-extends Node2D
+extends Node3D
 
 signal score_changed(new_score: int)
 
@@ -18,24 +25,33 @@ enum Phase { INTRO, PLAYING, PAUSED, FINISHED }
 const PAUSE_POPUP: PackedScene = preload("res://Scenes/UI/Popups/PausePopup/PausePopup.tscn")
 const RESULTS_POPUP: PackedScene = preload("res://Scenes/UI/Popups/ResultsPopup/ResultsPopup.tscn")
 const AD_PLACEMENT_LEVEL_END: StringName = &"level_end"
+## Seconds the announcer text takes to pop in and to fade out.
+const ANNOUNCE_POP_SECONDS: float = 0.25
+## Announcer scale at the start of its pop-in.
+const ANNOUNCE_START_SCALE: float = 0.4
+## Opacity of the announcer's outline (keeps the text readable over the world).
+const ANNOUNCE_OUTLINE_ALPHA: float = 0.9
 
-## Level definition (set by LevelSelect through scene params, or in the inspector for F6 testing).
+## Level definition (set by LevelSelect / Boot through scene params, or in the inspector for F6 testing).
 @export var level_data: LevelData
+## "Ready?" / "Go!" on the announcer before play starts.
 @export var show_intro_countdown: bool = true
 ## 0 = no limit. When it runs out _on_time_limit_reached() is called (default: lose).
 @export var time_limit_seconds: float = 0.0
-@export var show_elapsed_time: bool = false
-@export var show_score: bool = true
+## Pause when the app goes to the background, the window loses focus or the
+## headset is taken off. Unattended tools (screenshots) turn it off.
+@export var pause_when_app_paused: bool = true
 
 var score: int = 0
 var elapsed_seconds: float = 0.0
 var phase: Phase = Phase.INTRO
 
 var _has_started: bool = false
+var _announce_tween: Tween
 
-@onready var world: Node2D = %World
-@onready var camera: GameCamera = %GameCamera
-@onready var hud: GameHUD = %HUD
+@onready var world: Node3D = %World
+@onready var rig: XRPlayerRig = %XRPlayerRig
+@onready var announcer: Label3D = %Announcer
 @onready var state_chart: StateChart = %StateChart
 
 
@@ -57,10 +73,7 @@ static func start_level(level: LevelData, add_to_history: bool = true) -> bool:
 
 func _ready() -> void:
 	Events.app_paused.connect(_on_app_paused)
-	hud.set_score(0, false)
-	hud.set_score_visible(show_score)
-	if time_limit_seconds > 0.0:
-		hud.set_timer(time_limit_seconds)
+	announcer.hide()
 	_on_level_setup()
 
 # ============================================
@@ -84,9 +97,15 @@ func add_score(points: int) -> void:
 func set_score(new_score: int) -> void:
 	var score_delta: int = maxi(0, new_score) - score
 	score = maxi(0, new_score)
-	hud.set_score(score)
 	score_changed.emit(score)
 	Events.score_changed.emit(score, score_delta)
+
+
+## Seconds left of the time limit (INF when the level has none).
+func get_remaining_seconds() -> float:
+	if time_limit_seconds <= 0.0:
+		return INF
+	return maxf(0.0, time_limit_seconds - elapsed_seconds)
 
 
 func win() -> void:
@@ -118,6 +137,8 @@ func restart_level() -> void:
 	SceneManager.reload_current_scene()
 
 
+## Leaves the level. Inside a headset the 2D menus can't be seen, so
+## SceneManager sends the player to the XR start level (a new run) instead.
 func quit_to_menu() -> void:
 	if not SceneManager.go_back():
 		SceneManager.go_to_main_menu()
@@ -129,10 +150,29 @@ func go_to_next_level() -> void:
 		quit_to_menu()
 
 
-## Back button: pause instead of leaving the level.
+## Back button / Esc: pause instead of leaving the level.
 func handle_back() -> bool:
 	pause_level()
 	return true
+
+
+## Big text in the world ("Wave 2", "Breach!") on the Announcer, which the
+## level places where the player is looking. Pops in, holds, fades out.
+func announce(message: String, color: Color = Palette.TEXT, hold_seconds: float = 1.0) -> void:
+	if _announce_tween != null:
+		_announce_tween.kill()
+	announcer.text = message
+	announcer.modulate = color
+	announcer.outline_modulate = Color(Palette.BACKGROUND, ANNOUNCE_OUTLINE_ALPHA)
+	announcer.scale = Vector3.ONE * ANNOUNCE_START_SCALE
+	announcer.show()
+	_announce_tween = create_tween()
+	_announce_tween.tween_property(announcer, "scale", Vector3.ONE, ANNOUNCE_POP_SECONDS).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	_announce_tween.tween_interval(hold_seconds)
+	# Text and outline fade together, as one step after the hold.
+	_announce_tween.tween_property(announcer, "modulate:a", 0.0, ANNOUNCE_POP_SECONDS)
+	_announce_tween.parallel().tween_property(announcer, "outline_modulate:a", 0.0, ANNOUNCE_POP_SECONDS)
+	_announce_tween.tween_callback(announcer.hide)
 
 # ============================================
 # VIRTUAL HOOKS
@@ -191,9 +231,9 @@ func _on_level_finished(_result: LevelResult) -> void:
 func _on_intro_state_entered() -> void:
 	phase = Phase.INTRO
 	if show_intro_countdown:
-		hud.show_message(tr("Ready?"), 0.8)
+		announce(tr("Ready?"), Palette.TEXT, 0.3)
 		await Global.wait(0.9)
-		hud.show_message(tr("Go!"), 0.6)
+		announce(tr("Go!"), Palette.TEXT, 0.1)
 	state_chart.send_event(Types.EVENT_LEVEL_START)
 
 
@@ -211,13 +251,8 @@ func _on_playing_state_entered() -> void:
 
 func _on_playing_state_processing(delta: float) -> void:
 	elapsed_seconds += delta
-	if time_limit_seconds > 0.0:
-		var remaining_seconds: float = time_limit_seconds - elapsed_seconds
-		hud.set_timer(maxf(0.0, remaining_seconds))
-		if remaining_seconds <= 0.0:
-			_on_time_limit_reached()
-	elif show_elapsed_time:
-		hud.set_timer(elapsed_seconds)
+	if time_limit_seconds > 0.0 and elapsed_seconds >= time_limit_seconds:
+		_on_time_limit_reached()
 	_level_process(delta)
 
 
@@ -246,9 +281,16 @@ func _on_won_state_entered() -> void:
 func _on_lost_state_entered() -> void:
 	_finish(Types.LevelOutcome.LOST)
 
+# ============================================
+# PLAYER INPUT (connected in LevelBase.tscn)
+# ============================================
 
-func _on_hud_pause_pressed() -> void:
-	pause_level()
+## Controller menu or B / Y button: toggles the pause menu.
+func _on_rig_menu_pressed() -> void:
+	if phase == Phase.PAUSED:
+		UI.close_top_popup()
+	else:
+		pause_level()
 
 # ============================================
 # INTERNALS
@@ -287,4 +329,5 @@ func _finish(outcome: Types.LevelOutcome) -> void:
 
 
 func _on_app_paused() -> void:
-	pause_level()
+	if pause_when_app_paused:
+		pause_level()

@@ -1,5 +1,5 @@
-## Main menu: play, shop, achievements, daily reward, settings and welcome-back
-## offline earnings.
+## Main menu (flat-screen flow, shown when no headset is active): play, shop,
+## achievements, daily reward and settings.
 ##
 ## Dependencies: Profile, SceneManager, UI, Platform, Audio autoloads
 extends Control

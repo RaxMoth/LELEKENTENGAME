@@ -1,4 +1,6 @@
-## Persistent upgrade bought with currency (shop upgrades, idle generators...).
+## Persistent upgrade bought with currency in the Shop (e.g. Porchlight's
+## "Head Start": more starting sparks). Levels read the current value with
+## Profile.upgrades.get_value(upgrade).
 ## Cost grows geometrically per level; value grows linearly per level.
 ##
 ## Dependencies: none

@@ -42,8 +42,8 @@ const HAPTIC_SECONDS: float = 0.06
 
 @export_group("XR")
 ## Size of the desktop window while a PC headset is active. The window
-## mirrors the headset view, which the template's portrait phone window
-## would squeeze into a narrow strip.
+## mirrors the headset view, which the menus' portrait window would squeeze
+## into a narrow strip.
 @export var spectator_window_size: Vector2i = Vector2i(1280, 720)
 
 @export_group("Flat simulator")

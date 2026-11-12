@@ -1,4 +1,4 @@
-## Number and time formatting for UI (idle-game friendly short numbers).
+## Number and time formatting for UI (short numbers like 1.2K).
 ##
 ##   NumberFormat.compact(1530)        -> "1.53K"
 ##   NumberFormat.with_separators(1234567) -> "1,234,567"

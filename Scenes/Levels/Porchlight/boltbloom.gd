@@ -32,9 +32,9 @@ func _physics_process(delta: float) -> void:
 		_seconds_until_shot = scan_interval_seconds
 		return
 	_seconds_until_shot = fire_interval_seconds
-	var bolt: LaneBolt = Pools.spawn_3d(BOLT_SCENE, board.get_effects_root(), _muzzle.global_position) as LaneBolt
+	var bolt: LaneBolt = Pools.spawn(BOLT_SCENE, board.get_effects_root(), _muzzle.global_position) as LaneBolt
 	bolt.launch(board, get_lane(), bolt_damage)
-	Audio.play_sfx_at_3d(SfxSynth.get_preset(&"shoot"), _muzzle.global_position, 0.08, -8.0)
+	Audio.play_sfx_at(SfxSynth.get_preset(&"shoot"), _muzzle.global_position, 0.08, -8.0)
 	var tween: Tween = create_tween()
 	tween.tween_property(_head, "position:z", 0.08, 0.04)
 	tween.tween_property(_head, "position:z", 0.0, 0.16).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)

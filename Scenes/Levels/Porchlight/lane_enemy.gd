@@ -145,7 +145,7 @@ func _on_attacking_state_physics_processing(delta: float) -> void:
 		return
 	_seconds_until_bite = bite_interval_seconds
 	_target.health_component.damage(bite_damage, self)
-	Audio.play_sfx_at_3d(SfxSynth.get_preset(&"hit"), global_position, 0.15, -6.0)
+	Audio.play_sfx_at(SfxSynth.get_preset(&"hit"), global_position, 0.15, -6.0)
 	if _tween != null:
 		_tween.kill()
 	_tween = create_tween()
@@ -157,7 +157,7 @@ func _on_dead_state_entered() -> void:
 	Profile.stats.increment(Types.STAT_ENEMIES_DEFEATED)
 	Events.enemy_defeated.emit(self)
 	defeated.emit(self)
-	Audio.play_sfx_at_3d(SfxSynth.get_preset(&"pop"), global_position, 0.15)
+	Audio.play_sfx_at(SfxSynth.get_preset(&"pop"), global_position, 0.15)
 	if _tween != null:
 		_tween.kill()
 	_tween = create_tween()

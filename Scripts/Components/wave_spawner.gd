@@ -1,14 +1,15 @@
-## Spawns WaveData waves of (pooled) enemies. Supports spawn markers, a ring
-## around a target (survivor games) and path starts (tower defense).
-## Tracks living enemies so it knows when a wave is cleared.
+## Spawns WaveData waves of (pooled) 3D enemies and tracks the living ones,
+## so it knows when a wave is cleared. By default each enemy appears at a
+## random Marker3D of [member spawn_markers].
 ##
 ##   spawner.start()
 ##   spawner.wave_started.connect(...); spawner.all_waves_cleared.connect(...)
 ##
 ## Spawned enemies may implement apply_wave_modifiers(health_multiplier, speed_multiplier).
-## Subclasses can override _create_enemy() to spawn differently (lanes, 3D).
+## Subclasses override _create_enemy() to spawn differently (LaneWaveSpawner
+## sends every enemy down a lane of the LaneBoard).
 ##
-## Dependencies: WaveData, Pools, Global, Types autoloads, PathMoverComponent
+## Dependencies: WaveData, Pools, Global, Types autoloads
 class_name WaveSpawner
 extends Node
 
@@ -17,25 +18,14 @@ signal wave_cleared(wave_number: int, wave: WaveData)
 signal all_waves_cleared
 signal enemy_spawned(enemy: Node)
 
-enum SpawnMode { MARKERS, RING_AROUND_TARGET, PATH_START }
-
 @export var waves: Array[WaveData] = []
-@export var spawn_mode: SpawnMode = SpawnMode.MARKERS
 @export var auto_start: bool = false
 ## After the last wave, repeat it forever with growing multipliers (endless mode).
 @export var endless: bool = false
 @export var endless_health_growth: float = 1.15
 
-@export_group("Markers")
-@export var spawn_markers: Array[Marker2D] = []
-
-@export_group("Ring")
-@export var ring_target_group: StringName = &"player"
-@export var ring_min_radius: float = 520.0
-@export var ring_max_radius: float = 680.0
-
-@export_group("Path")
-@export var spawn_path: Path2D
+## Where the default _create_enemy() puts new enemies (one picked at random).
+@export var spawn_markers: Array[Marker3D] = []
 
 ## Global multiplier on enemy health (difficulty settings).
 var difficulty_multiplier: float = 1.0
@@ -125,29 +115,13 @@ func _spawn_enemy(enemy_scene: PackedScene, wave: WaveData, extra_multiplier: fl
 
 
 ## @virtual Puts one (pooled) enemy into the world. Override for other spawn
-## rules, e.g. lanes or a 3D board.
+## rules, e.g. lanes of a board.
 func _create_enemy(enemy_scene: PackedScene) -> Node:
-	var enemy: Node2D = Pools.spawn(enemy_scene, Global.get_world_root(), _pick_spawn_position()) as Node2D
-	if spawn_mode == SpawnMode.PATH_START:
-		var path_mover: PathMoverComponent = Global.find_component(enemy, PathMoverComponent) as PathMoverComponent
-		if path_mover != null:
-			path_mover.set_path(spawn_path)
-	return enemy
-
-
-func _pick_spawn_position() -> Vector2:
-	match spawn_mode:
-		SpawnMode.RING_AROUND_TARGET:
-			var ring_target: Node2D = Global.get_first_in_group(ring_target_group) as Node2D
-			var ring_center: Vector2 = ring_target.global_position if ring_target != null else Vector2.ZERO
-			return Global.random_point_in_ring(ring_center, ring_min_radius, ring_max_radius)
-		SpawnMode.PATH_START:
-			if spawn_path != null and spawn_path.curve != null and spawn_path.curve.point_count > 0:
-				return spawn_path.to_global(spawn_path.curve.get_point_position(0))
-		_:
-			if not spawn_markers.is_empty():
-				return spawn_markers.pick_random().global_position
-	return Vector2.ZERO
+	if spawn_markers.is_empty():
+		push_warning("WaveSpawner: no spawn markers; override _create_enemy() or add Marker3Ds.")
+		return null
+	var marker: Marker3D = spawn_markers.pick_random()
+	return Pools.spawn(enemy_scene, Global.get_world_root(), marker.global_position)
 
 
 func _on_enemy_removed(generation: int, wave: WaveData) -> void:

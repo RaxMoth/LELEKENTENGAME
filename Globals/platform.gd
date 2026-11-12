@@ -1,5 +1,6 @@
-## Device & OS abstraction: platform detection, safe area (notches), haptics,
-## app lifecycle (backgrounding) and the Android back button.
+## Device & OS abstraction: platform and headset detection, safe area
+## (notches, for the flat menus), phone haptics, app lifecycle (backgrounding)
+## and the Android back button.
 ##
 ## Signals are forwarded to the Events bus so any system can react:
 ##   Events.app_paused / app_resumed — app sent to background / foreground
@@ -71,11 +72,19 @@ func is_debug_build() -> bool:
 func can_quit_app() -> bool:
 	return is_desktop() or is_android()
 
+
+## True while an OpenXR headset session is running. The 2D menus can't be
+## seen inside a headset, so navigation checks this before showing them.
+func is_xr_active() -> bool:
+	var xr_interface: XRInterface = XRServer.find_interface(Types.XR_INTERFACE_OPENXR)
+	return xr_interface != null and xr_interface.is_initialized()
+
 # ============================================
 # HAPTICS
 # ============================================
 
-## Short vibration honoring the user's haptics setting. No-op on desktop.
+## Short phone vibration honoring the user's haptics setting (the flat
+## simulator's stand-in for controller rumble). No-op on desktop.
 func vibrate(strength: Types.HapticStrength = Types.HapticStrength.LIGHT) -> void:
 	if not is_mobile() or not Settings.get_bool(Settings.KEY_HAPTICS_ENABLED):
 		return

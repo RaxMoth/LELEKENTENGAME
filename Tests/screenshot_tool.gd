@@ -1,14 +1,17 @@
 ## Captures a screenshot of any scene after a delay — handy for checking
 ## layouts and for store screenshots. Must run with a window (not headless):
-##   godot --path . --resolution 720x1280 res://Tests/ScreenshotTool.tscn -- scene=res://Scenes/Menus/MainMenu/MainMenu.tscn frames=90 out=/tmp/menu.png [popup=res://...tscn] [level=survivor] [showcase=porchlight] [pause=1] [cursor=640,400]
+##   godot --path . --resolution 720x1280 res://Tests/ScreenshotTool.tscn -- scene=res://Scenes/Menus/MainMenu/MainMenu.tscn frames=90 out=/tmp/menu.png [popup=res://...tscn] [level=porchlight] [showcase=porchlight] [pause=1] [cursor=640,400]
 ##
 ## showcase=<name> runs Tests/Showcases/<name>_showcase.gd (static apply(scene))
 ## once the level is playing, to stage a mid-game moment. pause=1 opens the
 ## level's pause menu before the shot. cursor=x,y moves the mouse to that
 ## window pixel first (hover states, 3D pointer rays).
 ##
-## Dependencies: SceneManager, UI autoloads
+## Dependencies: SceneManager, UI, Events autoloads
 extends Node
+
+## Wall-clock limit for waiting on a level to start playing.
+const PLAYING_TIMEOUT_MSEC: int = 30000
 
 
 func _ready() -> void:
@@ -27,6 +30,7 @@ func _run() -> void:
 		var level: LevelData = GameConfig.get_default().find_level(StringName(arguments["level"]))
 		scene_params[Types.PARAM_LEVEL_DATA] = level
 		arguments["scene"] = level.scene_path
+	Events.scene_changed.connect(_on_scene_changed)
 	SceneManager.change_scene(str(arguments.get("scene", GameConfig.get_default().main_menu_scene)), scene_params)
 	for frame_index: int in 20:
 		await get_tree().process_frame
@@ -58,5 +62,17 @@ func _run() -> void:
 
 func _wait_until_playing() -> void:
 	var level: LevelBase = get_tree().current_scene as LevelBase
+	var deadline_msec: int = Time.get_ticks_msec() + PLAYING_TIMEOUT_MSEC
 	while level != null and not level.is_playing():
+		if Time.get_ticks_msec() > deadline_msec:
+			push_warning("ScreenshotTool: level never started playing; capturing anyway.")
+			return
 		await get_tree().process_frame
+
+
+## A capture window that opens behind other apps loses focus, which would
+## pause the level like a phone going to the background.
+func _on_scene_changed(_scene_path: String) -> void:
+	var level: LevelBase = get_tree().current_scene as LevelBase
+	if level != null:
+		level.pause_when_app_paused = false

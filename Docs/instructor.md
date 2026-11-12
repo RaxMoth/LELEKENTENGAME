@@ -1,18 +1,26 @@
-# Agent Instructor — Godot Mobile Game Base Template
+# Agent Instructor — Porchlight VR
 
 ## Project Overview
 
-This is a **Godot 4.7+** reusable base template targeting **2D mobile games**
-(also exports to Web/desktop). The renderer is **GL Compatibility** for the widest
-Android/iOS device support. The viewport is `720×1280` portrait with
-`canvas_items` stretch and `expand` aspect. Every architectural decision must
-reflect that this runs on low-to-mid-range Android and iOS devices.
+This is **Porchlight VR**, a single **VR game** on **Godot 4.7+** (a
+lane-defense game you play standing on a porch — see [VR.md](VR.md)). It runs
+through **OpenXR** on standalone headsets (Meta Quest, Android) and PC
+headsets (SteamVR, Windows). The renderer is **GL Compatibility** for the
+widest standalone-headset support. Every architectural decision must reflect
+that a standalone headset is a phone that renders two eyes at 72–90 Hz.
 
-This is not a prototype. It is a production-quality, scalable, maintainable
-template: no shortcuts, no quick hacks, no throwaway variables. Every system is
+Levels are 3D scenes played in the headset. Without one, the same scenes run
+in the `XRPlayerRig`'s flat simulator (development, tests, a desktop
+fallback). The **menus** (main menu, level select, shop) are the only 2D
+screens: the flat-screen flow, at a `720×1280` portrait viewport with
+`canvas_items` stretch and `expand` aspect. Inside a headset the game boots
+straight into the XR start level and popups appear on an in-world screen.
+
+This is not a prototype. It is production-quality, scalable, maintainable
+code: no shortcuts, no quick hacks, no throwaway variables. Every system is
 designed to be extended cleanly by future developers. See
 [SYSTEMS.md](SYSTEMS.md) for the API and [GETTING_STARTED.md](GETTING_STARTED.md)
-for starting a new game.
+for adding levels and content.
 
 ---
 
@@ -25,22 +33,20 @@ res://
 ├── Globals/         # Autoloads ONLY (scripts, plus scenes for UI / SceneManager / Debug)
 ├── Ressources/      # .tres data instances (game_config, levels, upgrades...)
 ├── Scenes/          # .tscn files by domain; .gd here only if attached to a scene in the same folder
-│   ├── Boot/        # Main scene (splash)
-│   ├── Menus/       # MainMenu, LevelSelect, Shop
-│   ├── Game/        # LevelBase — every level inherits it
-│   ├── Entities/    # Reusable gameplay entities (player, enemy, projectile, pickups, XR rig...)
-│   ├── Levels/      # The game's own levels, one folder each (Porchlight = the XR prototype)
-│   ├── UI/          # HUD and popups
-│   └── Examples/    # Self-contained example games (deletable per folder)
+│   ├── Boot/        # Main scene (splash; routes to the XR level or the menus)
+│   ├── Menus/       # MainMenu, LevelSelect, Shop (2D, flat-screen flow)
+│   ├── Game/        # LevelBase — every level inherits it (3D, owns the XR rig)
+│   ├── Entities/    # Reusable entities (XRPlayerRig, pooled 3D effects)
+│   ├── Levels/      # The game's levels, one folder each (Porchlight)
+│   └── UI/          # Popups (shown on the in-world screen inside a headset)
 ├── Scripts/         # Standalone class_name scripts (not tied to one scene)
 │   ├── Components/  # Composable node components
 │   ├── Resources/   # Resource schemas (data definitions)
 │   ├── Profile/     # Persistent player-data modules
 │   ├── Services/    # Ads / store / analytics provider base classes
-│   ├── UI/          # Reusable UI controls
-│   ├── Input/       # Gesture detection
-│   ├── XR/          # 3D / XR building blocks (XRPointer, WorldScreen)
-│   └── Utils/       # Helpers and data structures
+│   ├── UI/          # Reusable UI controls (menus, popups, in-world screens)
+│   ├── XR/          # XR building blocks (XRPointer, WorldScreen)
+│   └── Utils/       # Helpers, ray / lane math, 3D placeholders
 ├── Tests/           # Smoke test, screenshot tool, Unit/ gdUnit4 suites (excluded from exports)
 ├── Tools/           # Shell helpers: godot.sh, smoke_test.sh, screenshots.sh (ignored by Godot)
 └── addons/
@@ -54,15 +60,26 @@ Respect the folder color-coding in `project.godot`. Never place files in the wro
 
 ## Core Principles — Non-Negotiable
 
-### 1. Mobile First
-- Target 60 FPS on mid-range devices (Snapdragon 7xx equivalent); the Battery
-  Saver setting caps at 30 FPS — design for both.
-- No heavy shaders, no CPU-heavy per-frame algorithms, no `SubViewport` unless essential.
-- All UI is designed for **touch** — minimum touch target 48×48 dp (≈ 88 px at 720 wide).
-- HUD/UI lives on `CanvasLayer`s, independent from the game camera.
-- UI uses **anchors and containers** — never hardcoded pixel positions for layout.
-- Every full-screen UI starts with a `SafeAreaContainer` (notches, rounded corners).
-- Layouts must work for tall (20:9) and short (16:9) phones and tablets.
+### 1. VR First
+- Hold the headset's refresh rate (72 Hz on Quest 2, 90 Hz on Quest 3 / PC
+  headsets) on a standalone headset — a dropped frame is felt, not just seen.
+  Never cap the frame rate; the headset paces frames.
+- No heavy shaders, no full-screen effects on standalone (bloom is off there),
+  no real-time shadows (`BlobShadow3D` instead), no CPU-heavy per-frame
+  algorithms, a `SubViewport` only where it shows UI in the world.
+- **Comfort:** no artificial camera motion — no shake, no forced movement, no
+  locomotion the player didn't ask for; the horizon and ground stay fixed;
+  important things sit inside a ~100° arc in front of the player.
+- **No screen-space UI in levels:** a headset can't see a `CanvasLayer`.
+  Status lives on `WorldScreen`s / `Label3D`s in the world; popups go through
+  the rig's in-world popup screen.
+- **Input is controller pointers:** `XRPlayerRig` signals (`primary_action_pressed`,
+  `secondary_action_pressed`, `menu_pressed`, `selection_step_requested`)
+  and `XRPointer` rays. One job per hand. The flat simulator maps mouse /
+  touch onto the same API, so every level must stay playable without a headset.
+- **Menus (2D, flat flow):** touch targets ≥ 48×48 dp (≈ 88 px at 720 wide),
+  anchors and containers (never hardcoded positions), a `SafeAreaContainer`
+  at the root, layouts that work on tall and short windows.
 
 ### 2. Signals over Direct References
 - Nodes communicate through **signals**; cross-system communication goes through
@@ -94,15 +111,15 @@ Respect the folder color-coding in `project.godot`. Never place files in the wro
   ```gdscript
   var base_movement_speed: float = 300.0
   func apply_damage(damage_amount: float) -> void:
-  for enemy: Node2D in nearby_enemies:
+  for enemy: LaneEnemy in nearby_enemies:
   ```
 - Descriptive names only — no `x`, `i`, `hp`, `spd`.
 - Designer-facing values use `@export` with `@export_group`.
 - `const` for compile-time constants; `static var` only for truly shared state.
 - Don't name members after engine members (`priority`, `visible`...) and don't
   use `class_name`s that collide with engine classes.
-- Prefer a native node when the engine has one (e.g. `TouchJoystick` extends
-  Godot's `VirtualJoystick` and only adds pause/scene-change safety).
+- Prefer a native node when the engine has one (e.g. `XRPlayerRig` extends
+  Godot's `XROrigin3D` and uses its `XRCamera3D` / `XRController3D` nodes).
 
 ### 5. Resource-Driven Data (No Hardcoding)
 - Tunable data lives in custom `Resource` classes (`Scripts/Resources/`) with
@@ -120,15 +137,15 @@ Autoloads are services with one responsibility each. Current set and why they ex
 | `Types` | Shared constants/enums; no state |
 | `Global` | Stateless helpers; **must not hold mutable state** |
 | `Events` | Decoupled cross-system signals |
-| `Platform` | OS notifications (pause/resume/back) arrive at the root |
+| `Platform` | OS notifications (pause/resume/back) arrive at the root; headset detection |
 | `Settings` | Preferences must apply before any scene loads |
 | `SaveManager` | One owner of the savegame file |
 | `Profile` | Persistent player data shared by every scene |
 | `Audio` | Music must survive scene changes |
 | `Pools` | Pools outlive individual spawners; cleared on scene change |
 | `Analytics`, `Ads`, `Store` | SDK facades must exist once per app |
-| `UI` | Popups/toasts overlay every scene and survive pausing |
-| `SceneManager` | Owns scene swaps and the transition overlay |
+| `UI` | Popups/toasts overlay every scene, survive pausing, and render into the in-world screen in a headset |
+| `SceneManager` | Owns scene swaps and the transition overlay; sends a headset player "home" to the XR start level |
 | `Debug` | Developer overlay (removes itself in release builds) |
 
 Do not add new autoloads without a documented reason in this table. Prefer a
@@ -139,27 +156,29 @@ Do not add new autoloads without a documented reason in this table. Prefer a
 ## Scene and Script Architecture
 
 ### Levels
-Every playable level/mode is an **inherited scene of
-`Scenes/Game/LevelBase/LevelBase.tscn`** with a script that `extends LevelBase`.
-LevelBase owns the flow StateChart (`Intro → Playing ⇄ Paused → Won | Lost`),
-HUD, pause, results, rewards, saving and analytics. Levels override hooks
-(`_on_level_setup`, `_on_level_started`, `_level_physics_process`, ...) and call
-`add_score()`, `win()`, `lose()`, `end_run()`.
+Every playable level is an **inherited scene of
+`Scenes/Game/LevelBase/LevelBase.tscn`** (a `Node3D`) with a script that
+`extends LevelBase`. LevelBase owns the `XRPlayerRig` (`rig`), the in-world
+`Announcer` (`announce()`), the flow StateChart (`Intro → Playing ⇄ Paused →
+Won | Lost`), pause (controller menu button, Esc, back), results, rewards,
+saving and analytics. Levels build their stage under `World`, place the rig
+and announcer, override hooks (`_on_level_setup`, `_on_level_started`,
+`_level_physics_process`, ...) and call `add_score()`, `win()`, `lose()`,
+`end_run()`.
 
 ### Composition over inheritance
 - Entities are composed of components from `Scripts/Components/`
-  (Health, Hurtbox, Hitbox, Velocity, Targeting, Shooter, Stats...).
+  (Health, HitFlash3D, WaveSpawner...) plus small scene-local scripts.
 - Components communicate **signals upward, method calls downward**.
 - Components are wired with exported node references in the scene
-  (`HurtboxComponent.health_component`), never `get_parent()`.
+  (`HitFlash3DComponent.health_component`), never `get_parent()`.
 - `Global.find_component(node, ComponentClass)` is allowed for queries on other
-  entities (e.g. targeting reading an enemy's health).
+  entities (e.g. a defender reading an attacker's health).
 
 ### Entity StateChart layout (recommended)
 ```
-EntityRoot (CharacterBody2D / Node2D)
-├── Visual (Sprite / AnimatedSprite2D / PlaceholderShape)
-├── CollisionShape2D
+EntityRoot (Node3D)
+├── Visual (PlaceholderMesh3D / imported mesh) + BlobShadow3D
 ├── ...components
 └── StateChart
     └── Root (CompoundState)
@@ -175,17 +194,20 @@ Optional methods whose names live in `Types.METHOD_*`:
 
 ---
 
-### 3D / XR scenes
+### XR scenes
 See [VR.md](VR.md). In short:
-- The player is an `XRPlayerRig`; it runs a flat simulator when no headset is
-  connected, so every XR scene must stay playable (and testable) without one.
+- The player is the `XRPlayerRig` in `LevelBase`; it runs a flat simulator
+  when no headset is connected, so every level must stay playable (and
+  testable) without one.
 - A screen-space overlay is invisible inside a headset: UI is a normal
   `Control` scene shown on a `WorldScreen`; popups reach the player through
   `UI.set_world_space_enabled()` (the rig does this).
 - Pick with `RayMath` on simple shapes instead of physics raycasts where you
-  can; spawn with `Pools.spawn_3d()`; art stand-ins are `PlaceholderMesh3D` +
+  can; spawn with `Pools.spawn()`; art stand-ins are `PlaceholderMesh3D` +
   `BlobShadow3D` (no real-time shadows — they are too expensive on standalone
   headsets).
+- Sound is positional (`Audio.play_sfx_at()`), so the player hears where
+  things happen.
 - No artificial camera motion (no shake, no forced movement); the player's
   head owns the camera.
 
@@ -193,32 +215,39 @@ See [VR.md](VR.md). In short:
 
 - Physics logic in `state_physics_processing` (or `_physics_process` for
   stateless helpers) — never in `_process`.
-- `CharacterBody2D` for controlled/AI movers; `Area2D` for triggers, hit/hurt boxes, pickups.
-- Anything spawned often (projectiles, pickups, enemies, damage numbers) goes
+- Prefer ray / lane math (`RayMath`, `LaneGrid`) over physics bodies; if you
+  need physics, `Area3D` for triggers and `CharacterBody3D` for movers.
+- Anything spawned often (attackers, bolts, sparks, floating text, effects) goes
   through `Pools.spawn()` / `Pools.despawn()`. Never `instantiate()` +
   `queue_free()` in a hot path. Pooled scripts reset in `_on_pool_spawned()` and
   guard callbacks with `Pools.is_in_pool(self)`.
 - Never toggle collision objects inside physics callbacks — defer.
 - Throttle expensive queries (targeting re-evaluates on an interval).
-- Share textures via atlases; UI shares one `Theme` (`Assets/Themes/main_theme.tres`).
+- Share meshes and materials (`PlaceholderMesh3D` caches them); UI shares one
+  `Theme` (`Assets/Themes/main_theme.tres`).
+- Keep in-world UI viewports few and small; a `WorldScreen` that rarely
+  changes should not redraw every frame.
 - `preload()` assets that always exist; `load()` optional/runtime ones and null-check.
 
 ---
 
 ## UI Architecture
 
-- HUD: `Scenes/UI/HUD/` (used by LevelBase). Popups: `Scenes/UI/Popups/` (extend `BasePopup`).
-  Screens: `Scenes/Menus/`.
+- In-level UI: `Control` scenes shown on a `WorldScreen` in the level (e.g.
+  `Scenes/Levels/Porchlight/SeedBoard.tscn`) and `Label3D`s; no HUD.
+  Popups: `Scenes/UI/Popups/` (extend `BasePopup`; inside a headset they show
+  on the rig's in-world popup screen). Menus: `Scenes/Menus/` (2D, flat flow).
 - Open popups with `UI.open_popup(scene, data)` and await `.closed`.
-- HUD and popups emit signals — they never run game logic.
+- In-world UI and popups emit signals — they never run game logic.
 - Visuals follow [DESIGN.md](DESIGN.md): colors from `Palette` (code) and the
   theme / its type variations (UI), icons from `Assets/Icons` via `IconLabel`
   or Button icons — never text glyphs (`●`, `★`, `♥`) as icons, no per-node
   color/size overrides unless intentional. It must look professional and
   clean, never childish.
-- Game-world touch input uses `_unhandled_input` (or `GestureDetector`), so UI
-  buttons consume their touches first. Touch controls that must live under the
-  HUD (joystick) use `_gui_input` on a lower `CanvasLayer`.
+- Game input comes from `XRPlayerRig` signals with an `XRPointer`. Pointers
+  click `WorldScreen`s first; only presses that hit no screen reach the game.
+  The flat simulator's mouse / touch handling lives in the rig — levels never
+  read raw mouse or touch events.
 - Use `BaseButton` subclasses for interactive UI (they get automatic feedback).
 
 ---
@@ -237,8 +266,8 @@ Every `.gd` script starts with a `##` doc comment: purpose, usage, dependencies.
 | Signals | snake_case, past tense | `health_changed`, `target_acquired` |
 | Functions | snake_case, verb-first | `calculate_damage_reduction()` |
 | StateChart events | `StringName` constants in `Types` | `Types.EVENT_DIED` |
-| Scene files | PascalCase | `TopDownPlayer.tscn` |
-| Script files | snake_case | `top_down_player.gd` |
+| Scene files | PascalCase | `XRPlayerRig.tscn` |
+| Script files | snake_case | `xr_player_rig.gd` |
 
 ### Comments
 - Public API (signals, exports, public methods) has `##` doc comments.
@@ -258,9 +287,15 @@ Every `.gd` script starts with a `##` doc comment: purpose, usage, dependencies.
 - **Never** create autoloads for things that can be a Resource, component,
   ProfileModule or `Events` signal.
 - **Never** place `.gd` files in `Scenes/` that aren't attached to a `.tscn` in the
-  same folder (examples may keep their example-only resource scripts with them).
+  same folder (a level may keep its level-only base classes with it, like
+  `LaneEnemy` / `LaneDefender` in `Scenes/Levels/Porchlight/`).
 - **Never** hand-roll a state machine where `godot_state_charts` fits.
-- **Never** design for mouse/keyboard first — touch is primary.
+- **Never** design for mouse/keyboard first — tracked controllers are
+  primary; the flat simulator is the fallback, not the target.
+- **Never** add screen-space UI (a `CanvasLayer` HUD) to a level, or move the
+  camera the player didn't move.
+- **Never** cap the frame rate or add per-frame work that would drop a
+  standalone headset below its refresh rate.
 
 ---
 
@@ -270,7 +305,9 @@ Every `.gd` script starts with a `##` doc comment: purpose, usage, dependencies.
 - [ ] New signals have typed parameters
 - [ ] Entity/flow state goes through a StateChart with `Types.EVENT_*`
 - [ ] Components are wired via exported references, not `get_parent()`
-- [ ] UI uses anchors/containers inside a `SafeAreaContainer`
+- [ ] Level UI lives in the world (WorldScreen / Label3D); menus use
+      anchors/containers inside a `SafeAreaContainer`
+- [ ] The level still plays in the flat simulator (the smoke test drives it)
 - [ ] Frequently spawned objects use `Pools`
 - [ ] New tunable data lives in a Resource / `game_config.tres`
 - [ ] Doc comments on all public API

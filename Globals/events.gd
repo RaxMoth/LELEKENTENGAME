@@ -1,5 +1,5 @@
 ## Global event bus. Systems that don't know each other talk through these
-## typed signals instead of holding references (e.g. a coin pickup emits
+## typed signals instead of holding references (e.g. a level reward emits
 ## currency_changed via Profile, and every CurrencyDisplay updates itself).
 ##
 ## Emit:    Events.score_changed.emit(new_score, delta)
@@ -36,8 +36,6 @@ signal energy_changed(current_energy: int, max_energy: int)
 signal progress_reset
 
 # --- Gameplay feedback ---
-signal camera_shake_requested(trauma_amount: float)
-signal pickup_collected(pickup_id: StringName, amount: int, world_position: Vector2)
 signal enemy_defeated(enemy: Node)
 
 # --- Settings ---

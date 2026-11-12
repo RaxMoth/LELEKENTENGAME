@@ -1,9 +1,10 @@
 ## First scene: shows the splash while autoloads finish booting (settings,
-## savegame, profile), then routes to the main menu — or straight into the
-## XR level when a headset is active, where the 2D menus could not be seen.
+## savegame, profile), then starts the game. With a headset that is the XR
+## start level right away (the 2D menus can't be seen inside a headset);
+## without one it is the main menu, and the level runs in the flat simulator.
 ## Add first-launch work here (consent dialogs, tutorial routing, SDK init).
 ##
-## Dependencies: SceneManager, Profile, UI, Types autoloads, LevelBase
+## Dependencies: SceneManager, Platform, UI autoloads, LevelBase
 extends Control
 
 @onready var _title_label: Label = %TitleLabel
@@ -15,8 +16,8 @@ func _ready() -> void:
 	_title_label.text = config.game_title
 	_version_label.text = "v%s" % ProjectSettings.get_setting("application/config/version", "0.1.0")
 	TweenFX.bounce_in(_title_label, 0.5)
-	var xr_level: LevelData = _get_xr_start_level(config)
-	if xr_level != null:
+	var xr_level: LevelData = config.get_xr_start_level()
+	if Platform.is_xr_active() and xr_level != null:
 		LevelBase.start_level(xr_level, false)
 		return
 	if _is_headset_missing(config):
@@ -27,14 +28,6 @@ func _ready() -> void:
 
 ## True when this build expects a headset (OpenXR is enabled for the platform
 ## and an XR level is configured) but no session started, e.g. SteamVR is
-## not the active OpenXR runtime. The game then runs its normal 2D flow.
+## not the active OpenXR runtime. The game then runs its flat-screen flow.
 func _is_headset_missing(config: GameConfig) -> bool:
-	return bool(ProjectSettings.get_setting_with_override(&"xr/openxr/enabled")) and not config.xr_start_level_id.is_empty()
-
-
-## The configured XR level when a headset session is running, otherwise null.
-func _get_xr_start_level(config: GameConfig) -> LevelData:
-	var xr_interface: XRInterface = XRServer.find_interface(Types.XR_INTERFACE_OPENXR)
-	if xr_interface == null or not xr_interface.is_initialized() or config.xr_start_level_id.is_empty():
-		return null
-	return config.find_level(config.xr_start_level_id)
+	return bool(ProjectSettings.get_setting_with_override(&"xr/openxr/enabled")) and config.get_xr_start_level() != null

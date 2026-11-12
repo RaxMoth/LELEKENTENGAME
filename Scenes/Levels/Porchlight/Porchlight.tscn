@@ -9,7 +9,6 @@
 [ext_resource type="Resource" path="res://Ressources/Defenders/stonecap.tres" id="stonecap"]
 [ext_resource type="Script" path="res://Scripts/Utils/placeholder_mesh_3d.gd" id="mesh"]
 [ext_resource type="PackedScene" path="res://Scenes/Levels/Porchlight/LaneBoard.tscn" id="lane_board"]
-[ext_resource type="PackedScene" path="res://Scenes/Entities/XRPlayerRig/XRPlayerRig.tscn" id="rig"]
 [ext_resource type="Script" path="res://Scripts/XR/world_screen.gd" id="world_screen"]
 [ext_resource type="PackedScene" path="res://Scenes/Levels/Porchlight/SeedBoard.tscn" id="seed_board"]
 [ext_resource type="Script" path="res://Scenes/Levels/Porchlight/lane_wave_spawner.gd" id="wave_spawner"]
@@ -19,6 +18,8 @@
 [ext_resource type="PackedScene" path="res://Scenes/Levels/Porchlight/Dasher.tscn" id="dasher"]
 [ext_resource type="PackedScene" path="res://Scenes/Levels/Porchlight/Brute.tscn" id="brute"]
 [ext_resource type="PackedScene" path="res://Scenes/Levels/Porchlight/Wisp.tscn" id="wisp"]
+[ext_resource type="Resource" path="res://Ressources/Upgrades/porchlight_head_start.tres" id="head_start"]
+[ext_resource type="Resource" path="res://Ressources/Upgrades/porchlight_sturdy_porch.tres" id="sturdy_porch"]
 
 [sub_resource type="ProceduralSkyMaterial" id="sky_material"]
 sky_top_color = Color(0.051, 0.0627, 0.0902, 1)
@@ -159,9 +160,13 @@ health_multiplier = 1.2
 [node name="Porchlight" instance=ExtResource("base")]
 script = ExtResource("level")
 defenders = Array[ExtResource("defender_data")]([ExtResource("sparkbloom"), ExtResource("boltbloom"), ExtResource("stonecap")])
+starting_sparks_upgrade = ExtResource("head_start")
+starting_lives_upgrade = ExtResource("sturdy_porch")
 level_data = ExtResource("level_data")
 show_intro_countdown = false
-show_score = false
+
+[node name="XRPlayerRig" parent="World"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.2, -0.5)
 
 [node name="Stage" type="Node3D" parent="World" index="0"]
 
@@ -420,31 +425,15 @@ content_scene = ExtResource("seed_board")
 resolution = Vector2i(1280, 400)
 width_meters = 6.0
 
-[node name="Announcer" type="Label3D" parent="World/Stage"]
-unique_name_in_owner = true
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.5, -6.5)
-pixel_size = 0.008
-no_depth_test = true
-render_priority = 5
-outline_render_priority = 4
-text = "Wave 1"
-font_size = 96
-outline_size = 16
-
-[node name="XRPlayerRig" parent="World/Stage" instance=ExtResource("rig")]
-unique_name_in_owner = true
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.2, -0.5)
-
 [node name="WaveSpawner" type="Node" parent="World/Stage" node_paths=PackedStringArray("board")]
 unique_name_in_owner = true
 script = ExtResource("wave_spawner")
 board = NodePath("../LaneBoard")
 waves = Array[ExtResource("wave_data")]([SubResource("wave1"), SubResource("wave2"), SubResource("wave3"), SubResource("wave4"), SubResource("wave5")])
 
-[connection signal="primary_action_pressed" from="World/Stage/XRPlayerRig" to="." method="_on_rig_primary_action_pressed"]
-[connection signal="secondary_action_pressed" from="World/Stage/XRPlayerRig" to="." method="_on_rig_secondary_action_pressed"]
-[connection signal="menu_pressed" from="World/Stage/XRPlayerRig" to="." method="_on_rig_menu_pressed"]
-[connection signal="selection_step_requested" from="World/Stage/XRPlayerRig" to="." method="_on_rig_selection_step_requested"]
+[connection signal="primary_action_pressed" from="World/XRPlayerRig" to="." method="_on_rig_primary_action_pressed"]
+[connection signal="secondary_action_pressed" from="World/XRPlayerRig" to="." method="_on_rig_secondary_action_pressed"]
+[connection signal="selection_step_requested" from="World/XRPlayerRig" to="." method="_on_rig_selection_step_requested"]
 [connection signal="enemy_defeated" from="World/Stage/LaneBoard" to="." method="_on_board_enemy_defeated"]
 [connection signal="enemy_reached_home" from="World/Stage/LaneBoard" to="." method="_on_board_enemy_reached_home"]
 [connection signal="wave_started" from="World/Stage/WaveSpawner" to="." method="_on_wave_spawner_wave_started"]

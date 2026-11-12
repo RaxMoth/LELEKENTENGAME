@@ -1,6 +1,7 @@
-## Automated smoke test. Boots every menu and level, plays a few seconds,
-## exercises pause / win / lose / results, opens every popup and checks the
-## savegame round-trip. Exit code 0 = all good.
+## Automated smoke test. Boots every menu and level (levels run in the XR
+## rig's flat simulator), plays a few seconds, exercises pause / win / lose /
+## results, plays the XR level through the pointer path a headset uses, opens
+## every popup and checks the savegame round-trip. Exit code 0 = all good.
 ##
 ## Run from the project folder:
 ##   godot --headless --fixed-fps 60 res://Tests/SmokeTest.tscn
@@ -80,14 +81,8 @@ func _test_popups() -> void:
 	var reward_popup: BasePopup = UI.open_popup(load("res://Scenes/UI/Popups/RewardPopup/RewardPopup.tscn") as PackedScene, {"title": "Test", "rewards": {Types.CURRENCY_COINS: 5}})
 	await _frames(20)
 	reward_popup.close(1)
-	var perk: PerkData = PerkData.new()
-	perk.title = "Test perk"
-	var perk_popup: BasePopup = UI.open_popup(load("res://Scenes/UI/Popups/PerkChoicePopup/PerkChoicePopup.tscn") as PackedScene, {"perks": [perk]})
-	await _frames(20)
-	_check(get_tree().paused, "perk popup pauses the game")
-	perk_popup.close(perk)
 	await _frames(30)
-	_check(not get_tree().paused, "perk popup unpauses the game")
+	_check(not UI.has_open_popup(), "reward popup closes")
 	var confirm_task: Array[bool] = [false]
 	var confirm_coroutine: Callable = func() -> void: confirm_task[0] = await UI.confirm("Test", "Message")
 	confirm_coroutine.call()

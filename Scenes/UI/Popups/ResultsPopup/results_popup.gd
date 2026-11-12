@@ -3,7 +3,7 @@
 ##
 ## popup_data keys: result (LevelResult), has_next_level (bool)
 ##
-## Dependencies: BasePopup, Ads, Profile, UI autoloads
+## Dependencies: BasePopup, Ads, Profile, UI, Platform autoloads
 class_name ResultsPopup
 extends BasePopup
 
@@ -22,6 +22,7 @@ var _level_result: LevelResult
 @onready var _reward_list: RewardList = %RewardList
 @onready var _double_button: Button = %DoubleButton
 @onready var _next_button: Button = %NextButton
+@onready var _menu_button: Button = %MenuButton
 
 
 func _on_opened(data: Dictionary) -> void:
@@ -43,6 +44,8 @@ func _on_opened(data: Dictionary) -> void:
 	_reward_list.visible = not _level_result.rewards.is_empty()
 	_double_button.visible = not _level_result.rewards.is_empty() and Ads.is_rewarded_ready()
 	_next_button.visible = _level_result.is_won() and bool(data.get("has_next_level", false))
+	# Inside a headset the 2D main menu can't be seen; "Main Menu" would only restart.
+	_menu_button.visible = not Platform.is_xr_active()
 
 
 func handle_back() -> void:

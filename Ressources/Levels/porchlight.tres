@@ -5,8 +5,8 @@
 [resource]
 script = ExtResource("data")
 id = &"porchlight"
-title = "Porchlight VR"
-description = "Plant blooms from your porch and hold five lanes."
+title = "First Night"
+description = "Plant blooms from your porch and hold five lanes until dawn."
 scene_path = "res://Scenes/Levels/Porchlight/Porchlight.tscn"
 star_score_thresholds = Array[int]([300, 600, 900])
 always_unlocked = true

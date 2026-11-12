@@ -109,19 +109,7 @@ value = 1.0
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 60)
 layout_mode = 2
-text = "Vibration"
-
-[node name="ShakeToggle" type="CheckButton" parent="CenterContainer/Panel/Content" unique_id=1497424112]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 60)
-layout_mode = 2
-text = "Screen Shake"
-
-[node name="BatteryToggle" type="CheckButton" parent="CenterContainer/Panel/Content" unique_id=1020889092]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 60)
-layout_mode = 2
-text = "Battery Saver (30 FPS)"
+text = "Controller Haptics"
 
 [node name="FpsToggle" type="CheckButton" parent="CenterContainer/Panel/Content" unique_id=517874679]
 unique_name_in_owner = true

@@ -1,14 +1,15 @@
-# VR: Porchlight and the XR building blocks
+# Porchlight VR
 
-**Porchlight VR** is a lane-defense prototype you stand inside. You are on
+**Porchlight VR** is a lane-defense game you stand inside. You are on
 the porch of a house at night; a lawn of five lanes stretches away from you
 to a gate. Attackers come through the gate and walk down the lanes. You
 plant defenders on the lawn, catch the sparks that pay for them and shoot
 what gets through. Three attackers on the porch and the run is over.
 
-It is an original game in the lane-defense genre (own name, cast and look),
-built from this template's systems: `LevelBase`, pools, components,
-StateCharts, the theme and the test tooling.
+It is an original game in the lane-defense genre (own name, cast and look)
+and the only game in this repository: everything is built for it — a 3D
+`LevelBase` that owns the player rig, pools, components, StateCharts, the
+theme and the test tooling. The menus are the only 2D screens.
 
 > **Status.** Game logic, UI and the whole pointer → world-screen input path
 > are covered by the unit and smoke tests and were checked in screenshots in
@@ -37,12 +38,14 @@ StateCharts, the theme and the test tooling.
 All numbers are data: defenders in `Ressources/Defenders/*.tres`, attackers
 as exports on their scenes in `Scenes/Levels/Porchlight/`, waves on the
 `WaveSpawner` node of `Porchlight.tscn`, start values in
-`Ressources/Levels/porchlight.tres` (`custom_parameters`).
+`Ressources/Levels/porchlight.tres` (`custom_parameters`). Coins earned in
+runs buy two shop upgrades (`Ressources/Upgrades/`): **Head Start** (+25
+starting sparks per level) and **Sturdy Porch** (+1 life per level).
 
 ## Running it
 
-**Without a headset (any desktop, also macOS):** press F5 → Levels →
-Porchlight VR. The rig detects that no headset is active and runs the flat
+**Without a headset (any desktop, also macOS):** press F5 → Play →
+First Night. The rig detects that no headset is active and runs the flat
 simulator. The game is designed for a wide view, so resize the window to
 landscape. Add `-- world_ui=1` to the command line to see popups on the
 in-world screen exactly as a headset would (`Tools/godot.sh -- world_ui=1`).
@@ -53,10 +56,10 @@ in-world screen exactly as a headset would (`Tools/godot.sh -- world_ui=1`).
 2. In SteamVR open **Settings → OpenXR** and make SteamVR the current OpenXR
    runtime.
 3. Start SteamVR, then start the game one of two ways:
-   - Run the exported build. `build/windows/BaseTemplate.exe` is a single
-     file you can copy to the PC; `BaseTemplate.console.exe` next to it
+   - Run the exported build. `build/windows/PorchlightVR.exe` is a single
+     file you can copy to the PC; `PorchlightVR.console.exe` next to it
      runs the same game with a log window. Rebuild it from any machine with
-     `Tools/godot.sh --headless --export-debug "Windows Desktop" build/windows/BaseTemplate.exe`
+     `Tools/godot.sh --headless --export-debug "Windows Desktop" build/windows/PorchlightVR.exe`
      (the "Windows Desktop" export preset). The build is unsigned, so
      Windows may ask for confirmation the first time.
    - Or open the project in Godot 4.7 on the PC and press F5.
@@ -89,12 +92,13 @@ standalone build.
 Godot's "Deploying to Android" guide:
 1. Install the Android SDK and Godot's Android export templates.
 2. **Project → Install Android Build Template**.
-3. Add an Android export preset (e.g. "Meta Quest"): enable **Use Gradle
-   Build**, set **XR Mode** to **OpenXR**, and under **XR Features** pick
+3. The **Meta Quest** export preset is already set up for it (**Use Gradle
+   Build** on, **XR Mode** OpenXR, arm64 only). Under **XR Features** pick
    your headset's entry — or the Khronos plugin if there is none. The
    "Godot OpenXR Vendors" plugin (Asset Library) adds the vendor entries; it
-   is optional since Godot 4.6 but recommended for store releases.
-4. One-click deploy to the headset.
+   is optional since Godot 4.6 but recommended for store releases. Set your
+   own `package/unique_name` and a release keystore before publishing.
+4. One-click deploy to the headset. (Not yet tried on a device.)
 
 **macOS:** there is no OpenXR runtime, so `project.godot` switches OpenXR
 off there (`xr/openxr/enabled.macos=false`) to keep startup free of errors.
@@ -108,18 +112,20 @@ the rig's origin and the runtime handles recentering — do not call
 ## How it is built
 
 ```
-Scenes/Levels/Porchlight/Porchlight.tscn      inherits LevelBase
-└── World/Stage (Node3D)
-    ├── WorldEnvironment, Moon, Porch, Gate, Garden      scenery (PlaceholderMesh3D)
-    ├── LaneBoard          lawn + LaneGrid + everything standing on it
-    ├── BoardScreen        WorldScreen showing SeedBoard.tscn (wave, lives, sparks, cards)
-    ├── Announcer          Label3D for "Wave 2", "Breach!"
-    ├── XRPlayerRig        headset + controllers, or the flat simulator
-    └── WaveSpawner        LaneWaveSpawner with the WaveData list
+Scenes/Levels/Porchlight/Porchlight.tscn      inherits LevelBase (Node3D)
+└── World
+    ├── Stage (Node3D)
+    │   ├── WorldEnvironment, Moon, Porch, Gate, Garden   scenery (PlaceholderMesh3D)
+    │   ├── LaneBoard          lawn + LaneGrid + everything standing on it
+    │   ├── BoardScreen        WorldScreen showing SeedBoard.tscn (wave, lives, sparks, cards)
+    │   └── WaveSpawner        LaneWaveSpawner with the WaveData list
+    ├── XRPlayerRig            from LevelBase: headset + controllers, or the flat simulator; on the porch
+    └── Announcer              from LevelBase: Label3D for "Wave 2", "Breach!" (LevelBase.announce())
 ```
 
 | Piece | Role |
 |---|---|
+| `LevelBase` | The 3D level every level inherits: owns the rig, the announcer and the flow StateChart; the controller menu button pauses; inside a headset "Main Menu" leads back to the XR start level. |
 | `XRPlayerRig` | Detects an initialized OpenXR interface. XR: enables `use_xr`, matches the physics tick rate to the display, maps triggers / menu / thumbstick to signals, pauses when the headset is taken off. Flat: a `Camera3D` with drag-look and a cursor ray. Both modes drive the same `XRPointer` API, so game code has one path. |
 | `XRPointer` | A ray. Hovers and clicks `WorldScreen`s itself; presses that hit no screen go to the game. |
 | `WorldScreen` | A panel in the world showing a `Control` scene through a `SubViewport`; turns pointer hits into mouse events, so ordinary Buttons work. |
@@ -128,7 +134,7 @@ Scenes/Levels/Porchlight/Porchlight.tscn      inherits LevelBase
 | `RayMath` | Ray vs. plane / sphere / screen rectangle. |
 | `LaneEnemy` | Pooled, StateChart `Alive { Advancing ⇄ Attacking } → Dead`. |
 | `LaneDefender` (+ `Sparkbloom`, `Boltbloom`) | Placed by hand, so plain instances; stateless helpers with `_physics_process`. |
-| Pooled effects | `LaneBolt`, `SparkOrb`, `BeamTracer`, `FloatingText3D`, `PopEffect3D` via `Pools.spawn_3d()`. |
+| Pooled effects | `LaneBolt`, `SparkOrb`, `BeamTracer`, `FloatingText3D`, `PopEffect3D` via `Pools.spawn()`. |
 
 ## Design decisions, by dimension
 
@@ -147,7 +153,7 @@ Scenes/Levels/Porchlight/Porchlight.tscn      inherits LevelBase
 - **UI.** Nothing is glued to the face. Status and seed cards are one board
   above the gate — always in view while you watch the lawn, and outside the
   lines of sight to the tiles. Popups appear on a panel 1.9 m in front of
-  you. Messages are `Label3D` over the lawn.
+  you. Messages are the `LevelBase` announcer, a `Label3D` over the lawn.
 - **Comfort.** No artificial locomotion or camera motion at all; the horizon
   and ground stay fixed; everything important is inside a ~100° arc; the
   game pauses when the headset comes off.
@@ -156,7 +162,7 @@ Scenes/Levels/Porchlight/Porchlight.tscn      inherits LevelBase
   shadow maps, one unshadowed light, depth fog instead of a far draw
   distance, bloom off on mobile, the popup viewport renders only while it
   shows something.
-- **Sound.** Positional (`Audio.play_sfx_at_3d`), so you hear which lane is
+- **Sound.** Positional (`Audio.play_sfx_at`), so you hear which lane is
   being chewed on.
 - **Testing without a headset.** The flat simulator uses the same pointer,
   screen and game code as XR. `Tools/smoke_test.sh` clicks a card on the
@@ -169,9 +175,11 @@ Scenes/Levels/Porchlight/Porchlight.tscn      inherits LevelBase
   beam and popup placement, blaster feel, haptics.
 - The board viewport redraws every frame; switch it to redraw on change if
   it shows up in a headset profile.
-- Menus (main menu, shop, level select) are still 2D. In a headset the game
-  boots straight into the level and "Main Menu" restarts the run. A world-
-  space menu room is the natural next step.
+- Menus (main menu, shop, level select) are 2D, for the flat flow. In a
+  headset the game boots straight into the XR start level and "Main Menu"
+  (`SceneManager.go_to_main_menu()`) starts a new run there, so the shop,
+  achievements and level select are not reachable in VR yet. A world-space
+  menu room (the menus on `WorldScreen`s) is the natural next step.
 - Stand-in art and synthesized sounds; no music.
 - Far tiles are still the hardest to hit. A curved (ballistic) planting arc
   would make them as easy as near ones.
