@@ -1,20 +1,19 @@
 [gd_scene format=3]
 
-[ext_resource type="PackedScene" path="res://Scenes/Levels/House/Garden/Attacker.tscn" id="base"]
+[ext_resource type="PackedScene" path="res://Scenes/Levels/House/Garden/Raider.tscn" id="base"]
 [ext_resource type="Script" path="res://Scripts/Utils/placeholder_mesh_3d.gd" id="mesh"]
 
 [node name="Cop" instance=ExtResource("base")]
 base_max_health = 150.0
-base_speed = 0.34
-bite_damage = 16.0
-bite_interval_seconds = 1.0
+move_speed = 1.7
+rush_speed = 2.6
+door_damage = 16.0
+hit_interval_seconds = 1.0
 score_value = 15
 faction_name = "Cops"
 armor = 6.0
 hit_radius = 0.55
 hit_height = 0.85
-reach = 0.45
-step_frequency = 4.0
 sway_degrees = 3.0
 
 [node name="Body" parent="Visual"]

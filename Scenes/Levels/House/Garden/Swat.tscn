@@ -1,20 +1,20 @@
 [gd_scene format=3]
 
-[ext_resource type="PackedScene" path="res://Scenes/Levels/House/Garden/Attacker.tscn" id="base"]
+[ext_resource type="PackedScene" path="res://Scenes/Levels/House/Garden/Raider.tscn" id="base"]
 [ext_resource type="Script" path="res://Scripts/Utils/placeholder_mesh_3d.gd" id="mesh"]
 
 [node name="Swat" instance=ExtResource("base")]
 base_max_health = 240.0
-base_speed = 0.3
-bite_damage = 24.0
-bite_interval_seconds = 1.0
+move_speed = 1.4
+rush_speed = 2.2
+cover_seconds = Vector2(2, 4)
+door_damage = 24.0
+hit_interval_seconds = 1.0
 score_value = 30
 faction_name = "SWAT"
 armor = 12.0
 hit_radius = 0.6
 hit_height = 0.9
-reach = 0.45
-step_frequency = 3.6
 sway_degrees = 2.0
 
 [node name="Body" parent="Visual"]

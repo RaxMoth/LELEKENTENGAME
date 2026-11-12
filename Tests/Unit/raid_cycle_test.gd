@@ -101,3 +101,16 @@ func test_raid_wave_never_goes_negative() -> void:
 	var wave: RaidWave = RaidWave.new(0, -2, -1, 0.0)
 	assert_int(wave.get_total()).is_equal(0)
 	assert_float(wave.health_multiplier).is_greater(0.0)
+
+
+func test_battering_rams_come_with_later_raids() -> void:
+	var data: RaidData = _data()
+	data.ram_from_raid = 2
+	data.raids_per_extra_ram = 3
+	var first_raid: Array[RaidWave] = RaidPlanner.build_raid(data, 1)
+	assert_int(first_raid[first_raid.size() - 1].ram_count).is_equal(0)
+	var second_raid: Array[RaidWave] = RaidPlanner.build_raid(data, 2)
+	assert_int(second_raid[0].ram_count).is_equal(0)
+	assert_int(second_raid[second_raid.size() - 1].ram_count).is_equal(1)
+	var fifth_raid: Array[RaidWave] = RaidPlanner.build_raid(data, 5)
+	assert_int(fifth_raid[fifth_raid.size() - 1].ram_count).is_equal(2)

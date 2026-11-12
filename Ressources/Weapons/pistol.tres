@@ -1,6 +1,7 @@
 [gd_resource type="Resource" script_class="WeaponData" format=3]
 
 [ext_resource type="Script" path="res://Scripts/Resources/weapon_data.gd" id="script"]
+[ext_resource type="PackedScene" path="res://Scenes/Levels/House/Armory/Guns/Pistol.tscn" id="model"]
 
 [resource]
 script = ExtResource("script")
@@ -8,6 +9,7 @@ id = &"pistol"
 display_name = "Pistol"
 description = "Your old sidearm. Weak, but it never runs dry."
 cost = 0
+model_scene = ExtResource("model")
 damage = 20.0
 fire_interval_seconds = 0.3
 range_meters = 30.0

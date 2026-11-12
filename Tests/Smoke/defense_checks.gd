@@ -1,86 +1,133 @@
-## Smoke checks of the defense front: the build board, building, turrets,
-## the gun, attackers at the door, theft, raid waves (cops and SWAT), guards,
-## the armory terminal (guns, ammo) and the front door (open, walk through,
-## close, bolt from both sides). Owned by whoever works on the FrontGarden.
+## Smoke checks of the defense front: the open yard and its cover, the gun
+## in hand, raiders at the door, raid waves (cops, SWAT, a battering ram) in
+## squads that take cover and rush, guards, roof turrets and the Security
+## PC, the armory terminal (guns, ammo) and the front door (open, walk
+## through, close, bolt from both sides). Owned by whoever works on the
+## FrontGarden.
 ##
-## Dependencies: SmokeTest, HouseLevel, FrontGarden, FrontDoor, Armory, Office,
-##               LaneBoard, LaneEnemy, RaidWave, WeaponCatalog, WalkableArea
+## Dependencies: SmokeTest, HouseLevel, FrontGarden, FrontDoor, Yard, Raider,
+##               RaidSquad, HouseTurret, SecurityPc, Armory, Office, RaidWave,
+##               WeaponCatalog, WalkableArea
 class_name DefenseSmokeChecks
 extends RefCounted
 
-const JUNKIE: String = "res://Scenes/Levels/House/Garden/Junkie.tscn"
 const COP: String = "res://Scenes/Levels/House/Garden/Cop.tscn"
-const GOON: String = "res://Scenes/Levels/House/Garden/Goon.tscn"
+## Right behind the parked car, as seen from the house.
+const BEHIND_CAR: Vector2 = Vector2(4.5, -14.3)
 
 
 static func run(test: SmokeTest, level: HouseLevel) -> void:
 	var rig: XRPlayerRig = level.rig
-	var operation: Operation = level.operation
 	var garden: FrontGarden = level.get_front(FrontGarden) as FrontGarden
-	var board: LaneBoard = garden.board
+	var yard: Yard = garden.yard
 	var door: FrontDoor = garden.door
 	rig.locomotion.travel_to_spot(1)
 	test.check(garden.is_in_defense_zone(), "the front room is the defense position")
+	test.check(yard.get_obstacle_circles().size() >= 10, "the yard is open ground with trees, rocks and a car for cover")
 
-	var build_screen: WorldScreen = garden.get_build_screen()
-	rig.tap_world_point(build_screen.pixel_to_world(garden.get_build_board().get_card_center(0)))
-	await test.frames(3)
-	test.check(garden.selected_tower == 0, "pointer picks a tower card on the board above the gate")
-	var cash_before: int = operation.get_cash()
-	var cell: Vector2i = Vector2i(1, 2)
-	rig.tap_world_point(board.grid.cell_to_position(cell))
-	await test.frames(3)
-	test.check(not board.can_place(cell) and operation.get_cash() < cash_before, "clicking a garden tile builds the tower for cash")
-
-	var junkie: LaneEnemy = _spawn_in_lane(board, JUNKIE, cell.x, board.grid.get_column_z(5))
-	test.check(await test.wait_until(func() -> bool: return junkie.health_component.get_health_ratio() < 1.0 or not junkie.is_alive()), "the turret shoots the attacker in its lane")
-	var cop: LaneEnemy = _spawn_in_lane(board, COP, 0, board.grid.get_column_z(4))
+	var cop: Raider = _spawn_at(garden, Vector2(0.0, -8.5))
 	var cop_health: float = cop.health_component.current_health
-	await test.frames(20)
 	rig.tap_world_point(cop.get_hit_center())
 	await test.frames(3)
-	test.check(cop.health_component.current_health < cop_health, "clicking an attacker fires the gun")
-	cop.global_position.z = board.get_home_z() - 0.5
+	test.check(cop.health_component.current_health < cop_health, "clicking a raider fires the gun")
+	test.check(garden.get_shown_gun() != null and garden.get_shown_gun().is_visible_in_tree(), "the gun shows in hand while defending")
+	var hidden: Raider = _spawn_at(garden, BEHIND_CAR)
+	var head: Vector3 = rig.get_head_transform().origin
+	test.check(yard.pick_raider(head, (hidden.get_hit_center() - head).normalized(), 40.0) == null, "the parked car hides a raider from shots")
+	hidden.take_hit(100000.0)
+	cop.global_position = Vector3(0.3, 0.0, -7.0)
+	cop.freeze(false)
+	cop.on_squad_rush()
 	var door_health: float = door.health_component.current_health
-	test.check(await test.wait_until(func() -> bool: return door.health_component.current_health < door_health), "an attacker at the door breaks it down")
-
-	operation.add_product(operation.recipes[0], 2, 4)
-	var stock_before: int = operation.stash.get_total()
-	_spawn_in_lane(board, JUNKIE, 2, board.get_home_z() - 0.4)
-	test.check(await test.wait_until(func() -> bool: return operation.stash.get_total() < stock_before), "a junkie reaching the door steals stock")
+	test.check(await test.wait_until(func() -> bool: return door.health_component.current_health < door_health), "a raider runs to the door and breaks it down")
 	cop.take_hit(100000.0)
 	door.health_component.heal(100000.0)
 
-	for leftover: LaneEnemy in board.get_enemies().duplicate():
-		leftover.take_hit(100000.0)
-	garden.director.is_active = true
-	garden.director.step(60.0)
-	garden.director.is_active = false
-	test.check(garden.director.get_pending_spawn_count() == 0 and garden.director.get_raiders_left() == 0, "selling days send no attackers on their own")
-	garden.director.queue_wave(RaidWave.new(0, 2, 1, 1.0), 0.0)
-	test.check(garden.director.get_pending_spawn_count() == 3, "a raid wave queues its cops and SWAT")
-	garden.director.is_active = true
-	garden.director.step(0.01)
-	garden.director.is_active = false
-	var raiders: Array[LaneEnemy] = board.get_enemies().duplicate()
-	var swat_count: int = raiders.filter(func(enemy: LaneEnemy) -> bool: return enemy.faction_name == "SWAT").size()
-	test.check(garden.director.get_raiders_left() == 3 and swat_count == 1, "the wave's officers enter the garden")
-	for raider: LaneEnemy in raiders:
-		raider.take_hit(100000.0)
-	test.check(garden.director.get_raiders_left() == 0, "a wave is beaten when every officer is down")
+	# Guns first: guards and turrets would otherwise hit the test targets too.
+	await _check_armory(test, level)
+	await _check_front_door(test, level)
+	await _check_raid_squads(test, garden)
 
-	# Crew: a hired guard shoots attackers near the door.
+	# Crew: a hired guard shoots raiders in the yard.
 	Profile.operation.add_reputation(100)
 	(level.get_front(Office) as Office).buy_upgrade(GameConfig.get_default().find_upgrade(Types.UPGRADE_GUARD))
 	await test.frames(3)
 	var guard: Worker = garden.get_node("%Guards").get_child(0) as Worker
-	var goon: LaneEnemy = _spawn_in_lane(board, GOON, 0, board.get_home_z() - 2.0)
-	var goon_health: float = goon.health_component.current_health
+	var target: Raider = _spawn_at(garden, Vector2(-2.0, -8.0))
+	var target_health: float = target.health_component.current_health
 	guard.work_now()
-	test.check(guard.is_working() and goon.health_component.current_health < goon_health, "a hired guard shoots attackers near the door")
-	goon.take_hit(100000.0)
-	await _check_armory(test, level)
-	await _check_front_door(test, level)
+	test.check(guard.is_working() and target.health_component.current_health < target_health, "a hired guard shoots raiders in the yard")
+	target.take_hit(100000.0)
+	await _check_turrets(test, level)
+
+
+## A raid wave: squads, cover, the rush and the battering ram.
+static func _check_raid_squads(test: SmokeTest, garden: FrontGarden) -> void:
+	var director: AttackerDirector = garden.director
+	director.is_active = true
+	director.step(60.0)
+	test.check(director.get_pending_spawn_count() == 0 and director.get_raiders_left() == 0, "selling days send no attackers on their own")
+	director.queue_wave(RaidWave.new(0, 2, 1, 1.0, 1), 0.0)
+	test.check(director.get_pending_spawn_count() == 4, "a raid wave queues its cops, SWAT and a battering ram")
+	director.step(0.01)
+	var raiders: Array[Raider] = garden.yard.get_raiders().duplicate()
+	var swat: int = raiders.filter(func(raider: Raider) -> bool: return raider.faction_name == "SWAT").size()
+	var rams: int = raiders.filter(func(raider: Raider) -> bool: return raider.is_battering_ram).size()
+	test.check(director.get_raiders_left() == 4 and swat == 1 and rams == 1 and director.get_squads().size() == 1, "the wave enters the yard as one squad")
+	test.check(await test.wait_until(func() -> bool: return raiders.any(func(raider: Raider) -> bool: return not raider.is_battering_ram and not raider.is_moving())), "raiders take cover in the yard")
+	var squad: RaidSquad = director.get_squads()[0]
+	squad.start_rush()
+	test.check(await test.wait_until(func() -> bool: return raiders.any(func(raider: Raider) -> bool: return raider.is_at_door())), "the squad rushes the door together")
+	for raider: Raider in raiders:
+		raider.take_hit(100000.0)
+	test.check(director.get_raiders_left() == 0, "a wave is beaten when every raider is down")
+	garden.door.health_component.heal(100000.0)
+	director.is_active = false
+
+
+## Roof turrets (a house upgrade) and taking one over at the Security PC.
+static func _check_turrets(test: SmokeTest, level: HouseLevel) -> void:
+	var rig: XRPlayerRig = level.rig
+	var garden: FrontGarden = level.get_front(FrontGarden) as FrontGarden
+	var office: Office = level.get_front(Office) as Office
+	var config: GameConfig = GameConfig.get_default()
+	var turret: HouseTurret = garden.get_turrets()[0]
+	test.check(not turret.is_mounted() and not garden.security_pc.is_available(), "no turrets or PC before they are bought")
+	office.buy_upgrade(config.find_upgrade(Types.UPGRADE_TURRETS))
+	await test.frames(3)
+	test.check(turret.is_mounted(), "buying Roof Turrets mounts a turret on the house")
+	var in_open: Raider = _spawn_at(garden, Vector2(0.0, -10.0))
+	var open_health: float = in_open.health_component.current_health
+	test.check(await test.wait_until(func() -> bool: return in_open.health_component.current_health < open_health), "the roof turret shoots raiders in the open")
+	in_open.take_hit(100000.0)
+	var covered: Raider = _spawn_at(garden, BEHIND_CAR)
+	var covered_health: float = covered.health_component.current_health
+	await test.frames(90)
+	test.check(covered.health_component.current_health == covered_health, "cover hides raiders from the turret")
+	covered.take_hit(100000.0)
+
+	Profile.operation.add_reputation(50)
+	office.buy_upgrade(config.find_upgrade(Types.UPGRADE_SECURITY_PC))
+	await test.frames(3)
+	var pc: SecurityPc = garden.security_pc
+	test.check(pc.is_available() and pc.get_selected_turret() == turret, "the Security PC shows the turret")
+	rig.locomotion.teleport_to(Vector3(3.4, 0.0, -0.6), 0.0)
+	await test.frames(3)
+	var console: TurretConsole = pc.get_console()
+	rig.tap_world_point(pc.get_screen().pixel_to_world(console.get_control_button().get_global_rect().get_center()))
+	await test.frames(3)
+	test.check(turret.is_manual, "pointing at Take control hands the turret over")
+	var target: Raider = _spawn_at(garden, Vector2(-1.0, -9.0))
+	var target_health: float = target.health_component.current_health
+	turret.set_manual_aim(target.get_hit_center())
+	await test.frames(60)
+	console.fire_pressed.emit()
+	test.check(await test.wait_until(func() -> bool: return target.health_component.current_health < target_health), "the PC fires the turret by hand")
+	console.fire_released.emit()
+	pc.release_control()
+	test.check(not turret.is_manual, "released, the turret aims on its own again")
+	target.take_hit(100000.0)
+	rig.locomotion.travel_to_spot(1)
 
 
 ## Buying guns and ammo at the armory terminal and firing them.
@@ -111,7 +158,7 @@ static func _check_armory(test: SmokeTest, level: HouseLevel) -> void:
 	await test.frames(3)
 	test.check(Profile.armory.loadout.get_ammo(smg) == ammo_before, "an ammo box refills the SMG")
 	rig.locomotion.travel_to_spot(1)
-	var cop: LaneEnemy = _spawn_in_lane(garden.board, COP, 1, garden.board.grid.get_column_z(3))
+	var cop: Raider = _spawn_at(garden, Vector2(1.0, -9.0))
 	await test.frames(5)
 	var rounds_before: int = Profile.armory.loadout.get_ammo(smg)
 	var health_before: float = cop.health_component.current_health
@@ -195,7 +242,7 @@ static func _check_door_with_tracked_hand(test: SmokeTest, rig: XRPlayerRig, doo
 
 
 ## Points the flat cursor at an attacker and returns the cursor's pointer.
-static func _aim(rig: XRPlayerRig, enemy: LaneEnemy) -> XRPointer:
+static func _aim(rig: XRPlayerRig, enemy: Raider) -> XRPointer:
 	rig.aim_at_world_point(enemy.get_hit_center())
 	return rig.get_tool_pointer()
 
@@ -205,10 +252,10 @@ static func _place_player(rig: XRPlayerRig, feet: Vector3, yaw: float) -> void:
 	rig.face_yaw(yaw)
 
 
-## Spawns an attacker and moves it into a chosen lane and depth.
-static func _spawn_in_lane(board: LaneBoard, scene_path: String, lane: int, z: float) -> LaneEnemy:
-	var enemy: LaneEnemy = board.spawn_enemy(load(scene_path) as PackedScene)
-	enemy.enter_lane(board, lane)
-	enemy.global_position.x = board.grid.get_lane_x(lane)
-	enemy.global_position.z = z
-	return enemy
+## Puts a cop at [param point] in the yard, standing still (frozen) so the
+## check decides what happens to it.
+static func _spawn_at(garden: FrontGarden, point: Vector2) -> Raider:
+	var raider: Raider = garden.director.spawn_raider(load(COP) as PackedScene)
+	raider.global_position = Vector3(point.x, 0.0, point.y)
+	raider.freeze()
+	return raider

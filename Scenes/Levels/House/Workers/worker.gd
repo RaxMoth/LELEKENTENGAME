@@ -8,7 +8,7 @@
 ## can't serve VIPs or bulk buyers and are weaker against bosses.
 ## State: Absent (not hired) -> Working <-> Striking.
 ##
-## Dependencies: Operation, SalesWindow, LaneBoard, BeamTracer, FloatingText3D,
+## Dependencies: Operation, SalesWindow, Yard, Raider, BeamTracer, FloatingText3D,
 ##               QualityMath, Pools, Profile, Types autoloads, Palette
 class_name Worker
 extends Node3D
@@ -33,7 +33,7 @@ const SKILLED_TRAINING_LEVEL: int = 2
 ## Dealers: the window they serve at (same scene).
 @export var sales_window: SalesWindow
 ## Guards: the garden they defend (same scene).
-@export var board: LaneBoard
+@export var yard: Yard
 
 ## The house's shared state; set by the worker's front at setup.
 var operation: Operation = null
@@ -155,12 +155,12 @@ func _deal() -> void:
 
 
 func _guard() -> void:
-	var enemy: LaneEnemy = board.find_enemy_nearest_door(_muzzle.global_position, guard_range)
+	var enemy: Raider = yard.find_raider_nearest_door(_muzzle.global_position, guard_range)
 	if enemy == null:
 		_seconds_until_work = 0.4
 		return
 	enemy.take_hit(guard_damage, self, true)
-	var tracer: BeamTracer = Pools.spawn(TRACER_SCENE, board.get_effects_root(), _muzzle.global_position) as BeamTracer
+	var tracer: BeamTracer = Pools.spawn(TRACER_SCENE, yard.get_effects_root(), _muzzle.global_position) as BeamTracer
 	tracer.fire(_muzzle.global_position, enemy.get_hit_center())
 
 

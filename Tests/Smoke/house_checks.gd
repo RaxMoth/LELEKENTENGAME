@@ -116,7 +116,7 @@ static func _check_raid_waves(test: SmokeTest, level: HouseLevel) -> void:
 	var cycle: HouseCycle = level.cycle
 	var garden: FrontGarden = level.get_front(FrontGarden) as FrontGarden
 	var window: SalesWindow = level.get_front(SalesWindow) as SalesWindow
-	for enemy: LaneEnemy in garden.board.get_enemies().duplicate():
+	for enemy: Raider in garden.yard.get_raiders().duplicate():
 		enemy.take_hit(1000000.0)
 	Profile.operation.day_number = cycle.get_days_per_cycle()
 	test.check(cycle.is_raid_day() and cycle.get_day_in_cycle() == cycle.get_days_per_cycle(), "day 3 of the cycle is the raid day")
@@ -133,7 +133,7 @@ static func _check_raid_waves(test: SmokeTest, level: HouseLevel) -> void:
 	test.check(await test.wait_until(func() -> bool: return cycle.is_wave_active()), "the first wave starts")
 	await test.wait_until(func() -> bool: return garden.director.get_pending_spawn_count() == 0)
 	test.check(garden.director.get_raiders_left() == 3, "the first wave brings three cops")
-	for raider: LaneEnemy in garden.board.get_enemies().duplicate():
+	for raider: Raider in garden.yard.get_raiders().duplicate():
 		raider.take_hit(1000000.0)
 	test.check(await test.wait_until(func() -> bool: return not cycle.is_wave_active() and cycle.is_raid_active()), "beating every officer ends the wave, the raid goes on")
 	cycle.skip_wave_break()

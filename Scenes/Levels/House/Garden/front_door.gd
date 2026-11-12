@@ -52,6 +52,9 @@ const RATTLE_INTERVAL_SECONDS: float = 0.6
 ## ...and while it is bolted.
 @export var locked_damage_multiplier: float = 1.0
 
+## Share of every raider hit the frame absorbs (Steel Door Frame upgrade).
+var damage_reduction: float = 0.0
+
 var _shake_tween: Tween
 var _swing_tween: Tween
 var _open_angle: float = 0.0
@@ -133,11 +136,13 @@ func get_open_angle() -> float:
 	return _open_angle
 
 
-## How much harder raiders hit the door right now: open > unlocked > bolted.
+## How much harder raiders hit the door right now: open > unlocked > bolted,
+## less with a steel frame ([member damage_reduction]).
 func get_damage_multiplier() -> float:
+	var state_multiplier: float = locked_damage_multiplier if _is_locked else unlocked_damage_multiplier
 	if _is_open:
-		return open_damage_multiplier
-	return locked_damage_multiplier if _is_locked else unlocked_damage_multiplier
+		state_multiplier = open_damage_multiplier
+	return state_multiplier * (1.0 - clampf(damage_reduction, 0.0, 0.9))
 
 
 ## A hand pulls the leaf to [param angle_degrees] (HingeHandle). A bolted door rattles.

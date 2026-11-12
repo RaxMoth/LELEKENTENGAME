@@ -4,10 +4,11 @@
 [ext_resource type="Script" path="res://Scripts/Resources/upgrade_data.gd" id="upgrade"]
 [ext_resource type="Resource" path="res://Ressources/Upgrades/Defense/def_door.tres" id="def_door"]
 [ext_resource type="Resource" path="res://Ressources/Upgrades/Defense/def_blaster.tres" id="def_blaster"]
-[ext_resource type="Resource" path="res://Ressources/Upgrades/Defense/def_heavy_gun.tres" id="def_heavy_gun"]
+[ext_resource type="Resource" path="res://Ressources/Upgrades/Defense/def_turrets.tres" id="def_turrets"]
+[ext_resource type="Resource" path="res://Ressources/Upgrades/Defense/def_security_pc.tres" id="def_security_pc"]
 [ext_resource type="Resource" path="res://Ressources/Upgrades/Defense/work_guard.tres" id="work_guard"]
 
 [resource]
 script = ExtResource("catalog")
 area_name = "Defense"
-upgrades = Array[ExtResource("upgrade")]([ExtResource("def_door"), ExtResource("def_blaster"), ExtResource("def_heavy_gun"), ExtResource("work_guard")])
+upgrades = Array[ExtResource("upgrade")]([ExtResource("def_door"), ExtResource("def_blaster"), ExtResource("def_turrets"), ExtResource("def_security_pc"), ExtResource("work_guard")])

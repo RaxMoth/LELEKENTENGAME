@@ -5,8 +5,8 @@
 [resource]
 script = ExtResource("script")
 id = &"def_blaster"
-title = "Better Blaster"
-description = "Your blaster hits 8 harder."
+title = "Better Rounds"
+description = "Every gun you fire hits 8 harder."
 base_cost = 150
 cost_growth = 1.6
 max_level = 3

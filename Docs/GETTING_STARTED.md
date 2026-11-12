@@ -79,11 +79,14 @@ and the README in your area's folder.
   an unlock upgrade (`unlock_upgrade_id`).
 - **Customers:** a `CustomerTypeData` in `Ressources/Customers/` added to
   `CustomerFlow.customer_types` in `Sales/SalesWindow.tscn`.
-- **Attackers (defense):** an inherited scene of `Garden/Attacker.tscn` (see
-  `Junkie.tscn`), sent by `AttackerDirector` in `Garden/FrontGarden.tscn`.
-- **Towers (defense):** a scene extending `LaneDefender` (`Turret` for
-  shooters) and a `TowerData` in `Ressources/Towers/`, added to
-  `FrontGarden.towers`.
+- **Raiders (defense):** an inherited scene of `Garden/Raider.tscn` (see
+  `Swat.tscn`), sent by `AttackerDirector` in `Garden/FrontGarden.tscn`;
+  how many come per raid is `RaidData` (`Ressources/Raids/`).
+- **Cover (defense):** a `Vector4(x, z, radius, kind)` in the Yard's
+  `obstacles` in `Garden/FrontGarden.tscn`.
+- **Guns (defense):** a `GunModel` scene in `Armory/Guns/` and a
+  `WeaponData` in `Ressources/Weapons/` pointing at it, added to
+  `weapon_catalog.tres`.
 - **Upgrades:** an `UpgradeData` (`branch`, `required_reputation`, cost
   curve) in your area's `Ressources/Upgrades/<Area>/`, added to that
   folder's catalog (`<area>_upgrades.tres`); its id goes into your area's

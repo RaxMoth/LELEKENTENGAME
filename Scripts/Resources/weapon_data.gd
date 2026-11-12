@@ -14,6 +14,8 @@ extends Resource
 @export_multiline var description: String = ""
 ## Cash to buy the gun (0 = owned from the start).
 @export_range(0, 100000) var cost: int = 0
+## The animated model held in the hand (a GunModel scene).
+@export var model_scene: PackedScene
 
 @export_group("Firing")
 ## Damage per hit before armor.

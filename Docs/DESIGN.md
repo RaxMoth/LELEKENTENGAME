@@ -102,9 +102,9 @@ primitives in `Palette` colors: matte, lit from above, grounded by a
 
 - Player hands / beams and the crew `PRIMARY`, threats `ENEMY*`, money and
   quality `GOLD` / `SUCCESS`; products use one distinct hue each.
-- Each attacker faction has its own silhouette, not just a color (hood,
-  riot shield and cap, suit and hat, the boss's size and gold band).
-- Shapes ≥ 2 sizes apart for clear hierarchy (attacker > tower > item).
+- Each raider has its own silhouette, not just a color (cop: riot shield
+  and cap; SWAT: helmet and vest; the ram team: two officers and a ram).
+- Shapes ≥ 2 sizes apart for clear hierarchy (raider > turret > item).
 - Sky and light come from the lighting tokens (`SKY_*`, `DAYLIGHT`,
   `MOONLIGHT`, `AMBIENT_*`) so day and night stay calm and on palette.
 - `glow` is for the few things the player must notice (products, lamps,

@@ -108,6 +108,7 @@ var _flat_press_on_screen: bool = false
 @onready var _flat_camera: Camera3D = %FlatCamera
 @onready var _flat_pointer: XRPointer = %FlatPointer
 @onready var _flat_hold_anchor: Node3D = %FlatHoldAnchor
+@onready var _flat_weapon_anchor: Node3D = %FlatWeaponAnchor
 @onready var _flat_wrist_anchor: Node3D = %FlatWristAnchor
 @onready var _popup_screen: WorldScreen = %PopupScreen
 
@@ -235,6 +236,21 @@ func get_wrist_anchor() -> Node3D:
 	if not is_xr_active:
 		return _flat_wrist_anchor
 	return _left_wrist_anchor if _get_offhand() == Types.Hand.LEFT else _right_wrist_anchor
+
+
+## Where the gun in hand belongs: the off hand in a headset (the trigger
+## that fires), the lower right of the view in the flat simulator.
+func get_weapon_anchor() -> Node3D:
+	if is_xr_active:
+		return _get_hold_anchor(_get_offhand())
+	return _flat_weapon_anchor
+
+
+## True while the gun hand holds an item (the gun is put away meanwhile).
+func is_weapon_hand_busy() -> bool:
+	if is_xr_active:
+		return _held_items[_get_offhand()] != null
+	return _flat_held_item != null
 
 
 ## Items currently held (by either hand or the flat cursor).

@@ -48,6 +48,12 @@ extends Resource
 ## Each later raid adds this many SWAT officers per wave.
 @export_range(0, 10) var swat_per_later_raid: int = 1
 
+@export_group("Battering ram")
+## First raid whose last wave brings a battering-ram team.
+@export_range(1, 20) var ram_from_raid: int = 2
+## Every this many raids after that, the last wave brings one more ram.
+@export_range(1, 20) var raids_per_extra_ram: int = 3
+
 @export_group("Toughness")
 ## Officer health grows by this share every raid after the first.
 @export var health_growth_per_raid: float = 0.15

@@ -1,61 +1,92 @@
-## Sends the police into the garden during a raid. The HouseCycle decides
-## when a wave starts and what it brings (a RaidWave: cops, SWAT, toughness);
-## the FrontGarden hands each wave here and the director walks its officers
-## in one after another. On selling days nothing comes (customers only).
+## Sends the police into the yard during a raid. The HouseCycle decides when
+## a wave starts and what it brings (a RaidWave: cops, SWAT, battering rams,
+## toughness); the FrontGarden hands each wave here. The director lets the
+## officers in one after another at the yard's edges, splits them into
+## RaidSquads (which leapfrog from cover to cover and rush the door
+## together) and gives each its own spot at the door. On selling days
+## nothing comes (customers only).
 ##
 ##   director.queue_wave(wave)          # from FrontGarden.on_raid_wave_started
 ##   director.get_raiders_left()        # pending + still standing; 0 = wave beaten
 ##
-## Dependencies: HouseContext, LaneBoard, LaneEnemy, RaidWave
+## Dependencies: HouseContext, Yard, Raider, RaidSquad, RaidWave
 class_name AttackerDirector
 extends Node
 
 @export var cop_scene: PackedScene
 ## Heavier officers with better equipment (from a later raid on).
 @export var swat_scene: PackedScene
-## Seconds between two officers of one wave entering the garden.
+## Two officers carrying a battering ram (late in later raids).
+@export var ram_scene: PackedScene
+## Seconds between two officers of one wave entering the yard.
 @export var group_spawn_interval: float = 1.4
+## Officers per squad.
+@export_range(1, 8) var squad_size: int = 3
 
 ## Off = queued officers wait (tutorials, tests).
 var is_active: bool = true
 
 var _context: HouseContext = null
-var _board: LaneBoard = null
-## Officers waiting to enter: [{"scene": PackedScene, "delay": float, "health": float}].
+var _yard: Yard = null
+## Officers waiting to enter: [{"scene", "delay", "health", "squad", "spot"}].
 var _pending_spawns: Array[Dictionary] = []
+var _squads: Array[RaidSquad] = []
 
 
-func setup(context: HouseContext, board: LaneBoard) -> void:
+func setup(context: HouseContext, yard: Yard) -> void:
 	_context = context
-	_board = board
+	_yard = yard
 
 
-## One frame: lets queued officers in (called by the FrontGarden while the shift runs).
+## One frame: lets queued officers in and moves the squads' plans on
+## (called by the FrontGarden while the shift runs).
 func step(delta: float) -> void:
 	if not is_active or _context == null:
 		return
 	_step_pending_spawns(delta)
+	for squad_index: int in range(_squads.size() - 1, -1, -1):
+		var squad: RaidSquad = _squads[squad_index]
+		squad.step(delta)
+		if squad.get_alive_members().is_empty() and not _has_pending_for(squad):
+			_squads.remove_at(squad_index)
 
 
-## Queues every officer of [param wave]: cops first, SWAT behind them.
+## Queues every officer of [param wave] in squads: cops first, then SWAT,
+## rams last (they join the final squad).
 func queue_wave(wave: RaidWave, spawn_interval: float = -1.0) -> void:
 	var interval: float = group_spawn_interval if spawn_interval < 0.0 else spawn_interval
-	var queued: int = 0
+	var scenes: Array[PackedScene] = []
 	for cop_index: int in wave.cop_count:
-		_queue(cop_scene, interval * queued, wave.health_multiplier)
-		queued += 1
+		scenes.append(cop_scene)
 	for swat_index: int in wave.swat_count:
-		_queue(swat_scene if swat_scene != null else cop_scene, interval * queued, wave.health_multiplier)
-		queued += 1
+		scenes.append(swat_scene if swat_scene != null else cop_scene)
+	for ram_index: int in wave.ram_count:
+		scenes.append(ram_scene if ram_scene != null else cop_scene)
+	var size: int = maxi(1, squad_size)
+	var squad_count: int = maxi(1, ceili(float(scenes.size()) / size))
+	# A lone last officer joins the squad before instead of going it alone.
+	if squad_count > 1 and scenes.size() % size == 1:
+		squad_count -= 1
+	var squads: Array[RaidSquad] = []
+	for squad_index: int in squad_count:
+		squads.append(RaidSquad.new())
+	_squads.append_array(squads)
+	for raider_index: int in scenes.size():
+		_pending_spawns.append({
+			"scene": scenes[raider_index], "delay": interval * raider_index,
+			"health": wave.health_multiplier, "squad": squads[mini(raider_index / size, squad_count - 1)],
+			"spot": raider_index,
+		})
 
 
-## Sends one attacker into the garden now with [param health_multiplier].
-func spawn_attacker(enemy_scene: PackedScene, health_multiplier: float = 1.0) -> LaneEnemy:
-	if enemy_scene == null or _board == null:
+## Sends one raider into the yard now (tests, tutorials). Without a squad it
+## goes straight for the door once it has reached the house.
+func spawn_raider(raider_scene: PackedScene, health_multiplier: float = 1.0, squad: RaidSquad = null, door_spot: int = 0) -> Raider:
+	if raider_scene == null or _yard == null:
 		return null
-	var enemy: LaneEnemy = _board.spawn_enemy(enemy_scene)
-	enemy.apply_wave_modifiers(health_multiplier, 1.0)
-	return enemy
+	var raider: Raider = _yard.spawn_raider(raider_scene, squad, door_spot)
+	raider.apply_wave_modifiers(health_multiplier, 1.0)
+	return raider
 
 
 func get_pending_spawn_count() -> int:
@@ -64,21 +95,24 @@ func get_pending_spawn_count() -> int:
 
 ## Officers of the current wave still to come or still standing.
 func get_raiders_left() -> int:
-	var standing: int = 0
-	if _board != null:
-		for enemy: LaneEnemy in _board.get_enemies():
-			if enemy.is_alive():
-				standing += 1
-	return _pending_spawns.size() + standing
+	return _pending_spawns.size() + (_yard.get_alive_count() if _yard != null else 0)
 
 
-## Forgets officers that have not entered yet (the shift ended).
+## The squads of the waves in the yard (tests).
+func get_squads() -> Array[RaidSquad]:
+	return _squads
+
+
+## Forgets officers that have not entered yet (the shift ended, admin).
 func clear_pending() -> void:
 	_pending_spawns.clear()
 
 
-func _queue(enemy_scene: PackedScene, delay: float, health_multiplier: float) -> void:
-	_pending_spawns.append({"scene": enemy_scene, "delay": delay, "health": health_multiplier})
+func _has_pending_for(squad: RaidSquad) -> bool:
+	for pending: Dictionary in _pending_spawns:
+		if pending["squad"] == squad:
+			return true
+	return false
 
 
 func _step_pending_spawns(delta: float) -> void:
@@ -87,4 +121,4 @@ func _step_pending_spawns(delta: float) -> void:
 		pending["delay"] = float(pending["delay"]) - delta
 		if float(pending["delay"]) <= 0.0:
 			_pending_spawns.remove_at(spawn_index)
-			spawn_attacker(pending["scene"] as PackedScene, float(pending["health"]))
+			spawn_raider(pending["scene"] as PackedScene, float(pending["health"]), pending["squad"] as RaidSquad, int(pending["spot"]))

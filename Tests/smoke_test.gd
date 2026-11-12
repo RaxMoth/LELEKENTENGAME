@@ -183,7 +183,7 @@ func _test_house_raid(level_data: LevelData) -> void:
 	for wave_number: int in range(1, level.cycle.get_wave_count() + 1):
 		level.cycle.skip_wave_break()
 		await wait_until(func() -> bool: return level.cycle.is_wave_active() and garden.director.get_pending_spawn_count() == 0)
-		for raider: LaneEnemy in garden.board.get_enemies().duplicate():
+		for raider: Raider in garden.yard.get_raiders().duplicate():
 			raider.take_hit(1000000.0)
 		await wait_until(func() -> bool: return not level.cycle.is_wave_active())
 	check(await wait_until(func() -> bool: return level.cycle.phase == HouseCycle.Phase.CLEARED), "every wave beaten ends the raid")

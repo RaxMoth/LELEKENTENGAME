@@ -1,0 +1,77 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://Scenes/Levels/House/Armory/Guns/gun_model.gd" id="gun"]
+[ext_resource type="Script" path="res://Scripts/Utils/placeholder_mesh_3d.gd" id="mesh"]
+
+[node name="Smg" type="Node3D" node_paths=PackedStringArray("moving_part")]
+script = ExtResource("gun")
+moving_part = NodePath("Body/ChargingHandle")
+moving_travel = Vector3(0, 0, 0.05)
+cycle_seconds = 0.06
+recoil_distance = 0.015
+recoil_degrees = 4.0
+
+[node name="Body" type="Node3D" parent="."]
+unique_name_in_owner = true
+
+[node name="Receiver" type="MeshInstance3D" parent="Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.0, -0.05)
+cast_shadow = 0
+script = ExtResource("mesh")
+shape_kind = 1
+size = Vector3(0.045, 0.06, 0.26)
+color = Color(0.102, 0.1255, 0.1882, 1)
+
+[node name="Barrel" type="MeshInstance3D" parent="Body"]
+transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, 0, 0.008, -0.22)
+cast_shadow = 0
+script = ExtResource("mesh")
+shape_kind = 3
+size = Vector3(0.026, 0.12, 0.026)
+color = Color(0.1412, 0.1686, 0.2431, 1)
+
+[node name="Magazine" type="MeshInstance3D" parent="Body"]
+transform = Transform3D(1, 0, 0, 0, 0.9848, 0.1736, 0, -0.1736, 0.9848, 0, -0.085, -0.09)
+cast_shadow = 0
+script = ExtResource("mesh")
+shape_kind = 1
+size = Vector3(0.028, 0.12, 0.04)
+color = Color(0.1804, 0.2118, 0.2941, 1)
+
+[node name="Grip" type="MeshInstance3D" parent="Body"]
+transform = Transform3D(1, 0, 0, 0, 0.9659, 0.2588, 0, -0.2588, 0.9659, 0, -0.065, 0.03)
+cast_shadow = 0
+script = ExtResource("mesh")
+shape_kind = 1
+size = Vector3(0.034, 0.1, 0.045)
+color = Color(0.1804, 0.2118, 0.2941, 1)
+
+[node name="Stock" type="MeshInstance3D" parent="Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.005, 0.13)
+cast_shadow = 0
+script = ExtResource("mesh")
+shape_kind = 1
+size = Vector3(0.03, 0.045, 0.12)
+color = Color(0.1412, 0.1686, 0.2431, 1)
+
+[node name="ChargingHandle" type="MeshInstance3D" parent="Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.03, 0.02, -0.08)
+cast_shadow = 0
+script = ExtResource("mesh")
+shape_kind = 1
+size = Vector3(0.018, 0.016, 0.035)
+color = Color(0.3569, 0.3922, 0.4824, 1)
+
+[node name="Muzzle" type="Marker3D" parent="Body"]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.008, -0.29)
+
+[node name="Flash" type="MeshInstance3D" parent="Body/Muzzle"]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.03)
+cast_shadow = 0
+script = ExtResource("mesh")
+size = Vector3(0.09, 0.09, 0.11)
+color = Color(1, 0.8784, 0.5412, 1)
+glow = 3.0
+unshaded = true

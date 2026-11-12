@@ -2,9 +2,9 @@
 
 A VR crime-sim: run a stylized, fictional drug operation out of one house.
 Craft product by hand in the lab, sell it to customers queuing at the back
-window and hold the front door against junkies, cops and the mafia coming
-up the garden — all at once, day and night, walking between the three
-fronts. Money goes back into upgrades and a crew. Drugs, recipes and
+window, buy guns and house defenses, and every third night hold the front
+door against a police raid storming across the yard — walking between the
+fronts. Money goes back into upgrades, guns and a crew. Drugs, recipes and
 ingredients are made up; there is no real-world chemistry. Design, controls
 and setup: [Docs/GAME.md](Docs/GAME.md).
 
@@ -36,11 +36,12 @@ Play → The House in the flat simulator.
 |---|---|
 | Lab | Grab ingredients, grind, cook and press them — each step a timing skill check that sets the quality |
 | Back window | Customers queue with their own wants, quality bar, budget and patience; set the price, sell or decline; hagglers counter |
-| Front garden | Three lanes to the front door; shoot from the front-room windows, build turrets, heavy guns and barricades |
+| Yard & front door | An open field with cover; raid squads move from cover to cover and rush the door. Swing and bolt the door, shoot from the front room, roof turrets (steerable from the office PC) |
+| Armory | Guns (pistol, SMG, shotgun, rifle) and ammo; each gun animated in hand |
 | Office | Five upgrade branches (production, sales, defense, workforce, house) and police bribes |
 
-Day brings many buyers and light trouble; night brings VIPs, raids, mafia
-crews and a boss wave. Sales draw police heat; a full stash draws thieves.
+Days 1–3 bring only customers (night brings VIPs); night 3 brings the police
+raid in waves (cops, SWAT, a battering ram), harder every cycle. Sales draw heat, and heat makes the raid bigger.
 Crafters, dealers and guards take over volume for a wage. All tuning is data
 in `Ressources/` and on the House scene.
 
@@ -53,7 +54,7 @@ in `Ressources/` and on the House scene.
 | `Grabbable`, `ItemSocket`, `PointerButton` (`Scripts/XR/`) | Physics-free hand interaction: pick up, put into sockets, press 3D buttons |
 | `XRPointer`, `WorldScreen` (`Scripts/XR/`) | Controller rays that click ordinary `Control` UI shown on panels in the world |
 | `UI.set_world_space_enabled()` | Pause, results, settings and other popups appear on an in-world screen in front of the player |
-| `RayMath`, `LaneGrid` | Picking and lane combat without physics bodies (cheap on standalone headsets) |
+| `RayMath`, `YardNavigation` | Picking, steering, cover and line of sight without physics bodies (cheap on standalone headsets) |
 | `PlaceholderMesh3D`, `BlobShadow3D`, `HitFlash3DComponent`, pooled `FloatingText3D` / `PopEffect3D` | 3D stand-in art and feedback with shared meshes and materials |
 
 ### Core services (autoloads, `Globals/`)
@@ -88,13 +89,13 @@ components (`IconLabel`, `RewardList`, currency & energy pills, stars).
 Everything a designer tunes lives in [`Ressources/game_config.tres`](Ressources/game_config.tres):
 the cash currency, the level and XR start level, the 16 upgrades, in-app
 products, achievements, 7-day login rewards, ad pacing. Ingredients,
-recipes, customer types and towers live next to it in `Ressources/`.
+recipes, customer types, guns and raid tuning live next to it in `Ressources/`.
 
 ---
 
 ## Working on the game
 
-Add products, customer types, attackers, towers, upgrades or a new level:
+Add products, customer types, raiders, guns, cover, upgrades or a new level:
 [Docs/GETTING_STARTED.md](Docs/GETTING_STARTED.md) ·
 API reference: [Docs/SYSTEMS.md](Docs/SYSTEMS.md) ·
 Coding rules: [Docs/instructor.md](Docs/instructor.md) ·
@@ -111,12 +112,14 @@ Tools/smoke_test.sh    # boots the whole game
 ```
 
 Unit tests cover the pure game logic (skill checks, quality, stash, sales
-and haggling, heat, the day clock, walkable floors, ray math, the lane grid,
+and haggling, heat, the day clock, walkable floors, ray math, yard steering
+and cover, the 3-day raid cycle, guns and ammo,
 upgrade costs, level stars); add a `*_test.gd` suite next to them for new
 logic. Reports land in `build/test-reports`. The smoke test boots every menu,
 then plays a whole shift at the house through the same pointer paths a
 headset uses (in the flat simulator): crafting at all three stations,
-selling and haggling, building and fighting, buying upgrades, hiring crew,
+selling and haggling, the door, guns, raid squads, turrets and the Security
+PC, buying upgrades, hiring crew, a full raid night,
 nightfall, losing the door, plus every popup and the save round-trip (exit
 code 0 = pass; it resets the local save). `Tools/screenshots.sh build/screenshots` captures the menus,
 popups and the game plus contact sheets for design reviews or store
@@ -145,23 +148,23 @@ The repo is ready for [Claude Code](https://claude.com/claude-code):
 Assets/        Themes, icons, fonts, audio, sprites, localization CSV
 Docs/          GAME.md (the game), getting started, systems reference, coding rules, design system
 Globals/       Autoloads only (UI, SceneManager and Debug have scenes)
-Ressources/    .tres data: game_config, level, ingredients, recipes, customers, towers, upgrades
+Ressources/    .tres data: game_config, level, ingredients, recipes, customers, weapons, raids, upgrades
 Scenes/
   Boot/        Splash scene (main scene): headset → game, otherwise → menus
   Menus/       MainMenu, LevelSelect, Shop (2D, flat-screen flow)
   Game/        LevelBase — 3D, owns the XR rig; every level inherits it
   Entities/    XRPlayerRig, pooled 3D effects
-  Levels/      House (the game): Lab, Sales, Garden, Office, Workers
+  Levels/      House (the game): Lab, Sales, Garden (yard, door, turrets), Armory, Office, Cycle, Admin, Workers
   UI/          Popups (in-world screen inside a headset)
 Scripts/
   Components/  Health, hit flash, wave spawner
-  Game/        Pure game rules: timing gauge, quality, stash, sales, heat, day clock
-  Resources/   Data schemas (GameConfig, RecipeData, CustomerTypeData, TowerData, UpgradeData…)
+  Game/        Pure game rules: timing gauge, quality, stash, sales, heat, day clock, raids, yard steering, weapons
+  Resources/   Data schemas (GameConfig, RecipeData, CustomerTypeData, WeaponData, RaidData, UpgradeData…)
   Profile/     Persistent player-data modules
   Services/    Ads / store / analytics provider base classes
   UI/          Reusable UI controls (menus, popups, in-world screens)
   XR/          XRPointer, WorldScreen, XRLocomotion, Grabbable, ItemSocket, PointerButton
-  Utils/       Ray / lane math, 3D placeholders, formatting, tweens, synth SFX
+  Utils/       Ray math, 3D placeholders, formatting, tweens, synth SFX
 Tests/         Smoke test, screenshot tool, unit tests (excluded from exports)
 Tools/         godot.sh, smoke_test.sh, screenshots.sh (ignored by Godot)
 ```

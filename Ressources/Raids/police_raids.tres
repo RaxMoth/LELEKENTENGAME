@@ -18,5 +18,7 @@ max_heat_extra_cops = 4
 swat_from_raid = 2
 swat_per_wave = 1
 swat_per_later_raid = 1
+ram_from_raid = 2
+raids_per_extra_ram = 3
 health_growth_per_raid = 0.15
 last_wave_health_multiplier = 1.1

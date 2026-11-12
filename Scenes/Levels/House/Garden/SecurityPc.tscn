@@ -1,0 +1,44 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://Scenes/Levels/House/Garden/security_pc.gd" id="pc"]
+[ext_resource type="Script" path="res://Scripts/XR/world_screen.gd" id="screen"]
+[ext_resource type="Script" path="res://Scripts/Utils/placeholder_mesh_3d.gd" id="mesh"]
+[ext_resource type="PackedScene" path="res://Scenes/Levels/House/Garden/TurretConsole.tscn" id="console"]
+
+[node name="SecurityPc" type="Node3D"]
+script = ExtResource("pc")
+
+[node name="Stand" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.08, -0.02)
+cast_shadow = 0
+script = ExtResource("mesh")
+shape_kind = 1
+size = Vector3(0.08, 0.16, 0.08)
+color = Color(0.1412, 0.1686, 0.2431, 1)
+
+[node name="Frame" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.42, -0.03)
+cast_shadow = 0
+script = ExtResource("mesh")
+shape_kind = 1
+size = Vector3(0.84, 0.54, 0.04)
+color = Color(0.051, 0.0627, 0.0902, 1)
+
+[node name="PcScreen" type="Node3D" parent="."]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.42, 0)
+script = ExtResource("screen")
+content_scene = ExtResource("console")
+resolution = Vector2i(960, 600)
+width_meters = 0.8
+
+[node name="FeedViewport" type="SubViewport" parent="."]
+unique_name_in_owner = true
+size = Vector2i(480, 270)
+render_target_update_mode = 0
+
+[node name="FeedCamera" type="Camera3D" parent="FeedViewport"]
+unique_name_in_owner = true
+current = true
+fov = 60.0
+far = 60.0

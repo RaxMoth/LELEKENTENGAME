@@ -1,7 +1,8 @@
 ## The rules of the house's cycle: which day of the cycle it is, when the
 ## police raid comes and what each raid brings. Every raid is a little harder
-## than the one before (more waves, more cops, SWAT from a set raid, tougher
-## officers), and police heat at raid time adds cops to the last wave.
+## than the one before (more waves, more cops, SWAT and battering rams from
+## set raids, tougher officers), and police heat at raid time adds cops to
+## the last wave.
 ##
 ##   RaidPlanner.is_raid_day(day_number, data)            # day 3, 6, 9... with 3 days per cycle
 ##   var waves: Array[RaidWave] = RaidPlanner.build_raid(data, raid_number, heat_ratio)
@@ -58,7 +59,10 @@ static func build_raid(data: RaidData, raid_number: int, heat_ratio: float = 0.0
 		if raid >= data.swat_from_raid and (wave_index > 0 or raid > data.swat_from_raid):
 			swat = data.swat_per_wave + data.swat_per_later_raid * (raid - data.swat_from_raid)
 		var health: float = raid_health * (data.last_wave_health_multiplier if is_last_wave else 1.0)
-		waves.append(RaidWave.new(wave_index, cops, swat, health))
+		var rams: int = 0
+		if is_last_wave and raid >= data.ram_from_raid:
+			rams = 1 + (raid - data.ram_from_raid) / maxi(1, data.raids_per_extra_ram)
+		waves.append(RaidWave.new(wave_index, cops, swat, health, rams))
 	return waves
 
 

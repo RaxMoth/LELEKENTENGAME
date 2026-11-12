@@ -1,6 +1,7 @@
 [gd_resource type="Resource" script_class="WeaponData" format=3]
 
 [ext_resource type="Script" path="res://Scripts/Resources/weapon_data.gd" id="script"]
+[ext_resource type="PackedScene" path="res://Scenes/Levels/House/Armory/Guns/Rifle.tscn" id="model"]
 
 [resource]
 script = ExtResource("script")
@@ -8,6 +9,7 @@ id = &"rifle"
 display_name = "Rifle"
 description = "Long reach and armor-piercing rounds. The answer to SWAT."
 cost = 800
+model_scene = ExtResource("model")
 damage = 60.0
 fire_interval_seconds = 0.55
 range_meters = 40.0
