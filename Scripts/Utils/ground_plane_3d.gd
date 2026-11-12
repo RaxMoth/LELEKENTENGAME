@@ -5,9 +5,11 @@
 ## up the visible repeat of the tile for free (the material must have
 ## vertex_color_use_as_albedo on). Builds itself in the editor too.
 ##
-## The node's origin is the middle of the patch's top surface.
+## The node's origin is the middle of the patch's top surface (unrotated).
+## Every GroundHole in the tree that overlaps the patch is left open (the
+## cellar's stairwell under the lawn and the town's asphalt).
 ##
-## Dependencies: WorldUVMesh, PlaceholderMesh3D (fallback material), Palette
+## Dependencies: WorldUVMesh, GroundHole, PlaceholderMesh3D (fallback material), Palette
 @tool
 class_name GroundPlane3D
 extends MeshInstance3D
@@ -64,8 +66,9 @@ func _rebuild() -> void:
 	if not is_node_ready():
 		return
 	material_override = ground_material if ground_material != null else PlaceholderMesh3D.get_shared_material(fallback_color)
+	var holes: Array[Rect2] = _find_holes()
 	if patch_darkening <= 0.0:
-		mesh = WorldUVMesh.create_plane(size)
+		mesh = WorldUVMesh.create_plane(size, Vector2i.ONE, Callable(), holes)
 		return
 	var cells: Vector2i = Vector2i((size / patch_resolution_meters).ceil())
 	var noise: FastNoiseLite = FastNoiseLite.new()
@@ -77,4 +80,20 @@ func _rebuild() -> void:
 	var shade: Callable = func(point: Vector2) -> Color:
 		var darkness: float = clampf(noise.get_noise_2dv(origin + point) * 0.5 + 0.5, 0.0, 1.0)
 		return Color.WHITE.darkened(darkness * patch_darkening)
-	mesh = WorldUVMesh.create_plane(size, cells, shade)
+	mesh = WorldUVMesh.create_plane(size, cells, shade, holes)
+
+
+## Every GroundHole over this patch, in the patch's own X / Z.
+func _find_holes() -> Array[Rect2]:
+	var holes: Array[Rect2] = []
+	if not is_inside_tree():
+		return holes
+	var patch: Rect2 = Rect2(Vector2(global_position.x, global_position.z) - size * 0.5, size)
+	for node: Node in get_tree().get_nodes_in_group(GroundHole.GROUP_NAME):
+		var hole: GroundHole = node as GroundHole
+		if hole == null:
+			continue
+		var opening: Rect2 = hole.get_world_rect()
+		if patch.intersects(opening):
+			holes.append(Rect2(opening.position - Vector2(global_position.x, global_position.z), opening.size))
+	return holes

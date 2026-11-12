@@ -1,0 +1,133 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://Scenes/Levels/House/Cellar/auto_picker.gd" id="picker"]
+[ext_resource type="Script" path="res://Scripts/Utils/textured_box_3d.gd" id="box"]
+[ext_resource type="Script" path="res://Scripts/Utils/placeholder_mesh_3d.gd" id="mesh"]
+[ext_resource type="Material" path="res://Assets/Materials/steel_frame.tres" id="steel"]
+[ext_resource type="Material" path="res://Assets/Materials/iron_strap.tres" id="iron"]
+[ext_resource type="Script" path="res://addons/godot_state_charts/state_chart.gd" id="chart"]
+[ext_resource type="Script" path="res://addons/godot_state_charts/compound_state.gd" id="compound"]
+[ext_resource type="Script" path="res://addons/godot_state_charts/atomic_state.gd" id="atomic"]
+[ext_resource type="Script" path="res://addons/godot_state_charts/transition.gd" id="transition"]
+
+[node name="AutoPicker" type="Node3D"]
+script = ExtResource("picker")
+
+[node name="Bridge" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+cast_shadow = 0
+script = ExtResource("box")
+size = Vector3(3.9, 0.08, 0.1)
+box_material = ExtResource("steel")
+
+[node name="Carriage" type="Node3D" parent="."]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.12, 0)
+
+[node name="Housing" type="MeshInstance3D" parent="Carriage"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+cast_shadow = 0
+script = ExtResource("box")
+size = Vector3(0.26, 0.14, 0.24)
+box_material = ExtResource("steel")
+
+[node name="Motor" type="MeshInstance3D" parent="Carriage"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0, 0.0, 0.15)
+cast_shadow = 0
+script = ExtResource("box")
+size = Vector3(0.14, 0.1, 0.06)
+box_material = ExtResource("iron")
+
+[node name="Lamp" type="MeshInstance3D" parent="Carriage"]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.085, 0.13)
+cast_shadow = 0
+script = ExtResource("mesh")
+shape_kind = 0
+size = Vector3(0.05, 0.05, 0.05)
+color = Color(0.1765, 0.7451, 0.4706, 1)
+glow = 0.8
+
+[node name="ArmBase" type="Node3D" parent="Carriage"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.07, 0)
+
+[node name="Arm" type="Node3D" parent="Carriage/ArmBase"]
+unique_name_in_owner = true
+
+[node name="Rod" type="MeshInstance3D" parent="Carriage/ArmBase/Arm"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, 0)
+cast_shadow = 0
+script = ExtResource("box")
+size = Vector3(0.035, 1.0, 0.035)
+box_material = ExtResource("steel")
+
+[node name="Claw" type="Node3D" parent="Carriage/ArmBase"]
+unique_name_in_owner = true
+
+[node name="Hub" type="MeshInstance3D" parent="Carriage/ArmBase/Claw"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+cast_shadow = 0
+script = ExtResource("box")
+size = Vector3(0.09, 0.04, 0.09)
+box_material = ExtResource("iron")
+
+[node name="FingerLeft" type="MeshInstance3D" parent="Carriage/ArmBase/Claw"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.05, -0.05, 0)
+cast_shadow = 0
+script = ExtResource("box")
+size = Vector3(0.02, 0.09, 0.06)
+box_material = ExtResource("iron")
+
+[node name="FingerRight" type="MeshInstance3D" parent="Carriage/ArmBase/Claw"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.05, -0.05, 0)
+cast_shadow = 0
+script = ExtResource("box")
+size = Vector3(0.02, 0.09, 0.06)
+box_material = ExtResource("iron")
+
+[node name="StateChart" type="Node" parent="."]
+unique_name_in_owner = true
+script = ExtResource("chart")
+
+[node name="Root" type="Node" parent="StateChart"]
+script = ExtResource("compound")
+initial_state = NodePath("Idle")
+
+[node name="Idle" type="Node" parent="StateChart/Root"]
+script = ExtResource("atomic")
+
+[node name="ToMoving" type="Node" parent="StateChart/Root/Idle"]
+script = ExtResource("transition")
+to = NodePath("../../Moving")
+event = &"picker_target"
+delay_in_seconds = "0.0"
+
+[node name="Moving" type="Node" parent="StateChart/Root"]
+script = ExtResource("atomic")
+
+[node name="ToPicking" type="Node" parent="StateChart/Root/Moving"]
+script = ExtResource("transition")
+to = NodePath("../../Picking")
+event = &"picker_arrived"
+delay_in_seconds = "0.0"
+
+[node name="GiveUp" type="Node" parent="StateChart/Root/Moving"]
+script = ExtResource("transition")
+to = NodePath("../../Idle")
+event = &"picker_done"
+delay_in_seconds = "0.0"
+
+[node name="Picking" type="Node" parent="StateChart/Root"]
+script = ExtResource("atomic")
+
+[node name="ToIdle" type="Node" parent="StateChart/Root/Picking"]
+script = ExtResource("transition")
+to = NodePath("../../Idle")
+event = &"picker_done"
+delay_in_seconds = "0.0"
+
+[connection signal="state_entered" from="StateChart/Root/Idle" to="." method="_on_idle_state_entered"]
+[connection signal="state_processing" from="StateChart/Root/Idle" to="." method="_on_idle_state_processing"]
+[connection signal="state_physics_processing" from="StateChart/Root/Moving" to="." method="_on_moving_state_physics_processing"]
+[connection signal="state_entered" from="StateChart/Root/Picking" to="." method="_on_picking_state_entered"]
+[connection signal="state_processing" from="StateChart/Root/Picking" to="." method="_on_picking_state_processing"]

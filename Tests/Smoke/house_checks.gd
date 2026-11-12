@@ -6,7 +6,7 @@
 ## Owned by whoever works on the house (level, office, crew, XR).
 ##
 ## Dependencies: SmokeTest, HouseLevel, Office, FrontGarden, Worker, DayCycle,
-##               HouseShell, ShellRenovation, UpgradeLook
+##               HouseShell, ShellRenovation, UpgradeLook, Ghost
 class_name HouseSmokeChecks
 extends RefCounted
 
@@ -48,6 +48,9 @@ static func run_end(test: SmokeTest, level: HouseLevel) -> void:
 	await test.frames(3)
 	test.check(day_cycle.is_night() and nights[0] == 1, "the day turns into night")
 	test.check(not level.cycle.is_raid_active() and level.cycle.allows_customers(), "the night of a selling day brings no raid")
+	if Profile.operation.day_number != level.get_ghost().night_number:
+		test.check(not level.get_ghost().is_haunting(), "no ghost on other nights")
+	await _check_ghost(test, level)
 	await _check_raid_waves(test, level)
 	var operation: Operation = level.operation
 	operation.add_product(operation.recipes[0], 2, 3)
@@ -99,6 +102,26 @@ static func _check_office(test: SmokeTest, level: HouseLevel) -> void:
 	test.check(operation.bribe() and operation.heat.value < heat_before, "a bribe cools the heat")
 	Profile.operation.add_reputation(-Profile.operation.reputation)
 	test.check(not Profile.upgrades.can_purchase(GameConfig.get_default().find_upgrade(Types.UPGRADE_VIP)), "upgrades stay locked until the reputation is there")
+
+
+## Night 4: the ghost turns up behind the player, freezes when looked at,
+## stares for a second and is gone.
+static func _check_ghost(test: SmokeTest, level: HouseLevel) -> void:
+	var rig: XRPlayerRig = level.rig
+	var ghost: Ghost = level.get_ghost()
+	# In the hallway looking north: the hall behind stays in a straight line.
+	rig.locomotion.teleport_to(Vector3(0.0, 0.0, -1.2), 0.0)
+	rig.aim_at_world_point(Vector3(0.0, 1.6, -6.0))
+	ghost.haunt(rig)
+	await test.frames(10)
+	var to_ghost: Vector3 = ghost.global_position - rig.get_feet_position()
+	test.check(ghost.is_haunting() and not ghost.was_seen() and to_ghost.z > 2.0, "on night 4 a ghost turns up behind the player")
+	rig.aim_at_world_point(ghost.get_head_position())
+	await test.frames(3)
+	test.check(ghost.was_seen() and ghost.is_haunting(), "looking at the ghost makes it stop and stare")
+	await test.frames(20)
+	test.check(ghost.is_haunting(), "it keeps staring for a moment")
+	test.check(await test.wait_until(func() -> bool: return not ghost.visible), "then it vanishes")
 
 
 ## Upgrades change how the house looks: a renovation swaps a shell surface

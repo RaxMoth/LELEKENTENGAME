@@ -6,11 +6,14 @@
 ## the Operation at setup, so the sales side knows what exists), hands the
 ## operation to its plants, stations, crates and crew, and keeps the recipe
 ## book (every recipe, open, with what it still needs) and the how-to poster
-## up to date.
+## up to date. The Automation tab adds motors to the stations (they finish
+## their own skill checks), conveyor belts between them and an ingredient
+## hopper (LabAutomation); the Green Thumb perk makes hand-picked plants
+## yield more.
 ##
 ## Dependencies: HouseFront, Workstation, IngredientCrate, ShroomPlant, Worker,
-##               RecipeData, RecipeBoard, LabGuideBoard, WorldScreen, Operation,
-##               GameConfig, Profile, Types autoloads
+##               LabAutomation, RecipeData, RecipeBoard, LabGuideBoard, WorldScreen,
+##               Operation, GameConfig, Profile, Types autoloads
 class_name Lab
 extends HouseFront
 
@@ -21,16 +24,20 @@ extends HouseFront
 @onready var _plants: Node3D = %Plants
 @onready var _recipe_screen: WorldScreen = %RecipeScreen
 @onready var _guide_screen: WorldScreen = %GuideScreen
+@onready var _automation: LabAutomation = %Automation
 
 
 func _on_setup() -> void:
 	context.operation.recipes = recipes
 	var grown_recipe: RecipeData = _find_grown_recipe()
+	var crates: Array[IngredientCrate] = []
 	for child: Node in get_children():
 		if child is Workstation:
 			(child as Workstation).setup(context.operation)
 		elif child is IngredientCrate:
 			(child as IngredientCrate).operation = context.operation
+			crates.append(child as IngredientCrate)
+	_automation.setup(context.operation, crates)
 	for plant: ShroomPlant in get_plants():
 		plant.setup(context.operation, grown_recipe)
 	for crafter: Node in _crafters.get_children():
@@ -43,12 +50,22 @@ func apply_upgrades() -> void:
 	_apply_gadgets()
 
 
+## The belts and the hopper only work while the shift runs.
+func _shift_process(delta: float) -> void:
+	_automation.advance(delta)
+
+
 func get_recipe_board() -> RecipeBoard:
 	return _recipe_screen.content as RecipeBoard
 
 
 func get_guide_board() -> LabGuideBoard:
 	return _guide_screen.content as LabGuideBoard
+
+
+## The belts and the hopper (tests).
+func get_automation() -> LabAutomation:
+	return _automation
 
 
 ## The station named [param station_name] (Grinder, Cooker, Press), or null.
@@ -86,14 +103,20 @@ func _apply_gadgets() -> void:
 	get_station(&"Grinder").set_active(has_grinder)
 	get_station(&"Cooker").set_active(has_cooker)
 	get_station(&"Press").set_active(has_press)
+	get_station(&"Grinder").set_motorized(Profile.upgrades.is_owned(Types.UPGRADE_GRINDER_MOTOR))
+	get_station(&"Cooker").set_motorized(Profile.upgrades.is_owned(Types.UPGRADE_COOKER_MOTOR))
+	get_station(&"Press").set_motorized(Profile.upgrades.is_owned(Types.UPGRADE_PRESS_MOTOR))
+	_automation.set_parts(Profile.upgrades.is_owned(Types.UPGRADE_CONVEYOR), Profile.upgrades.is_owned(Types.UPGRADE_HOPPER))
 	# Ingredients only make sense once there is something to grind them with.
 	for child: Node in get_children():
 		if child is IngredientCrate:
 			(child as IngredientCrate).visible = has_grinder
 	var plant_count: int = 1 + Profile.upgrades.get_level(Types.UPGRADE_PLANTS)
 	var plants: Array[ShroomPlant] = get_plants()
+	var hand_bonus: int = context.operation.get_hand_harvest_bonus()
 	for plant_index: int in plants.size():
 		plants[plant_index].set_active(plant_index < plant_count)
+		plants[plant_index].hand_harvest_bonus = hand_bonus
 	get_guide_board().show_progress(has_grinder, has_cooker, has_press)
 	_guide_screen.request_redraw.call_deferred()
 	_refresh_recipe_book()

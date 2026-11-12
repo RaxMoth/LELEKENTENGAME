@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="UpgradeData" format=3]
+
+[ext_resource type="Script" path="res://Scripts/Resources/upgrade_data.gd" id="script"]
+
+[resource]
+script = ExtResource("script")
+id = &"lab_auto_picker"
+title = "Auto Picker"
+description = "A little machine that rolls from plant to plant in the cellar and harvests ripe shrooms into the stash. Faster per level."
+base_cost = 700
+cost_growth = 1.9
+max_level = 3
+base_value = 8.0
+value_per_level = -2.0
+value_format = "%s s per pick"
+branch = &"automation"
+required_reputation = 0
+required_upgrade_id = &"lab_grow_racks"

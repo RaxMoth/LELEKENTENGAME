@@ -394,3 +394,36 @@ Never mind.,Never mind.,Schon gut.
 See you at the back window.,See you at the back window.,Wir sehen uns am Hinterfenster.
 Your loss.,Your loss.,Dein Pech.
 Passer-by,Passer-by,Passant
+Automation,Automation,Automatisierung
+Perks,Perks,Vorteile
+"Press Stop in the green, or the motor stops it","Press Stop in the green, or the motor stops it","Drück Stop im Grünen, sonst stoppt der Motor"
+%d of %d ripe,%d of %d ripe,%d von %d reif
+Dig the Cellar,Dig the Cellar,Keller ausheben
+Break open the old cellar under the stash room: stairs down to a dry room for grow racks.,Break open the old cellar under the stash room: stairs down to a dry room for grow racks.,Brich den alten Keller unter dem Lagerraum auf: eine Treppe hinunter in einen trockenen Raum für Pflanzregale.
+Grow Racks,Grow Racks,Pflanzregale
+"A rack of four shroom plants in the cellar. They grow on their own, like the plant in the lab.","A rack of four shroom plants in the cellar. They grow on their own, like the plant in the lab.","Ein Regal mit vier Pilzpflanzen im Keller. Sie wachsen von selbst, wie die Pflanze im Labor."
+Grow Lights,Grow Lights,Pflanzenlampen
+Lamps over the cellar racks: the plants down there grow 25% faster per level.,Lamps over the cellar racks: the plants down there grow 25% faster per level.,Lampen über den Kellerregalen: Die Pflanzen dort unten wachsen pro Stufe 25 % schneller.
+Auto Picker,Auto Picker,Erntemaschine
+A little machine that rolls from plant to plant in the cellar and harvests ripe shrooms into the stash. Faster per level.,A little machine that rolls from plant to plant in the cellar and harvests ripe shrooms into the stash. Faster per level.,Eine kleine Maschine fährt im Keller von Pflanze zu Pflanze und erntet reife Pilze ins Lager. Pro Stufe schneller.
+Grinder Motor,Grinder Motor,Mühlenmotor
+The grinder stops on its own after a few seconds with a Good result. Press Stop yourself to do better.,The grinder stops on its own after a few seconds with a Good result. Press Stop yourself to do better.,"Die Mühle stoppt nach ein paar Sekunden von selbst mit einem guten Ergebnis. Drück selbst auf Stop, um es besser zu machen."
+Cooker Timer,Cooker Timer,Kocher-Timer
+The cooker finishes on its own with a Good result. Press Stop yourself to do better.,The cooker finishes on its own with a Good result. Press Stop yourself to do better.,"Der Kocher wird von selbst mit einem guten Ergebnis fertig. Drück selbst auf Stop, um es besser zu machen."
+Press Motor,Press Motor,Pressenmotor
+The press packs on its own with a Good result. Press Stop yourself to do better.,The press packs on its own with a Good result. Press Stop yourself to do better.,"Die Presse verpackt von selbst mit einem guten Ergebnis. Drück selbst auf Stop, um es besser zu machen."
+Conveyor Belts,Conveyor Belts,Förderbänder
+Belts carry ground ingredients on into the cooker and cooked batches into the press.,Belts carry ground ingredients on into the cooker and cooked batches into the press.,Bänder tragen gemahlene Zutaten weiter in den Kocher und gekochte Ladungen in die Presse.
+Ingredient Hopper,Ingredient Hopper,Zutatentrichter
+"Buys and feeds in the ingredients of the last recipe you cooked, again and again, paid from the cash.","Buys and feeds in the ingredients of the last recipe you cooked, again and again, paid from the cash.","Kauft die Zutaten des zuletzt gekochten Rezepts und füllt sie ein, immer wieder, bezahlt aus der Kasse."
+Running Shoes,Running Shoes,Laufschuhe
+Proper shoes: you walk 20% faster per level.,Proper shoes: you walk 20% faster per level.,Richtige Schuhe: Du gehst pro Stufe 20 % schneller.
+Green Thumb,Green Thumb,Grüner Daumen
+"One more shroom from every plant you harvest by hand, per level.","One more shroom from every plant you harvest by hand, per level.","Ein Pilz mehr von jeder Pflanze, die du von Hand erntest, pro Stufe."
+Steady Hands,Steady Hands,Ruhige Hände
+The skill-check needle sweeps 15% slower per level.,The skill-check needle sweeps 15% slower per level.,Die Nadel der Geschicklichkeitsprobe läuft pro Stufe 15 % langsamer.
++%s%% growth speed,+%s%% growth speed,+%s%% Wachstum
+%s s per pick,%s s per pick,%s s pro Ernte
++%s%% walking speed,+%s%% walking speed,+%s%% Gehtempo
++%s per hand harvest,+%s per hand harvest,+%s pro Handernte
+-%s%% needle speed,-%s%% needle speed,-%s%% Nadeltempo

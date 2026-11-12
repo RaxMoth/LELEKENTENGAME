@@ -9,7 +9,8 @@ timing skill check that sets the quality. Product goes into the shared stash.
 | `RecipeBoard.tscn`, `recipe_board.gd` | The recipe book on the wall (static WorldScreen): every product, open, with what it still needs |
 | `ShroomPlant.tscn`, `shroom_plant.gd` | The plants on the grow shelf (StateChart Growing ⇄ Ripe): grow shrooms on their own, harvest into the stash |
 | `LabGuideBoard.tscn`, `lab_guide_board.gd` | The "How to cook" poster: plant, then grinder, cooker, press — dimmed until bought |
-| `Workstation.tscn` + `Grinder/Cooker/Press.tscn`, `workstation.gd` | Stations (StateChart Idle ⇄ Running) |
+| `Workstation.tscn` + `Grinder/Cooker/Press.tscn`, `workstation.gd` | Stations (StateChart Idle ⇄ Running); a bought motor (`set_motorized`) finishes the skill check on its own |
+| `lab_automation.gd` (the `Automation` node in `Lab.tscn`) | Conveyor belts (grinder → cooker → press) and the ingredient hopper; motors, belts and hopper are `UpgradeLook`s in `Lab.tscn` |
 | `IngredientCrate.tscn`, `IngredientItem.tscn`, `BatchItem.tscn` | Crates and the items you carry |
 | `Ressources/Ingredients/`, `Ressources/Recipes/` | Ingredients and products (add recipes to `Lab.recipes`) |
 | `Ressources/Upgrades/Lab/` | Production upgrades + `lab_upgrades.tres` catalog |

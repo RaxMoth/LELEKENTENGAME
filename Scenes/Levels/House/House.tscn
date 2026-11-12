@@ -9,6 +9,8 @@
 [ext_resource type="Script" path="res://Scenes/Levels/House/house_shell.gd" id="shell"]
 [ext_resource type="PackedScene" path="res://Scenes/Levels/House/StashShelf.tscn" id="stash_shelf_scene"]
 [ext_resource type="PackedScene" path="res://Scenes/Levels/House/SteelDoorFrame.tscn" id="steel_door_frame_scene"]
+[ext_resource type="PackedScene" path="res://Scenes/Levels/House/Cellar/Cellar.tscn" id="cellar_scene"]
+[ext_resource type="PackedScene" path="res://Scenes/Levels/House/Ghost/Ghost.tscn" id="ghost_scene"]
 [ext_resource type="Script" path="res://Scenes/Levels/House/wrist_status.gd" id="wrist"]
 [ext_resource type="Script" path="res://Scripts/XR/walkable_area.gd" id="walkable"]
 [ext_resource type="Script" path="res://Scripts/Utils/placeholder_mesh_3d.gd" id="mesh"]
@@ -139,6 +141,7 @@ script = ExtResource("shell")
 walls = Array[Vector4]([Vector4(-5, -5, 5, -5), Vector4(-5, 5, 5, 5), Vector4(-5, -5, -5, 5), Vector4(5, -5, 5, 5), Vector4(-5, -2, 5, -2), Vector4(-0.8, -2, -0.8, 5), Vector4(0.8, -2, 0.8, 5), Vector4(-5, 2, -0.8, 2), Vector4(0.8, 1.5, 5, 1.5)])
 doors = Array[Vector4]([Vector4(-0.6, -5, 0.6, -5), Vector4(-0.7, -2, 0.7, -2), Vector4(-0.8, -0.5, -0.8, 0.5), Vector4(-0.8, 3, -0.8, 4), Vector4(0.8, -0.5, 0.8, 0.5), Vector4(0.8, 3, 0.8, 4)])
 windows = Array[Vector4]([Vector4(-4.2, -5, -1.6, -5), Vector4(1.6, -5, 4.2, -5), Vector4(-3.9, 5, -2.1, 5)])
+floor_openings = Array[Rect2]([Rect2(1, 1.62, 3.3, 1)])
 inside_wall_material = ExtResource("wall_inside_material")
 outside_wall_material = ExtResource("wall_outside_material")
 floor_material = ExtResource("floor_material")
@@ -151,6 +154,12 @@ renovations = Array[ExtResource("shell_renovation")]([ExtResource("renovation_in
 unique_name_in_owner = true
 
 [node name="Lab" parent="World/Stage" instance=ExtResource("lab_scene")]
+unique_name_in_owner = true
+
+[node name="Cellar" parent="World/Stage" instance=ExtResource("cellar_scene")]
+unique_name_in_owner = true
+
+[node name="Ghost" parent="World/Stage" instance=ExtResource("ghost_scene")]
 unique_name_in_owner = true
 
 [node name="Office" parent="World/Stage" instance=ExtResource("office_scene")]

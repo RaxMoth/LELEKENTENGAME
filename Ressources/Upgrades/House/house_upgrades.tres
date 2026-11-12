@@ -9,8 +9,11 @@
 [ext_resource type="Resource" path="res://Ressources/Upgrades/House/house_floor.tres" id="house_floor"]
 [ext_resource type="Resource" path="res://Ressources/Upgrades/House/house_facade.tres" id="house_facade"]
 [ext_resource type="Resource" path="res://Ressources/Upgrades/House/house_roof.tres" id="house_roof"]
+[ext_resource type="Resource" path="res://Ressources/Upgrades/House/perk_shoes.tres" id="perk_shoes"]
+[ext_resource type="Resource" path="res://Ressources/Upgrades/House/perk_green_thumb.tres" id="perk_green_thumb"]
+[ext_resource type="Resource" path="res://Ressources/Upgrades/House/perk_steady_hands.tres" id="perk_steady_hands"]
 
 [resource]
 script = ExtResource("catalog")
 area_name = "House"
-upgrades = Array[ExtResource("upgrade")]([ExtResource("work_training"), ExtResource("house_storage"), ExtResource("house_security"), ExtResource("house_walls"), ExtResource("house_floor"), ExtResource("house_facade"), ExtResource("house_roof")])
+upgrades = Array[ExtResource("upgrade")]([ExtResource("work_training"), ExtResource("house_storage"), ExtResource("house_security"), ExtResource("house_walls"), ExtResource("house_floor"), ExtResource("house_facade"), ExtResource("house_roof"), ExtResource("perk_shoes"), ExtResource("perk_green_thumb"), ExtResource("perk_steady_hands")])

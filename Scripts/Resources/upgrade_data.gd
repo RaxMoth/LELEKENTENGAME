@@ -8,9 +8,11 @@ class_name UpgradeData
 extends Resource
 
 ## Progression branches in display order (UpgradeData.branch values).
-const BRANCHES: Array[StringName] = [&"lab", &"production", &"sales", &"defense", &"workforce", &"house"]
+const BRANCHES: Array[StringName] = [&"lab", &"automation", &"production", &"sales", &"defense", &"workforce", &"house", &"perks"]
 const BRANCH_TITLES: Dictionary[StringName, String] = {
 	&"lab": "Lab",
+	&"automation": "Automation",
+	&"perks": "Perks",
 	&"production": "Production",
 	&"sales": "Sales",
 	&"defense": "Defense",
@@ -33,7 +35,7 @@ const BRANCH_TITLES: Dictionary[StringName, String] = {
 @export var value_format: String = "%s"
 ## Listed in the global Shop scene (disable for upgrades a game mode shows itself).
 @export var show_in_shop: bool = true
-## Progression branch it belongs to (lab, production, sales, defense, workforce, house).
+## Progression branch it belongs to (lab, automation, production, sales, defense, workforce, house, perks).
 @export var branch: StringName = &""
 ## Reputation needed before it can be bought.
 @export var required_reputation: int = 0

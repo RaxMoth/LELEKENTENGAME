@@ -110,6 +110,12 @@ primitives in `Palette` colors — matte, lit from above, grounded by a
   quality `GOLD` / `SUCCESS`; products use one distinct hue each.
 - Each raider has its own silhouette, not just a color (cop: riot shield
   and cap; SWAT: helmet and vest; the ram team: two officers and a ram).
+- The night-4 ghost is the only translucent figure: a tall pale hooded
+  shroud (unshaded, about 40% opaque) with dark eye hollows and no limbs —
+  eerie, never cartoonish. It fades out; it never pops or jumps at the player.
+- Machines (motors, belts, the hopper, the picker's gantry) are steel and
+  iron `TexturedBox3D` parts with one small green status lamp (gold while
+  busy); they sit on or above the stations and never block a walkway.
 - Shapes ≥ 2 sizes apart for clear hierarchy (raider > turret > item).
 - Sky and light come from the lighting tokens (`SKY_*`, `DAYLIGHT`,
   `MOONLIGHT`, `AMBIENT_*`) so day and night stay calm and on palette.
@@ -131,6 +137,7 @@ primitives in `Palette` colors — matte, lit from above, grounded by a
 | Walls, floor, ceiling, frames, roof | `HouseShell` from lists, one surface per material (inside plaster, outside brick, floor planks, ceiling concrete, wood trim, roof tiles) |
 | Boxes with a real surface (door leaf, fence, gate) | `TexturedBox3D` (`is_grain_vertical` for posts) |
 | Renovated surfaces | A `ShellRenovation` per surface (`Ressources/Renovations/`): the shell's material per upgrade level, two steps (patched up, well kept); the next material is a cleaner texture or the same one less grimy, kept muted and warm |
+| Stairs | `Stairs3D` (treads between closed side boards, one mesh) with a `WalkableRamp` over it |
 | Parts an upgrade adds (door straps, steel frame, shelves, crates) | An `UpgradeLook` node with `TexturedBox3D` children in real materials (`iron_strap`, `steel_frame`, `wood_refinished`), not Palette primitives |
 | Lawn, lanes, path, yard | `GroundPlane3D` (soft darker patches in vertex colors break up the tile); the lane board multiplies its cell checker over `ground_material` |
 | Trees and weeds | Impostors from `Tools/bake_impostor.gd`, placed with `PropScatter3D` (one draw call per kind) in `Scenes/Levels/House/Surroundings/` |

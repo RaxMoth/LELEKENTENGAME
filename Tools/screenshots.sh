@@ -51,6 +51,12 @@ SHOT_RESOLUTION=$WIDE shot level_15_talk level=house showcase=house_town_talk fr
 # upgrades that show: door straps, steel frame, wooden stash shelf and crates.
 SHOT_RESOLUTION=$WIDE shot level_16_renovated level=house showcase=house_renovated stand=2.5,-11.5 look=0,1.6,-5 frames=150
 SHOT_RESOLUTION=$WIDE shot level_17_renovated_inside level=house showcase=house_renovated stand=2.2,3.0 look=4.68,1.0,3.25 frames=120
+# Automation: the cellar's grow racks and picker, its stairwell, the lab's
+# motors, belts and hopper, and the night-4 ghost staring back.
+SHOT_RESOLUTION=$WIDE shot level_18_cellar level=house showcase=house_cellar stand=1.6,1.0 look=3.0,-1.9,-1.6 frames=120
+SHOT_RESOLUTION=$WIDE shot level_19_stairwell level=house showcase=house_automation stand=2.0,3.8 look=2.4,-0.8,2.0 frames=120
+SHOT_RESOLUTION=$WIDE shot level_20_lab_automation level=house showcase=house_automation stand=-2.6,0.4 look=-2.6,1.2,-1.6 frames=120
+SHOT_RESOLUTION=$WIDE shot level_21_ghost level=house showcase=house_ghost frames=60
 "$TOOLS_DIR/godot.sh" --headless --script "$TOOLS_DIR/contact_sheet.gd" -- "$OUT_DIR/sheet_menus.png" 5 360 640 \
 	"$OUT_DIR"/0*.png >/dev/null 2>&1
 "$TOOLS_DIR/godot.sh" --headless --script "$TOOLS_DIR/contact_sheet.gd" -- "$OUT_DIR/sheet_levels.png" 3 640 360 \

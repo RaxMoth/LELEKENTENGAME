@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="UpgradeData" format=3]
+
+[ext_resource type="Script" path="res://Scripts/Resources/upgrade_data.gd" id="script"]
+
+[resource]
+script = ExtResource("script")
+id = &"lab_hopper"
+title = "Ingredient Hopper"
+description = "Buys and feeds in the ingredients of the last recipe you cooked, again and again, paid from the cash."
+base_cost = 1200
+cost_growth = 1.0
+max_level = 1
+base_value = 0.0
+value_per_level = 1.0
+value_format = ""
+branch = &"automation"
+required_reputation = 0
+required_upgrade_id = &"lab_conveyor"

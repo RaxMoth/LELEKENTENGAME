@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="UpgradeData" format=3]
+
+[ext_resource type="Script" path="res://Scripts/Resources/upgrade_data.gd" id="script"]
+
+[resource]
+script = ExtResource("script")
+id = &"perk_green_thumb"
+title = "Green Thumb"
+description = "One more shroom from every plant you harvest by hand, per level."
+base_cost = 200
+cost_growth = 1.8
+max_level = 3
+base_value = 0.0
+value_per_level = 1.0
+value_format = "+%s per hand harvest"
+branch = &"perks"
+required_reputation = 0
+required_upgrade_id = &""

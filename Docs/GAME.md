@@ -275,18 +275,21 @@ reaches the porch.
 
 ### Office (inside, east)
 
-The wall screen sells the five branches (also in the 2D Shop; each area
+The wall screen sells the eight branches (two rows of tabs; also in the 2D Shop; each area
 keeps its upgrades in its own catalog under `Ressources/Upgrades/`) and lets you
 **bribe** the police (cost grows with heat). Upgrades need cash and
 reputation and change how you play:
 
 | Branch | Upgrades |
 |---|---|
+| Lab | More Plants, Grinder, Cooker, Press (the lab's gadgets, one after the other) |
+| Automation | Dig the Cellar, Grow Racks, Grow Lights, Auto Picker, Grinder Motor, Cooker Timer, Press Motor, Conveyor Belts, Ingredient Hopper |
 | Production | Better Equipment (quality, wider green zones), Bigger Batches, Recipe: Fizz, Recipe: Haze |
 | Sales | Bigger Yard (queue spots), Waiting Bench (patience), VIP Access |
 | Defense | Reinforced Door, Better Rounds, Roof Turrets (up to 3), Security PC |
 | Workforce | Hire Crafter, Hire Dealer, Hire Guard, Crew Training |
 | House | Bigger Stash, Steel Door Frame (less door damage), Patch the Walls, Fix the Floor, Clean the Brickwork, Repair the Roof (heat cools faster) |
+| Perks | Running Shoes (walk faster), Green Thumb (more shrooms per hand harvest), Steady Hands (slower skill-check needle) |
 
 ### Renovating the house
 
@@ -309,6 +312,48 @@ show too: **Reinforced Door** bolts an iron strap pair, a middle strap and a
 kick plate onto the door (one per level), **Steel Door Frame** puts a steel
 frame and then heavy locks around it, and **Bigger Stash** swaps the boards
 and blocks for a real wooden shelf, then adds crates beside it.
+
+### The cellar and automation
+
+The game grows into an incremental one: the Automation tab is a tree
+(each upgrade needs the one before) that slowly takes the work off your
+hands. Machines only work during a shift; nothing piles up while the game
+is closed.
+
+- **Dig the Cellar** (needs More Plants): the planks nailed over the
+  opening in the stash-room floor come off. Wooden stairs lead down to a
+  brick cellar under the stash room and the office; walk down them like
+  anywhere else (smooth movement; teleports stay on the floor you are on;
+  quick travel brings you back up).
+- **Grow Racks** (3 levels): a rack of four shroom plants per level. They
+  grow on their own; harvest them by hand like the lab's plant.
+- **Grow Lights** (3 levels): +25% growth speed per level for the cellar.
+- **Auto Picker** (3 levels): a gantry under the cellar ceiling rolls to the
+  nearest ripe plant, lowers its arm and picks it into the stash (8 s, 6 s,
+  4 s, 2 s per pick); it waits while the stash is full.
+- **Grinder Motor, Cooker Timer, Press Motor**: the station stops its own
+  skill check after 4 seconds with a Good result; press Stop yourself for
+  Perfect.
+- **Conveyor Belts** (after the press motor): the ground ingredient rides a
+  belt into the cooker, the cooked batch an overhead rail into the press.
+- **Ingredient Hopper** (after the belts): buys the ingredients of the last
+  recipe you cooked from the crates (paid from the cash) and feeds them in,
+  one at a time, again and again. With every motor the lab now cooks that
+  recipe into the stash on its own.
+
+### Perks
+
+Upgrades for you rather than the house: **Running Shoes** (+20% walking
+speed per level, stick, arm swing and keys), **Green Thumb** (+1 shroom per
+level from every plant you harvest by hand, not the picker's) and **Steady
+Hands** (the skill-check needle sweeps 15% slower per level).
+
+### The ghost
+
+On the night of day 4 a ghost turns up somewhere behind you, on your
+floor, hovering and turned away. The moment you look at it, it freezes,
+turns to stare at you for a second and fades away for good. Nothing else
+reacts to it, and in co-op each player meets their own.
 
 ### Crew
 
@@ -335,7 +380,7 @@ These are the defaults this build uses; all are easy to change.
   bought, not upgraded; the free pistol keeps the player armed.
 - **Tone:** stylized (the existing palette and placeholder art).
 - **First playable size:** 3 products, 4 ingredients, 5 customer types,
-  3 raiders (cop, SWAT, battering ram), 4 guns, 3 roof turrets, 25 upgrades.
+  3 raiders (cop, SWAT, battering ram), 4 guns, 3 roof turrets, 37 upgrades.
 - **Platform:** both — Meta Quest (standalone) and PC VR (SteamVR).
 
 ## Running it
@@ -389,7 +434,9 @@ Scenes/Levels/House/House.tscn                inherits LevelBase; house_level.gd
     │   ├── HouseShell         walls / doors / windows (framed) / floor / ceiling / gable roof built from a few numbers; renovations swap its materials
     │   ├── FrontGarden        DEFENSE   Garden/FrontGarden.tscn: open yard (Yard), swinging / bolting door, porch, roof turrets, Security PC, guards, raid squads, guns in hand
     │   ├── SalesWindow        CUSTOMERS Sales/SalesWindow.tscn: window, queue, board, dealers, CustomerFlow
-    │   ├── Lab                HOUSE     Lab/Lab.tscn: crates, grinder, cooker, press, crafters, recipes
+    │   ├── Lab                HOUSE     Lab/Lab.tscn: crates, grinder, cooker, press, crafters, recipes; motors, belts, hopper (LabAutomation)
+    │   ├── Cellar             HOUSE     Cellar/Cellar.tscn: the boarded opening, stairs, brick cellar, grow racks, auto picker
+    │   ├── Ghost              HOUSE     Ghost/Ghost.tscn: the night-4 ghost (local to each player)
     │   ├── Office             HOUSE     Office/Office.tscn: upgrade board, bribes
     │   ├── Admin              HOUSE     Admin/Admin.tscn: admin terminal for testing (debug builds only)
     │   ├── Armory             DEFENSE   Armory/Armory.tscn: terminal for guns and ammo

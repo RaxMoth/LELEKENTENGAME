@@ -11,8 +11,17 @@
 [ext_resource type="Resource" path="res://Ressources/Upgrades/Lab/prod_recipe_fizz.tres" id="prod_recipe_fizz"]
 [ext_resource type="Resource" path="res://Ressources/Upgrades/Lab/prod_recipe_haze.tres" id="prod_recipe_haze"]
 [ext_resource type="Resource" path="res://Ressources/Upgrades/Lab/work_crafter.tres" id="work_crafter"]
+[ext_resource type="Resource" path="res://Ressources/Upgrades/Lab/lab_cellar.tres" id="lab_cellar"]
+[ext_resource type="Resource" path="res://Ressources/Upgrades/Lab/lab_grow_racks.tres" id="lab_grow_racks"]
+[ext_resource type="Resource" path="res://Ressources/Upgrades/Lab/lab_grow_lights.tres" id="lab_grow_lights"]
+[ext_resource type="Resource" path="res://Ressources/Upgrades/Lab/lab_auto_picker.tres" id="lab_auto_picker"]
+[ext_resource type="Resource" path="res://Ressources/Upgrades/Lab/lab_grinder_motor.tres" id="lab_grinder_motor"]
+[ext_resource type="Resource" path="res://Ressources/Upgrades/Lab/lab_cooker_motor.tres" id="lab_cooker_motor"]
+[ext_resource type="Resource" path="res://Ressources/Upgrades/Lab/lab_press_motor.tres" id="lab_press_motor"]
+[ext_resource type="Resource" path="res://Ressources/Upgrades/Lab/lab_conveyor.tres" id="lab_conveyor"]
+[ext_resource type="Resource" path="res://Ressources/Upgrades/Lab/lab_hopper.tres" id="lab_hopper"]
 
 [resource]
 script = ExtResource("catalog")
 area_name = "Lab"
-upgrades = Array[ExtResource("upgrade")]([ExtResource("lab_plants"), ExtResource("lab_grinder"), ExtResource("lab_cooker"), ExtResource("lab_press"), ExtResource("prod_equipment"), ExtResource("prod_batch"), ExtResource("prod_recipe_fizz"), ExtResource("prod_recipe_haze"), ExtResource("work_crafter")])
+upgrades = Array[ExtResource("upgrade")]([ExtResource("lab_plants"), ExtResource("lab_grinder"), ExtResource("lab_cooker"), ExtResource("lab_press"), ExtResource("prod_equipment"), ExtResource("prod_batch"), ExtResource("prod_recipe_fizz"), ExtResource("prod_recipe_haze"), ExtResource("work_crafter"), ExtResource("lab_cellar"), ExtResource("lab_grow_racks"), ExtResource("lab_grow_lights"), ExtResource("lab_auto_picker"), ExtResource("lab_grinder_motor"), ExtResource("lab_cooker_motor"), ExtResource("lab_press_motor"), ExtResource("lab_conveyor"), ExtResource("lab_hopper")])

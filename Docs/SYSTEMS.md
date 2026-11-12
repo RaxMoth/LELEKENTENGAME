@@ -204,7 +204,10 @@ Details and setup: [GAME.md](GAME.md).
 |---|---|---|
 | `XRPlayerRig` | XROrigin3D | Headset camera + two controllers; falls back to a flat simulator (mouse, WASD) without a headset. Signals `primary_action_pressed(pointer)`, `secondary_action_pressed(pointer)`, `menu_pressed`, `item_grabbed`, `item_placed`; `walkable_area`, `get_tool_pointer()`, `get_wrist_anchor()`, `pulse(pointer, strength)`, `set_world_space_ui()`, `tap_world_point()` (tests) |
 | `XRLocomotion` | Node | Teleport (off-hand stick), smooth movement, snap / smooth turning (dominant stick), flat WASD and `travel_spots` (keys 1–4); clamps to the `WalkableArea` |
-| `WalkableArea` | Node3D | Floor rectangles the player may stand on, minus round and rectangular blockers; `contains()`, `clamp_move()`, `add_region()`, `add_blockers()`, `add_rect_blockers()` |
+| `WalkableArea` | Node3D | Floor rectangles the player may stand on, minus round and rectangular blockers; `contains()`, `clamp_move()`, `add_region()`, `add_blockers()`, `add_rect_blockers()`. More floors: `add_floor(WalkableFloor)` (a cellar at its own height), `add_ramp(WalkableRamp)` (stairs between floors), `add_hole()` (a stairwell in the main floor); `get_floor_height_at()` picks the surface nearest the feet within `MAX_STEP`, and `clamp_move()` returns the new height, so walking down stairs lowers the player |
+| `Stairs3D` (`Scripts/Utils/`) | MeshInstance3D | A straight flight of stairs (treads and side boards) as one mesh, textured in meters; `get_ramp()` gives the matching WalkableRamp |
+| `GroundHole` (`Scripts/Utils/`) | Node3D | An opening every `GroundPlane3D` leaves out (a stairwell under the lawn and the town's asphalt) |
+| `SightMath` (`Scripts/Utils/`) | static | `is_in_view(eye, point, half_angle, max_distance)`: view-cone checks (the ghost) |
 | `Grabbable` / `ItemSocket` | Node3D | Items a hand or the flat cursor picks up and drops into sockets; sockets decide what they accept (`accept_rule`) and signal `item_inserted` |
 | `PointerButton` | Node3D | A 3D button pressed by the pointer ray |
 | `HingeHandle` | Grabbable | A handle on a hinged leaf (door, gate): reports the angle the hand pulls it to; a flat click asks to toggle |
@@ -272,6 +275,8 @@ var gauge: TimingGauge = TimingGauge.new(0.7, 0.2)   # gauge.advance(delta); gau
 QualityMath.tier_from_score(QualityMath.combine(accuracies, equipment_bonus))   # 1..4: Cut, Street, Pure, Premium
 stash.add(&"glow", tier, units) / take(&"glow", min_tier, amount) / steal(n) / count(id, min_tier)
 SalesMath.evaluate(asked_price, max_price, haggles)   # Verdict.ACCEPT / COUNTER / REFUSE
+AutomationMath.get_missing_ingredients(recipe_ids, present_ids)   # what the hopper still feeds
+AutomationMath.find_nearest(from, positions, ready_flags)          # the picker's next ripe plant
 heat.add(n) / cool(delta) / get_ratio()
 RaidPlanner.build_raid(data, raid_number, heat_ratio) / is_raid_day(day, data)   # waves of cops, SWAT, rams
 YardNavigation.steer(position, target, obstacles) / find_cover_spot(position, door, obstacles)
