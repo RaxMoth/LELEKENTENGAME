@@ -98,7 +98,8 @@ Add products, customer types, attackers, towers, upgrades or a new level:
 [Docs/GETTING_STARTED.md](Docs/GETTING_STARTED.md) ·
 API reference: [Docs/SYSTEMS.md](Docs/SYSTEMS.md) ·
 Coding rules: [Docs/instructor.md](Docs/instructor.md) ·
-Design system: [Docs/DESIGN.md](Docs/DESIGN.md)
+Design system: [Docs/DESIGN.md](Docs/DESIGN.md) ·
+Team workflow (branches, PRs, CI, conflicts): [Docs/WORKFLOW.md](Docs/WORKFLOW.md)
 
 ---
 
