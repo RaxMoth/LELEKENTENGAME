@@ -1,2 +1,23 @@
 # Normalize EOL for all files that Git considers text files.
 * text=auto eol=lf
+
+# Godot text formats: always LF, diffed as text.
+*.gd text eol=lf
+*.tscn text eol=lf
+*.tres text eol=lf
+*.godot text eol=lf
+*.import text eol=lf
+*.cfg text eol=lf
+*.uid text eol=lf
+
+# Both developers append strings to the translation table: keep both sides'
+# lines instead of conflicting (check for duplicate keys after a merge).
+Assets/Localization/translations.csv text eol=lf merge=union
+
+# Binary assets.
+*.png binary
+*.jpg binary
+*.ogg binary
+*.wav binary
+*.ttf binary
+*.otf binary
