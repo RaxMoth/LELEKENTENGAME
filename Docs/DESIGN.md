@@ -74,7 +74,7 @@ To re-skin a game, change `Palette` and regenerate the theme colors to match
 |---|---|
 | Primary / secondary / positive / destructive action | `Button` / `SecondaryButton` / `SuccessButton` / `DangerButton` |
 | Low-emphasis or destructive-but-rare action | `GhostButton` / `DangerGhostButton` |
-| Tappable list item | `CardButton` (see `LevelCard`) |
+| Tappable list item | `CardButton` |
 | Square icon button | `IconButton` + `icon` + `expand_icon = true` |
 | Content group | `CardPanel`; small tag / counter: `ChipPanel`; status pill: `PillPanel` |
 | Amount, price or total | `IconLabel` (icon + text, centered together) |

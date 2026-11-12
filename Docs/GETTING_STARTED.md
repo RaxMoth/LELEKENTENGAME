@@ -20,6 +20,10 @@ need it.
 
 ## 2. Add a level (a new night, a new place)
 
+The game itself is one world — the House — and plays as one day after
+another without a level select; `LevelBase` still works for extra scenes
+(a tutorial, a test range) started with `LevelBase.start_level()`.
+
 1. **Scene → New Inherited Scene** → `Scenes/Game/LevelBase/LevelBase.tscn`.
 2. Save it as `Scenes/Levels/<Name>/<Name>.tscn`.
 3. Attach a new script to the root that `extends LevelBase`.

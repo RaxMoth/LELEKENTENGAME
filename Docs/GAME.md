@@ -61,11 +61,17 @@ until the last wave is beaten.
 | 3 (night 9) | 4 | 5–8 cops, 2 SWAT every wave, +30% health, a ram in the last wave |
 | every heat point | | up to 4 extra cops in the last wave at full heat |
 
-**Win:** reach dawn on a selling day, or beat every wave of the raid — the
-day counter goes up and the shift's earnings are the score. **Lose:** the
-front door breaks — the stash is lost and repairs cost 20% of your cash, but
-upgrades, guns, crew and banked cash stay, and you replay that day (a lost
-raid is fought again).
+**The house is the only world.** There are no levels, stars or a level
+select: the main menu's Play (or putting on the headset) goes straight into
+the house, on the day you're on, and the game is one day after another.
+
+**Win the day:** reach dawn on a selling day, or beat every wave of the raid
+— the day counter goes up. **Lose it:** the front door breaks — the stash is
+lost and repairs cost 20% of your cash, but upgrades, guns, crew and banked
+cash stay, and you play that day again (a lost raid is fought again). Either
+way a **day summary** shows what the shift earned, sold and crafted (or what
+it cost) with one button into the next morning — the house reloads as the
+new day, in co-op the guest comes along (`DaySummaryPopup`).
 
 ## Controls
 
@@ -74,7 +80,7 @@ raid is fought again).
 | Pick up / put in | Dominant-hand trigger: point at a crate, ingredient or batch and pull; point at a station slot and pull again | Click an item / click where to put it |
 | Carry by hand | Grip (either hand, at the hand or along the beam): hold to carry, let go at — or pointing at — a slot; a quick grip click keeps holding until the next click | — |
 | Use (station buttons, screens, door bolt) | Dominant-hand trigger | Click |
-| Fire your gun | Off-hand trigger (from the front room or porch); the gun sits in that hand; hold it for the SMG | Right-click (hold for the SMG), or click a raider |
+| Fire your gun | Off-hand trigger (from the front room, the porch or the garden); the gun sits in that hand; hold it for the SMG | Right-click (hold for the SMG), or click a raider |
 | Front door | Trigger on a handle swings it fully open / shut; grip a handle to swing it by hand | Click a handle |
 | Walk | Dominant-hand stick walks where you look (like VRChat; "Smooth Movement", on by default), easing in and out; push it all the way to sprint | WASD / arrows; 1–4 jump to lab, front, window, office |
 | Run with your arms | Hold both grips (hands empty) and swing your arms like jogging: the harder you swing, the faster you run, toward where your hands point; footsteps and a light tap in both hands every stride | — |
@@ -149,8 +155,10 @@ money on the table. Prices also change how many people come
 ### The yard (outside, in front of the door)
 
 A wide open field in front of the house — trees, pines, rocks, bushes and a
-parked car, fenced at the far edges. Defend from the **front room** (shoot
-through the windows) or the **porch**, with the gun in your hand and the
+parked car, fenced at the far edges. Open the front door and **walk out**:
+the whole garden up to its fence is yours to walk (around the trees, rocks
+and the car). Defend from the **front room** (shoot through the windows),
+the **porch** or out in the **garden**, with the gun in your hand and the
 house's roof turrets.
 
 Raiders enter at random points of the far edge and the sides and work
@@ -333,7 +341,7 @@ Scenes/Levels/House/House.tscn                inherits LevelBase; house_level.gd
 |---|---|
 | `HouseFront` / `HouseContext` | The front contract: setup with the context, hooks the level calls, signals back (announce, warn, score, lose) |
 | `Operation` | One node every front reads and writes — the only shared state, and the natural place to replicate for co-op |
-| `HouseLevel` | Runs the shift: time, wages for `Types.GROUP_CREW`, win at dawn (or when the raid is beaten), lose on `shift_lost`, wrist status from the cycle and the fronts' status lines |
+| `HouseLevel` | Runs the shift: time, wages for `Types.GROUP_CREW`, win at dawn (or when the raid is beaten), lose on `shift_lost`, wrist status from the cycle and the fronts' status lines; at the end the day summary, then the next day (the house reloads) |
 | `HouseCycle` | The 3-day cycle: raid day, raid waves (`RaidPlanner` → `RaidWave`), tells the fronts through the raid hooks, closes the window during a raid |
 | `Grabbable`, `ItemSocket`, `PointerButton`, `InteractionQuery` (`Scripts/XR/`) | Physics-free hand interaction: grab at the hand or along the beam, drop into sockets, press 3D buttons |
 | `XRLocomotion` | Teleport, smooth movement, snap / smooth turning, flat WASD and travel spots; never leaves the `WalkableArea` |

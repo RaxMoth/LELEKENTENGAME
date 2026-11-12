@@ -35,7 +35,7 @@ res://
 ├── Ressources/      # .tres data instances (game_config, levels, upgrades...)
 ├── Scenes/          # .tscn files by domain; .gd here only if attached to a scene in the same folder
 │   ├── Boot/        # Main scene (splash; routes to the XR level or the menus)
-│   ├── Menus/       # MainMenu, LevelSelect, Shop (2D, flat-screen flow)
+│   ├── Menus/       # MainMenu, Shop (2D, flat-screen flow)
 │   ├── Game/        # LevelBase — every level inherits it (3D, owns the XR rig)
 │   ├── Entities/    # Reusable entities (XRPlayerRig, pooled 3D effects)
 │   ├── Levels/      # The game's levels: House (Lab, Sales, Garden, Office, Workers)

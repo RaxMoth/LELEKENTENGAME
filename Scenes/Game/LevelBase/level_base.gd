@@ -32,7 +32,7 @@ const ANNOUNCE_START_SCALE: float = 0.4
 ## Opacity of the announcer's outline (keeps the text readable over the world).
 const ANNOUNCE_OUTLINE_ALPHA: float = 0.9
 
-## Level definition (set by LevelSelect / Boot through scene params, or in the inspector for F6 testing).
+## Level definition (set by Boot / the main menu through scene params, or in the inspector for F6 testing).
 @export var level_data: LevelData
 ## "Ready?" / "Go!" on the announcer before play starts.
 @export var show_intro_countdown: bool = true
@@ -331,6 +331,13 @@ func _finish(outcome: Types.LevelOutcome) -> void:
 		Profile.stats.increment(Types.STAT_LEVELS_WON)
 	Events.level_finished.emit(result)
 	_on_level_finished(result)
+	_present_result(result)
+
+
+## @virtual How a finished run is shown and what comes next. Default: the
+## results popup (stars, rewards) with next / retry / menu. A world that
+## goes on (the House: day after day) overrides it.
+func _present_result(result: LevelResult) -> void:
 	await Global.wait(0.7, false)
 	await Ads.maybe_show_interstitial(AD_PLACEMENT_LEVEL_END)
 	var has_next_level: bool = GameConfig.get_default().get_next_level(result.level_id) != null

@@ -7,7 +7,7 @@
 [ext_resource type="Texture2D" uid="uid://ufvlxstqc63d" path="res://Assets/Icons/settings.svg" id="5_settings"]
 [ext_resource type="Script" uid="uid://bqv0t87wasanp" path="res://Scripts/UI/icon_label.gd" id="6_icon_label"]
 [ext_resource type="Texture2D" uid="uid://bo4xvxx44pxwj" path="res://Assets/Branding/logo.svg" id="7_logo"]
-[ext_resource type="Texture2D" uid="uid://df7u0tjfgdbcc" path="res://Assets/Icons/star.svg" id="8_star"]
+[ext_resource type="Texture2D" uid="uid://brvwqtyip7olg" path="res://Assets/Icons/sun.svg" id="8_sun"]
 [ext_resource type="Texture2D" uid="uid://bgso2ufx51c23" path="res://Assets/Icons/play.svg" id="9_play"]
 [ext_resource type="Texture2D" uid="uid://ddq2cevbuoari" path="res://Assets/Icons/bag.svg" id="10_bag"]
 [ext_resource type="Texture2D" uid="uid://jrh1iudx8qin" path="res://Assets/Icons/trophy.svg" id="11_trophy"]
@@ -103,14 +103,14 @@ layout_mode = 2
 size_flags_horizontal = 4
 theme_type_variation = &"PillPanel"
 
-[node name="StarProgress" type="HBoxContainer" parent="SafeArea/Layout/Hero/ProgressChip" unique_id=40081414]
+[node name="DayProgress" type="HBoxContainer" parent="SafeArea/Layout/Hero/ProgressChip" unique_id=40081414]
 unique_name_in_owner = true
 layout_mode = 2
 mouse_filter = 2
 theme_override_constants/separation = 10
 script = ExtResource("6_icon_label")
-icon = ExtResource("8_star")
-text = "0 / 0"
+icon = ExtResource("8_sun")
+text = "Day 1"
 icon_size = 32
 icon_color = Color(0.9686, 0.7725, 0.2824, 1)
 
