@@ -168,7 +168,9 @@ func _on_attacking_state_physics_processing(delta: float) -> void:
 	if _seconds_until_bite > 0.0:
 		return
 	_seconds_until_bite = bite_interval_seconds
-	_target_health.damage(bite_damage, self)
+	# An open or unbolted front door gives way faster (FrontDoor.get_damage_multiplier).
+	var door_multiplier: float = _board.door.get_damage_multiplier() if is_at_door() else 1.0
+	_target_health.damage(bite_damage * door_multiplier, self)
 	Audio.play_sfx_at(SfxSynth.get_preset(&"hit"), global_position, 0.15, -6.0)
 	if _tween != null:
 		_tween.kill()

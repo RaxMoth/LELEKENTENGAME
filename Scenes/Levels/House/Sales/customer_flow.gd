@@ -35,7 +35,8 @@ func setup(context: HouseContext, window: SalesWindow) -> void:
 
 ## One frame of the flow (called by the SalesWindow while the shift runs).
 func step(delta: float) -> void:
-	if not is_active or _context == null:
+	# During a police raid nobody comes to buy (HouseCycle).
+	if not is_active or _context == null or not _context.allows_customers():
 		return
 	_seconds_until_customer -= delta
 	if _seconds_until_customer <= 0.0:

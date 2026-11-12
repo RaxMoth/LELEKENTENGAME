@@ -6,20 +6,20 @@
 [ext_resource type="PackedScene" path="res://Scenes/Levels/House/Garden/FrontDoor.tscn" id="front_door"]
 [ext_resource type="PackedScene" path="res://Scenes/Levels/House/Garden/BuildBoard.tscn" id="build_board"]
 [ext_resource type="PackedScene" path="res://Scenes/Levels/House/Workers/Worker.tscn" id="worker"]
-[ext_resource type="PackedScene" path="res://Scenes/Levels/House/Garden/Junkie.tscn" id="junkie"]
 [ext_resource type="PackedScene" path="res://Scenes/Levels/House/Garden/Cop.tscn" id="cop"]
-[ext_resource type="PackedScene" path="res://Scenes/Levels/House/Garden/Goon.tscn" id="goon"]
-[ext_resource type="PackedScene" path="res://Scenes/Levels/House/Garden/Boss.tscn" id="boss"]
+[ext_resource type="PackedScene" path="res://Scenes/Levels/House/Garden/Swat.tscn" id="swat"]
 [ext_resource type="Script" path="res://Scripts/Resources/tower_data.gd" id="tower_script"]
 [ext_resource type="Resource" path="res://Ressources/Towers/turret.tres" id="t_turret"]
 [ext_resource type="Resource" path="res://Ressources/Towers/heavy_gun.tres" id="t_heavy_gun"]
 [ext_resource type="Resource" path="res://Ressources/Towers/barricade.tres" id="t_barricade"]
 [ext_resource type="Script" path="res://Scenes/Levels/House/Garden/front_garden.gd" id="front_garden"]
+[ext_resource type="Resource" path="res://Ressources/Weapons/weapon_catalog.tres" id="weapon_catalog"]
 [ext_resource type="Script" path="res://Scenes/Levels/House/Garden/attacker_director.gd" id="attacker_director"]
 
 [node name="FrontGarden" type="Node3D"]
 script = ExtResource("front_garden")
 towers = Array[ExtResource("tower_script")]([ExtResource("t_turret"), ExtResource("t_heavy_gun"), ExtResource("t_barricade")])
+weapon_catalog = ExtResource("weapon_catalog")
 defense_zone = Rect2(-5, -5, 10, 3)
 
 [node name="FrontDoor" parent="." instance=ExtResource("front_door")]
@@ -190,10 +190,8 @@ top_scale = 0
 [node name="AttackerDirector" type="Node" parent="."]
 unique_name_in_owner = true
 script = ExtResource("attacker_director")
-junkie_scene = ExtResource("junkie")
 cop_scene = ExtResource("cop")
-goon_scene = ExtResource("goon")
-boss_scene = ExtResource("boss")
+swat_scene = ExtResource("swat")
 
 [node name="Guards" type="Node3D" parent="."]
 unique_name_in_owner = true

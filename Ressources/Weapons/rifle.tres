@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="WeaponData" format=3]
+
+[ext_resource type="Script" path="res://Scripts/Resources/weapon_data.gd" id="script"]
+
+[resource]
+script = ExtResource("script")
+id = &"rifle"
+display_name = "Rifle"
+description = "Long reach and armor-piercing rounds. The answer to SWAT."
+cost = 800
+damage = 60.0
+fire_interval_seconds = 0.55
+range_meters = 40.0
+pierces_armor = true
+recoil = 1
+has_unlimited_ammo = false
+starting_ammo = 20
+ammo_pack_size = 20
+ammo_pack_cost = 50
+max_ammo = 100

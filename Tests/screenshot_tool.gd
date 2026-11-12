@@ -45,8 +45,19 @@ func _run() -> void:
 		var level: LevelBase = get_tree().current_scene as LevelBase
 		if level != null:
 			level.rig.locomotion.travel_to_spot(int(arguments["spot"]) - 1)
+	# stand=x,z puts the player's feet there; look=x,y,z turns the view to a point.
+	var shot_level: LevelBase = get_tree().current_scene as LevelBase
+	if shot_level != null and arguments.has("stand"):
+		var stand: PackedStringArray = str(arguments["stand"]).split(",")
+		var feet: Vector3 = shot_level.rig.get_feet_position()
+		shot_level.rig.move_origin_by(Vector3(float(stand[0]), feet.y, float(stand[1])) - feet)
 	for frame_index: int in int(arguments.get("frames", "90")):
 		await get_tree().process_frame
+	if shot_level != null and arguments.has("look"):
+		var look: PackedStringArray = str(arguments["look"]).split(",")
+		shot_level.rig.aim_at_world_point(Vector3(float(look[0]), float(look[1]), float(look[2])))
+		for frame_index: int in 10:
+			await get_tree().process_frame
 	if arguments.has("cursor"):
 		var coordinates: PackedStringArray = str(arguments["cursor"]).split(",")
 		var motion: InputEventMouseMotion = InputEventMouseMotion.new()

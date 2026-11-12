@@ -196,6 +196,12 @@ func cool_heat(delta: float) -> void:
 		heat_changed.emit(heat.value)
 
 
+## The raid is over: the police lose track of the house and heat starts at 0.
+func clear_heat() -> void:
+	heat.set_value(0.0)
+	heat_changed.emit(heat.value)
+
+
 func get_bribe_cost() -> int:
 	return bribe_base_cost + roundi(heat.value * bribe_cost_per_heat)
 

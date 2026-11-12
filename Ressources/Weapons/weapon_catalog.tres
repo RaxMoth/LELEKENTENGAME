@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="WeaponCatalog" format=3]
+
+[ext_resource type="Script" path="res://Scripts/Resources/weapon_catalog.gd" id="catalog"]
+[ext_resource type="Script" path="res://Scripts/Resources/weapon_data.gd" id="weapon"]
+[ext_resource type="Resource" path="res://Ressources/Weapons/pistol.tres" id="pistol"]
+[ext_resource type="Resource" path="res://Ressources/Weapons/smg.tres" id="smg"]
+[ext_resource type="Resource" path="res://Ressources/Weapons/shotgun.tres" id="shotgun"]
+[ext_resource type="Resource" path="res://Ressources/Weapons/rifle.tres" id="rifle"]
+
+[resource]
+script = ExtResource("catalog")
+weapons = Array[ExtResource("weapon")]([ExtResource("pistol"), ExtResource("smg"), ExtResource("shotgun"), ExtResource("rifle")])

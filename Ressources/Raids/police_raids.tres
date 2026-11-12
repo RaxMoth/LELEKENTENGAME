@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="RaidData" format=3]
+
+[ext_resource type="Script" path="res://Scripts/Resources/raid_data.gd" id="script"]
+
+[resource]
+script = ExtResource("script")
+days_per_cycle = 3
+first_raid_waves = 2
+extra_waves_per_raid = 1
+max_waves = 6
+seconds_before_first_wave = 10.0
+seconds_between_waves = 8.0
+seconds_between_spawns = 1.4
+first_wave_cops = 3
+cops_per_later_wave = 1
+cops_per_later_raid = 1
+max_heat_extra_cops = 4
+swat_from_raid = 2
+swat_per_wave = 1
+swat_per_later_raid = 1
+health_growth_per_raid = 0.15
+last_wave_health_multiplier = 1.1

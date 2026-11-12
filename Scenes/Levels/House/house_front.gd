@@ -98,6 +98,27 @@ func finish_shift(_result: LevelResult) -> void:
 	pass
 
 
+## @virtual The raid night began (HouseCycle): [param wave_count] police waves are coming.
+func on_raid_started(_raid_number: int, _wave_count: int) -> void:
+	pass
+
+
+## @virtual A raid wave enters: the defense front sends its officers in.
+func on_raid_wave_started(_wave: RaidWave) -> void:
+	pass
+
+
+## @virtual Raiders of the current wave still coming or standing (the wave
+## ends when every front reports 0).
+func get_raiders_left() -> int:
+	return 0
+
+
+## @virtual Every wave of the raid is beaten.
+func on_raid_cleared(_raid_number: int) -> void:
+	pass
+
+
 ## @virtual One short line for the wrist status ("Door 80%"), or "" for none.
 func get_status_line() -> String:
 	return ""
