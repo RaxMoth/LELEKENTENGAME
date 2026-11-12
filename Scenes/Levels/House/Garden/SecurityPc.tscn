@@ -4,6 +4,7 @@
 [ext_resource type="Script" path="res://Scripts/XR/world_screen.gd" id="screen"]
 [ext_resource type="Script" path="res://Scripts/Utils/placeholder_mesh_3d.gd" id="mesh"]
 [ext_resource type="PackedScene" path="res://Scenes/Levels/House/Garden/TurretConsole.tscn" id="console"]
+[ext_resource type="Script" path="res://Scripts/XR/pointer_button.gd" id="button"]
 
 [node name="SecurityPc" type="Node3D"]
 script = ExtResource("pc")
@@ -42,3 +43,63 @@ unique_name_in_owner = true
 current = true
 fov = 60.0
 far = 60.0
+
+[node name="Goggles" type="Node3D" parent="."]
+transform = Transform3D(0.9397, 0, 0.342, 0, 1, 0, -0.342, 0, 0.9397, -0.62, 0.05, 0.12)
+
+[node name="Visor" type="MeshInstance3D" parent="Goggles"]
+cast_shadow = 0
+script = ExtResource("mesh")
+shape_kind = 1
+size = Vector3(0.19, 0.09, 0.1)
+color = Color(0.1412, 0.1686, 0.2431, 1)
+
+[node name="Faceplate" type="MeshInstance3D" parent="Goggles"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.052)
+cast_shadow = 0
+script = ExtResource("mesh")
+shape_kind = 1
+size = Vector3(0.18, 0.08, 0.008)
+color = Color(0.051, 0.0627, 0.0902, 1)
+
+[node name="LensLeft" type="MeshInstance3D" parent="Goggles"]
+transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, -0.045, 0, 0.052)
+cast_shadow = 0
+script = ExtResource("mesh")
+shape_kind = 3
+size = Vector3(0.05, 0.006, 0.05)
+color = Color(0.898, 0.2824, 0.302, 1)
+glow = 1.0
+
+[node name="LensRight" type="MeshInstance3D" parent="Goggles"]
+transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 0.045, 0, 0.052)
+cast_shadow = 0
+script = ExtResource("mesh")
+shape_kind = 3
+size = Vector3(0.05, 0.006, 0.05)
+color = Color(0.898, 0.2824, 0.302, 1)
+glow = 1.0
+
+[node name="Strap" type="MeshInstance3D" parent="Goggles"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.11)
+cast_shadow = 0
+script = ExtResource("mesh")
+shape_kind = 1
+size = Vector3(0.2, 0.025, 0.14)
+color = Color(0.1804, 0.2118, 0.2941, 1)
+
+[node name="GogglesButton" type="Node3D" parent="Goggles"]
+unique_name_in_owner = true
+script = ExtResource("button")
+press_radius = 0.14
+has_visual = false
+
+[node name="GogglesLabel" type="Label3D" parent="Goggles"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.13, 0)
+pixel_size = 0.0016
+billboard = 1
+modulate = Color(0.9333, 0.9451, 0.9686, 1)
+outline_modulate = Color(0.051, 0.0627, 0.0902, 0.9)
+text = "Turret goggles"
+font_size = 40
+outline_size = 10

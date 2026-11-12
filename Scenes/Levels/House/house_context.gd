@@ -12,6 +12,8 @@ extends RefCounted
 ## hit no screen or button). [param feet]: where they stand;
 ## [param recoil_pulse]: call with a Types.HapticStrength to rumble their hand.
 signal guest_fired(pointer: XRPointer, feet: Vector3, recoil_pulse: Callable)
+## Co-op: the other player let go of their gun trigger (automatic guns stop).
+signal guest_trigger_released
 
 var level: LevelBase = null
 var rig: XRPlayerRig = null

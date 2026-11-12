@@ -7,6 +7,7 @@
 script = ExtResource("turret")
 
 [node name="Mount" type="MeshInstance3D" parent="."]
+unique_name_in_owner = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.05, 0)
 cast_shadow = 0
 script = ExtResource("mesh")
@@ -19,6 +20,7 @@ unique_name_in_owner = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 0)
 
 [node name="Housing" type="MeshInstance3D" parent="Head"]
+unique_name_in_owner = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.2, 0.04)
 cast_shadow = 0
 script = ExtResource("mesh")
@@ -27,6 +29,7 @@ size = Vector3(0.42, 0.32, 0.5)
 color = Color(0.3569, 0.3922, 0.4824, 1)
 
 [node name="Sensor" type="MeshInstance3D" parent="Head"]
+unique_name_in_owner = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.12, 0.39, -0.12)
 cast_shadow = 0
 script = ExtResource("mesh")
@@ -65,4 +68,4 @@ unshaded = true
 
 [node name="CameraMount" type="Marker3D" parent="Head/BarrelPivot"]
 unique_name_in_owner = true
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.14, -0.05)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.34, 0.1)

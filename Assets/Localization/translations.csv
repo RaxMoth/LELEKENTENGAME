@@ -205,9 +205,6 @@ SMG,SMG,MP
 Shotgun,Shotgun,Schrotflinte
 Rifle,Rifle,Gewehr
 "Your old sidearm. Weak, but it never runs dry.","Your old sidearm. Weak, but it never runs dry.","Deine alte Dienstwaffe. Schwach, aber die Munition geht nie aus."
-"Sprays fast, light rounds. Armor eats a lot of each hit.","Sprays fast, light rounds. Armor eats a lot of each hit.","Schnelle, leichte Schüsse. Panzerung schluckt viel von jedem Treffer."
-One heavy blast at short range. Stops anyone near the door.,One heavy blast at short range. Stops anyone near the door.,Ein schwerer Schuss auf kurze Distanz. Stoppt jeden an der Tür.
-Long reach and armor-piercing rounds. The answer to SWAT.,Long reach and armor-piercing rounds. The answer to SWAT.,Große Reichweite und panzerbrechende Munition. Die Antwort auf das SEK.
 %d rounds,%d rounds,%d Schuss
 %s ammo,%s ammo,Munition: %s
 %s bought,%s bought,%s gekauft
@@ -335,3 +332,9 @@ Could not reach the host,Could not reach the host,Der Host ist nicht erreichbar
 The host left the game,The host left the game,Der Host hat das Spiel verlassen
 Host,Host,Host
 Player %d,Player %d,Spieler %d
+"Full auto: hold the trigger. Fast, light rounds that spread the longer you fire; armor eats a lot of each hit.","Full auto: hold the trigger. Fast, light rounds that spread the longer you fire; armor eats a lot of each hit.","Vollautomatisch: Abzug gedrückt halten. Schnelle, leichte Schüsse, die beim Dauerfeuer streuen; Panzerung schluckt viel."
+"Nine pellets in a wide cone. Devastating up close, weak beyond 15 m.","Nine pellets in a wide cone. Devastating up close, weak beyond 15 m.","Neun Schrotkugeln im weiten Kegel. Verheerend aus der Nähe, schwach über 15 m."
+"Dead accurate, armor-piercing rounds that go through one raider into the next. The answer to SWAT.","Dead accurate, armor-piercing rounds that go through one raider into the next. The answer to SWAT.","Absolut präzise, panzerbrechende Munition, die durch einen Angreifer in den nächsten geht. Die Antwort auf das SEK."
+Turret %d · live,Turret %d · live,Turm %d · live
+Take off goggles,Take off goggles,Brille abnehmen
+Turret goggles,Turret goggles,Turm-Brille

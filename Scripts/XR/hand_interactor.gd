@@ -25,6 +25,10 @@ extends Node
 signal primary_action_pressed(pointer: XRPointer)
 ## Off-hand trigger that hit no screen or button.
 signal secondary_action_pressed(pointer: XRPointer)
+## The dominant trigger was let go (held actions: a turret's trigger).
+signal primary_action_released(pointer: XRPointer)
+## The off-hand trigger was let go (automatic guns stop firing).
+signal secondary_action_released(pointer: XRPointer)
 signal item_grabbed(item: Grabbable)
 signal item_placed(item: Grabbable, socket: ItemSocket)
 ## A hand should rumble (the owner turns it into a controller pulse).
@@ -167,6 +171,10 @@ func _on_trigger(hand: Types.Hand, is_pressed: bool) -> void:
 	var pointer: XRPointer = _pointers[hand]
 	if not is_pressed:
 		pointer.release()
+		if hand == dominant_hand:
+			primary_action_released.emit(pointer)
+		else:
+			secondary_action_released.emit(pointer)
 		# Something fixed (a door handle) only moves while the trigger is held.
 		var held_item: Grabbable = _held_items[hand]
 		if hand == dominant_hand and held_item != null and held_item.is_fixed:

@@ -2,6 +2,60 @@
 
 [ext_resource type="Script" path="res://Scenes/Levels/House/Armory/Guns/gun_model.gd" id="gun"]
 [ext_resource type="Script" path="res://Scripts/Utils/placeholder_mesh_3d.gd" id="mesh"]
+[ext_resource type="Material" path="res://Assets/Materials/gun_metal.tres" id="metal"]
+[ext_resource type="Material" path="res://Assets/Materials/gun_metal_worn.tres" id="worn"]
+[ext_resource type="Material" path="res://Assets/Materials/gun_polymer.tres" id="polymer"]
+[ext_resource type="Material" path="res://Assets/Materials/wood_trim.tres" id="wood"]
+[ext_resource type="Material" path="res://Assets/Materials/gun_lens.tres" id="lens"]
+
+[sub_resource type="BoxMesh" id="m1"]
+size = Vector3(0.03, 0.026, 0.16)
+
+[sub_resource type="BoxMesh" id="m2"]
+size = Vector3(0.024, 0.008, 0.05)
+
+[sub_resource type="BoxMesh" id="m3"]
+size = Vector3(0.03, 0.105, 0.048)
+
+[sub_resource type="BoxMesh" id="m4"]
+size = Vector3(0.032, 0.07, 0.03)
+
+[sub_resource type="BoxMesh" id="m5"]
+size = Vector3(0.031, 0.012, 0.05)
+
+[sub_resource type="BoxMesh" id="m6"]
+size = Vector3(0.008, 0.006, 0.045)
+
+[sub_resource type="BoxMesh" id="m7"]
+size = Vector3(0.006, 0.022, 0.006)
+
+[sub_resource type="BoxMesh" id="m8"]
+size = Vector3(0.03, 0.03, 0.185)
+
+[sub_resource type="BoxMesh" id="m9"]
+size = Vector3(0.031, 0.022, 0.003)
+
+[sub_resource type="BoxMesh" id="m10"]
+size = Vector3(0.031, 0.022, 0.003)
+
+[sub_resource type="BoxMesh" id="m11"]
+size = Vector3(0.031, 0.022, 0.003)
+
+[sub_resource type="BoxMesh" id="m12"]
+size = Vector3(0.012, 0.008, 0.03)
+
+[sub_resource type="BoxMesh" id="m13"]
+size = Vector3(0.004, 0.006, 0.006)
+
+[sub_resource type="BoxMesh" id="m14"]
+size = Vector3(0.02, 0.006, 0.006)
+
+[sub_resource type="CylinderMesh" id="m15"]
+top_radius = 0.008
+bottom_radius = 0.008
+height = 0.012
+radial_segments = 14
+rings = 1
 
 [node name="Pistol" type="Node3D" node_paths=PackedStringArray("moving_part")]
 script = ExtResource("gun")
@@ -9,61 +63,111 @@ moving_part = NodePath("Body/Slide")
 moving_travel = Vector3(0, 0, 0.035)
 cycle_seconds = 0.09
 recoil_distance = 0.02
-recoil_degrees = 9.0
+recoil_degrees = 10.0
 
 [node name="Body" type="Node3D" parent="."]
 unique_name_in_owner = true
 
 [node name="Frame" type="MeshInstance3D" parent="Body"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.0, -0.035)
+transform = Transform3D(1, 0, 0, 0, 1.0000, -0.0000, 0, 0.0000, 1.0000, 0, 0, -0.04)
+mesh = SubResource("m1")
+surface_material_override/0 = ExtResource("polymer")
 cast_shadow = 0
-script = ExtResource("mesh")
-shape_kind = 1
-size = Vector3(0.032, 0.026, 0.15)
-color = Color(0.1804, 0.2118, 0.2941, 1)
+
+[node name="Rail" type="MeshInstance3D" parent="Body"]
+transform = Transform3D(1, 0, 0, 0, 1.0000, -0.0000, 0, 0.0000, 1.0000, 0, -0.016, -0.085)
+mesh = SubResource("m2")
+surface_material_override/0 = ExtResource("polymer")
+cast_shadow = 0
 
 [node name="Grip" type="MeshInstance3D" parent="Body"]
-transform = Transform3D(1, 0, 0, 0, 0.9659, 0.2588, 0, -0.2588, 0.9659, 0, -0.055, 0.03)
+transform = Transform3D(1, 0, 0, 0, 0.9613, 0.2756, 0, -0.2756, 0.9613, 0, -0.058, 0.03)
+mesh = SubResource("m3")
+surface_material_override/0 = ExtResource("polymer")
 cast_shadow = 0
-script = ExtResource("mesh")
-shape_kind = 1
-size = Vector3(0.032, 0.1, 0.045)
-color = Color(0.1804, 0.2118, 0.2941, 1)
 
-[node name="Slide" type="MeshInstance3D" parent="Body"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.028, -0.045)
+[node name="GripTexture" type="MeshInstance3D" parent="Body/Grip"]
+transform = Transform3D(1, 0, 0, 0, 1.0000, -0.0000, 0, 0.0000, 1.0000, 0, 0, 0)
+mesh = SubResource("m4")
+surface_material_override/0 = ExtResource("worn")
 cast_shadow = 0
-script = ExtResource("mesh")
-shape_kind = 1
-size = Vector3(0.034, 0.034, 0.18)
-color = Color(0.102, 0.1255, 0.1882, 1)
 
-[node name="SlideStripe" type="MeshInstance3D" parent="Body/Slide"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.018, 0)
+[node name="Magazine" type="MeshInstance3D" parent="Body/Grip"]
+transform = Transform3D(1, 0, 0, 0, 1.0000, -0.0000, 0, 0.0000, 1.0000, 0, -0.056, 0)
+mesh = SubResource("m5")
+surface_material_override/0 = ExtResource("metal")
 cast_shadow = 0
-script = ExtResource("mesh")
-shape_kind = 1
-size = Vector3(0.012, 0.004, 0.16)
-color = Color(0.3569, 0.3922, 0.4824, 1)
 
 [node name="TriggerGuard" type="MeshInstance3D" parent="Body"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.022, -0.005)
+transform = Transform3D(1, 0, 0, 0, 1.0000, -0.0000, 0, 0.0000, 1.0000, 0, -0.03, -0.01)
+mesh = SubResource("m6")
+surface_material_override/0 = ExtResource("polymer")
 cast_shadow = 0
-script = ExtResource("mesh")
-shape_kind = 1
-size = Vector3(0.01, 0.02, 0.045)
-color = Color(0.102, 0.1255, 0.1882, 1)
+
+[node name="Trigger" type="MeshInstance3D" parent="Body"]
+transform = Transform3D(1, 0, 0, 0, 0.9848, -0.1736, 0, 0.1736, 0.9848, 0, -0.018, -0.005)
+mesh = SubResource("m7")
+surface_material_override/0 = ExtResource("metal")
+cast_shadow = 0
+
+[node name="Slide" type="MeshInstance3D" parent="Body"]
+transform = Transform3D(1, 0, 0, 0, 1.0000, -0.0000, 0, 0.0000, 1.0000, 0, 0.026, -0.045)
+mesh = SubResource("m8")
+surface_material_override/0 = ExtResource("metal")
+cast_shadow = 0
+
+[node name="SerrationA" type="MeshInstance3D" parent="Body/Slide"]
+transform = Transform3D(1, 0, 0, 0, 1.0000, -0.0000, 0, 0.0000, 1.0000, 0, 0, 0.06)
+mesh = SubResource("m9")
+surface_material_override/0 = ExtResource("worn")
+cast_shadow = 0
+
+[node name="SerrationB" type="MeshInstance3D" parent="Body/Slide"]
+transform = Transform3D(1, 0, 0, 0, 1.0000, -0.0000, 0, 0.0000, 1.0000, 0, 0, 0.068)
+mesh = SubResource("m10")
+surface_material_override/0 = ExtResource("worn")
+cast_shadow = 0
+
+[node name="SerrationC" type="MeshInstance3D" parent="Body/Slide"]
+transform = Transform3D(1, 0, 0, 0, 1.0000, -0.0000, 0, 0.0000, 1.0000, 0, 0, 0.076)
+mesh = SubResource("m11")
+surface_material_override/0 = ExtResource("worn")
+cast_shadow = 0
+
+[node name="EjectionPort" type="MeshInstance3D" parent="Body/Slide"]
+transform = Transform3D(1, 0, 0, 0, 1.0000, -0.0000, 0, 0.0000, 1.0000, 0.01, 0.012, -0.01)
+mesh = SubResource("m12")
+surface_material_override/0 = ExtResource("worn")
+cast_shadow = 0
+
+[node name="FrontSight" type="MeshInstance3D" parent="Body/Slide"]
+transform = Transform3D(1, 0, 0, 0, 1.0000, -0.0000, 0, 0.0000, 1.0000, 0, 0.018, -0.088)
+mesh = SubResource("m13")
+surface_material_override/0 = ExtResource("worn")
+cast_shadow = 0
+
+[node name="RearSight" type="MeshInstance3D" parent="Body/Slide"]
+transform = Transform3D(1, 0, 0, 0, 1.0000, -0.0000, 0, 0.0000, 1.0000, 0, 0.018, 0.085)
+mesh = SubResource("m14")
+surface_material_override/0 = ExtResource("worn")
+cast_shadow = 0
+
+[node name="BarrelTip" type="MeshInstance3D" parent="Body"]
+transform = Transform3D(1, 0, 0, 0, 0.0000, 1.0000, 0, -1.0000, 0.0000, 0, 0.026, -0.139)
+mesh = SubResource("m15")
+surface_material_override/0 = ExtResource("worn")
+cast_shadow = 0
 
 [node name="Muzzle" type="Marker3D" parent="Body"]
 unique_name_in_owner = true
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.028, -0.14)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.026, -0.146)
 
 [node name="Flash" type="MeshInstance3D" parent="Body/Muzzle"]
 unique_name_in_owner = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.03)
 cast_shadow = 0
 script = ExtResource("mesh")
-size = Vector3(0.07, 0.07, 0.09)
+size = Vector3(0.06, 0.06, 0.08)
 color = Color(1, 0.8784, 0.5412, 1)
 glow = 3.0
 unshaded = true

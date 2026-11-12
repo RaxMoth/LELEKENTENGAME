@@ -31,6 +31,12 @@ extends XROrigin3D
 signal primary_action_pressed(pointer: XRPointer)
 ## Off-hand trigger (XR) or a right click (flat) that hit no screen or button.
 signal secondary_action_pressed(pointer: XRPointer)
+## The dominant trigger (XR) or the left mouse button (flat) was let go
+## (held actions: a turret's trigger).
+signal primary_action_released(pointer: XRPointer)
+## The off-hand trigger (XR) or the right mouse button (flat) was let go
+## (automatic guns stop firing).
+signal secondary_action_released(pointer: XRPointer)
 ## Menu or B / Y button.
 signal menu_pressed
 signal item_grabbed(item: Grabbable)
@@ -98,6 +104,8 @@ var _is_popup_shown: bool = false
 var _default_physics_ticks: int = 60
 ## The hands' rules (grab, put in, buttons); the flat cursor has its own below.
 var _hands: HandInteractor = null
+## Grip buttons held down right now, per hand (arm-swing walking).
+var _grip_down: Dictionary[Types.Hand, bool] = {Types.Hand.LEFT: false, Types.Hand.RIGHT: false}
 var _flat_held_item: Grabbable = null
 ## Meters the play space is raised for seated play (see StandingView).
 var _standing_lift: float = 0.0
@@ -140,6 +148,8 @@ func _ready() -> void:
 	_hands.setup({Types.Hand.LEFT: _left_hold_anchor, Types.Hand.RIGHT: _right_hold_anchor}, {Types.Hand.LEFT: _left_pointer, Types.Hand.RIGHT: _right_pointer})
 	_hands.primary_action_pressed.connect(primary_action_pressed.emit)
 	_hands.secondary_action_pressed.connect(secondary_action_pressed.emit)
+	_hands.primary_action_released.connect(primary_action_released.emit)
+	_hands.secondary_action_released.connect(secondary_action_released.emit)
 	_hands.item_grabbed.connect(item_grabbed.emit)
 	_hands.item_placed.connect(item_placed.emit)
 	_hands.pulse_requested.connect(func(hand: Types.Hand, strength: Types.HapticStrength) -> void: pulse(_get_pointer(hand), strength))
@@ -211,13 +221,15 @@ func _unhandled_input(event: InputEvent) -> void:
 			_flat_press()
 		else:
 			_flat_release()
-	elif button.button_index == MOUSE_BUTTON_RIGHT and button.pressed:
+	elif button.button_index == MOUSE_BUTTON_RIGHT:
 		set_flat_cursor(button.position)
 		if forwards_hand_input:
-			# A co-op guest's right click is their gun trigger: the host fires it.
+			# A co-op guest's right mouse button is their gun trigger: the host
+			# fires it (held, for automatic guns).
 			var off_hand: Types.Hand = Types.Hand.LEFT if dominant_hand == Types.Hand.RIGHT else Types.Hand.RIGHT
-			hand_input_forwarded.emit(off_hand, Types.XR_ACTION_TRIGGER_CLICK, true)
-			hand_input_forwarded.emit(off_hand, Types.XR_ACTION_TRIGGER_CLICK, false)
+			hand_input_forwarded.emit(off_hand, Types.XR_ACTION_TRIGGER_CLICK, button.pressed)
+		elif not button.pressed:
+			secondary_action_released.emit(_flat_pointer)
 		elif not _flat_pointer.is_over_screen():
 			secondary_action_pressed.emit(_flat_pointer)
 
@@ -285,6 +297,27 @@ func get_weapon_anchor() -> Node3D:
 	return _flat_weapon_anchor
 
 
+## True while [param hand]'s grip button is held down (arm-swing walking).
+func is_grip_down(hand: Types.Hand) -> bool:
+	return is_xr_active and _grip_down[hand]
+
+
+## True while [param hand] holds nothing.
+func is_hand_empty(hand: Types.Hand) -> bool:
+	return _hands.get_held_item(hand) == null
+
+
+## A controller's transform in the play space (relative to this origin, so
+## walking or turning doesn't change it — only the hand moving does).
+func get_hand_local_transform(hand: Types.Hand) -> Transform3D:
+	return _get_controller(hand).transform
+
+
+## The camera the player sees through (the headset's, or the flat one).
+func get_view_camera() -> Camera3D:
+	return _xr_camera if is_xr_active else _flat_camera
+
+
 ## True while the gun hand holds an item (the gun is put away meanwhile).
 func is_weapon_hand_busy() -> bool:
 	if is_xr_active:
@@ -303,6 +336,8 @@ func get_hand_pointer(hand: Types.Hand) -> XRPointer:
 func handle_controller_button(hand: Types.Hand, action_name: StringName, is_pressed: bool) -> void:
 	match action_name:
 		Types.XR_ACTION_TRIGGER_CLICK, Types.XR_ACTION_GRIP_CLICK:
+			if action_name == Types.XR_ACTION_GRIP_CLICK:
+				_grip_down[hand] = is_pressed
 			if forwards_hand_input:
 				hand_input_forwarded.emit(hand, action_name, is_pressed)
 			else:
@@ -647,6 +682,7 @@ func _flat_release() -> void:
 	elif not _flat_is_dragging:
 		_flat_click()
 	_flat_is_dragging = false
+	primary_action_released.emit(_flat_pointer)
 
 
 ## One click of the flat cursor: put down what it holds, press a button,

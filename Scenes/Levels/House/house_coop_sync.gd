@@ -382,6 +382,8 @@ func _get_or_create_player(peer_id: int) -> RemotePlayer:
 		player.hands.secondary_action_pressed.connect(func(pointer: XRPointer) -> void:
 			var recoil: Callable = func(strength: Types.HapticStrength) -> void: _receive_pulse.rpc_id(peer_id, Types.Hand.LEFT, strength)
 			_level.context.guest_fired.emit(pointer, player.get_feet_position(), recoil))
+		player.hands.secondary_action_released.connect(func(_pointer: XRPointer) -> void:
+			_level.context.guest_trigger_released.emit())
 	_players[peer_id] = player
 	return player
 

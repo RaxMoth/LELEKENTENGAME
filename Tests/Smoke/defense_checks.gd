@@ -127,6 +127,7 @@ static func _check_turrets(test: SmokeTest, level: HouseLevel) -> void:
 	pc.release_control()
 	test.check(not turret.is_manual, "released, the turret aims on its own again")
 	target.take_hit(100000.0)
+	await _check_turret_seat(test, level, turret)
 	rig.locomotion.travel_to_spot(1)
 
 
@@ -175,6 +176,7 @@ static func _check_armory(test: SmokeTest, level: HouseLevel) -> void:
 	garden.fire_weapon(_aim(rig, cop))
 	test.check(cop.health_component.current_health < empty_health, "the pistol never runs dry")
 	cop.take_hit(100000.0)
+	await _check_weapon_types(test, level)
 
 
 ## Opening, walking through, closing and bolting the front door from both sides.
@@ -259,3 +261,76 @@ static func _spawn_at(garden: FrontGarden, point: Vector2) -> Raider:
 	raider.global_position = Vector3(point.x, 0.0, point.y)
 	raider.freeze()
 	return raider
+
+
+## Each gun shoots its own way: shotgun pellets, rifle rounds that go
+## through, the SMG firing on while the trigger is held.
+static func _check_weapon_types(test: SmokeTest, level: HouseLevel) -> void:
+	var rig: XRPlayerRig = level.rig
+	var garden: FrontGarden = level.get_front(FrontGarden) as FrontGarden
+	var armory: Armory = level.get_front(Armory) as Armory
+	var catalog: WeaponCatalog = armory.weapon_catalog
+	var shotgun: WeaponData = catalog.find_weapon(&"shotgun")
+	var rifle: WeaponData = catalog.find_weapon(&"rifle")
+	var smg: WeaponData = catalog.find_weapon(&"smg")
+	Profile.wallet.add(Types.CURRENCY_CASH, 5000, false)
+	armory.buy_weapon(shotgun)
+	armory.buy_weapon(rifle)
+	await test.frames(60)
+	var target: Raider = _spawn_at(garden, Vector2(0.8, -7.4))
+	var health_before: float = target.health_component.current_health
+	garden.fire_weapon(_aim(rig, target))
+	var one_pellet: float = shotgun.damage - target.armor
+	test.check(health_before - target.health_component.current_health > one_pellet * 2.0, "the shotgun's pellets hit together")
+	target.take_hit(100000.0)
+
+	Profile.armory.loadout.equip(rifle)
+	await test.frames(60)
+	var head: Vector3 = rig.get_head_transform().origin
+	var first: Raider = _spawn_at(garden, Vector2(0.6, -8.5))
+	var direction: Vector3 = (first.get_hit_center() - head).normalized()
+	var beyond: Vector3 = head + direction * (head.distance_to(first.get_hit_center()) + 2.5)
+	var second: Raider = _spawn_at(garden, Vector2(beyond.x, beyond.z))
+	var first_health: float = first.health_component.current_health
+	var second_health: float = second.health_component.current_health
+	garden.fire_weapon(_aim(rig, first))
+	test.check(first.health_component.current_health < first_health and second.health_component.current_health < second_health, "a rifle round goes through one raider into the next")
+	first.take_hit(100000.0)
+	second.take_hit(100000.0)
+
+	Profile.armory.loadout.equip(smg)
+	Profile.armory.loadout.add_ammo(smg, smg.max_ammo)
+	await test.frames(30)
+	var burst_target: Raider = _spawn_at(garden, Vector2(-0.4, -9.0))
+	var rounds_before: int = Profile.armory.loadout.get_ammo(smg)
+	rig.secondary_action_pressed.emit(_aim(rig, burst_target))
+	await test.frames(40)
+	rig.secondary_action_released.emit(rig.get_tool_pointer())
+	var fired: int = rounds_before - Profile.armory.loadout.get_ammo(smg)
+	await test.frames(10)
+	test.check(fired >= 4 and Profile.armory.loadout.get_ammo(smg) == rounds_before - fired, "holding the trigger keeps the SMG firing; letting go stops it")
+	burst_target.take_hit(100000.0)
+	Profile.armory.loadout.equip(catalog.get_starter())
+
+
+## "VR in VR": the goggles at the Security PC put the player into the turret.
+static func _check_turret_seat(test: SmokeTest, level: HouseLevel, turret: HouseTurret) -> void:
+	var rig: XRPlayerRig = level.rig
+	var garden: FrontGarden = level.get_front(FrontGarden) as FrontGarden
+	var seat: TurretSeat = garden.turret_seat
+	var desk_feet: Vector3 = rig.get_feet_position()
+	rig.tap_world_point(garden.security_pc.get_goggles_button().get_press_center())
+	await test.frames(3)
+	var head: Vector3 = rig.get_head_transform().origin
+	test.check(seat.is_active() and head.distance_to(turret.get_camera_mount().global_position) < 0.35 and rig.locomotion.is_locked, "putting on the goggles puts the player in the turret")
+	var target: Raider = _spawn_at(garden, Vector2(0.0, -10.5))
+	var target_health: float = target.health_component.current_health
+	rig.aim_at_world_point(target.get_hit_center())
+	await test.frames(60)
+	seat.set_firing(true)
+	test.check(await test.wait_until(func() -> bool: return target.health_component.current_health < target_health), "the turret fires where the player aims")
+	seat.set_firing(false)
+	target.take_hit(100000.0)
+	rig.tap_world_point(seat.get_exit_button().get_press_center())
+	await test.frames(3)
+	test.check(not seat.is_active() and rig.get_feet_position().distance_to(desk_feet) < 0.05 and not rig.locomotion.is_locked, "taking the goggles off brings the player back to the desk")
