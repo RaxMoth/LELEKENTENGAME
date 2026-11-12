@@ -1,0 +1,10 @@
+[gd_resource type="StandardMaterial3D" format=3]
+
+[resource]
+resource_name = "GunLens"
+albedo_color = Color(0.2353, 0.7843, 0.9098, 1)
+metallic = 0.4
+roughness = 0.1
+emission_enabled = true
+emission = Color(0.2353, 0.7843, 0.9098, 1)
+emission_energy_multiplier = 0.4

@@ -1,0 +1,7 @@
+[gd_resource type="StandardMaterial3D" format=3]
+
+[resource]
+resource_name = "GunPolymer"
+albedo_color = Color(0.11, 0.115, 0.125, 1)
+metallic = 0.0
+roughness = 0.78

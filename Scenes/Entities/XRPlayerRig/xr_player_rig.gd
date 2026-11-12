@@ -31,6 +31,12 @@ extends XROrigin3D
 signal primary_action_pressed(pointer: XRPointer)
 ## Off-hand trigger (XR) or a right click (flat) that hit no screen or button.
 signal secondary_action_pressed(pointer: XRPointer)
+## The dominant trigger (XR) or the left mouse button (flat) was let go
+## (held actions: a turret's trigger).
+signal primary_action_released(pointer: XRPointer)
+## The off-hand trigger (XR) or the right mouse button (flat) was let go
+## (automatic guns stop firing).
+signal secondary_action_released(pointer: XRPointer)
 ## Menu or B / Y button.
 signal menu_pressed
 signal item_grabbed(item: Grabbable)
@@ -97,6 +103,8 @@ var _uses_world_space_ui: bool = false
 var _is_popup_shown: bool = false
 var _default_physics_ticks: int = 60
 var _held_items: Dictionary[Types.Hand, Grabbable] = {Types.Hand.LEFT: null, Types.Hand.RIGHT: null}
+## Grip buttons held down right now, per hand.
+var _grip_down: Dictionary[Types.Hand, bool] = {Types.Hand.LEFT: false, Types.Hand.RIGHT: false}
 ## When each hand's grip picked up what it holds (Time ticks, ms), or
 ## NOT_GRIP_GRABBED (the trigger took it: a grip release leaves it alone).
 var _grip_grabbed_at_msec: Dictionary[Types.Hand, int] = {Types.Hand.LEFT: NOT_GRIP_GRABBED, Types.Hand.RIGHT: NOT_GRIP_GRABBED}
@@ -205,9 +213,11 @@ func _unhandled_input(event: InputEvent) -> void:
 			_flat_press()
 		else:
 			_flat_release()
-	elif button.button_index == MOUSE_BUTTON_RIGHT and button.pressed:
+	elif button.button_index == MOUSE_BUTTON_RIGHT:
 		set_flat_cursor(button.position)
-		if not _flat_pointer.is_over_screen():
+		if not button.pressed:
+			secondary_action_released.emit(_flat_pointer)
+		elif not _flat_pointer.is_over_screen():
 			secondary_action_pressed.emit(_flat_pointer)
 
 # ============================================
@@ -274,6 +284,27 @@ func get_weapon_anchor() -> Node3D:
 	return _flat_weapon_anchor
 
 
+## True while [param hand]'s grip button is held down (arm-swing walking).
+func is_grip_down(hand: Types.Hand) -> bool:
+	return is_xr_active and _grip_down[hand]
+
+
+## True while [param hand] holds nothing.
+func is_hand_empty(hand: Types.Hand) -> bool:
+	return _held_items[hand] == null
+
+
+## A controller's transform in the play space (relative to this origin, so
+## walking or turning doesn't change it — only the hand moving does).
+func get_hand_local_transform(hand: Types.Hand) -> Transform3D:
+	return _get_controller(hand).transform
+
+
+## The camera the player sees through (the headset's, or the flat one).
+func get_view_camera() -> Camera3D:
+	return _xr_camera if is_xr_active else _flat_camera
+
+
 ## True while the gun hand holds an item (the gun is put away meanwhile).
 func is_weapon_hand_busy() -> bool:
 	if is_xr_active:
@@ -294,6 +325,7 @@ func handle_controller_button(hand: Types.Hand, action_name: StringName, is_pres
 		Types.XR_ACTION_TRIGGER_CLICK:
 			_on_trigger(hand, is_pressed)
 		Types.XR_ACTION_GRIP_CLICK:
+			_grip_down[hand] = is_pressed
 			_on_grip(hand, is_pressed)
 		Types.XR_ACTION_MENU_BUTTON, Types.XR_ACTION_SECONDARY_BUTTON:
 			if is_pressed:
@@ -457,6 +489,10 @@ func _on_trigger(hand: Types.Hand, is_pressed: bool) -> void:
 	var pointer: XRPointer = _get_pointer(hand)
 	if not is_pressed:
 		pointer.release()
+		if hand == dominant_hand:
+			primary_action_released.emit(pointer)
+		else:
+			secondary_action_released.emit(pointer)
 		# Something fixed (a door handle) only moves while the trigger is held.
 		var held_item: Grabbable = _held_items[hand]
 		if hand == dominant_hand and held_item != null and held_item.is_fixed:
@@ -733,6 +769,7 @@ func _flat_release() -> void:
 	elif not _flat_is_dragging:
 		_flat_click()
 	_flat_is_dragging = false
+	primary_action_released.emit(_flat_pointer)
 
 
 ## One click of the flat cursor: put down what it holds, press a button,

@@ -184,6 +184,7 @@ Details and setup: [GAME.md](GAME.md).
 | `Grabbable` / `ItemSocket` | Node3D | Items a hand or the flat cursor picks up and drops into sockets; sockets decide what they accept (`accept_rule`) and signal `item_inserted` |
 | `PointerButton` | Node3D | A 3D button pressed by the pointer ray |
 | `HingeHandle` | Grabbable | A handle on a hinged leaf (door, gate): reports the angle the hand pulls it to; a flat click asks to toggle |
+| `XRPlayerRig` signals | | `primary_action_released` / `secondary_action_released` (held actions: automatic guns, a turret trigger); `is_grip_down(hand)`, `get_hand_local_transform(hand)` for arm-swing running |
 | `InteractionQuery` | static | Finds grab targets, sockets and buttons by sphere math (no physics) |
 | `XRPointer` | Node3D | Ray along -Z. Clicks `WorldScreen`s itself; game code reads `ray_origin` / `ray_direction` and reports hits with `set_world_hit_distance()` |
 | `WorldScreen` | Node3D | Shows a Control scene (`content_scene`) or an existing viewport (`attach_viewport`) on a panel in the world and forwards pointer input as mouse events |
@@ -244,6 +245,8 @@ SalesMath.evaluate(asked_price, max_price, haggles)   # Verdict.ACCEPT / COUNTER
 heat.add(n) / cool(delta) / get_ratio()
 RaidPlanner.build_raid(data, raid_number, heat_ratio) / is_raid_day(day, data)   # waves of cops, SWAT, rams
 YardNavigation.steer(position, target, obstacles) / find_cover_spot(position, door, obstacles)
+WeaponBallistics.get_shot_directions(forward, weapon, bloom) / get_damage_at(weapon, distance)   # pellets, cone, falloff
+WalkMotion.get_arm_swing_speed(left_velocity, right_velocity) / ease_velocity(v, target, delta)    # arm-swing running
 loadout.buy_weapon(gun) / equip(gun) / try_fire(gun) / add_ammo(gun, rounds)   # WeaponLoadout
 clock.advance(delta) / get_hour() / get_phase() / just_passed_hour(25.0, delta)
 ```

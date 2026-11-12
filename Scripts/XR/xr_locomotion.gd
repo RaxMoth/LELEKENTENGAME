@@ -7,8 +7,15 @@
 ## go to jump, flick it left / right to snap-turn (or hold it to turn
 ## smoothly). A trackpad click up teleports, left / right snap-turns.
 ##
-## Dependencies: XRPlayerRig, XRPointer, WalkableArea, RayMath, Settings,
-##               PlaceholderMesh3D, Palette, Types autoloads
+## Arm-swing running: hold both grips with empty hands and swing the arms
+## like jogging — the harder the swing, the faster (WalkMotion); you head
+## where the hands point. Walking eases in and out instead of jumping to
+## full speed, a fully pushed stick sprints, and footsteps sound every stride
+## (with a light tap in both hands while arm-swinging). No head bob: the
+## camera only ever moves as far as the player walks.
+##
+## Dependencies: XRPlayerRig, XRPointer, WalkableArea, WalkMotion, RayMath, Settings, Audio,
+##               PlaceholderMesh3D, Palette, SfxSynth, Types autoloads
 class_name XRLocomotion
 extends Node
 
@@ -39,6 +46,15 @@ var _is_target_valid: bool = false
 var _walk_stick: Vector2 = Vector2.ZERO
 var _reposition_stick: Vector2 = Vector2.ZERO
 var _is_turn_flicked: bool = false
+var _velocity: Vector3 = Vector3.ZERO
+## Meters walked since the last footstep.
+var _stride_carry: float = 0.0
+var _last_left_hand: Vector3 = Vector3.ZERO
+var _last_right_hand: Vector3 = Vector3.ZERO
+var _has_hand_samples: bool = false
+
+## On = the player stays put (a turret seat); sticks, arm swing and WASD do nothing.
+var is_locked: bool = false
 
 
 func _ready() -> void:
@@ -52,6 +68,10 @@ func _ready() -> void:
 
 ## Thumbstick moved on a controller (called by the rig).
 func handle_stick(hand: Types.Hand, value: Vector2, pointer: XRPointer) -> void:
+	if is_locked:
+		_walk_stick = Vector2.ZERO
+		_aiming_pointer = null
+		return
 	if hand == rig.dominant_hand:
 		_walk_stick = value
 		return
@@ -84,6 +104,13 @@ func handle_trackpad_click(pad_position: Vector2, pointer: XRPointer) -> void:
 
 ## Per physics frame (called by the rig): smooth moves, turns, aim marker, WASD.
 func step(delta: float) -> void:
+	if is_locked:
+		_velocity = Vector3.ZERO
+		_hide_marker()
+		# Keep sampling the hands: leaving a turret seat with both grips held
+		# must not read as one huge swing.
+		_sample_hands()
+		return
 	if rig.is_xr_active:
 		_step_xr(delta)
 	else:
@@ -126,11 +153,17 @@ func is_smooth_turning() -> bool:
 # ============================================
 
 func _step_xr(delta: float) -> void:
+	var target_velocity: Vector3 = Vector3.ZERO
 	if is_smooth_movement() and _walk_stick.length() > STICK_DEADZONE:
 		var head_basis: Basis = rig.get_head_transform().basis
 		var forward: Vector3 = Vector3(-head_basis.z.x, 0.0, -head_basis.z.z).normalized()
 		var right: Vector3 = Vector3(head_basis.x.x, 0.0, head_basis.x.z).normalized()
-		_walk((right * _walk_stick.x + forward * _walk_stick.y) * move_speed * delta)
+		var stick_direction: Vector3 = (right * _walk_stick.x + forward * _walk_stick.y).normalized()
+		target_velocity = stick_direction * WalkMotion.get_stick_speed(_walk_stick, move_speed)
+	var swing_velocity: Vector3 = _get_arm_swing_velocity(delta)
+	if swing_velocity.length() > target_velocity.length():
+		target_velocity = swing_velocity
+	_move_with(target_velocity, delta, swing_velocity != Vector3.ZERO)
 	var is_turning_smoothly: bool = is_smooth_turning() and _aiming_pointer == null and _is_turn_gesture(_reposition_stick)
 	if is_turning_smoothly and absf(_reposition_stick.x) > STICK_DEADZONE:
 		turn_by(-_reposition_stick.x * smooth_turn_degrees_per_second * delta)
@@ -142,12 +175,65 @@ func _step_xr(delta: float) -> void:
 
 func _step_flat(delta: float) -> void:
 	var input: Vector2 = Input.get_vector(Types.ACTION_MOVE_LEFT, Types.ACTION_MOVE_RIGHT, Types.ACTION_MOVE_BACK, Types.ACTION_MOVE_FORWARD)
-	if input == Vector2.ZERO:
-		return
 	var view_basis: Basis = rig.get_head_transform().basis
 	var forward: Vector3 = Vector3(-view_basis.z.x, 0.0, -view_basis.z.z).normalized()
 	var right: Vector3 = Vector3(view_basis.x.x, 0.0, view_basis.x.z).normalized()
-	_walk((right * input.x + forward * input.y) * flat_move_speed * delta)
+	_move_with((right * input.x + forward * input.y) * flat_move_speed, delta, false)
+
+
+## Eases the walking velocity toward [param target_velocity], moves, and
+## lets footsteps fall every stride (with a light tap in both hands while
+## running with the arms).
+func _move_with(target_velocity: Vector3, delta: float, is_arm_swinging: bool) -> void:
+	_velocity = WalkMotion.ease_velocity(_velocity, target_velocity, delta)
+	if _velocity.length() < 0.01:
+		_velocity = Vector3.ZERO
+		return
+	var before: Vector3 = rig.get_feet_position()
+	_walk(_velocity * delta)
+	var walked: float = Vector2(rig.get_feet_position().x - before.x, rig.get_feet_position().z - before.z).length()
+	if walked < 0.0001:
+		# A wall: stop instead of pushing into it.
+		_velocity = Vector3.ZERO
+		return
+	var steps: Array[float] = WalkMotion.count_footsteps(_stride_carry, walked)
+	_stride_carry = steps[1]
+	if steps[0] > 0.0:
+		_play_footstep(is_arm_swinging)
+
+
+## Velocity of an arm-swing run: both grips held with empty hands, the hands
+## swinging like jogging; heads where the hands point. Zero otherwise.
+func _get_arm_swing_velocity(delta: float) -> Vector3:
+	var left: Transform3D = rig.get_hand_local_transform(Types.Hand.LEFT)
+	var right: Transform3D = rig.get_hand_local_transform(Types.Hand.RIGHT)
+	var had_samples: bool = _has_hand_samples
+	var left_velocity: Vector3 = (left.origin - _last_left_hand) / maxf(delta, 0.001)
+	var right_velocity: Vector3 = (right.origin - _last_right_hand) / maxf(delta, 0.001)
+	_last_left_hand = left.origin
+	_last_right_hand = right.origin
+	_has_hand_samples = true
+	var is_swinging: bool = rig.is_grip_down(Types.Hand.LEFT) and rig.is_grip_down(Types.Hand.RIGHT) \
+		and rig.is_hand_empty(Types.Hand.LEFT) and rig.is_hand_empty(Types.Hand.RIGHT)
+	if not is_swinging or not had_samples:
+		return Vector3.ZERO
+	# Speeds in the hands' own frame of the play space, so turning doesn't count.
+	var speed: float = WalkMotion.get_arm_swing_speed(left_velocity, right_velocity)
+	if speed <= 0.0:
+		return Vector3.ZERO
+	var pointing: Vector3 = rig.global_transform.basis * -(left.basis.z + right.basis.z)
+	var direction: Vector3 = Vector3(pointing.x, 0.0, pointing.z)
+	if direction.length() < 0.01:
+		var head_basis: Basis = rig.get_head_transform().basis
+		direction = Vector3(-head_basis.z.x, 0.0, -head_basis.z.z)
+	return direction.normalized() * speed
+
+
+func _play_footstep(with_hands: bool) -> void:
+	Audio.play_sfx_at(SfxSynth.get_preset(&"step"), rig.get_feet_position(), 0.15, -10.0)
+	if with_hands:
+		for pointer: XRPointer in rig.get_active_pointers():
+			rig.pulse(pointer, Types.HapticStrength.LIGHT)
 
 
 func _walk(offset: Vector3) -> void:
@@ -200,3 +286,9 @@ func _show_marker(target: Vector3, is_valid: bool) -> void:
 func _hide_marker() -> void:
 	if teleport_marker != null:
 		teleport_marker.visible = false
+
+
+func _sample_hands() -> void:
+	_last_left_hand = rig.get_hand_local_transform(Types.Hand.LEFT).origin
+	_last_right_hand = rig.get_hand_local_transform(Types.Hand.RIGHT).origin
+	_has_hand_samples = true

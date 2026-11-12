@@ -2,15 +2,20 @@
 ## the live view from one of the house's roof turrets. Switch turrets, take
 ## one over, then point at the view to aim it and pull the trigger to fire —
 ## a real turret seat, from inside the house. Released, the turret aims on
-## its own again. Part of the defense front (FrontGarden owns it and its
+## its own again. Or put on the turret goggles beside the monitor to sit in
+## the turret yourself (TurretSeat). Part of the defense front (FrontGarden owns it and its
 ## turrets); it only sits in the office.
 ##
 ## The view is one small SubViewport whose camera copies the turret's camera
 ## mount; it renders only while the PC is in sight, at 20 frames a second.
 ##
-## Dependencies: HouseTurret, Yard, TurretConsole, WorldScreen, RayMath, Audio autoload
+## Dependencies: HouseTurret, Yard, TurretConsole, WorldScreen, PointerButton, RayMath, Audio autoload
 class_name SecurityPc
 extends Node3D
+
+## The turret goggles next to the monitor were picked up: put the player
+## into the turret shown on screen (the FrontGarden's TurretSeat does it).
+signal goggles_used(turret: HouseTurret)
 
 ## Camera view refreshes per second while the PC is in sight.
 const FEED_UPDATES_PER_SECOND: float = 20.0
@@ -25,6 +30,7 @@ var _is_available: bool = false
 @onready var _screen: WorldScreen = %PcScreen
 @onready var _feed_viewport: SubViewport = %FeedViewport
 @onready var _feed_camera: Camera3D = %FeedCamera
+@onready var _goggles_button: PointerButton = %GogglesButton
 
 
 func _ready() -> void:
@@ -42,7 +48,23 @@ func setup(turrets: Array[HouseTurret], yard: Yard) -> void:
 	console.fire_released.connect(func() -> void: _is_firing = false)
 	console.turret_step_requested.connect(select_next_turret)
 	console.control_toggled.connect(toggle_control)
+	_goggles_button.pressed.connect(func(_button: PointerButton) -> void: use_goggles())
 	_refresh_console()
+
+
+## Puts the goggles on: asks to seat the player in the turret on screen.
+func use_goggles() -> void:
+	var turret: HouseTurret = get_selected_turret()
+	if not _is_available or turret == null:
+		Audio.play_ui(Audio.UI_ERROR)
+		return
+	release_control()
+	goggles_used.emit(turret)
+
+
+## The goggles' hot spot (tests).
+func get_goggles_button() -> PointerButton:
+	return _goggles_button
 
 
 ## Shown once the Security PC upgrade is bought.

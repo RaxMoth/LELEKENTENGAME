@@ -25,7 +25,8 @@ const ARRIVE_DISTANCE: float = 0.15
 ## Seconds after a hit during which the raider counts as pinned down.
 const SUPPRESSION_SECONDS: float = 2.5
 const TURN_SPEED: float = 8.0
-const CROUCH_SCALE: float = 0.72
+## Hit spheres of a crouching raider sit this much lower.
+const CROUCHED_HIT_SCALE: float = 0.7
 
 @export var base_max_health: float = 120.0
 ## Meters per second between covers...
@@ -62,11 +63,6 @@ const CROUCH_SCALE: float = 0.72
 ## Radius kept clear of obstacles and other raiders.
 @export var body_radius: float = 0.35
 
-@export_group("Animation")
-@export var step_frequency: float = 7.0
-@export var bob_height: float = 0.05
-@export var sway_degrees: float = 4.0
-
 ## The squad this raider moves with (set by the director).
 var squad: RaidSquad = null
 ## Waiting in the last cover for the squad's rush.
@@ -84,7 +80,6 @@ var _seconds_until_move: float = 0.0
 var _seconds_since_hit: float = SUPPRESSION_SECONDS
 var _seconds_until_hit: float = 0.0
 var _last_direction: Vector2 = Vector2.ZERO
-var _walk_phase: float = 0.0
 var _has_been_used: bool = false
 var _is_frozen: bool = false
 var _tween: Tween
@@ -93,6 +88,8 @@ var _tween: Tween
 @onready var hit_flash_component: HitFlash3DComponent = %HitFlash3DComponent
 @onready var state_chart: StateChart = %StateChart
 @onready var _visual: Node3D = %Visual
+## The bodies under Visual (one per officer; a ram team has two).
+var _bodies: Array[RaiderBody] = []
 
 
 func _ready() -> void:
@@ -100,6 +97,9 @@ func _ready() -> void:
 	health_component.died.connect(func() -> void: state_chart.send_event(Types.EVENT_DIED))
 	health_component.damaged.connect(func(_damage_info: DamageInfo) -> void: _seconds_since_hit = 0.0)
 	_reset_stats()
+	for child: Node in _visual.get_children():
+		if child is RaiderBody:
+			_bodies.append(child as RaiderBody)
 
 # ============================================
 # PUBLIC API
@@ -147,7 +147,8 @@ func take_hit(amount: float, source: Node = null, from_tower: bool = false, pier
 
 ## Center of the sphere shots aim at (lower while crouching in cover).
 func get_hit_center() -> Vector3:
-	return global_position + Vector3(0.0, hit_height * _visual.scale.y, 0.0)
+	var crouch: float = _bodies[0].get_crouch_amount() if not _bodies.is_empty() else 0.0
+	return global_position + Vector3(0.0, hit_height * lerpf(1.0, CROUCHED_HIT_SCALE, crouch), 0.0)
 
 
 ## The squad rushes: everyone heads for the door.
@@ -175,6 +176,8 @@ func _on_pool_spawned() -> void:
 	_visual.scale = Vector3.ONE
 	_visual.position = Vector3.ZERO
 	_visual.rotation = Vector3.ZERO
+	for body: RaiderBody in _bodies:
+		body.reset_pose()
 	squad = null
 	is_staged = false
 	door_spot_index = 0
@@ -184,7 +187,6 @@ func _on_pool_spawned() -> void:
 	_is_frozen = false
 	_last_direction = Vector2.ZERO
 	_seconds_since_hit = SUPPRESSION_SECONDS
-	_walk_phase = randf() * TAU
 	if _has_been_used:
 		state_chart.send_event(Types.EVENT_RESPAWN)
 	_has_been_used = true
@@ -220,21 +222,18 @@ func _on_moving_state_physics_processing(delta: float) -> void:
 		next = _yard.clamp_to_bounds(next)
 	global_position = Vector3(next.x, global_position.y, next.y)
 	_face(direction, delta)
-	_walk_phase += delta * step_frequency * (_speed / maxf(0.1, move_speed))
-	_visual.position.y = absf(sin(_walk_phase)) * bob_height
-	_visual.rotation.z = sin(_walk_phase) * deg_to_rad(sway_degrees)
+	_animate_bodies(delta, _speed / maxf(0.1, move_speed))
 
 
 func _on_in_cover_state_entered() -> void:
 	_is_in_motion = false
-	_visual.rotation.z = 0.0
-	_visual.position.y = 0.0
 	_set_crouched(not is_battering_ram)
 	_seconds_until_move = randf_range(cover_seconds.x, cover_seconds.y)
 	_face_toward(_yard.get_door_point() if _yard != null else Vector2.ZERO, 1.0)
 
 
 func _on_in_cover_state_physics_processing(delta: float) -> void:
+	_animate_bodies(delta, 0.0)
 	if _yard == null or _is_frozen:
 		return
 	_seconds_since_hit += delta
@@ -251,12 +250,12 @@ func _on_in_cover_state_physics_processing(delta: float) -> void:
 func _on_attacking_state_entered() -> void:
 	_is_in_motion = false
 	_set_crouched(false)
-	_visual.rotation.z = 0.0
 	_seconds_until_hit = hit_interval_seconds * 0.5
 	_face_toward(_yard.get_door_point() if _yard != null else Vector2.ZERO, 1.0)
 
 
 func _on_attacking_state_physics_processing(delta: float) -> void:
+	_animate_bodies(delta, 0.0)
 	if _yard == null or _is_frozen or _yard.door == null or not _yard.door.is_alive():
 		return
 	_seconds_until_hit -= delta
@@ -270,6 +269,8 @@ func _on_attacking_state_physics_processing(delta: float) -> void:
 		_tween.kill()
 	_tween = create_tween()
 	var lunge: float = 0.45 if is_battering_ram else 0.25
+	for body: RaiderBody in _bodies:
+		body.play_strike()
 	_tween.tween_property(_visual, "position:z", lunge, 0.08).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	_tween.tween_property(_visual, "position:z", 0.0, 0.22).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN_OUT)
 
@@ -353,7 +354,8 @@ func _arrive() -> void:
 
 
 func _set_crouched(is_crouched: bool) -> void:
-	_visual.scale = Vector3(1.0, CROUCH_SCALE if is_crouched else 1.0, 1.0)
+	for body: RaiderBody in _bodies:
+		body.set_crouched(is_crouched)
 
 
 func _face(direction: Vector2, delta: float) -> void:
@@ -371,3 +373,9 @@ func _face_toward(point: Vector2, weight: float) -> void:
 
 func _reset_stats() -> void:
 	health_component.revive(base_max_health * _health_multiplier)
+
+
+## Walk cycle, crouch easing and strikes of every body (a ram team has two).
+func _animate_bodies(delta: float, speed_ratio: float) -> void:
+	for body: RaiderBody in _bodies:
+		body.animate(delta, speed_ratio)

@@ -7,6 +7,7 @@
 [ext_resource type="PackedScene" path="res://Scenes/Levels/House/Garden/FrontDoor.tscn" id="front_door"]
 [ext_resource type="PackedScene" path="res://Scenes/Levels/House/Garden/HouseTurret.tscn" id="house_turret"]
 [ext_resource type="PackedScene" path="res://Scenes/Levels/House/Garden/SecurityPc.tscn" id="security_pc"]
+[ext_resource type="PackedScene" path="res://Scenes/Levels/House/Garden/TurretSeat.tscn" id="turret_seat"]
 [ext_resource type="PackedScene" path="res://Scenes/Levels/House/Workers/Worker.tscn" id="worker"]
 [ext_resource type="PackedScene" path="res://Scenes/Levels/House/Garden/Cop.tscn" id="cop"]
 [ext_resource type="PackedScene" path="res://Scenes/Levels/House/Garden/Swat.tscn" id="swat"]
@@ -52,6 +53,9 @@ mount_level = 3
 [node name="SecurityPc" parent="." instance=ExtResource("security_pc")]
 unique_name_in_owner = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.4, 0.8, -1.6)
+
+[node name="TurretSeat" parent="." instance=ExtResource("turret_seat")]
+unique_name_in_owner = true
 
 [node name="AttackerDirector" type="Node" parent="."]
 unique_name_in_owner = true

@@ -1,7 +1,7 @@
 [gd_scene format=3]
 
 [ext_resource type="Script" path="res://Scenes/Levels/House/Garden/raider.gd" id="raider"]
-[ext_resource type="Script" path="res://Scripts/Utils/placeholder_mesh_3d.gd" id="mesh"]
+[ext_resource type="Script" path="res://Scenes/Levels/House/Garden/raider_body.gd" id="body"]
 [ext_resource type="Script" path="res://Scripts/Utils/blob_shadow_3d.gd" id="shadow"]
 [ext_resource type="Script" path="res://Scripts/Components/health_component.gd" id="health"]
 [ext_resource type="Script" path="res://Scripts/Components/hit_flash_3d_component.gd" id="flash"]
@@ -12,32 +12,14 @@
 
 [node name="Raider" type="Node3D"]
 script = ExtResource("raider")
+hit_radius = 0.42
+hit_height = 1.2
 
 [node name="Visual" type="Node3D" parent="."]
 unique_name_in_owner = true
 
-[node name="Body" type="MeshInstance3D" parent="Visual"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.55, 0)
-cast_shadow = 0
-script = ExtResource("mesh")
-shape_kind = 2
-size = Vector3(0.52, 0.98, 0.52)
-color = Color(0.7843, 0.2784, 0.3333, 1)
-
-[node name="Head" type="MeshInstance3D" parent="Visual"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.2, 0.02)
-cast_shadow = 0
-script = ExtResource("mesh")
-size = Vector3(0.46, 0.46, 0.46)
-color = Color(0.7843, 0.2784, 0.3333, 1)
-
-[node name="Face" type="MeshInstance3D" parent="Visual"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.27, 0.07)
-cast_shadow = 0
-script = ExtResource("mesh")
-size = Vector3(0.44, 0.0484, 0.44)
-color = Color(0.051, 0.0627, 0.0902, 1)
-glow = 0.9
+[node name="RaiderBody" type="Node3D" parent="Visual"]
+script = ExtResource("body")
 
 [node name="Shadow" type="MeshInstance3D" parent="."]
 script = ExtResource("shadow")
