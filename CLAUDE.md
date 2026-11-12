@@ -18,9 +18,28 @@
 4. **Nothing is done until the tests pass:** `Tools/unit_tests.sh` and
    `Tools/smoke_test.sh` (exit 0). New pure logic gets a gdUnit4 suite in `Tests/Unit/`.
 5. **Data over code.** Tunables in Resources / `Ressources/game_config.tres`.
+6. **Two developers, one `main`.** Two people develop this game in parallel,
+   each with Claude. Follow `Docs/WORKFLOW.md`:
+   - Never commit or push to `main`. Start every task on a fresh branch
+     `<name>/<topic>` from an up-to-date `main` (`git switch main && git pull
+     --ff-only && git switch -c <name>/<topic>`); ask the user for their name
+     prefix if it isn't clear from the branch they are on.
+   - Only commit, push or open a PR when the user asks. Before a PR: bring
+     the branch up to date with `origin/main`, run `Tools/unit_tests.sh` and
+     `Tools/smoke_test.sh`, then `gh pr create` with the template filled in.
+   - Never push to the other person's branch, never force-push except
+     `--force-with-lease` on your own branch.
+   - Before committing, check `git diff` and drop editor rewrites you didn't
+     intend (`.import` churn, renumbered `unique_id`s).
+   - Shared hotspots (`House.tscn`, `game_config.tres`, `types.gd`,
+     `translations.csv`, `project.godot`): keep edits minimal and in place;
+     prefer new files and sub-scenes over growing these.
 
 ## Working in this repo
 
+- Team workflow (branches, PRs, CI, shared hotspots, scene conflicts):
+  `Docs/WORKFLOW.md`. CI (`.github/workflows/tests.yml`) runs both test
+  scripts on every PR.
 - Target engine: Godot 4.7 with OpenXR. The game, controls, headset setup
   and design decisions: `Docs/GAME.md`; API overview: `Docs/SYSTEMS.md`; adding
   levels and content: `Docs/GETTING_STARTED.md`; visuals: `Docs/DESIGN.md`.

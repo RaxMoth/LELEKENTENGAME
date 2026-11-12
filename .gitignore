@@ -5,6 +5,13 @@
 # Export output (see export_presets.cfg)
 /build/
 
+# Generated on import from Assets/Localization/translations.csv
+Assets/Localization/*.translation
+
+# Personal Claude Code settings and notes (shared rules live in CLAUDE.md and .claude/)
+.claude/settings.local.json
+CLAUDE.local.md
+
 # OS clutter
 .DS_Store
 Thumbs.db
