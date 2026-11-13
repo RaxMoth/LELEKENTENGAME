@@ -34,8 +34,9 @@ The game runs in **3-day cycles** (`HouseCycle`, tuned by
    PC, a stronger door).
 2. **Night 3 — the raid.** Your sales got you noticed. When night falls on
    day 3 the back window closes, the clock stops and the police storm the
-   house in **waves** (cops, later SWAT and a battering ram). Close and
-   **bolt the front door**, then hold it with your guns and turrets. A wave
+   house in **waves** (cops, later SWAT and a battering ram). **Close the
+   front door** (an open one lets them walk straight in), then hold it with
+   your guns and turrets. A wave
    ends when every raider is down; a short break follows, then the next.
    If the door breaks, the raiders **storm in and hunt you** through the
    house (and every raider after them). It is **all or nothing** now: a
@@ -90,7 +91,7 @@ new day, in co-op the guest comes along (`DaySummaryPopup`).
 |---|---|---|
 | Pick up / put in | Dominant-hand trigger: point at a crate, ingredient or batch and pull; point at a station slot and pull again | Click an item / click where to put it |
 | Carry by hand | Grip (either hand, at the hand or along the beam): hold to carry, let go at — or pointing at — a slot; a quick grip click keeps holding until the next click | — |
-| Use (station buttons, screens, door bolt) | Dominant-hand trigger | Click |
+| Use (station buttons, screens) | Dominant-hand trigger | Click |
 | Draw a weapon | Your weapons hang on your body: the knife at your dominant hip, the axe over your back, the gun across your chest. Close a grip there to draw it into that hand; open the grip and it goes back. One weapon is out at a time | The weapon equipped at the armory is in hand |
 | Fight with fists, the knife or the axe | Swing a fist (an empty hand) or the drawn blade into a raider or a rat within reach; a hand's trigger also strikes what's in reach along its beam | Click a raider or rat in reach, or right-click |
 | Fire your gun | Draw it, then pull that hand's trigger (from the front room or anywhere outside — porch, garden, the streets; a rat in the way is hit anywhere); hold it for the SMG | Right-click (hold for the SMG), or click a raider |
@@ -249,7 +250,9 @@ can be asked once. Details: `Scenes/Levels/House/Town/README.md`.
 ### Voices
 
 Everyone talks, in German internet-meme slang, from where they stand
-(positional, with a subtitle): customers greet you and order at the
+(positional, with a subtitle; a voice is clear up close and fades as you
+walk away — halved in loudness with every doubling of the distance, silent
+beyond 24 m): customers greet you and order at the
 window, thank you, haggle, complain about the price or the wait; people in
 the street chat; the police shout when a raid wave comes, call for cover,
 cry out when hit and on the way down, and announce the ram. Each kind of
@@ -321,13 +324,13 @@ The door between the front room and the porch swings on a hinge. Pull the
 trigger on a handle (inside or outside) to swing it fully open or shut, or
 grip a handle and pull or push it by hand; let go nearly shut and it
 latches. While it stands open (from 60°) the doorway is walkable, so you can
-step onto the porch and back. Each side has a **bolt** (press it with the
-trigger): it locks only a shut door, and a bolted door doesn't open.
-In a raid the door's state matters — raiders hit an **open** door 3× and an
-**unbolted** one 1.5× as hard as a bolted one; the **Steel Door Frame**
-upgrade takes 25% off every hit per level. When its health runs out the
-door **breaks**: the bolt gives, it swings wide open and can't be shut or
-bolted again that day.
+step onto the porch and back. There is no lock: the door is open or shut.
+In a raid that is all that matters — **shut**, the raiders have to break it
+down (the **Steel Door Frame** upgrade takes 25% off every hit per level);
+**open**, the raiders in the yard walk straight in and hunt you through the
+house (the alarm goes off, as when it breaks). Shut it again and those
+still outside go back to hammering it. When its health runs out the door
+**breaks**: it swings wide open and can't be shut again that day.
 
 ### Armory (front room, back wall)
 
@@ -596,7 +599,7 @@ Scenes/Levels/House/House.tscn                inherits LevelBase; house_level.gd
     │   ├── Surroundings       HOUSE     Surroundings/Surroundings.tscn: lawn, approach path, trees, weeds, junk (its yard trees are COVER_ONLY obstacles in the Yard)
     │   ├── HouseShell         walls / doors / windows (framed) / floor / ceiling / gable roof built from a HouseLayout; renovations swap its materials
     │   ├── Stages             HouseStages: the cabin or the full house (Ressources/HouseLayouts/), cabin spots for what moves
-    │   ├── FrontGarden        DEFENSE   Garden/FrontGarden.tscn: open yard (Yard), swinging / bolting door, porch, roof turrets, Security PC, guards, raid squads, guns in hand
+    │   ├── FrontGarden        DEFENSE   Garden/FrontGarden.tscn: open yard (Yard), swinging door, porch, roof turrets, Security PC, guards, raid squads, guns in hand
     │   ├── SalesWindow        CUSTOMERS Sales/SalesWindow.tscn: window, queue, board, dealers, CustomerFlow
     │   ├── Lab                HOUSE     Lab/Lab.tscn: crates, grinder, cooker, press, crafters, recipes; motors, belts, hopper (LabAutomation)
     │   ├── Cellar             HOUSE     Cellar/Cellar.tscn: the boarded opening, stairs, brick cellar, grow racks, auto picker
@@ -630,7 +633,7 @@ Scenes/Levels/House/House.tscn                inherits LevelBase; house_level.gd
 | `WeaponModel`, `GunModel`, `MeleeModel` | The animated weapon in hand: a gun (slide, pump, bolt, flash, kick) or a blade (a chop on every strike, held up in the flat view) |
 | `RaiderBody` | A raider's jointed body (hips, torso, head, arms, legs) built from exports and animated procedurally: walk cycle, crouch, strike |
 | `TurretSeat` | "VR in VR": the goggles put the player into a roof turret (view at its camera, barrel follows the hand) |
-| `FrontDoor`, `HingeHandle` | The door: StateChart Closed { Unlocked ⇄ Locked } ⇄ Open; grab-and-swing handles, bolts on both sides, opens the doorway in the `WalkableArea`; broken, it swings open and stays open |
+| `FrontDoor`, `HingeHandle` | The door: StateChart Closed ⇄ Open (no lock); grab-and-swing handles, opens the doorway in the `WalkableArea` (in a raid the raiders walk in through it); broken, it swings open and stays open |
 | `Armory`, `WeaponData`, `WeaponLoadout`, `Profile.armory` | Weapons and ammo: fists to start, then knife → axe → pistol → the other guns (`required_weapon_id`), bought at the terminal, used by the FrontGarden (melee: `MeleeMath` reach and swings) |
 | `RatPack`, `Rat` | The cabin's rats (StateChart Roaming { Sniffing ⇄ Scurrying } → Biting): local to each player, a bite once per rat for 1 health |
 | `Worker` | StateChart Absent → Working ⇄ Striking; lives in its front's scene |
@@ -706,7 +709,7 @@ player, who starts in the house. One player hosts, the other joins:
   holds are drawn right at the guest's hand, so holding never lags.
 - **Shared:** cash, stash, reputation, heat, upgrades, discovered recipes,
   the time of day, the wrist status, the lab (items, stations, Stop
-  buttons), selling at the window, the front door (swing, bolts, health —
+  buttons), selling at the window, the front door (swing, health —
   the doorway opens for both), shooting (the guest's gun trigger fires the
   same gun with shared ammo; every tracer is shown to both), every in-world
   board (sales, office, armory, build board: `ControlMirror` sends a board's

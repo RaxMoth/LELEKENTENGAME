@@ -116,22 +116,6 @@ script = ExtResource("button")
 press_radius = 0.11
 has_visual = false
 
-[node name="OutsideLock" type="Node3D" parent="Hinge/Panel"]
-unique_name_in_owner = true
-transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, 0.4, 1.3, -0.04)
-script = ExtResource("button")
-press_radius = 0.06
-caption = "Unbolted"
-color = Color(0.9608, 0.7216, 0.2549, 1)
-
-[node name="InsideLock" type="Node3D" parent="Hinge/Panel"]
-unique_name_in_owner = true
-transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 0.4, 1.3, 0.04)
-script = ExtResource("button")
-press_radius = 0.06
-caption = "Unbolted"
-color = Color(0.9608, 0.7216, 0.2549, 1)
-
 [node name="BarBack" type="MeshInstance3D" parent="."]
 unique_name_in_owner = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.45, -0.12)
@@ -158,31 +142,12 @@ script = ExtResource("compound")
 initial_state = NodePath("Closed")
 
 [node name="Closed" type="Node" parent="DoorChart/Root"]
-script = ExtResource("compound")
-initial_state = NodePath("Unlocked")
-
-[node name="Unlocked" type="Node" parent="DoorChart/Root/Closed"]
 script = ExtResource("atomic")
 
-[node name="ToLocked" type="Node" parent="DoorChart/Root/Closed/Unlocked"]
+[node name="ToOpen" type="Node" parent="DoorChart/Root/Closed"]
 script = ExtResource("transition")
-to = NodePath("../../Locked")
-event = &"door_locked"
-delay_in_seconds = "0.0"
-
-[node name="ToOpen" type="Node" parent="DoorChart/Root/Closed/Unlocked"]
-script = ExtResource("transition")
-to = NodePath("../../../Open")
+to = NodePath("../../Open")
 event = &"door_opened"
-delay_in_seconds = "0.0"
-
-[node name="Locked" type="Node" parent="DoorChart/Root/Closed"]
-script = ExtResource("atomic")
-
-[node name="ToUnlocked" type="Node" parent="DoorChart/Root/Closed/Locked"]
-script = ExtResource("transition")
-to = NodePath("../../Unlocked")
-event = &"door_unlocked"
 delay_in_seconds = "0.0"
 
 [node name="Open" type="Node" parent="DoorChart/Root"]
@@ -195,6 +160,4 @@ event = &"door_closed"
 delay_in_seconds = "0.0"
 
 [connection signal="state_entered" from="DoorChart/Root/Closed" to="." method="_on_closed_state_entered"]
-[connection signal="state_entered" from="DoorChart/Root/Closed/Unlocked" to="." method="_on_unlocked_state_entered"]
-[connection signal="state_entered" from="DoorChart/Root/Closed/Locked" to="." method="_on_locked_state_entered"]
 [connection signal="state_entered" from="DoorChart/Root/Open" to="." method="_on_open_state_entered"]

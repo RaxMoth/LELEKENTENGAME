@@ -23,9 +23,12 @@ signal line_finished
 const MAX_CHATTER_SPEAKERS: int = 2
 ## Subtitles of NPCs farther away than this (meters) stay hidden.
 const SUBTITLE_DISTANCE: float = 9.0
-## Distance (meters) at which a voice has dropped to about half volume.
-const VOICE_UNIT_SIZE: float = 3.5
-const VOICE_MAX_DISTANCE: float = 32.0
+## Within this distance (meters) a voice plays at full volume; beyond it,
+## it drops by 6 dB every time the distance doubles (inverse square, like
+## real speech), so a voice near you is clear and one across the house quiet.
+const VOICE_UNIT_SIZE: float = 2.0
+## Farther than this (meters) a voice is not heard at all.
+const VOICE_MAX_DISTANCE: float = 24.0
 
 ## Milliseconds between two last words (say_last_words) across all NPCs.
 const LAST_WORDS_GAP_MSEC: int = 1500
@@ -59,6 +62,7 @@ var _line_serial: int = 0
 func _ready() -> void:
 	_player = AudioStreamPlayer3D.new()
 	_player.bus = Settings.BUS_SFX
+	_player.attenuation_model = AudioStreamPlayer3D.ATTENUATION_INVERSE_SQUARE_DISTANCE
 	_player.unit_size = VOICE_UNIT_SIZE
 	_player.max_distance = VOICE_MAX_DISTANCE
 	_player.finished.connect(_on_player_finished)

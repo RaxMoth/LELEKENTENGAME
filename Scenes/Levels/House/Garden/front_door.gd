@@ -1,19 +1,20 @@
 ## The front door: the objective of every raider and the way between the
 ## front room and the porch. It swings on a hinge — grip a handle (inside or
 ## outside) and pull or push it open, walk through, swing it shut; it latches
-## when nearly closed. A deadbolt on each side locks it (only when closed).
-## Pulling the trigger on a handle (or a click in the flat simulator) swings
-## it fully open or shut.
+## when nearly closed. Pulling the trigger on a handle (or a click in the
+## flat simulator) swings it fully open or shut. There is no lock: it is
+## simply open or closed.
 ##
-## The door matters in a raid: officers hammer it, and an open or unlocked
-## door gives way much faster (get_damage_multiplier). When its health runs
-## out it breaks: the bolt gives, the leaf swings wide open and stays so
-## until the next day (the raiders storm in). Reinforcement upgrades raise
-## its health; a bar above the frame shows it and the leaf shakes when hit.
+## The door matters in a raid: shut, the officers have to break it down
+## (get_damage_multiplier, less with the Steel Door Frame); open, they walk
+## straight in (FrontGarden). When its health runs out it breaks: the leaf
+## swings wide open and stays so until the next day (the raiders storm in).
+## Reinforcement upgrades raise its health; a bar above the frame shows it
+## and the leaf shakes when hit.
 ##
 ## Local frame: the leaf closes along +X from the hinge, +Z is the house's
 ## inside. Angles are degrees of opening toward the inside.
-## State: Closed { Unlocked <-> Locked } <-> Open (opening only when unlocked).
+## State: Closed <-> Open.
 ##
 ## Dependencies: HealthComponent, HingeHandle, PointerButton, PlaceholderMesh3D,
 ##               FloatingText3D, Palette, Audio, Global, Types autoloads, SfxSynth
@@ -24,14 +25,11 @@ signal broken
 signal opened
 ## Swung shut and latched.
 signal closed
-signal lock_changed(is_locked: bool)
 ## The doorway became wide enough to walk through, or stopped being so.
 signal passage_changed(is_passable: bool)
 
 const BAR_WIDTH: float = 1.2
 const BAR_HEIGHT: float = 0.08
-## Seconds between two "it's locked" rattles while a hand keeps pulling.
-const RATTLE_INTERVAL_SECONDS: float = 0.6
 
 @export var base_max_health: float = 600.0
 
@@ -45,14 +43,6 @@ const RATTLE_INTERVAL_SECONDS: float = 0.6
 ## Seconds a click (flat simulator) takes to swing the door fully.
 @export var swing_seconds: float = 0.45
 
-@export_group("Raid")
-## Damage multiplier for raiders while the door stands open...
-@export var open_damage_multiplier: float = 3.0
-## ...while it is shut but not bolted...
-@export var unlocked_damage_multiplier: float = 1.5
-## ...and while it is bolted.
-@export var locked_damage_multiplier: float = 1.0
-
 ## Share of every raider hit the frame absorbs (Steel Door Frame upgrade).
 var damage_reduction: float = 0.0
 
@@ -60,10 +50,7 @@ var _shake_tween: Tween
 var _swing_tween: Tween
 var _open_angle: float = 0.0
 var _is_open: bool = false
-var _is_locked: bool = false
 var _is_passable: bool = false
-## Time.get_ticks_msec() of the last "it's locked" rattle (no per-frame timer).
-var _last_rattle_msec: int = -100000
 
 @onready var health_component: HealthComponent = %HealthComponent
 @onready var state_chart: StateChart = %DoorChart
@@ -73,8 +60,6 @@ var _last_rattle_msec: int = -100000
 @onready var _outside_handle: HingeHandle = %OutsideHandle
 @onready var _inside_handle_press: PointerButton = %InsideHandlePress
 @onready var _outside_handle_press: PointerButton = %OutsideHandlePress
-@onready var _inside_lock: PointerButton = %InsideLock
-@onready var _outside_lock: PointerButton = %OutsideLock
 @onready var _bar_fill: MeshInstance3D = %BarFill
 @onready var _bar_back: MeshInstance3D = %BarBack
 
@@ -93,10 +78,7 @@ func _ready() -> void:
 	# The trigger on a handle swings the door fully (grip still drags it by hand).
 	for handle_press: PointerButton in [_inside_handle_press, _outside_handle_press]:
 		handle_press.pressed.connect(func(_button: PointerButton) -> void: toggle_open())
-	for lock_button: PointerButton in [_inside_lock, _outside_lock]:
-		lock_button.pressed.connect(func(_button: PointerButton) -> void: toggle_lock())
 	set_max_health(base_max_health)
-	_apply_lock_look()
 
 
 # ============================================
@@ -128,11 +110,6 @@ func is_open() -> bool:
 	return _is_open
 
 
-## True while the bolt is thrown.
-func is_locked() -> bool:
-	return _is_locked
-
-
 ## Open wide enough to walk through.
 func is_passable() -> bool:
 	return _is_passable
@@ -143,24 +120,15 @@ func get_open_angle() -> float:
 	return _open_angle
 
 
-## How much harder raiders hit the door right now: open > unlocked > bolted,
-## less with a steel frame ([member damage_reduction]).
+## How hard raiders' hits land on the door: less with a steel frame
+## ([member damage_reduction]).
 func get_damage_multiplier() -> float:
-	var state_multiplier: float = locked_damage_multiplier if _is_locked else unlocked_damage_multiplier
-	if _is_open:
-		state_multiplier = open_damage_multiplier
-	return state_multiplier * (1.0 - clampf(damage_reduction, 0.0, 0.9))
+	return 1.0 - clampf(damage_reduction, 0.0, 0.9)
 
 
-## A hand pulls the leaf to [param angle_degrees] (HingeHandle). A bolted door rattles.
+## A hand pulls the leaf to [param angle_degrees] (HingeHandle).
 func drag_to_angle(angle_degrees: float) -> void:
 	if is_broken():
-		return
-	if _is_locked:
-		var now_msec: int = Time.get_ticks_msec()
-		if angle_degrees > latch_below_degrees and now_msec - _last_rattle_msec >= roundi(RATTLE_INTERVAL_SECONDS * 1000.0):
-			_last_rattle_msec = now_msec
-			_say(tr("Bolted"), Palette.WARNING)
 		return
 	_stop_swing()
 	_set_angle(angle_degrees)
@@ -183,13 +151,9 @@ func toggle_open() -> void:
 		open_fully()
 
 
-## Swings the door wide open. Returns false when it is bolted.
-func open_fully() -> bool:
-	if _is_locked:
-		_say(tr("Bolted"), Palette.WARNING)
-		return false
+## Swings the door wide open.
+func open_fully() -> void:
 	_swing_to(max_open_degrees)
-	return true
 
 
 ## Swings the door shut; it latches at the end. A broken door won't.
@@ -200,24 +164,6 @@ func close_fully() -> void:
 	_swing_to(0.0)
 
 
-## Throws or draws the bolt. Returns false (and says why) while the door is open.
-func toggle_lock() -> bool:
-	return set_locked(not _is_locked)
-
-
-func set_locked(should_lock: bool) -> bool:
-	if should_lock == _is_locked:
-		return true
-	if should_lock and is_broken():
-		_say(tr("The door is broken"), Palette.DANGER)
-		return false
-	if should_lock and (_is_open or _open_angle > 0.0):
-		_say(tr("Close the door first"), Palette.WARNING)
-		return false
-	state_chart.send_event(Types.EVENT_DOOR_LOCKED if should_lock else Types.EVENT_DOOR_UNLOCKED)
-	return true
-
-
 func get_inside_handle() -> HingeHandle:
 	return _inside_handle
 
@@ -226,19 +172,12 @@ func get_outside_handle() -> HingeHandle:
 	return _outside_handle
 
 
-func get_inside_lock() -> PointerButton:
-	return _inside_lock
-
-
-func get_outside_lock() -> PointerButton:
-	return _outside_lock
-
-## Co-op: how the door looks right now — [open angle, bolted, health, max health].
+## Co-op: how the door looks right now — [open angle, health, max health].
 func get_net_state() -> Array:
-	return [_open_angle, _is_locked, health_component.current_health, health_component.max_health]
+	return [_open_angle, health_component.current_health, health_component.max_health]
 
 
-## Co-op guest: show the host's door (its swing, bolt and health) and let
+## Co-op guest: show the host's door (its swing and health) and let
 ## the guest walk through when it stands open — without running its rules.
 func apply_net_state(state: Array) -> void:
 	var angle: float = float(state[0])
@@ -252,32 +191,11 @@ func apply_net_state(state: Array) -> void:
 		if now_passable != _is_passable:
 			_is_passable = now_passable
 			passage_changed.emit(_is_passable)
-	var bolted: bool = bool(state[1])
-	if bolted != _is_locked:
-		_is_locked = bolted
-		_apply_lock_look()
-	_on_health_changed(float(state[2]), float(state[3]))
+	_on_health_changed(float(state[1]), float(state[2]))
 
 # ============================================
 # STATE CHART CALLBACKS (connected in FrontDoor.tscn)
 # ============================================
-
-func _on_unlocked_state_entered() -> void:
-	_is_open = false
-	if _is_locked:
-		_is_locked = false
-		_apply_lock_look()
-		Audio.play_sfx_at(SfxSynth.get_preset(&"pop"), _inside_lock.global_position, 0.05, -6.0)
-		lock_changed.emit(false)
-
-
-func _on_locked_state_entered() -> void:
-	_is_open = false
-	_is_locked = true
-	_apply_lock_look()
-	Audio.play_sfx_at(SfxSynth.get_preset(&"hit"), _inside_lock.global_position, 0.05, -4.0)
-	lock_changed.emit(true)
-
 
 func _on_closed_state_entered() -> void:
 	if _is_open:
@@ -293,10 +211,8 @@ func _on_open_state_entered() -> void:
 # INTERNALS
 # ============================================
 
-## Broken down: the bolt gives and the leaf swings wide open (and stays so).
+## Broken down: the leaf swings wide open (and stays so).
 func _on_died() -> void:
-	if _is_locked:
-		state_chart.send_event(Types.EVENT_DOOR_UNLOCKED)
 	_swing_to(max_open_degrees)
 	Audio.play_sfx_at(SfxSynth.get_preset(&"hit"), global_position + Vector3(0.0, 1.0, 0.0), 0.05, 0.0)
 	broken.emit()
@@ -327,12 +243,6 @@ func _stop_swing() -> void:
 	if _swing_tween != null:
 		_swing_tween.kill()
 		_swing_tween = null
-
-
-func _apply_lock_look() -> void:
-	for lock_button: PointerButton in [_inside_lock, _outside_lock]:
-		lock_button.caption = tr("Bolted") if _is_locked else tr("Unbolted")
-		lock_button.color = Palette.SUCCESS if _is_locked else Palette.WARNING
 
 
 func _say(message: String, color: Color) -> void:

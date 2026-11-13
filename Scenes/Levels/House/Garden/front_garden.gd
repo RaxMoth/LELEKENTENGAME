@@ -14,13 +14,14 @@
 ## Selling days are quiet out here; the police come only in a raid
 ## (HouseCycle → on_raid_started / on_raid_wave_started), cross the yard in
 ## squads from cover to cover, rush the door together, and the wave lasts
-## until every raider is down (get_raiders_left). The front door swings,
-## latches and bolts (FrontDoor); while it stands open the doorway to the
-## porch is walkable. Turrets are house upgrades ("Roof Turrets", "Security
+## until every raider is down (get_raiders_left). The front door swings
+## and latches (FrontDoor, no lock); while it stands open the doorway to the
+## porch is walkable — and in a raid the raiders in the yard walk straight
+## in through it. Turrets are house upgrades ("Roof Turrets", "Security
 ## PC" in the office), not things built in the yard.
 ##
-## If the door breaks the raiders storm in and hunt the players through the
-## house (Yard.start_hunting); the gun then hits from anywhere. The players'
+## If the door breaks — or stands open with raiders in the yard — they storm
+## in and hunt the players through the house (Yard.start_hunting); the gun then hits from anywhere. The players'
 ## health (PlayerVitals) is the House level's: going down ends the shift.
 ##
 ## Reports to the House level only through HouseFront's signals: raids and
@@ -173,6 +174,7 @@ func _shift_process(delta: float) -> void:
 	turret_seat.step(delta)
 	_update_weapon_model()
 	_update_pointers()
+	_let_raiders_through_open_door()
 
 
 func _refresh_displays() -> void:
@@ -207,8 +209,8 @@ func finish_shift(_result: LevelResult) -> void:
 
 
 func on_raid_started(_raid_number: int, _wave_count: int) -> void:
-	if not door.is_locked():
-		warning_requested.emit(tr("Close and lock the front door!"))
+	if door.is_open():
+		warning_requested.emit(tr("Close the front door!"))
 
 
 func on_raid_wave_started(wave: RaidWave) -> void:
@@ -237,7 +239,7 @@ func remove_raiders() -> void:
 func get_status_line() -> String:
 	if door.is_broken():
 		return tr("Door broken")
-	var door_state: String = tr("open") if door.is_open() else (tr("locked") if door.is_locked() else tr("unlocked"))
+	var door_state: String = tr("open") if door.is_open() else tr("closed")
 	return tr("Door %d%% %s") % [roundi(door.get_health_ratio() * 100.0), door_state]
 
 # ============================================
@@ -653,7 +655,23 @@ func _stop_trigger() -> void:
 ## The door is down: the raiders storm in after the players. The shift goes
 ## on — beat them (or go down: HouseLevel ends the shift then).
 func _on_door_broken() -> void:
-	warning_requested.emit(tr("The door is down! They're coming in!"))
+	_storm_in(tr("The door is down! They're coming in!"))
+
+
+## In a raid an open door is an open door: with raiders in the yard they
+## walk straight in (no need to break it) — and the house is breached.
+func _let_raiders_through_open_door() -> void:
+	if yard.is_hunting() or not door.is_passable() or door.is_broken() or context.cycle == null or not context.cycle.is_raid_active():
+		return
+	for raider: Raider in yard.get_raiders():
+		if raider.is_alive() and not raider.is_marching() and yard.is_in_yard(raider.global_position):
+			_storm_in(tr("The door is open! They're coming in!"))
+			return
+
+
+## The raiders go after the players through the house; the alarm goes off.
+func _storm_in(message: String) -> void:
+	warning_requested.emit(message)
 	yard.start_hunting()
 	# The house sounds the alarm (sirens, music, beacons).
 	Events.house_breached.emit(door.global_position)
