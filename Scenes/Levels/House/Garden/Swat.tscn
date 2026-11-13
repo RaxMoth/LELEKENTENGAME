@@ -5,6 +5,7 @@
 [node name="Swat" instance=ExtResource("base")]
 base_max_health = 240.0
 move_speed = 1.4
+march_speed = 2.9
 rush_speed = 2.2
 cover_seconds = Vector2(2, 4)
 door_damage = 24.0

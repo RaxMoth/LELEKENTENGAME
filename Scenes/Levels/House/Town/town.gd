@@ -266,6 +266,7 @@ func _build_visuals() -> void:
 		var chunk_instance: MeshInstance3D = MeshInstance3D.new()
 		chunk_instance.mesh = chunk
 		chunk_instance.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		chunk_instance.visibility_range_end = TownMeshBuilder.CHUNK_VISIBILITY
 		_visuals.add_child(chunk_instance)
 	_window_material = builder.get_window_material()
 	_glow_material = builder.get_glow_material()

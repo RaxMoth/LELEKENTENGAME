@@ -374,7 +374,12 @@ static func _check_raid_waves(test: SmokeTest, level: HouseLevel) -> void:
 	cycle.skip_wave_break()
 	test.check(await test.wait_until(func() -> bool: return cycle.is_wave_active()), "the first wave starts")
 	await test.wait_until(func() -> bool: return garden.director.get_pending_spawn_count() == 0)
-	test.check(garden.director.get_raiders_left() == 3, "the first wave brings three cops")
+	test.check(garden.director.get_raiders_left() >= 8, "the first wave brings a horde of cops")
+	var door_point: Vector2 = garden.yard.get_door_point()
+	test.check(garden.yard.get_raiders().any(func(raider: Raider) -> bool: return raider.is_marching() and Vector2(raider.global_position.x, raider.global_position.z).distance_to(door_point) > 60.0), "they come through the town, from far away")
+	var crowd: CrowdLod = garden.get_node("%CrowdLod") as CrowdLod
+	await test.physics_frames(2)
+	test.check(crowd.get_figure_count() > 0, "far-away officers are drawn as simple figures")
 	for raider: Raider in garden.yard.get_raiders().duplicate():
 		raider.take_hit(1000000.0)
 	test.check(await test.wait_until(func() -> bool: return not cycle.is_wave_active() and cycle.is_raid_active()), "beating every officer ends the wave, the raid goes on")
@@ -402,11 +407,17 @@ static func _check_storming_in(test: SmokeTest, level: HouseLevel) -> void:
 	await test.frames(30)
 	test.check(door.is_passable(), "a broken door can't be shut")
 	var raiders: Array[Raider] = []
+	# Officers on foot hunt; vehicles keep doing their job.
 	for raider: Raider in garden.yard.get_raiders():
-		if raider.is_alive():
+		if raider.is_alive() and not (raider is PoliceVehicle):
 			raiders.append(raider)
-	test.check(garden.yard.is_hunting() and raiders.all(func(raider: Raider) -> bool: return raider.is_hunting()), "every raider comes after the players")
-	# One of them right off the porch, so the check doesn't wait for a walk across the yard.
+	# Those still jogging through the town join the hunt once they reach the yard.
+	test.check(garden.yard.is_hunting() and raiders.all(func(raider: Raider) -> bool: return raider.is_hunting() or raider.is_marching()), "every raider comes after the players")
+	# One more right off the porch, so the check doesn't wait for a walk through the town.
+	var hunter: Raider = garden.director.spawn_raider(garden.director.cop_scene)
+	await test.frames(2)
+	test.check(hunter.is_hunting(), "an officer reaching the yard after the break-in hunts at once")
+	raiders.insert(0, hunter)
 	raiders[0].global_position = Vector3(0.0, 0.0, -7.5)
 	test.check(await test.wait_until(func() -> bool: return vitals.get_health() < vitals.get_max_health()), "a raider follows the player through the doorway into the house and hits them")
 	test.check(raiders[0].global_position.z > door.global_position.z, "it came in through the front door")

@@ -69,6 +69,8 @@ SHOT_RESOLUTION=$WIDE shot level_26_fire level=house showcase=house_fire stand=-
 SHOT_RESOLUTION=$WIDE shot level_27_blackout level=house showcase=house_blackout stand=-3.0,-3.4 look=-4.93,1.4,-3.6 frames=60
 # Co-op: the Play Together board on the front room wall (host or join on the same Wi-Fi).
 SHOT_RESOLUTION=$WIDE shot level_28_play_together level=house stand=-3.6,-2.8 look=-4.95,1.35,-2.8 frames=150
+# A police horde coming down the street, with a squad car, the armored vehicle and the helicopter.
+SHOT_RESOLUTION=$WIDE shot level_29_horde level=house showcase=house_horde frames=90
 "$TOOLS_DIR/godot.sh" --headless --script "$TOOLS_DIR/contact_sheet.gd" -- "$OUT_DIR/sheet_menus.png" 5 360 640 \
 	"$OUT_DIR"/0*.png >/dev/null 2>&1
 "$TOOLS_DIR/godot.sh" --headless --script "$TOOLS_DIR/contact_sheet.gd" -- "$OUT_DIR/sheet_levels.png" 3 640 360 \

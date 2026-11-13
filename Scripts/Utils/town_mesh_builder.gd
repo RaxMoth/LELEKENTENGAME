@@ -33,6 +33,12 @@ const MARKING_TOP: float = -0.035
 const ASPHALT_TOP: float = -0.05
 ## Share of windows lit at night.
 const LIT_SHARE: float = 0.38
+## Halls: meters between the windows of the strip under the roof, and
+## between roller doors.
+const HALL_WINDOW_PITCH: float = 4.2
+const HALL_DOOR_SPACING: float = 14.0
+## Chunks farther than this (meters) are not drawn (the fog hides them anyway).
+const CHUNK_VISIBILITY: float = 240.0
 
 const ATLAS_CELL_PIXELS: int = 32
 
@@ -41,6 +47,7 @@ const MARKING_COLOR: Color = Color(0.82, 0.82, 0.78)
 const CURB_COLOR: Color = Color(0.55, 0.55, 0.56)
 const POLE_COLOR: Color = Color(0.16, 0.17, 0.19)
 const ROOF_UNIT_COLOR: Color = Color(0.42, 0.43, 0.45)
+const ROLLER_DOOR_COLOR: Color = Color(0.36, 0.38, 0.4)
 const TIRE_COLOR: Color = Color(0.06, 0.06, 0.07)
 const CAR_GLASS_COLOR: Color = Color(0.1, 0.12, 0.16)
 const CAR_COLORS: Array[Color] = [
@@ -157,7 +164,7 @@ func _add_building(footprint: Rect2, height: float, style: TownLayout.BuildingSt
 	match style:
 		TownLayout.BuildingStyle.PLASTER:
 			wall_layer = Layer.PLASTER
-		TownLayout.BuildingStyle.OFFICE:
+		TownLayout.BuildingStyle.OFFICE, TownLayout.BuildingStyle.INDUSTRIAL:
 			wall_layer = Layer.CONCRETE
 	var walls: MeshBucket = buckets[wall_layer]
 	# A slight tint per building so a street of the same brick doesn't look cloned.
@@ -181,7 +188,40 @@ func _add_building(footprint: Rect2, height: float, style: TownLayout.BuildingSt
 		var spot: Vector2 = Vector2(_random.randf_range(footprint.position.x + 2.0, footprint.end.x - 2.0), _random.randf_range(footprint.position.y + 2.0, footprint.end.y - 2.0))
 		if footprint.size.x > 5.0 and footprint.size.y > 5.0:
 			props.add_box(Vector3(spot.x, height + unit_size.y * 0.5, spot.y), unit_size, ROOF_UNIT_COLOR, true)
-	_add_windows(buckets[Layer.WINDOWS], footprint, height, style)
+	if style == TownLayout.BuildingStyle.INDUSTRIAL:
+		_add_hall_openings(buckets[Layer.WINDOWS], props, footprint, height)
+	else:
+		_add_windows(buckets[Layer.WINDOWS], footprint, height, style)
+
+
+## A hall: a strip of wide windows under the roof and roller doors at the
+## ground on every side long enough.
+func _add_hall_openings(windows: MeshBucket, props: MeshBucket, footprint: Rect2, height: float) -> void:
+	for side: Array in _get_wall_sides(footprint):
+		var origin: Vector3 = side[0]
+		var along: Vector3 = side[1]
+		var normal: Vector3 = side[2]
+		var length: float = side[3]
+		var strip_columns: int = floori((length - 2.0) / HALL_WINDOW_PITCH)
+		var strip_start: float = (length - strip_columns * HALL_WINDOW_PITCH) * 0.5 + HALL_WINDOW_PITCH * 0.5
+		for column: int in strip_columns:
+			var middle: Vector3 = origin + along * (strip_start + column * HALL_WINDOW_PITCH) + Vector3(0.0, height - 1.5, 0.0)
+			windows.add_window(middle, normal, Vector2(3.2, 1.0), 2 if _random.randf() < LIT_SHARE * 0.6 else 0)
+		var doors: int = floori(length / HALL_DOOR_SPACING)
+		for door_index: int in doors:
+			var door_middle: Vector3 = origin + along * ((door_index + 0.5) * length / doors) + Vector3(0.0, 1.8, 0.0)
+			props.add_side(door_middle + normal * 0.01, normal, Vector2(4.0, 3.6), ROLLER_DOOR_COLOR)
+
+
+## The four walls of [param footprint], each as [a point at its left end
+## (just in front of the wall), the direction along it, its outward normal, its length].
+func _get_wall_sides(footprint: Rect2) -> Array[Array]:
+	return [
+		[Vector3(footprint.position.x, 0.0, footprint.position.y - WINDOW_OFFSET), Vector3.RIGHT, Vector3.FORWARD, footprint.size.x],
+		[Vector3(footprint.end.x, 0.0, footprint.end.y + WINDOW_OFFSET), Vector3.LEFT, Vector3.BACK, footprint.size.x],
+		[Vector3(footprint.position.x - WINDOW_OFFSET, 0.0, footprint.end.y), Vector3.FORWARD, Vector3.LEFT, footprint.size.y],
+		[Vector3(footprint.end.x + WINDOW_OFFSET, 0.0, footprint.position.y), Vector3.BACK, Vector3.RIGHT, footprint.size.y],
+	]
 
 
 ## Rows of windows on all four sides, one row per floor; offices get wide
@@ -192,13 +232,7 @@ func _add_windows(windows: MeshBucket, footprint: Rect2, height: float, style: T
 	var pitch: float = 3.0 if is_office else 2.8
 	var window_size: Vector2 = Vector2(2.6, 2.3) if is_office else Vector2(1.25, 1.55)
 	var floors: int = floori((height - 0.6) / FLOOR_HEIGHT)
-	var sides: Array[Array] = [
-		[Vector3(footprint.position.x, 0.0, footprint.position.y - WINDOW_OFFSET), Vector3.RIGHT, Vector3.FORWARD, footprint.size.x],
-		[Vector3(footprint.end.x, 0.0, footprint.end.y + WINDOW_OFFSET), Vector3.LEFT, Vector3.BACK, footprint.size.x],
-		[Vector3(footprint.position.x - WINDOW_OFFSET, 0.0, footprint.end.y), Vector3.FORWARD, Vector3.LEFT, footprint.size.y],
-		[Vector3(footprint.end.x + WINDOW_OFFSET, 0.0, footprint.position.y), Vector3.BACK, Vector3.RIGHT, footprint.size.y],
-	]
-	for side: Array in sides:
+	for side: Array in _get_wall_sides(footprint):
 		var origin: Vector3 = side[0]
 		var along: Vector3 = side[1]
 		var normal: Vector3 = side[2]

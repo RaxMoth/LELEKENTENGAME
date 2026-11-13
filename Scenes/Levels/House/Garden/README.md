@@ -16,7 +16,9 @@ yard stays quiet.
 | `Raider.tscn`, `raider.gd` + `Cop/Swat/RamTeam.tscn` | Raiders; StateChart Alive { Moving ⇄ InCover, Attacking } → Dead; tune with exports (health, armor, speeds, cover times, door damage, `is_battering_ram`) |
 | `raid_squad.gd` | `RaidSquad`: leapfrogging from cover to cover, gathering, the rush |
 | `raider_body.gd` (`RaiderBody`) | The jointed raider body (uniform, vest, headgear, what it carries) built from exports, animated procedurally (walk, crouch, strike) |
-| `attacker_director.gd` | Spawns each raid wave at the yard's edges, splits it into squads, gives door spots, counts who is left |
+| `attacker_director.gd` | Sends each raid wave through the town: squads from different directions along their own street routes (`Scripts/Game/street_routes.gd`, unit-tested), vehicles to the curb / the street in front / over the roofs; door spots, counts who is left |
+| `Vehicles/` (`PoliceVehicle` + `SquadCar`, `ArmoredVehicle`, `PoliceHelicopter`) | Vehicles are Raiders to the rest of the game (registry, hits, wave count) but drive their route and do their own job: unload cops, shell the door, circle and drop SWAT |
+| `crowd_lod.gd` (`CrowdLod`, in `FrontGarden.tscn`) | Draws far-away officers as simple figures in two MultiMeshes (a horde of 50 stays a few draw calls) |
 | `HouseTurret.tscn`, `house_turret.gd` | Roof turrets (Roof Turrets upgrade): auto-aim at visible raiders, or manual from the PC |
 | `SecurityPc.tscn`, `security_pc.gd`, `TurretConsole.tscn`, `turret_console.gd` | The office desk PC (Security PC upgrade): live turret camera, take control, aim, fire |
 | `TurretSeat.tscn`, `turret_seat.gd` | "VR in VR": the goggles beside the PC put the player into a turret (head at its camera, barrel follows the hand, triggers fire, visor frame) |

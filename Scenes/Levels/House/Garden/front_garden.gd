@@ -190,10 +190,15 @@ func on_raid_started(_raid_number: int, _wave_count: int) -> void:
 
 
 func on_raid_wave_started(wave: RaidWave) -> void:
-	var spawn_interval: float = context.cycle.raid_data.seconds_between_spawns if context.cycle != null else -1.0
-	director.queue_wave(wave, spawn_interval)
-	if wave.ram_count > 0:
+	director.queue_wave(wave, context.cycle.raid_data if context.cycle != null else null)
+	if wave.helicopter_count > 0:
+		warning_requested.emit(tr("Police helicopter incoming!"))
+	elif wave.tank_count > 0:
+		warning_requested.emit(tr("Armored vehicle incoming!"))
+	elif wave.ram_count > 0:
 		warning_requested.emit(tr("Battering ram incoming!"))
+	elif wave.car_count > 0:
+		warning_requested.emit(tr("Squad cars incoming!"))
 
 
 func get_raiders_left() -> int:

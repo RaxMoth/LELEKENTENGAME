@@ -205,9 +205,11 @@ func get_effects_root() -> Node3D:
 # ============================================
 
 ## Spawns a (pooled) raider at a random edge of the yard, in [param squad]
-## (null = on its own) with its own spot [param door_spot] at the door.
-func spawn_raider(raider_scene: PackedScene, squad: RaidSquad = null, door_spot: int = 0) -> Raider:
-	var entry: Vector2 = get_spawn_point()
+## (null = on its own) with its own spot [param door_spot] at the door. With
+## a [param street_route] (world X / Z, ending in the yard) it sets off at
+## the route's start somewhere in the town and marches it first.
+func spawn_raider(raider_scene: PackedScene, squad: RaidSquad = null, door_spot: int = 0, street_route: PackedVector2Array = PackedVector2Array()) -> Raider:
+	var entry: Vector2 = get_spawn_point() if street_route.is_empty() else street_route[0]
 	var raider: Raider = Pools.spawn(raider_scene, _raider_root, Vector3(entry.x, global_position.y, entry.y)) as Raider
 	raider.door_spot_index = door_spot
 	if squad != null:
@@ -216,7 +218,10 @@ func spawn_raider(raider_scene: PackedScene, squad: RaidSquad = null, door_spot:
 	if not _raiders.has(raider):
 		_raiders.append(raider)
 	_refresh_positions()
-	raider.enter_yard(self)
+	if street_route.size() > 1:
+		raider.march(street_route, self)
+	else:
+		raider.enter_yard(self)
 	if not raider.defeated.is_connected(_on_raider_defeated):
 		raider.defeated.connect(_on_raider_defeated)
 	return raider
@@ -260,10 +265,11 @@ func find_hunt_target(from: Vector3, outdoors_only: bool = false, max_distance: 
 	return nearest
 
 
+## Raiders keeping the current wave going (alive, and not a vehicle on its way out).
 func get_alive_count() -> int:
 	var alive: int = 0
 	for raider: Raider in get_raiders():
-		if raider.is_alive():
+		if raider.counts_for_wave():
 			alive += 1
 	return alive
 

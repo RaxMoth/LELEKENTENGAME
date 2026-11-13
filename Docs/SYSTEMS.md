@@ -314,6 +314,7 @@ WalkMotion.get_arm_swing_speed(left_velocity, right_velocity) / ease_velocity(v,
 loadout.buy_weapon(gun) / equip(gun) / try_fire(gun) / add_ammo(gun, rounds)   # WeaponLoadout
 clock.advance(delta) / get_hour() / get_phase() / just_passed_hour(25.0, delta)
 TownLayout.build(town_data)   # blocks, buildings, walkable_regions, corners, lamps, parked_cars
+streets.pick_start(house, range, taken, random) / find_route(from, to, variety, random)   # StreetRoutes: police ways
 runner.start(chance) / choose(reply_index) / get_replies() / has_outcome(o)   # DialogueRunner
 picker.pick(category, count)   # LinePicker: no repeats
 ```
@@ -338,7 +339,8 @@ town.start_talk(pedestrian) / choose_reply(i) / end_talk() / get_pedestrians()  
 context.operation.refer_customer()   # a buyer talked into it in the street (CustomerFlow sends them)
 garden.fire_weapon(pointer) / yard.spawn_raider(scene) / yard.pick_raider(origin, dir, range)   # FrontGarden, Yard
 garden.get_turrets() / security_pc.toggle_control() / turret.set_manual_aim(point)             # roof turrets, Security PC
-garden.director.queue_wave(wave) / spawn_raider(scene) / get_raiders_left() / is_active   # AttackerDirector
+garden.director.queue_wave(wave, raid_data) / spawn_raider(scene, health, squad, spot, route) / get_raiders_left()   # AttackerDirector: hordes through the town, vehicles
+raider.march(route, yard) / is_marching()   # Raider: jogging through the streets first; PoliceVehicle (SquadCar, ArmoredVehicle, PoliceHelicopter) extends Raider
 lab.get_station(&"Cooker") / get_crate(&"glowcap")                                          # Lab
 GameConfig.get_default().get_upgrades() / find_upgrade(id)   # all area catalogs
 ```

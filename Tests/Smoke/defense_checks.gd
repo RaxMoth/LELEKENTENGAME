@@ -71,7 +71,7 @@ static func _check_raid_squads(test: SmokeTest, garden: FrontGarden) -> void:
 	director.is_active = true
 	director.step(60.0)
 	test.check(director.get_pending_spawn_count() == 0 and director.get_raiders_left() == 0, "selling days send no attackers on their own")
-	director.queue_wave(RaidWave.new(0, 2, 1, 1.0, 1), 0.0)
+	director.queue_wave(RaidWave.new(0, 2, 1, 1.0, 1), null, 0.0)
 	test.check(director.get_pending_spawn_count() == 4, "a raid wave queues its cops, SWAT and a battering ram")
 	director.step(0.01)
 	var raiders: Array[Raider] = garden.yard.get_raiders().duplicate()

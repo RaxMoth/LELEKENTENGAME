@@ -188,8 +188,16 @@ and the car). Defend from the **front room** (shoot through the windows),
 the **porch** or out in the **garden**, with the gun in your hand and the
 house's roof turrets.
 
-Raiders enter at random points of the far edge and the sides and work
-their way in **in squads of three**: they dash from cover to cover (only
+**The police come as hordes through the town.** Every squad of a wave sets
+off at a street crossing 110–190 m from the house — each squad from another
+direction — and jogs its own way through the streets, spread over the
+street's width. The ways are worked out fresh every raid (shortest routes
+over randomly stretched streets), so no two raids come down the same
+streets. Waves grow to 40–54 officers on foot; far away they are drawn as
+simple figures (`CrowdLod`), close up with their full bodies.
+
+At the house they climb into the yard and work their way in **in squads**:
+they dash from cover to cover (only
 part of a squad moves at once, the rest waits crouched behind a tree, rock
 or the car — longer while being shot at), gather in the last cover before
 the house, then **rush the door together** and hammer it. Cover really
@@ -202,13 +210,17 @@ crouching body from shots at the same height).
 | Cop | Riot shield, cap, armored (6 off every hit), uses cover | Every raid wave |
 | SWAT | Helmet, plate carrier, carbine; tougher, heavy armor (12 off every hit) — bring armor-piercing rounds | From the 2nd wave of raid 2, every wave after |
 | Battering ram | Two officers with a ram: no cover, wait at the house for the rush, then hit the door for 90 every 2.4 s | Last wave of raid 2, one more every 3 raids |
+| Squad car | Races through the streets to the curb by the yard, light bar flashing; four cops jump out and storm the yard, then it drives off. Shoot it on the way in and its crew never gets out | Last wave of raid 1, then every wave, one more each raid |
+| Armored vehicle | Rolls to the street in front of the house and shells the front door (110 a shell every 5 s). 2600 health, heavy armor (14) | Last wave of raid 2, one more every 3 raids |
+| Helicopter | Flies straight over the roofs, circles the yard 16 m up and drops SWAT on ropes, two at a time, three times | Last wave of raid 3, one more every 3 raids |
 
 ### The town (around the house)
 
 The house stands on one block of a town: streets with sidewalks and zebra
 crossings, brick, plaster and glass buildings rising into downtown towers,
-two parks, a plaza with a fountain, street lamps and parked cars — about
-250 × 260 m, closed off by a ring of buildings. Out of the front door and
+five parks, two plazas with fountains, an industrial quarter of halls and
+warehouses, street lamps and parked cars — about 530 × 550 m, closed off by
+a ring of buildings. Out of the front door and
 through the **gate** in the garden fence you can walk anywhere: streets,
 sidewalks, parks, the alleys between buildings. At night windows light up
 and the street lamps glow.

@@ -7,6 +7,7 @@
 [node name="RamTeam" instance=ExtResource("base")]
 base_max_health = 420.0
 move_speed = 1.2
+march_speed = 2.5
 rush_speed = 1.9
 door_damage = 90.0
 hit_interval_seconds = 2.4

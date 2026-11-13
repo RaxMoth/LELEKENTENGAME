@@ -1,7 +1,8 @@
 ## The rules of the house's cycle: which day of the cycle it is, when the
 ## police raid comes and what each raid brings. Every raid is a little harder
-## than the one before (more waves, more cops, SWAT and battering rams from
-## set raids, tougher officers), and police heat at raid time adds cops to
+## than the one before (more waves, bigger hordes of cops, SWAT, battering
+## rams, squad cars, armored vehicles and helicopters from set raids,
+## tougher officers), and police heat at raid time adds cops to
 ## the last wave.
 ##
 ##   RaidPlanner.is_raid_day(day_number, data)            # day 3, 6, 9... with 3 days per cycle
@@ -62,8 +63,38 @@ static func build_raid(data: RaidData, raid_number: int, heat_ratio: float = 0.0
 		var rams: int = 0
 		if is_last_wave and raid >= data.ram_from_raid:
 			rams = 1 + (raid - data.ram_from_raid) / maxi(1, data.raids_per_extra_ram)
-		waves.append(RaidWave.new(wave_index, cops, swat, health, rams))
+		# A horde, but one a standalone headset can draw: SWAT keep their places,
+		# cops fill up the rest.
+		var on_foot_cap: int = maxi(1, data.max_officers_per_wave)
+		swat = mini(swat, on_foot_cap)
+		cops = mini(cops, on_foot_cap - swat)
+		var wave: RaidWave = RaidWave.new(wave_index, cops, swat, health, rams)
+		wave.car_count = _get_cars(data, raid, wave_index, is_last_wave)
+		if is_last_wave:
+			wave.tank_count = _get_from_raid(raid, data.tanks_from_raid, data.raids_per_extra_tank)
+			wave.helicopter_count = _get_from_raid(raid, data.helicopters_from_raid, data.raids_per_extra_helicopter)
+		waves.append(wave)
 	return waves
+
+
+## Squad cars: in the last wave of the raid they first come in, in every
+## wave of later raids (half as many outside the last wave, at least one).
+static func _get_cars(data: RaidData, raid: int, wave_index: int, is_last_wave: bool) -> int:
+	if raid < data.cars_from_raid or data.cars_in_first_car_raid <= 0:
+		return 0
+	var cars: int = data.cars_in_first_car_raid + (raid - data.cars_from_raid)
+	if is_last_wave:
+		return cars
+	if raid == data.cars_from_raid:
+		return 0
+	return maxi(1, cars / 2) if wave_index > 0 else 0
+
+
+## One from [param first_raid] on, one more every [param raids_per_extra] raids.
+static func _get_from_raid(raid: int, first_raid: int, raids_per_extra: int) -> int:
+	if raid < first_raid:
+		return 0
+	return 1 + (raid - first_raid) / maxi(1, raids_per_extra)
 
 
 static func _get_cycle_length(data: RaidData) -> int:
