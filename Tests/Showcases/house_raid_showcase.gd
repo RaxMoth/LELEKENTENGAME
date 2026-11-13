@@ -13,7 +13,9 @@ static func apply(scene: Node) -> void:
 	var armory: Armory = level.get_front(Armory) as Armory
 	(level.get_front(SalesWindow) as SalesWindow).flow.is_active = false
 	Profile.wallet.add(Types.CURRENCY_CASH, 2000)
-	armory.buy_weapon(armory.weapon_catalog.find_weapon(&"rifle"))
+	# The weapons come one after the other (knife, axe, pistol): buy the way up to the rifle.
+	for weapon_id: StringName in [&"knife", &"axe", &"pistol", &"rifle"]:
+		armory.buy_weapon(armory.weapon_catalog.find_weapon(weapon_id))
 	Profile.operation.day_number = level.cycle.get_days_per_cycle() * 2
 	level.day_cycle.advance(level.day_cycle.day_seconds + 5.0 - level.day_cycle.clock.elapsed_seconds)
 	garden.door.set_locked(true)

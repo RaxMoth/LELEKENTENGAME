@@ -1,8 +1,11 @@
 ## The defense front: the open yard in front of the house, the front door,
 ## the house's roof turrets and the Security PC that steers them, the
-## guards and the AttackerDirector — and the player's part in it: the gun
-## in hand (bought at the armory), fired from the front room or the porch
-## (the defense zone).
+## guards and the AttackerDirector — and the player's part in it: the
+## weapon in hand (Profile.armory). A new player fights with their fists;
+## the armory sells a knife, an axe, then guns. Melee weapons hit a raider in
+## reach anywhere — swung at them in a headset, or with the trigger / a
+## click; guns fire from the front room, the porch or the garden (the
+## defense zone).
 ##
 ## Selling days are quiet out here; the police come only in a raid
 ## (HouseCycle → on_raid_started / on_raid_wave_started), cross the yard in
@@ -20,7 +23,7 @@
 ## the broken door are warnings, stopped raiders are score.
 ##
 ## Dependencies: HouseFront, Yard, Raider, FrontDoor, HouseTurret, SecurityPc,
-##               AttackerDirector, GunModel, WeaponCatalog, WeaponData,
+##               AttackerDirector, WeaponModel, WeaponCatalog, WeaponData, MeleeMath,
 ##               RaidWave, BeamTracer, PopEffect3D, FloatingText3D, RayMath,
 ##               WalkableArea, Pools, Profile, Audio, Types autoloads,
 ##               Palette, SfxSynth
@@ -28,6 +31,7 @@ class_name FrontGarden
 extends HouseFront
 
 const TRACER_SCENE: PackedScene = preload("res://Scenes/Levels/House/Garden/BeamTracer.tscn")
+const HANDS: Array[Types.Hand] = [Types.Hand.LEFT, Types.Hand.RIGHT]
 
 ## Every gun there is (the player fires the one equipped in Profile.armory).
 @export var weapon_catalog: WeaponCatalog
@@ -43,6 +47,13 @@ const TRACER_SCENE: PackedScene = preload("res://Scenes/Levels/House/Garden/Beam
 @export var porch_region: Rect2 = Rect2(-1.1, -6.3, 2.2, 1.0)
 ## The threshold (world X / Z): walkable only while the door stands open.
 @export var doorway_region: Rect2 = Rect2(-0.5, -5.35, 1.0, 0.7)
+
+@export_group("Melee")
+## In a headset a hand moving at least this fast (m/s) is a swing: a fist,
+## the knife or the axe swung into a raider hits them.
+@export var melee_swing_speed: float = 2.2
+## A swing still lands this far (meters) past a raider's body.
+@export var melee_margin: float = 0.08
 
 @export_group("Garden")
 ## The player may walk out into the yard (through the open front door) and
@@ -65,9 +76,12 @@ var _guest_weapon_cooldown: float = 0.0
 var _guest_shots_in_burst: int = 0
 var _guest_seconds_since_shot: float = 0.0
 var _turrets: Array[HouseTurret] = []
-## Gun models by weapon id, made once and swapped when another gun is equipped.
-var _gun_models: Dictionary[StringName, GunModel] = {}
-var _shown_gun: GunModel = null
+## Weapon models by weapon id, made once and swapped when another one is equipped.
+var _weapon_models: Dictionary[StringName, WeaponModel] = {}
+var _shown_weapon: WeaponModel = null
+## Headset swings: each hand's last position in the play space and its pause until the next hit.
+var _last_hand_positions: Dictionary[Types.Hand, Vector3] = {}
+var _swing_cooldowns: Dictionary[Types.Hand, float] = {Types.Hand.LEFT: 0.0, Types.Hand.RIGHT: 0.0}
 
 @onready var yard: Yard = %Yard
 @onready var door: FrontDoor = %FrontDoor
@@ -122,12 +136,13 @@ func _shift_process(delta: float) -> void:
 	_guest_weapon_cooldown = maxf(0.0, _guest_weapon_cooldown - delta)
 	_guest_seconds_since_shot += delta
 	_step_trigger()
+	_step_swings(delta)
 	director.step(delta)
 	for turret: HouseTurret in _turrets:
 		turret.step(delta)
 	security_pc.step(delta)
 	turret_seat.step(delta)
-	_update_gun()
+	_update_weapon_model()
 	_update_pointers()
 
 
@@ -226,9 +241,9 @@ func get_turrets() -> Array[HouseTurret]:
 	return _turrets
 
 
-## The model of the gun in hand, or null while it is put away.
-func get_shown_gun() -> GunModel:
-	return _shown_gun
+## The model of the weapon in hand, or null while it is put away (and for fists).
+func get_shown_weapon() -> WeaponModel:
+	return _shown_weapon
 
 
 ## Fires the equipped gun along a pointer's ray, the way that gun shoots
@@ -236,28 +251,51 @@ func get_shown_gun() -> GunModel:
 ## that widens during a burst, each loses damage with distance, goes through
 ## up to pierce_count raiders (a rifle round) and is stopped by cover. One
 ## round of ammo per shot; Better Rounds adds damage. Returns the first
-## raider hit, or null.
+## raider hit, or null. With fists, the knife or the axe in hand it strikes
+## instead (strike()).
 func fire_weapon(pointer: XRPointer) -> Raider:
 	var weapon: WeaponData = get_equipped_weapon()
+	if weapon != null and weapon.is_melee():
+		return strike(pointer)
 	if not context.is_playing() or weapon == null or _weapon_cooldown > 0.0:
 		return null
 	_weapon_cooldown = weapon.fire_interval_seconds
 	if not Profile.armory.loadout.try_fire(weapon):
 		_stop_trigger()
 		Audio.play_ui(Audio.UI_ERROR)
-		if _shown_gun != null:
-			_shown_gun.play_dry_fire()
+		if _shown_weapon != null:
+			_shown_weapon.play_empty()
 		FloatingText3D.spawn(tr("Out of ammo"), pointer.get_point(1.5), Palette.WARNING, yard.get_effects_root())
 		return null
 	var bloom: float = WeaponBallistics.get_bloom(weapon, _shots_in_burst)
 	_shots_in_burst += 1
 	_seconds_since_shot = 0.0
 	var first_hit: Raider = _fire_projectiles(pointer, _get_muzzle_position(pointer), weapon, bloom, can_defend())
-	if _shown_gun != null:
-		_shown_gun.play_shot()
+	if _shown_weapon != null:
+		_shown_weapon.play_use()
 	Audio.play_sfx_at(SfxSynth.get_preset(weapon.sound_preset), pointer.ray_origin, 0.06, -3.0)
 	context.rig.pulse(pointer, weapon.recoil as Types.HapticStrength)
 	return first_hit
+
+
+## A strike with the trigger or a click: the fists, the knife or the axe hit
+## the first raider along [param pointer]'s ray within the weapon's reach —
+## anywhere (in the house, on the porch, out in the yard). Returns the
+## raider hit, or null (a swing through the air).
+func strike(pointer: XRPointer) -> Raider:
+	var weapon: WeaponData = get_equipped_weapon()
+	if not context.is_playing() or weapon == null or not weapon.is_melee() or _weapon_cooldown > 0.0:
+		return null
+	_weapon_cooldown = weapon.fire_interval_seconds
+	if _shown_weapon != null:
+		_shown_weapon.play_use()
+	var raider: Raider = yard.pick_raider(pointer.ray_origin, pointer.ray_direction, weapon.range_meters)
+	if raider == null:
+		Audio.play_sfx_at(SfxSynth.get_preset(&"whoosh"), pointer.ray_origin, 0.1, -6.0)
+		return null
+	_land_strike(raider, weapon)
+	context.rig.pulse(pointer, weapon.recoil as Types.HapticStrength)
+	return raider
 
 
 ## The projectiles of one shot from [param muzzle] along [param pointer]'s
@@ -304,9 +342,12 @@ func _on_rig_primary_action_pressed(pointer: XRPointer) -> void:
 			turret_seat.get_turret().fire()
 			turret_seat.set_firing(false)
 		return
-	if not context.is_playing() or not can_defend() or context.rig.is_xr_active:
+	if not context.is_playing() or context.rig.is_xr_active:
 		return
-	if yard.pick_raider(pointer.ray_origin, pointer.ray_direction, _get_weapon_range()) != null:
+	var weapon: WeaponData = get_equipped_weapon()
+	# Fists and blades hit what's in reach anywhere; guns fire from the defense zone.
+	var can_use: bool = can_defend() or (weapon != null and weapon.is_melee())
+	if can_use and yard.pick_raider(pointer.ray_origin, pointer.ray_direction, _get_weapon_range()) != null:
 		fire_weapon(pointer)
 
 
@@ -348,6 +389,9 @@ func _fire_for_guest() -> void:
 	if pointer == null or not context.is_playing() or weapon == null or _guest_weapon_cooldown > 0.0:
 		return
 	_guest_weapon_cooldown = weapon.fire_interval_seconds
+	if weapon.is_melee():
+		_strike_for_guest(pointer, weapon)
+		return
 	if not Profile.armory.loadout.try_fire(weapon):
 		_guest_trigger_pointer = null
 		Audio.play_ui(Audio.UI_ERROR)
@@ -360,6 +404,68 @@ func _fire_for_guest() -> void:
 	Audio.play_sfx_at(SfxSynth.get_preset(weapon.sound_preset), pointer.ray_origin, 0.06, -3.0)
 	if _guest_recoil.is_valid():
 		_guest_recoil.call(weapon.recoil as Types.HapticStrength)
+
+
+## The other player's trigger with fists, the knife or the axe: a strike
+## along their beam (one per pull).
+func _strike_for_guest(pointer: XRPointer, weapon: WeaponData) -> void:
+	_guest_trigger_pointer = null
+	var raider: Raider = yard.pick_raider(pointer.ray_origin, pointer.ray_direction, weapon.range_meters)
+	if raider == null:
+		Audio.play_sfx_at(SfxSynth.get_preset(&"whoosh"), pointer.ray_origin, 0.1, -6.0)
+		return
+	_land_strike(raider, weapon)
+	if _guest_recoil.is_valid():
+		_guest_recoil.call(weapon.recoil as Types.HapticStrength)
+
+
+## Headset: a fist — or the knife / axe in the weapon hand — swung fast into
+## a raider hits them, at the weapon's own pace per hand. The real swing is
+## the animation, so the model doesn't play one.
+func _step_swings(delta: float) -> void:
+	var rig: XRPlayerRig = context.rig
+	var weapon: WeaponData = get_equipped_weapon()
+	var can_swing: bool = rig.is_xr_active and context.is_playing() and weapon != null and weapon.is_melee()
+	for hand: Types.Hand in HANDS:
+		_swing_cooldowns[hand] = maxf(0.0, _swing_cooldowns[hand] - delta)
+		var hand_position: Vector3 = rig.get_hand_local_transform(hand).origin
+		var last_position: Vector3 = _last_hand_positions.get(hand, hand_position)
+		_last_hand_positions[hand] = hand_position
+		if not can_swing or _swing_cooldowns[hand] > 0.0 or not _can_swing_hand(hand, weapon):
+			continue
+		if MeleeMath.get_speed(last_position, hand_position, delta) < melee_swing_speed:
+			continue
+		var grip: Transform3D = rig.get_hold_anchor(hand).global_transform
+		var tip: Vector3 = grip.origin - grip.basis.z * weapon.swing_reach_meters
+		if _shown_weapon != null and hand == _get_weapon_hand():
+			tip = _shown_weapon.get_tip_position()
+		var raider: Raider = yard.find_raider_in_reach(grip.origin, tip, melee_margin)
+		if raider == null:
+			continue
+		_swing_cooldowns[hand] = weapon.fire_interval_seconds
+		_land_strike(raider, weapon)
+		rig.pulse(rig.get_hand_pointer(hand), weapon.recoil as Types.HapticStrength)
+
+
+## Fists swing with either empty hand; the knife and the axe only with the
+## hand that holds them.
+func _can_swing_hand(hand: Types.Hand, weapon: WeaponData) -> bool:
+	if weapon.model_scene == null:
+		return context.rig.is_hand_empty(hand)
+	return hand == _get_weapon_hand() and _shown_weapon != null
+
+
+## A melee hit lands: its damage (armor counts, unless it's the axe), a
+## pop where it struck and the weapon's sound.
+func _land_strike(raider: Raider, weapon: WeaponData) -> void:
+	raider.take_hit(weapon.damage, self, false, weapon.pierces_armor)
+	PopEffect3D.spawn(raider.get_hit_center(), Palette.PROJECTILE, 0.25, yard.get_effects_root())
+	Audio.play_sfx_at(SfxSynth.get_preset(weapon.sound_preset), raider.get_hit_center(), 0.12, -2.0)
+
+
+## The hand that holds the weapon (the off hand, whose trigger fires).
+func _get_weapon_hand() -> Types.Hand:
+	return Types.Hand.LEFT if context.rig.dominant_hand == Types.Hand.RIGHT else Types.Hand.RIGHT
 
 
 func _stop_trigger() -> void:
@@ -389,17 +495,18 @@ func _get_weapon_range() -> float:
 	return weapon.range_meters if weapon != null else 30.0
 
 
-## Puts the equipped gun's model in the off hand (or the flat view's lower
-## right while defending) and swaps it when another gun is equipped.
-func _update_gun() -> void:
+## Puts the equipped weapon's model in the off hand (or the flat view's
+## lower right while defending — for a knife or axe also while raiders are
+## about) and swaps it when another weapon is equipped. Fists have none.
+func _update_weapon_model() -> void:
 	var weapon: WeaponData = get_equipped_weapon()
-	var wanted: GunModel = _get_gun_model(weapon)
+	var wanted: WeaponModel = _get_weapon_model(weapon)
 	var anchor: Node3D = context.rig.get_weapon_anchor()
 	var should_show: bool = wanted != null and anchor != null and not context.rig.is_weapon_hand_busy() \
-		and not turret_seat.is_active() and (context.rig.is_xr_active or can_defend())
-	if _shown_gun != null and (_shown_gun != wanted or not should_show):
-		_shown_gun.visible = false
-		_shown_gun = null
+		and not turret_seat.is_active() and (context.rig.is_xr_active or can_defend() or (weapon.is_melee() and yard.get_alive_count() > 0))
+	if _shown_weapon != null and (_shown_weapon != wanted or not should_show):
+		_shown_weapon.visible = false
+		_shown_weapon = null
 	if not should_show:
 		return
 	if wanted.get_parent() != anchor:
@@ -407,31 +514,33 @@ func _update_gun() -> void:
 			wanted.get_parent().remove_child(wanted)
 		anchor.add_child(wanted)
 		wanted.transform = Transform3D.IDENTITY
+		wanted.use_flat_pose(not context.rig.is_xr_active)
 	wanted.visible = true
-	_shown_gun = wanted
+	_shown_weapon = wanted
 
 
 ## Gun models not in a hand right now are outside the tree: free them with the level.
 func _exit_tree() -> void:
-	for model: GunModel in _gun_models.values():
+	for model: WeaponModel in _weapon_models.values():
 		if is_instance_valid(model) and not model.is_inside_tree():
 			model.free()
-	_gun_models.clear()
+	_weapon_models.clear()
 
 
-func _get_gun_model(weapon: WeaponData) -> GunModel:
+func _get_weapon_model(weapon: WeaponData) -> WeaponModel:
 	if weapon == null or weapon.model_scene == null:
 		return null
-	if not _gun_models.has(weapon.id):
-		var model: GunModel = weapon.model_scene.instantiate() as GunModel
+	if not _weapon_models.has(weapon.id):
+		var model: WeaponModel = weapon.model_scene.instantiate() as WeaponModel
 		model.visible = false
-		_gun_models[weapon.id] = model
-	return _gun_models[weapon.id]
+		_weapon_models[weapon.id] = model
+	return _weapon_models[weapon.id]
 
 
 ## Per frame: end each beam on the raider or ground it points at in the yard.
 func _update_pointers() -> void:
-	var is_defending: bool = can_defend()
+	var weapon: WeaponData = get_equipped_weapon()
+	var is_defending: bool = can_defend() and weapon != null and not weapon.is_melee()
 	for pointer: XRPointer in context.rig.get_active_pointers():
 		if pointer.is_over_screen() or not is_defending:
 			pointer.set_world_hit_distance(RayMath.NO_HIT)
@@ -445,8 +554,8 @@ func _update_pointers() -> void:
 
 ## Shots start at the gun's muzzle; without a gun model, a little below the view.
 func _get_muzzle_position(pointer: XRPointer) -> Vector3:
-	if _shown_gun != null:
-		return _shown_gun.get_muzzle_position()
+	if _shown_weapon != null:
+		return _shown_weapon.get_tip_position()
 	if context.rig.is_xr_active:
 		return pointer.ray_origin
 	var head: Transform3D = context.rig.get_head_transform()

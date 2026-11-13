@@ -1,12 +1,13 @@
 ## Smoke checks of the house itself: walking and travel, the office (buying
 ## upgrades, bribes, reputation gates), how upgrades change the house's look
 ## (renovations, door straps, steel frame, stash shelves), crew wages and
-## strikes, controller mapping, popups on the in-world screen, nightfall,
+## strikes, controller mapping, popups on the in-world screen, the cabin's
+## rats (they bite once each, for 1 health), nightfall,
 ## raiders storming in through a broken door and hunting the player, and
 ## losing the shift when the player goes down.
 ## Owned by whoever works on the house (level, office, crew, XR).
 ##
-## Dependencies: SmokeTest, HouseLevel, HouseStages, Office, FrontGarden, Worker, DayCycle,
+## Dependencies: SmokeTest, HouseLevel, HouseStages, Office, FrontGarden, Worker, DayCycle, RatPack, Rat,
 ##               HouseShell, ShellRenovation, UpgradeLook, Ghost
 class_name HouseSmokeChecks
 extends RefCounted
@@ -48,12 +49,14 @@ static func _check_house_stages(test: SmokeTest, level: HouseLevel) -> void:
 	test.check(walkable.contains(Vector3(-0.3, 0.0, 0.0)) and not walkable.contains(office_spot), "the cabin's room is walkable; the house's office isn't there yet")
 	test.check(office.get_screen().global_position.x < 1.0 and shelf.global_position.x < 1.0, "the office board and the stash shelf stand in the cabin")
 	test.check(not Profile.upgrades.is_requirement_met(config.find_upgrade(Types.UPGRADE_CELLAR)), "the cellar needs the full house first")
+	await _check_rats(test, level)
 	var extension: UpgradeData = config.find_upgrade(Types.UPGRADE_HOUSE_EXTENSION)
 	Profile.wallet.add(Types.CURRENCY_CASH, Profile.upgrades.get_next_cost(extension), false)
 	office.buy_upgrade(extension)
 	await test.frames(2)
 	test.check(stages.get_layout().stage_name == "House" and level.get_house_shell().walls.size() == 9 and walkable.contains(office_spot), "Extend the House builds the office, the stash room and the hallway")
 	test.check(office.get_screen().global_position.x > 4.0 and shelf.global_position.x > 4.0, "the office board and the stash shelf move into their rooms")
+	test.check(not level.get_rats().is_about(), "the rats are gone once the house is extended")
 
 
 ## After the fronts' checks: office, crew, controllers, popups, night, losing.
@@ -84,6 +87,42 @@ static func run_end(test: SmokeTest, level: HouseLevel) -> void:
 	test.check(operation.is_shift_over() and operation.add_product(operation.recipes[0], 2, 3) == 0, "nothing more goes into the stash once the shift is lost")
 	await test.frames(30)
 	UI.close_top_popup()
+
+
+## The starter cabin has rats: they run about, and one close to the
+## player's feet may bite — once, for 1 health.
+static func _check_rats(test: SmokeTest, level: HouseLevel) -> void:
+	var rats: RatPack = level.get_rats()
+	var rat_list: Array[Rat] = rats.get_rats()
+	test.check(rats.is_about() and rat_list.size() >= 3, "rats live in the starter cabin")
+	var start_spots: Array[Vector3] = []
+	for rat: Rat in rat_list:
+		start_spots.append(rat.global_position)
+	test.check(await test.wait_until(func() -> bool:
+		for rat_index: int in rat_list.size():
+			if rat_list[rat_index].global_position.distance_to(start_spots[rat_index]) > 0.3:
+				return true
+		return false), "the rats scurry about")
+	# One rat, right at the player's feet, sure to bite; the others sit still meanwhile.
+	level.rig.locomotion.teleport_to(Vector3(-2.0, 0.0, 0.0), 0.0)
+	await test.frames(2)
+	var biter: Rat = rat_list[0]
+	for rat: Rat in rat_list:
+		rat.process_mode = Node.PROCESS_MODE_INHERIT if rat == biter else Node.PROCESS_MODE_DISABLED
+	var chance_before: float = rats.bite_chance_per_second
+	rats.bite_chance_per_second = 1000.0
+	var vitals: PlayerVitals = level.player_vitals
+	var health_before: float = vitals.get_health()
+	biter.global_position = level.rig.get_feet_position() + Vector3(0.2, 0.0, 0.0)
+	test.check(await test.wait_until(func() -> bool: return biter.has_bitten()), "a rat at the player's feet bites")
+	await test.frames(10)
+	test.check(is_equal_approx(health_before - vitals.get_health(), rats.bite_damage) and is_equal_approx(rats.bite_damage, 1.0), "a bite costs 1 health")
+	biter.global_position = level.rig.get_feet_position() + Vector3(0.2, 0.0, 0.0)
+	await test.frames(40)
+	test.check(is_equal_approx(health_before - vitals.get_health(), rats.bite_damage), "each rat bites only once")
+	rats.bite_chance_per_second = chance_before
+	for rat: Rat in rat_list:
+		rat.process_mode = Node.PROCESS_MODE_INHERIT
 
 
 ## The admin terminal in the office (debug builds): cash and day by pointer.

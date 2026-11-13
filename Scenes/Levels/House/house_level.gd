@@ -21,13 +21,15 @@
 ## host's world — time, money, stash, items, stations — instead.
 ##
 ## Dependencies: LevelBase, HouseFront, HouseContext, HouseCycle, Operation, DayCycle,
-##               HouseShell, UpgradeReaction, WalkBlocker, Ghost, Worker, WristStatus, PlayerVitals, XRPlayerRig, HouseCoopSync, Profile, Audio,
+##               HouseShell, UpgradeReaction, WalkBlocker, Ghost, RatPack, Worker, WristStatus, PlayerVitals, XRPlayerRig, HouseCoopSync, Profile, Audio,
 ##               Events, Platform, Coop, Types autoloads, Palette, SfxSynth
 class_name HouseLevel
 extends LevelBase
 
 ## Seconds between wrist status refreshes.
 const WRIST_REFRESH_SECONDS: float = 0.25
+## A hit doing at least this much damage rumbles hard (less is a light nip).
+const HEAVY_HIT_DAMAGE: float = 5.0
 const DAY_SUMMARY_POPUP: PackedScene = preload("res://Scenes/UI/Popups/DaySummaryPopup/DaySummaryPopup.tscn")
 
 @export_group("Shift")
@@ -69,6 +71,7 @@ var _mirrored_wrist_lines: PackedStringArray = PackedStringArray()
 @onready var _coop_sync: HouseCoopSync = %CoopSync
 @onready var _house_shell: HouseShell = %HouseShell
 @onready var _ghost: Ghost = %Ghost
+@onready var _rats: RatPack = %Rats
 
 # ============================================
 # LEVEL HOOKS
@@ -89,6 +92,8 @@ func _on_level_setup() -> void:
 	player_vitals.hit_taken.connect(_on_player_hit)
 	player_vitals.health_changed.connect(_wrist_status.show_health)
 	player_vitals.died.connect(report_player_down.bind(""))
+	_rats.feet_source = rig.get_feet_position
+	_rats.player_bitten.connect(hurt_local_player)
 	_wrist_status.show_health(player_vitals.get_health(), player_vitals.get_max_health())
 	context = HouseContext.new(self, rig, operation, day_cycle, cycle)
 	for node: Node in get_tree().get_nodes_in_group(Types.GROUP_HOUSE_FRONT):
@@ -211,6 +216,11 @@ func get_ghost() -> Ghost:
 	return _ghost
 
 
+## The cabin's rats (tests).
+func get_rats() -> RatPack:
+	return _rats
+
+
 ## The house's walls, floor, ceiling and roof (renovations change their materials).
 func get_house_shell() -> HouseShell:
 	return _house_shell
@@ -272,6 +282,17 @@ func set_mirrored_wrist_lines(lines: PackedStringArray) -> void:
 	_mirrored_wrist_lines = lines
 
 
+## Hurts this player (a rat's bite). On a co-op guest the host keeps the
+## health, so the hurt goes there.
+func hurt_local_player(damage: float) -> void:
+	if not is_playing():
+		return
+	if is_mirror:
+		_coop_sync.report_own_hurt(damage)
+	else:
+		player_vitals.take_damage(damage)
+
+
 ## A player went down — this one ([param player_name] empty) or, on the
 ## host, a co-op guest: the shift is lost for everyone.
 func report_player_down(player_name: String) -> void:
@@ -288,10 +309,12 @@ func _warn(message: String) -> void:
 		rig.pulse(pointer, Types.HapticStrength.HEAVY)
 
 
-## Hit by a raider: both controllers rumble (the wrist shows what's left).
-func _on_player_hit(_amount: float, _current: float) -> void:
+## Hit (a raider, a rat): both controllers rumble — hard for a real blow,
+## lightly for a nip — and the wrist shows what's left.
+func _on_player_hit(amount: float, _current: float) -> void:
+	var strength: Types.HapticStrength = Types.HapticStrength.HEAVY if amount >= HEAVY_HIT_DAMAGE else Types.HapticStrength.LIGHT
 	for pointer: XRPointer in rig.get_active_pointers():
-		rig.pulse(pointer, Types.HapticStrength.HEAVY)
+		rig.pulse(pointer, strength)
 
 
 func _on_shift_lost(reason: String) -> void:

@@ -26,7 +26,8 @@
 ## Health: the host keeps a PlayerVitals on each guest's stand-in (raiders
 ## that got in hunt them too) and sends the guest its numbers — on every hit
 ## and, while it heals, a few times a second; a guest going down ends the
-## shift on the host.
+## shift on the host. What only the guest's copy has (its own cabin rats)
+## reports a hurt to the host (report_own_hurt).
 ##
 ## Dependencies: HouseLevel, RemotePlayer, NetEntities, HandInteractor, Lab,
 ##               PlayerVitals,
@@ -64,6 +65,10 @@ const WORLD_TIME: int = 4
 const WORLD_WRIST_LINES: int = 5
 ## A guest's boards farther away than this (or behind them) stop redrawing.
 const SCREEN_RENDER_DISTANCE: float = 7.0
+## Most a guest's own report may hurt them at once (a rat's bite is 1)...
+const MAX_REPORTED_HURT: float = 5.0
+## ...and how soon after the last one another report counts (milliseconds).
+const MIN_HURT_REPORT_INTERVAL_MSEC: int = 500
 
 ## Spawned things streamed to (host) or shown from (guest) the other player.
 ## Host: sounds sent to the other player so far (tests).
@@ -85,6 +90,8 @@ var _seconds_since_world_sent: float = 0.0
 ## Host: each guest's health (on their stand-in) and the whole points last sent to them.
 var _vitals: Dictionary[int, PlayerVitals] = {}
 var _sent_health: Dictionary[int, int] = {}
+## Host: when each guest's last own-hurt report counted (Time.get_ticks_msec()).
+var _last_hurt_report_msec: Dictionary[int, int] = {}
 
 
 ## Called by the House level at setup (after its fronts are set up).
@@ -140,6 +147,12 @@ func _process(delta: float) -> void:
 func broadcast_announcement(message: String, color: Color, hold_seconds: float) -> void:
 	for peer_id: int in Coop.get_ready_peers():
 		_receive_announcement.rpc_id(peer_id, message, color, hold_seconds)
+
+
+## Guest: something only this copy has (its rats) hurt this player; the host keeps the health.
+func report_own_hurt(amount: float) -> void:
+	if Coop.is_client() and Coop.is_level_acknowledged():
+		_receive_own_hurt.rpc_id(1, amount)
 
 
 ## The other players currently drawn (tests).
@@ -214,6 +227,22 @@ func _receive_world(world: Array) -> void:
 	operation.heat.value = float(world[WORLD_HEAT])
 	_level.day_cycle.sync_elapsed(float(world[WORLD_TIME]))
 	_level.set_mirrored_wrist_lines(world[WORLD_WRIST_LINES])
+
+
+## Guest -> host: the guest's own copy hurt them (a rat's bite), a little at most.
+@rpc("any_peer", "reliable", "call_remote", 0)
+func _receive_own_hurt(amount: float) -> void:
+	var sender_id: int = multiplayer.get_remote_sender_id()
+	if not Coop.is_host() or _level == null or not _is_trusted_sender(sender_id) or not is_finite(amount):
+		return
+	# A rat bites a few times a run at most: reports any faster are dropped.
+	var now_msec: int = Time.get_ticks_msec()
+	if now_msec - _last_hurt_report_msec.get(sender_id, -MIN_HURT_REPORT_INTERVAL_MSEC) < MIN_HURT_REPORT_INTERVAL_MSEC:
+		return
+	_last_hurt_report_msec[sender_id] = now_msec
+	var entry: Object = _vitals.get(sender_id)
+	if is_instance_valid(entry):
+		(entry as PlayerVitals).take_damage(clampf(amount, 0.0, MAX_REPORTED_HURT))
 
 
 ## Host -> guest: their own health (the host keeps it: raiders hit them there).
@@ -471,6 +500,7 @@ func _on_players_changed() -> void:
 		_players.erase(peer_id)
 		_vitals.erase(peer_id)
 		_sent_health.erase(peer_id)
+		_last_hurt_report_msec.erase(peer_id)
 
 
 func _on_beam_fired(from_position: Vector3, to_position: Vector3) -> void:

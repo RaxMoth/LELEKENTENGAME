@@ -286,6 +286,8 @@ AutomationMath.get_missing_ingredients(recipe_ids, present_ids)   # what the hop
 AutomationMath.find_nearest(from, positions, ready_flags)          # the picker's next ripe plant
 heat.add(n) / cool(delta) / get_ratio()
 health.take(amount) / recover(delta) / is_down()   # PlayerHealth: hits, regeneration after a quiet spell
+MeleeMath.get_speed(last, hand, delta) / get_distance_to_body(hand, tip, feet, height)   # swings and reach
+loadout.can_buy(axe, catalog) / is_unlocked(pistol, catalog)   # knife → axe → pistol → the other guns
 RaidPlanner.build_raid(data, raid_number, heat_ratio) / is_raid_day(day, data)   # waves of cops, SWAT, rams
 YardNavigation.steer(position, target, obstacles) / find_cover_spot(position, door, obstacles)
 WeaponBallistics.get_shot_directions(forward, weapon, bloom) / get_damage_at(weapon, distance)   # pellets, cone, falloff

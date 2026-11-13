@@ -1,7 +1,10 @@
-## The player's guns: which ones they own, the rounds left for each and the
-## one in their hand. Starter guns (cost 0) are always owned and never run
-## out of ammo, so the player is never unarmed.
+## The player's weapons: which ones they own, the rounds left for each gun
+## and the one in their hand. The starter (cost 0: the fists) is always
+## owned and never runs out, so the player is never unarmed. A weapon is for
+## sale only once its required weapon is owned (knife → axe → pistol → the
+## other guns).
 ##
+##   loadout.can_buy(shotgun, catalog)    # owns the pistol, not the shotgun yet
 ##   loadout.buy_weapon(shotgun)          # after paying for it
 ##   loadout.equip(&"shotgun")
 ##   if loadout.try_fire(shotgun): ...    # takes a round (none for the starter)
@@ -37,6 +40,22 @@ func has_ammo(weapon: WeaponData) -> bool:
 ## Room left for rounds of [param weapon].
 func get_ammo_space(weapon: WeaponData) -> int:
 	return 0 if weapon == null or weapon.has_unlimited_ammo else maxi(0, weapon.max_ammo - get_ammo(weapon))
+
+
+## True when [param weapon]'s required weapon (in [param catalog]) is owned,
+## or it needs none.
+func is_unlocked(weapon: WeaponData, catalog: WeaponCatalog) -> bool:
+	if weapon == null:
+		return false
+	if weapon.required_weapon_id == &"":
+		return true
+	var required: WeaponData = catalog.find_weapon(weapon.required_weapon_id) if catalog != null else null
+	return required != null and owns(required)
+
+
+## True when [param weapon] is for sale to this player: not owned yet, and unlocked.
+func can_buy(weapon: WeaponData, catalog: WeaponCatalog) -> bool:
+	return weapon != null and not owns(weapon) and is_unlocked(weapon, catalog)
 
 
 ## Adds a bought gun with its starting rounds. Returns false when already owned.

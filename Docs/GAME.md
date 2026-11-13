@@ -28,8 +28,9 @@ The game runs in **3-day cycles** (`HouseCycle`, tuned by
 1. **Days 1–3 — build up.** Only customers come; nobody attacks.
    **Craft** in the lab (grab ingredients, grind, cook, press), **sell** at
    the back window, earn **cash** and **reputation** — every sale also adds
-   **heat**. Spend it: **guns and ammo** at the armory terminal in the
-   front room, **house upgrades** at the office (roof turrets, the Security
+   **heat**. Spend it: **weapons and ammo** at the armory terminal in the
+   front room (you start with your fists: a knife first, then an axe, then
+   the guns), **house upgrades** at the office (roof turrets, the Security
    PC, a stronger door).
 2. **Night 3 — the raid.** Your sales got you noticed. When night falls on
    day 3 the back window closes, the clock stops and the police storm the
@@ -86,6 +87,7 @@ new day, in co-op the guest comes along (`DaySummaryPopup`).
 | Pick up / put in | Dominant-hand trigger: point at a crate, ingredient or batch and pull; point at a station slot and pull again | Click an item / click where to put it |
 | Carry by hand | Grip (either hand, at the hand or along the beam): hold to carry, let go at — or pointing at — a slot; a quick grip click keeps holding until the next click | — |
 | Use (station buttons, screens, door bolt) | Dominant-hand trigger | Click |
+| Fight with fists, the knife or the axe | Swing a fist (either empty hand) or the blade (the off hand holds it) into a raider within reach; the off-hand trigger also strikes what's in reach along its beam | Click a raider in reach, or right-click |
 | Fire your gun | Off-hand trigger (from the front room, the porch or the garden); the gun sits in that hand; hold it for the SMG | Right-click (hold for the SMG), or click a raider |
 | Front door | Trigger on a handle swings it fully open / shut; grip a handle to swing it by hand | Click a handle |
 | Talk to someone | Dominant-hand trigger on a person in the street; pick a reply on the panel beside them | Click a person, then a reply |
@@ -260,9 +262,31 @@ bolted again that day.
 
 ### Armory (front room, back wall)
 
-A terminal sells guns and ammo; the gun you buy goes straight into your
-hand, and you can switch between guns you own. The pistol is free and never
-runs dry, so you are never unarmed. "Better Rounds" adds damage to every gun.
+A terminal sells weapons and ammo; the weapon you buy goes straight into
+your hand, and you can switch between the ones you own. A new player has
+only their **fists**. The terminal sells one weapon after the other: the
+**knife** first, then the **axe** (needs the knife), then the **pistol**
+(needs the axe), then the other guns (need the pistol); one not for sale
+yet shows a lock and what it needs. Fists, blades and the pistol never run
+dry. "Better Rounds" adds damage to every gun.
+
+**Close combat:** fists, the knife and the axe hit a raider within reach
+anywhere — in the house, on the porch or out in the yard. In a headset you
+swing them: a fist (either empty hand) or the blade (in the off hand)
+moving fast into a raider lands a hit, each at its own pace; the off-hand
+trigger strikes what's in reach along its beam too. On a screen, click a
+raider in reach. The knife and the axe have their own models (a steel blade
+with a riveted handle; a splitting axe on a wooden handle), raised in the
+flat view, chopping on every strike. Raiders fight back: one out in the
+yard turns on a player who comes close (3 m) and hits them; once nobody is
+left outside and the door still holds, it goes back to the door.
+
+| Weapon | Cost | Needs | Damage | Hits/s | Reach |
+|---|---|---|---|---|---|
+| Fists | — | — | 10 | 2.2 | 1.6 m (a swing: the knuckles) |
+| Knife | $60 | — | 22 | 2.5 | 1.7 m (a swing: the blade) |
+| Axe | $160 | Knife | 45, pierces armor | 1.3 | 2 m (a swing: the axe head) |
+
 Each gun has its own model in the off hand (lower right of the view in the
 flat simulator) and is animated on every shot: kick, muzzle flash and its
 moving part — the pistol's slide, the SMG's charging handle, the shotgun's
@@ -273,7 +297,7 @@ and has its own sound.
 
 | Gun | Cost | Damage | Shots/s | Range | Ammo (box) |
 |---|---|---|---|---|---|
-| Pistol | free | 20, falls off past 18 m | 3.3, semi-auto | 30 m | unlimited |
+| Pistol | $200 (needs the axe) | 20, falls off past 18 m | 3.3, semi-auto | 30 m | unlimited |
 | SMG | $350 | 12, falls off past 12 m | 12.5, full auto (hold), spread grows during a burst | 25 m | 90 for $40 (max 360) |
 | Shotgun | $500 | 9 pellets × 14 in a 5.5° cone, weak past 15 m | 1.2, pump | 18 m | 16 for $40 (max 64) |
 | Rifle | $800 | 60, pierces armor, goes through one raider into the next | 1.8, bolt | 40 m | 20 for $50 (max 100) |
@@ -305,7 +329,10 @@ reputation and change how you play:
 A new operation starts in a **one-room cabin**: the left side of the
 house, with the front door, the lab corner, the sales window, the stash
 shelf and the office board in one room (two half walls hold the armory,
-the how-to poster and the lab tables). Beside it, planks cover an old
+the how-to poster and the lab tables). A few **rats** scurry about the
+cabin's floor; now and then — by pure chance, when one is right at your
+feet — a rat bites: 1 health, each rat only once. They are gone once the
+house is extended. Beside it, planks cover an old
 cellar hatch in the grass. **Extend the House** builds the rest: the
 office with its desk, the stash room (the shelf moves in) and the hallway;
 the hatch is now under the stash-room floor. **Dig the Cellar** (needs the
@@ -401,11 +428,12 @@ These are the defaults this build uses; all are easy to change.
   product, more cops in the raid at the end of the cycle, cooling over time,
   bribes; reset to 0 after a beaten raid).
 - **The cycle:** 3 days of selling, the raid on night 3, endless with a
-  harder raid each cycle (`Ressources/Raids/police_raids.tres`). Guns are
-  bought, not upgraded; the free pistol keeps the player armed.
+  harder raid each cycle (`Ressources/Raids/police_raids.tres`). Weapons
+  are bought one after the other (knife, axe, pistol, the other guns), not
+  upgraded; the fists keep the player armed.
 - **Tone:** stylized (the existing palette and placeholder art).
 - **First playable size:** 3 products, 4 ingredients, 5 customer types,
-  3 raiders (cop, SWAT, battering ram), 4 guns, 3 roof turrets, 38 upgrades.
+  3 raiders (cop, SWAT, battering ram), fists, 2 blades and 4 guns, 3 roof turrets, 38 upgrades.
 - **Platform:** both — Meta Quest (standalone) and PC VR (SteamVR).
 
 ## Running it
@@ -465,7 +493,8 @@ Scenes/Levels/House/House.tscn                inherits LevelBase; house_level.gd
     │   ├── Ghost              HOUSE     Ghost/Ghost.tscn: the night-4 ghost (local to each player)
     │   ├── Office             HOUSE     Office/Office.tscn: upgrade board, bribes
     │   ├── Admin              HOUSE     Admin/Admin.tscn: admin terminal for testing (debug builds only)
-    │   ├── Armory             DEFENSE   Armory/Armory.tscn: terminal for guns and ammo
+    │   ├── Armory             DEFENSE   Armory/Armory.tscn: terminal for weapons (knife, axe, guns) and ammo
+    │   ├── Rats               HOUSE     Rats/Rats.tscn: the cabin's rats (gone once the house is extended)
     │   ├── StashShelf         StashShelf.tscn: one bag per unit in stock; boards on blocks, a wooden shelf and crates (Bigger Stash)
     │   ├── SteelDoorFrame     SteelDoorFrame.tscn: steel frame and locks around the front door (Steel Door Frame)
     │   ├── WalkableArea       floor rectangles the player may stand on
@@ -488,11 +517,12 @@ Scenes/Levels/House/House.tscn                inherits LevelBase; house_level.gd
 | `Customer`, `CustomerFlow`, `SalesWindow`, `SalesBoard` | Pooled customers with StateChart Walking ⇄ Waiting → Leaving; the window runs the sale rules (`SalesMath`) |
 | `Yard`, `Raider`, `RaidSquad`, `AttackerDirector` | The open yard (round obstacles, cover, line of sight; `YardNavigation`); pooled raiders with StateChart Alive { Moving ⇄ InCover, Attacking, Hunting } → Dead, moving in squads that leapfrog and rush together; once the door is down they hunt the nearest player through the house along `WalkableArea.find_path` routes |
 | `HouseTurret`, `SecurityPc`, `TurretConsole` | Roof turrets (house upgrade) that aim on their own or from the office PC's camera view |
-| `GunModel` | The animated gun in hand (slide, pump, bolt, flash, kick) |
+| `WeaponModel`, `GunModel`, `MeleeModel` | The animated weapon in hand: a gun (slide, pump, bolt, flash, kick) or a blade (a chop on every strike, held up in the flat view) |
 | `RaiderBody` | A raider's jointed body (hips, torso, head, arms, legs) built from exports and animated procedurally: walk cycle, crouch, strike |
 | `TurretSeat` | "VR in VR": the goggles put the player into a roof turret (view at its camera, barrel follows the hand) |
 | `FrontDoor`, `HingeHandle` | The door: StateChart Closed { Unlocked ⇄ Locked } ⇄ Open; grab-and-swing handles, bolts on both sides, opens the doorway in the `WalkableArea`; broken, it swings open and stays open |
-| `Armory`, `WeaponData`, `WeaponLoadout`, `Profile.armory` | Guns and ammo: bought at the terminal, fired by the FrontGarden |
+| `Armory`, `WeaponData`, `WeaponLoadout`, `Profile.armory` | Weapons and ammo: fists to start, then knife → axe → pistol → the other guns (`required_weapon_id`), bought at the terminal, used by the FrontGarden (melee: `MeleeMath` reach and swings) |
+| `RatPack`, `Rat` | The cabin's rats (StateChart Roaming { Sniffing ⇄ Scurrying } → Biting): local to each player, a bite once per rat for 1 health |
 | `Worker` | StateChart Absent → Working ⇄ Striking; lives in its front's scene |
 | Pure logic (`Scripts/Game/`) | `TimingGauge`, `QualityMath`, `Stash`, `SalesMath`, `CustomerOrder`, `HeatMeter`, `DayClock`, `RaidPlanner`, `WeaponLoadout`, `YardNavigation`, `WeaponBallistics`, `WalkMotion` — unit-tested |
 

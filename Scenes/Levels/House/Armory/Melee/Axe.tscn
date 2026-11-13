@@ -1,0 +1,75 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://Scenes/Levels/House/Armory/Melee/melee_model.gd" id="melee"]
+[ext_resource type="Material" path="res://Assets/Materials/blade_steel.tres" id="steel"]
+[ext_resource type="Material" path="res://Assets/Materials/gun_metal_worn.tres" id="worn"]
+[ext_resource type="Material" path="res://Assets/Materials/gun_polymer.tres" id="polymer"]
+[ext_resource type="Material" path="res://Assets/Materials/wood_trim.tres" id="wood"]
+
+[sub_resource type="BoxMesh" id="handle"]
+size = Vector3(0.026, 0.032, 0.64)
+
+[sub_resource type="BoxMesh" id="grip"]
+size = Vector3(0.03, 0.036, 0.11)
+
+[sub_resource type="BoxMesh" id="eye"]
+size = Vector3(0.036, 0.075, 0.06)
+
+[sub_resource type="BoxMesh" id="cheek"]
+size = Vector3(0.022, 0.07, 0.085)
+
+[sub_resource type="BoxMesh" id="edge"]
+size = Vector3(0.008, 0.02, 0.105)
+
+[sub_resource type="BoxMesh" id="poll"]
+size = Vector3(0.034, 0.03, 0.05)
+
+[node name="Axe" type="Node3D"]
+script = ExtResource("melee")
+draw_back_degrees = 30.0
+chop_degrees = 60.0
+strike_seconds = 0.42
+flat_pose_degrees = Vector3(55, 0, -20)
+
+[node name="Body" type="Node3D" parent="."]
+unique_name_in_owner = true
+
+[node name="Handle" type="MeshInstance3D" parent="Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.24)
+mesh = SubResource("handle")
+surface_material_override/0 = ExtResource("wood")
+cast_shadow = 0
+
+[node name="Grip" type="MeshInstance3D" parent="Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.02)
+mesh = SubResource("grip")
+surface_material_override/0 = ExtResource("polymer")
+cast_shadow = 0
+
+[node name="Eye" type="MeshInstance3D" parent="Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.5)
+mesh = SubResource("eye")
+surface_material_override/0 = ExtResource("worn")
+cast_shadow = 0
+
+[node name="Cheek" type="MeshInstance3D" parent="Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.07, -0.5)
+mesh = SubResource("cheek")
+surface_material_override/0 = ExtResource("worn")
+cast_shadow = 0
+
+[node name="Edge" type="MeshInstance3D" parent="Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.112, -0.5)
+mesh = SubResource("edge")
+surface_material_override/0 = ExtResource("steel")
+cast_shadow = 0
+
+[node name="Poll" type="MeshInstance3D" parent="Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.05, -0.5)
+mesh = SubResource("poll")
+surface_material_override/0 = ExtResource("worn")
+cast_shadow = 0
+
+[node name="Tip" type="Marker3D" parent="Body"]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.12, -0.5)

@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="WeaponData" format=3]
+
+[ext_resource type="Script" path="res://Scripts/Resources/weapon_data.gd" id="script"]
+[ext_resource type="PackedScene" path="res://Scenes/Levels/House/Armory/Melee/Knife.tscn" id="model"]
+
+[resource]
+script = ExtResource("script")
+id = &"knife"
+display_name = "Knife"
+description = "A kitchen knife with a real edge. Quick cuts in close."
+kind = 1
+cost = 60
+model_scene = ExtResource("model")
+damage = 22.0
+fire_interval_seconds = 0.4
+range_meters = 1.7
+pierces_armor = false
+recoil = 0
+sound_preset = &"slash"
+has_unlimited_ammo = true
+starting_ammo = 0
+ammo_pack_size = 1
+ammo_pack_cost = 0
+max_ammo = 1
+swing_reach_meters = 0.24

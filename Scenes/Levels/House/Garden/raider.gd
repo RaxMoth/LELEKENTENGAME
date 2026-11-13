@@ -8,7 +8,9 @@
 ## door damage). Pooled.
 ## Once the door is down (Yard.start_hunting) it hunts the nearest living
 ## player into the house — along WalkableArea routes, sliding along walls and
-## furniture like the player does — and hits them when in reach.
+## furniture like the player does — and hits them when in reach. A player
+## who comes out into the yard and close draws it into a fight too; while
+## the door holds, it goes back to the door once nobody is left outside.
 ## State: Alive { Moving <-> InCover, Attacking, Hunting } -> Dead, Dead ->
 ## Alive on respawn (pool reuse).
 ##
@@ -41,6 +43,8 @@ const ROUTE_SECONDS: float = 0.5
 const WAYPOINT_REACHED: float = 0.35
 ## A player more than this far above or below (another floor) is out of reach.
 const STRIKE_HEIGHT: float = 1.2
+## Seconds between two looks for a player close by in the yard.
+const ENGAGE_CHECK_SECONDS: float = 0.25
 ## A strike: how far the body lunges (a ram team further), and the lunge's
 ## out and back seconds.
 const STRIKE_LUNGE: float = 0.25
@@ -80,6 +84,8 @@ const STRIKE_BACK_SECONDS: float = 0.22
 @export var player_damage: float = 10.0
 ## How close (meters, across the floor) a player must be to be hit.
 @export var strike_range: float = 1.3
+## Out in the yard, a player this close (meters) draws the raider into a fight.
+@export var engage_range: float = 3.0
 
 @export_group("Body")
 ## Radius of the sphere shots hit.
@@ -112,6 +118,7 @@ var _is_hunting: bool = false
 ## Hunting: the waypoints still ahead (WalkableArea.find_path).
 var _route: PackedVector3Array = PackedVector3Array()
 var _seconds_until_route: float = 0.0
+var _seconds_until_engage_check: float = 0.0
 var _tween: Tween
 
 @onready var health_component: HealthComponent = %HealthComponent
@@ -198,6 +205,11 @@ func take_hit(amount: float, source: Node = null, from_tower: bool = false, pier
 		voice.say(VoiceLineData.HIT)
 
 
+## How tall the body stands for fists and blades (lower while crouching).
+func get_body_height() -> float:
+	return (get_hit_center().y - global_position.y) * 2.0
+
+
 ## Center of the sphere shots aim at (lower while crouching in cover).
 func get_hit_center() -> Vector3:
 	var crouch: float = _bodies[0].get_crouch_amount() if not _bodies.is_empty() else 0.0
@@ -243,6 +255,7 @@ func _on_pool_spawned() -> void:
 	_is_heading_for_door = false
 	_is_hunting = false
 	_route = PackedVector3Array()
+	_seconds_until_engage_check = randf() * ENGAGE_CHECK_SECONDS
 	# Every (re)spawn starts in Moving (the chart's initial / respawn state).
 	_is_in_motion = true
 	_is_frozen = false
@@ -269,7 +282,7 @@ func _on_moving_state_entered() -> void:
 
 
 func _on_moving_state_physics_processing(delta: float) -> void:
-	if _yard == null or _is_frozen:
+	if _yard == null or _is_frozen or _watch_for_players(delta):
 		return
 	_seconds_since_hit += delta
 	var here: Vector2 = Vector2(global_position.x, global_position.z)
@@ -299,7 +312,7 @@ func _on_in_cover_state_entered() -> void:
 
 func _on_in_cover_state_physics_processing(delta: float) -> void:
 	_animate_bodies(delta, 0.0)
-	if _yard == null or _is_frozen:
+	if _yard == null or _is_frozen or _watch_for_players(delta):
 		return
 	_seconds_since_hit += delta
 	# Pinned down: shots keep the head low.
@@ -323,7 +336,7 @@ func _on_attacking_state_entered() -> void:
 
 func _on_attacking_state_physics_processing(delta: float) -> void:
 	_animate_bodies(delta, 0.0)
-	if _yard == null or _is_frozen or _yard.door == null or not _yard.door.is_alive():
+	if _yard == null or _is_frozen or _watch_for_players(delta) or _yard.door == null or not _yard.door.is_alive():
 		return
 	_seconds_until_hit -= delta
 	if _seconds_until_hit > 0.0:
@@ -349,8 +362,13 @@ func _on_hunting_state_physics_processing(delta: float) -> void:
 	if _yard == null or _is_frozen:
 		_animate_bodies(delta, 0.0)
 		return
-	var target: PlayerVitals = _yard.find_hunt_target(global_position)
+	# While the door holds, a raider out in the yard only fights players out there too.
+	var is_outdoor_fight: bool = not _yard.is_hunting() and _yard.is_outdoors(global_position)
+	var target: PlayerVitals = _yard.find_hunt_target(global_position, is_outdoor_fight)
 	if target == null:
+		if is_outdoor_fight:
+			_give_up_hunting()
+			return
 		_animate_bodies(delta, 0.0)
 		return
 	var target_feet: Vector3 = target.get_feet_position()
@@ -382,6 +400,27 @@ func _on_hunting_state_physics_processing(delta: float) -> void:
 			break
 		_route.remove_at(0)
 	_walk_toward(waypoint, rush_speed, delta)
+
+
+## Out in the yard: a player close by draws the raider into a fight
+## (checked a few times a second). Returns true when it starts hunting.
+func _watch_for_players(delta: float) -> bool:
+	_seconds_until_engage_check -= delta
+	if _seconds_until_engage_check > 0.0:
+		return false
+	_seconds_until_engage_check = ENGAGE_CHECK_SECONDS
+	if _yard.find_hunt_target(global_position, true, engage_range) == null:
+		return false
+	start_hunting()
+	return true
+
+
+## Nobody left to fight out here while the door holds: rush the door again.
+func _give_up_hunting() -> void:
+	_is_hunting = false
+	_route = PackedVector3Array()
+	_head_for_door()
+	state_chart.send_event(Types.EVENT_MOVE)
 
 
 ## Hits [param player] (the same blow as at the door).

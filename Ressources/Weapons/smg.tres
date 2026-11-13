@@ -9,6 +9,7 @@ id = &"smg"
 display_name = "SMG"
 description = "Full auto: hold the trigger. Fast, light rounds that spread the longer you fire; armor eats a lot of each hit."
 cost = 350
+required_weapon_id = &"pistol"
 model_scene = ExtResource("model")
 damage = 12.0
 fire_interval_seconds = 0.08

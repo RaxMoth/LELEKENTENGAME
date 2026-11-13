@@ -1,0 +1,84 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://Scenes/Levels/House/Armory/Melee/melee_model.gd" id="melee"]
+[ext_resource type="Material" path="res://Assets/Materials/blade_steel.tres" id="steel"]
+[ext_resource type="Material" path="res://Assets/Materials/gun_metal.tres" id="metal"]
+[ext_resource type="Material" path="res://Assets/Materials/gun_polymer.tres" id="polymer"]
+
+[sub_resource type="BoxMesh" id="handle"]
+size = Vector3(0.022, 0.03, 0.105)
+
+[sub_resource type="CylinderMesh" id="rivet"]
+top_radius = 0.004
+bottom_radius = 0.004
+height = 0.024
+radial_segments = 10
+rings = 1
+
+[sub_resource type="BoxMesh" id="guard"]
+size = Vector3(0.03, 0.042, 0.008)
+
+[sub_resource type="BoxMesh" id="blade"]
+size = Vector3(0.0045, 0.028, 0.15)
+
+[sub_resource type="BoxMesh" id="fuller"]
+size = Vector3(0.0049, 0.003, 0.11)
+
+[sub_resource type="PrismMesh" id="point"]
+left_to_right = 1.0
+size = Vector3(0.028, 0.05, 0.0045)
+
+[node name="Knife" type="Node3D"]
+script = ExtResource("melee")
+draw_back_degrees = 18.0
+chop_degrees = 40.0
+strike_seconds = 0.26
+
+[node name="Body" type="Node3D" parent="."]
+unique_name_in_owner = true
+
+[node name="Handle" type="MeshInstance3D" parent="Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.004, 0)
+mesh = SubResource("handle")
+surface_material_override/0 = ExtResource("polymer")
+cast_shadow = 0
+
+[node name="RivetBack" type="MeshInstance3D" parent="Body/Handle"]
+transform = Transform3D(0, -1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0.025)
+mesh = SubResource("rivet")
+surface_material_override/0 = ExtResource("steel")
+cast_shadow = 0
+
+[node name="RivetFront" type="MeshInstance3D" parent="Body/Handle"]
+transform = Transform3D(0, -1, 0, 1, 0, 0, 0, 0, 1, 0, 0, -0.02)
+mesh = SubResource("rivet")
+surface_material_override/0 = ExtResource("steel")
+cast_shadow = 0
+
+[node name="Guard" type="MeshInstance3D" parent="Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.002, -0.057)
+mesh = SubResource("guard")
+surface_material_override/0 = ExtResource("metal")
+cast_shadow = 0
+
+[node name="Blade" type="MeshInstance3D" parent="Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.136)
+mesh = SubResource("blade")
+surface_material_override/0 = ExtResource("steel")
+cast_shadow = 0
+
+[node name="Fuller" type="MeshInstance3D" parent="Body/Blade"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.006, 0.006)
+mesh = SubResource("fuller")
+surface_material_override/0 = ExtResource("metal")
+cast_shadow = 0
+
+[node name="Point" type="MeshInstance3D" parent="Body"]
+transform = Transform3D(0, 0, -1, 1, 0, 0, 0, -1, 0, 0, 0, -0.236)
+mesh = SubResource("point")
+surface_material_override/0 = ExtResource("steel")
+cast_shadow = 0
+
+[node name="Tip" type="Marker3D" parent="Body"]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.26)

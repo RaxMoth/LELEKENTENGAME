@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="WeaponData" format=3]
+
+[ext_resource type="Script" path="res://Scripts/Resources/weapon_data.gd" id="script"]
+[ext_resource type="PackedScene" path="res://Scenes/Levels/House/Armory/Melee/Axe.tscn" id="model"]
+
+[resource]
+script = ExtResource("script")
+id = &"axe"
+display_name = "Axe"
+description = "A heavy splitting axe. Slow, but it bites through armor."
+kind = 1
+cost = 160
+required_weapon_id = &"knife"
+model_scene = ExtResource("model")
+damage = 45.0
+fire_interval_seconds = 0.75
+range_meters = 2.0
+pierces_armor = true
+recoil = 1
+sound_preset = &"chop"
+has_unlimited_ammo = true
+starting_ammo = 0
+ammo_pack_size = 1
+ammo_pack_cost = 0
+max_ammo = 1
+swing_reach_meters = 0.5

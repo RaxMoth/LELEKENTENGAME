@@ -9,6 +9,7 @@ id = &"shotgun"
 display_name = "Shotgun"
 description = "Nine pellets in a wide cone. Devastating up close, weak beyond 15 m."
 cost = 500
+required_weapon_id = &"pistol"
 model_scene = ExtResource("model")
 damage = 14.0
 fire_interval_seconds = 0.85
