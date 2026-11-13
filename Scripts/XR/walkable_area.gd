@@ -167,14 +167,17 @@ func get_floor_height_at(world_position: Vector3, max_step: float = MAX_STEP, ig
 ## Where a move from [param from_position] toward [param to_position] ends:
 ## the target when it is walkable, otherwise sliding along one axis, or no
 ## move at all. The result's y is the floor height there (down a ramp, it
-## goes down). From a spot with no floor under it (a hole opened beneath
-## the player) any floor counts, so nobody gets stuck.
+## goes down). Nobody gets stuck: from inside furniture that appeared
+## around the player, furniture is let through (same floor only); from a
+## spot with no floor at all (a hole opened beneath them) any floor counts.
 func clamp_move(from_position: Vector3, to_position: Vector3) -> Vector3:
-	var is_stranded: bool = is_nan(get_floor_height_at(from_position))
-	var step_limit: float = INF if is_stranded else MAX_STEP
+	var is_off_floor: bool = is_nan(get_floor_height_at(from_position, MAX_STEP, true))
+	var is_in_furniture: bool = not is_off_floor and is_nan(get_floor_height_at(from_position))
+	var step_limit: float = INF if is_off_floor else MAX_STEP
+	var ignores_obstacles: bool = is_off_floor or is_in_furniture
 	var candidates: Array[Vector2] = [Vector2(to_position.x, to_position.z), Vector2(to_position.x, from_position.z), Vector2(from_position.x, to_position.z)]
 	for candidate: Vector2 in candidates:
-		var height: float = get_floor_height_at(Vector3(candidate.x, from_position.y, candidate.y), step_limit, is_stranded)
+		var height: float = get_floor_height_at(Vector3(candidate.x, from_position.y, candidate.y), step_limit, ignores_obstacles)
 		if not is_nan(height):
 			return Vector3(candidate.x, height, candidate.y)
 	return from_position

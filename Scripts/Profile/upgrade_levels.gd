@@ -18,6 +18,23 @@ func to_dict() -> Dictionary:
 
 func from_dict(data: Dictionary) -> void:
 	_levels = to_int_dictionary(data)
+	_own_requirements()
+
+
+## An owned upgrade's prerequisite is owned too: a save from before a
+## prerequisite was added (the cellar now needs the extended house) loads
+## with it instead of a cellar the cabin can't reach.
+func _own_requirements() -> void:
+	if config == null:
+		return
+	var has_changed: bool = true
+	while has_changed:
+		has_changed = false
+		for upgrade: UpgradeData in config.get_upgrades():
+			var required_id: StringName = upgrade.required_upgrade_id
+			if get_level(upgrade.id) > 0 and not required_id.is_empty() and get_level(required_id) <= 0:
+				_levels[required_id] = 1
+				has_changed = true
 
 
 func reset() -> void:

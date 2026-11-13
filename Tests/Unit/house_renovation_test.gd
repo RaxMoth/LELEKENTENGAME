@@ -205,3 +205,11 @@ func test_shell_takes_a_layout_and_builds_it() -> void:
 	assert_int(shell.walls.size()).is_equal(2)
 	assert_bool(shell.floor_rect == Rect2(-1.0, -1.0, 2.0, 2.0)).is_true()
 	assert_int(_get_shell_mesh(shell).get_surface_count()).is_greater(0)
+
+
+func test_owned_upgrades_bring_their_prerequisites_when_loaded() -> void:
+	var levels: UpgradeLevels = UpgradeLevels.new(GameConfig.get_default())
+	# A save from before the cellar needed the extended house.
+	levels.from_dict({&"lab_cellar": 1})
+	assert_int(levels.get_level(&"house_extension")).is_equal(1)
+	assert_int(levels.get_level(&"lab_cellar")).is_equal(1)

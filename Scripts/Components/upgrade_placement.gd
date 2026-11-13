@@ -17,7 +17,7 @@ extends UpgradeReaction
 ## Where the target stands below min_level (a Marker3D).
 @export var before: Node3D
 
-## The target's own place, kept the first time it moves.
+## The target's own place in its parent, kept the first time it moves.
 var _home: Transform3D = Transform3D.IDENTITY
 var _has_home: bool = false
 
@@ -26,11 +26,14 @@ func apply_level(level: int) -> void:
 	if target == null or before == null:
 		return
 	if not _has_home:
-		_home = target.global_transform
+		_home = target.transform
 		_has_home = true
-	target.global_transform = before.global_transform if level < min_level else _home
+	if level < min_level:
+		target.global_transform = before.global_transform
+	else:
+		target.transform = _home
 
 
 ## True while the target stands at its own place (not at [member before]).
 func is_home() -> bool:
-	return not _has_home or target.global_transform.is_equal_approx(_home)
+	return not _has_home or target.transform.is_equal_approx(_home)

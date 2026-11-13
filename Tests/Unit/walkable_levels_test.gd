@@ -110,3 +110,12 @@ func test_a_player_caught_in_furniture_can_walk_out() -> void:
 	var inside: Vector3 = Vector3(3.0, 0.0, 2.5)
 	var moved: Vector3 = area.clamp_move(inside, inside + Vector3(0.0, 0.0, 0.1))
 	assert_float(moved.z).is_equal_approx(2.6, 0.001)
+
+
+func test_walking_out_of_furniture_stays_on_its_floor() -> void:
+	var area: WalkableArea = _make_area()
+	# A table over the stairwell's top: inside it, the stairs below must not catch the player.
+	area.add_obstacle(Rect2(0.0, 1.0, 6.0, 3.0), 0.0)
+	var inside: Vector3 = Vector3(3.0, 0.0, 1.2)
+	var moved: Vector3 = area.clamp_move(inside, inside + Vector3(0.0, 0.0, -0.3))
+	assert_float(moved.y).is_equal_approx(0.0, 0.001)
