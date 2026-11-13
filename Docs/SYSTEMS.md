@@ -45,6 +45,10 @@ Settings.get_bool(Settings.KEY_HAPTICS_ENABLED)
 Settings.set_value(Settings.KEY_MUSIC_VOLUME, 0.5)   # applies + saves + emits
 ```
 Add a setting: a `KEY_` constant + an entry in `DEFAULTS` (+ a case in `_apply` if it changes the engine).
+`KEY_FULLSCREEN` (on by default) puts a desktop window in full screen; F11
+(`Types.ACTION_TOGGLE_FULLSCREEN`) toggles it. `Settings.has_desktop_window()`
+is false headless, on mobile and with `-- windowed=1` (screenshots), so the
+popup hides the toggle there.
 There is deliberately no frame-rate cap and no screen shake: the headset
 paces the frames, and camera motion the player does not cause is uncomfortable.
 
@@ -193,6 +197,7 @@ the House's sales board and armory, or a `Label3D`), driven by `score_changed`.
 | `HealthComponent` | Node | `apply_damage`, `heal`, `revive`, i-frames; signals `damaged`, `died` |
 | `DamageInfo` | RefCounted | amount, type, source, crit, `knockback` (Vector3) for one hit |
 | `HitFlash3DComponent` | Node | Flashes every mesh under a Node3D on damage |
+| `HitTarget` | Node3D | Base for small things the player's weapons can hit besides raiders (the rats): joins `Types.GROUP_HIT_TARGET` and overrides `get_hit_center()`, `get_hit_radius()`, `is_alive()`, `take_hit(amount, source)`. The front garden's strikes and shots fall back to them by sphere math |
 | `UpgradeReaction` | Node3D | Base of everything that reacts to an upgrade's level; the House level calls `apply_level()` on every one in `Types.GROUP_UPGRADE_LOOK` when upgrades change |
 | `UpgradePlacement` | UpgradeReaction | Moves `target` to the `before` marker until the upgrade reaches `min_level` (the office board hangs in the cabin until the house is extended) |
 | `ProximityCull` | Node3D | Hides a room's contents (drawing only) while the camera is far from `center` and above `below_height`: the cellar is drawn only near its stairwell or inside it |
@@ -213,7 +218,7 @@ Details and setup: [GAME.md](GAME.md).
 | Piece | Node | Notes |
 |---|---|---|
 | `XRPlayerRig` | XROrigin3D | Headset camera + two controllers; falls back to a flat simulator (mouse, WASD) without a headset. Signals `primary_action_pressed(pointer)`, `secondary_action_pressed(pointer)`, `menu_pressed`, `item_grabbed`, `item_placed`; `walkable_area`, `get_tool_pointer()`, `get_wrist_anchor()`, `pulse(pointer, strength)`, `set_world_space_ui()`, `tap_world_point()` (tests) |
-| `XRLocomotion` | Node | Teleport (off-hand stick), smooth movement, snap / smooth turning (dominant stick), flat WASD and `travel_spots` (keys 1–4); clamps to the `WalkableArea` |
+| `XRLocomotion` | Node | Stick walking like WASD (off-hand stick; teleport instead with smooth movement off), snap / smooth turning (dominant stick), flat WASD and `travel_spots` (keys 1–4); clamps to the `WalkableArea`; `get_walk_stick()` |
 | `WalkableArea` | Node3D | Floor rectangles the player may stand on, minus round and rectangular blockers; `contains()`, `clamp_move()`, `add_region()`, `add_blockers()`, `add_rect_blockers()`. More floors: `add_floor(WalkableFloor)` (a cellar at its own height), `add_ramp(WalkableRamp)` (stairs between floors), `add_hole()` (a stairwell in the main floor), `add_obstacle()` (furniture, blocks only its own floor); `find_path(from, to)` routes across rooms, doorways and stairs (waypoints at the joins); `get_floor_height_at()` picks the surface nearest the feet within `MAX_STEP`, and `clamp_move()` returns the new height, so walking down stairs lowers the player |
 | `Stairs3D` (`Scripts/Utils/`) | MeshInstance3D | A straight flight of stairs (treads and side boards) as one mesh, textured in meters; `get_ramp()` gives the matching WalkableRamp |
 | `GroundHole` (`Scripts/Utils/`) | Node3D | An opening every `GroundPlane3D` leaves out (a stairwell under the lawn and the town's asphalt) |
@@ -225,7 +230,7 @@ Details and setup: [GAME.md](GAME.md).
 | `XRPlayerRig` signals | | `primary_action_released` / `secondary_action_released` (held actions: automatic guns, a turret trigger); `is_grip_down(hand)`, `get_hand_local_transform(hand)` for arm-swing running; `grip_filter` lets a level claim a grip press (holsters); `get_body()` |
 | `InteractionQuery` | static | Finds grab targets, sockets and buttons by sphere math (no physics) |
 | `XRPointer` | Node3D | Ray along -Z. Clicks `WorldScreen`s itself; game code reads `ray_origin` / `ray_direction` and reports hits with `set_world_hit_distance()`. Controller pointers set `steadying` (0.7): small hand wobbles are smoothed, real aiming is followed at once |
-| `WorldScreen` | Node3D | Shows a Control scene (`content_scene`) or an existing viewport (`attach_viewport`) on a panel in the world and forwards pointer input as mouse events |
+| `WorldScreen` | Node3D | Shows a Control scene (`content_scene`) or an existing viewport (`attach_viewport`) on a panel in the world and forwards pointer input as mouse events. Press and drag on an overflowing `ScrollContainer` scrolls it (past `DRAG_SCROLL_PIXELS` the press is cancelled, so no button fires; `is_drag_scrolling()`). `uses_house_style` gives the content `HouseBoardStyle`'s theme and recolors scene color overrides, also on controls added later |
 | `RayMath` (`Scripts/Utils/`) | static | `intersect_plane` / `intersect_ground` / `intersect_sphere` / `distance_to_point`: picking without physics |
 | `YardNavigation` (`Scripts/Game/`) | static | Steering around round obstacles, overlap, line of sight, cover spots, door spots — no physics |
 | `PlaceholderMesh3D`, `BlobShadow3D` (`Scripts/Utils/`) | MeshInstance3D | 3D art stand-ins with shared meshes / materials and a soft contact shadow |
@@ -258,6 +263,10 @@ reward_list.set_rewards({&"cash": 250})                  # "+250 [cash]"
 `IconLabel`, `RewardList`, `SafeAreaContainer`, `CurrencyDisplay` (shows
 `CurrencyData.icon`), `EnergyDisplay`, `StarsDisplay`, `BasePopup`. These
 build the 2D menus and popups, and in-world screens shown on a `WorldScreen`.
+`SafeAreaContainer.max_content_width` keeps a menu in a centered column on a
+wide (full-screen desktop) window. `HouseBoardStyle` (static) builds the
+old-house board theme from the main theme (`get_theme()`, `to_house_color()`,
+`restyle_tree()`).
 
 ## Utilities (`Scripts/Utils/`)
 

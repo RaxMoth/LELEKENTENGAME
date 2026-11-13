@@ -19,11 +19,12 @@ static func run(test: SmokeTest, level: HouseLevel) -> void:
 	var screen: WorldScreen = window.get_node("%SalesScreen") as WorldScreen
 	var sell_button: Button = screen.content.find_child("SellButton", true, false) as Button
 	var cash_before: int = operation.get_cash()
-	var stock_before: int = operation.stash.get_total()
+	# Units sold, not the stash total: the lab's automation may add product meanwhile.
+	var sold_before: int = operation.shift_units_sold
 	var reputation_before: int = Profile.operation.reputation
 	rig.tap_world_point(screen.pixel_to_world(sell_button.get_global_rect().get_center()))
 	await test.frames(3)
-	test.check(operation.stash.get_total() == stock_before - 2 and operation.get_cash() > cash_before, "pressing Sell on the window board sells from the stash")
+	test.check(operation.shift_units_sold == sold_before + 2 and operation.get_cash() > cash_before, "pressing Sell on the window board sells from the stash")
 	test.check(Profile.operation.reputation > reputation_before and operation.heat.value > 0.0, "a sale earns reputation and draws heat")
 
 	var haggle_order: CustomerOrder = _order(&"haggler", recipe, 1, 1)

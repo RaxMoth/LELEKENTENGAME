@@ -8,12 +8,17 @@
 ##
 ## The panel faces its local +Z. Pointer input is ray-vs-rectangle math (no
 ## physics) forwarded to the viewport as mouse events, so normal Buttons work.
+## A press dragged up or down over a scrolling list (a ScrollContainer, like
+## the office's upgrades) scrolls it — grab the list and pull — instead of
+## pressing what it started on; thin scroll bars are hard to hit with a beam.
 ##
-## Dependencies: RayMath, Types autoload
+## Dependencies: RayMath, HouseBoardStyle, Types autoload
 class_name WorldScreen
 extends Node3D
 
 const OFFSCREEN_PIXEL: Vector2 = Vector2(-1000.0, -1000.0)
+## A press that moves this far (pixels) along a list scrolls it instead of pressing.
+const DRAG_SCROLL_PIXELS: float = 14.0
 
 ## Control scene instantiated into this screen's own viewport.
 @export var content_scene: PackedScene
@@ -29,6 +34,9 @@ const OFFSCREEN_PIXEL: Vector2 = Vector2(-1000.0, -1000.0)
 ## Content that rarely changes (a poster, a recipe book): drawn once and
 ## again only on request_redraw(), which saves a render pass every frame.
 @export var is_static: bool = false
+## A board hanging in the house: its content takes the house's worn wood and
+## brass look (HouseBoardStyle) instead of the app's.
+@export var uses_house_style: bool = false
 
 ## Root of the instantiated content_scene (null when showing an attached viewport).
 var content: Control = null
@@ -42,6 +50,13 @@ var _quad_mesh: QuadMesh = null
 var _material: StandardMaterial3D = null
 var _is_pointer_down: bool = false
 var _last_pixel: Vector2 = OFFSCREEN_PIXEL
+## The list a held press may drag, where the press began and the list's scroll then.
+var _drag_list: ScrollContainer = null
+var _drag_start_pixel: Vector2 = Vector2.ZERO
+var _drag_start_scroll: int = 0
+var _is_drag_scrolling: bool = false
+## Controls added to a house-style board this frame, restyled at its end.
+var _restyle_queue: Array[int] = []
 
 
 func _ready() -> void:
@@ -144,13 +159,28 @@ func pixel_to_world(pixel: Vector2) -> Vector3:
 # ============================================
 
 func pointer_move(world_point: Vector3) -> void:
-	_send_motion(world_to_pixel(world_point))
+	var pixel: Vector2 = world_to_pixel(world_point)
+	if _is_pointer_down and _drag_list != null and is_instance_valid(_drag_list):
+		if not _is_drag_scrolling and absf(pixel.y - _drag_start_pixel.y) >= DRAG_SCROLL_PIXELS:
+			# A drag, not a press: let go of the button it started on.
+			_is_drag_scrolling = true
+			_send_button(OFFSCREEN_PIXEL, false)
+		if _is_drag_scrolling:
+			_drag_list.scroll_vertical = _drag_start_scroll - roundi(pixel.y - _drag_start_pixel.y)
+			_last_pixel = pixel
+			request_redraw()
+			return
+	_send_motion(pixel)
 
 
 func pointer_press(world_point: Vector3) -> void:
 	var pixel: Vector2 = world_to_pixel(world_point)
 	_send_motion(pixel)
 	_is_pointer_down = true
+	_is_drag_scrolling = false
+	_drag_list = _find_list_at(pixel)
+	_drag_start_pixel = pixel
+	_drag_start_scroll = _drag_list.scroll_vertical if _drag_list != null else 0
 	_send_button(pixel, true)
 
 
@@ -158,7 +188,16 @@ func pointer_release(world_point: Vector3) -> void:
 	if not _is_pointer_down:
 		return
 	_is_pointer_down = false
+	_drag_list = null
+	if _is_drag_scrolling:
+		_is_drag_scrolling = false
+		return
 	_send_button(world_to_pixel(world_point), false)
+
+
+## True while a press is dragging a list (tests).
+func is_drag_scrolling() -> bool:
+	return _is_drag_scrolling
 
 
 ## The pointer left the panel: cancels a held press and clears hover states.
@@ -167,7 +206,10 @@ func pointer_leave() -> void:
 		return
 	if _is_pointer_down:
 		_is_pointer_down = false
-		_send_button(OFFSCREEN_PIXEL, false)
+		if not _is_drag_scrolling:
+			_send_button(OFFSCREEN_PIXEL, false)
+	_is_drag_scrolling = false
+	_drag_list = null
 	_send_motion(OFFSCREEN_PIXEL)
 
 # ============================================
@@ -188,12 +230,56 @@ func _create_own_viewport() -> void:
 	add_child(_viewport)
 	_owns_viewport = true
 	content = content_scene.instantiate() as Control
+	if uses_house_style:
+		content.theme = HouseBoardStyle.get_theme()
 	_viewport.add_child(content)
+	if uses_house_style:
+		HouseBoardStyle.restyle_tree(content)
+		# Rows a board builds later (a refresh) bring their own scene colors too.
+		get_tree().node_added.connect(_on_node_added)
 	_material.albedo_texture = _viewport.get_texture()
 
 
 func _apply_size() -> void:
 	_quad_mesh.size = get_size_meters()
+
+
+## A house board: a control added to the board later gets its colors restyled
+## once at the end of the frame (after its scene set its overrides).
+func _on_node_added(node: Node) -> void:
+	var control: Control = node as Control
+	if control == null or content == null or not content.is_ancestor_of(control):
+		return
+	if _restyle_queue.is_empty():
+		_restyle_queued_controls.call_deferred()
+	# Instance ids: a board that rebuilds its rows frees some before the frame ends.
+	_restyle_queue.append(control.get_instance_id())
+
+
+func _restyle_queued_controls() -> void:
+	for control_id: int in _restyle_queue:
+		var control: Control = instance_from_id(control_id) as Control
+		if control != null and control.is_inside_tree():
+			HouseBoardStyle.restyle_control(control)
+	_restyle_queue.clear()
+
+
+## The innermost visible list that can scroll at [param pixel], or null.
+func _find_list_at(pixel: Vector2) -> ScrollContainer:
+	if _viewport == null:
+		return null
+	var found: ScrollContainer = null
+	for node: Node in _viewport.find_children("*", "ScrollContainer", true, false):
+		var list: ScrollContainer = node as ScrollContainer
+		if list == null or not list.is_visible_in_tree() or not list.get_global_rect().has_point(pixel):
+			continue
+		var bar: VScrollBar = list.get_v_scroll_bar()
+		if bar == null or bar.max_value <= list.size.y:
+			continue
+		# A list inside another wins (it is drawn on top).
+		if found == null or found.is_ancestor_of(list):
+			found = list
+	return found
 
 
 func _send_motion(pixel: Vector2) -> void:

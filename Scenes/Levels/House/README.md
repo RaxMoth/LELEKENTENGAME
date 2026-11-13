@@ -35,6 +35,10 @@ Every front (`FrontGarden`, `SalesWindow`, `Lab`, `Office`, `Armory`, `AdminPane
   in a headset a hand uses the weapon it drew from the body (or its fist);
   the FrontGarden asks `get_drawn(hand)`. The house owns the holsters, the
   defense side the weapons' firing and models in hand.
+- **Other things the weapons can hit** (the house's rats) are `HitTarget`s
+  in `Types.GROUP_HIT_TARGET`. The FrontGarden's strikes and shots try
+  raiders first and fall back to the nearest live hit target in reach or
+  in the shot's way; the owner decides what a hit does (`take_hit`).
 - **Operation** also carries the player's skills (`record_craft`,
   `record_melee_hit`, `record_hand_harvest`, `get_melee_damage_bonus`,
   `skill_leveled`) and the power (`has_power`, `power_changed`: the fuse box).

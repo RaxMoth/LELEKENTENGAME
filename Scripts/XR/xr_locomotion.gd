@@ -1,11 +1,11 @@
 ## Moves the player around the level. Never leaves the WalkableArea.
 ## In the flat simulator WASD walks and keys 1-4 jump to the travel spots.
 ##
-## Like VRChat: the dominant-hand stick (right by default) walks where the
-## head looks, as long as smooth movement is on in the comfort settings.
-## The off-hand stick repositions: push it forward to aim a teleport and let
-## go to jump, flick it left / right to snap-turn (or hold it to turn
-## smoothly). A trackpad click up teleports, left / right snap-turns.
+## Like most VR games: the off-hand stick (left by default) walks where the
+## head looks — forward, back and sideways, like WASD — and the dominant
+## stick turns (30° snaps, or smoothly). With smooth movement off in the
+## comfort settings the walking stick aims a teleport instead (push forward,
+## let go to jump). A trackpad click up teleports, left / right snap-turns.
 ##
 ## Arm-swing running: hold both grips with empty hands and swing the arms
 ## like jogging — the harder the swing, the faster (WalkMotion); you head
@@ -53,7 +53,7 @@ var _aiming_pointer: XRPointer = null
 var _teleport_target: Vector3 = Vector3.ZERO
 var _is_target_valid: bool = false
 var _walk_stick: Vector2 = Vector2.ZERO
-var _reposition_stick: Vector2 = Vector2.ZERO
+var _turn_stick: Vector2 = Vector2.ZERO
 var _is_turn_flicked: bool = false
 var _velocity: Vector3 = Vector3.ZERO
 ## Meters walked since the last footstep.
@@ -75,16 +75,25 @@ func _ready() -> void:
 # PUBLIC API
 # ============================================
 
-## Thumbstick moved on a controller (called by the rig).
+## Thumbstick moved on a controller (called by the rig): the dominant
+## stick turns, the other one walks (or aims a teleport without smooth movement).
 func handle_stick(hand: Types.Hand, value: Vector2, pointer: XRPointer) -> void:
 	if is_locked:
 		_walk_stick = Vector2.ZERO
+		_turn_stick = Vector2.ZERO
 		_aiming_pointer = null
 		return
 	if hand == rig.dominant_hand:
+		_turn_stick = value
+		if _is_turn_gesture(value):
+			_handle_snap_turn(value)
+		elif _is_turn_flicked and value.length() <= stick_release_threshold:
+			_is_turn_flicked = false
+		return
+	if is_smooth_movement():
 		_walk_stick = value
 		return
-	_reposition_stick = value
+	_walk_stick = Vector2.ZERO
 	if _aiming_pointer != null:
 		if value.length() <= stick_release_threshold:
 			_aiming_pointer = null
@@ -92,13 +101,9 @@ func handle_stick(hand: Types.Hand, value: Vector2, pointer: XRPointer) -> void:
 				teleport_to(_teleport_target)
 			_hide_marker()
 		return
-	if _is_turn_gesture(value):
-		_handle_snap_turn(value)
-	elif not _is_turn_flicked and value.y >= stick_press_threshold:
+	if value.y >= stick_press_threshold:
 		_aiming_pointer = pointer
 		_is_target_valid = false
-	elif _is_turn_flicked and value.length() <= stick_release_threshold:
-		_is_turn_flicked = false
 
 
 ## Trackpad click (HTC Vive wands): up teleports along the pointer, sides turn.
@@ -150,6 +155,11 @@ func travel_to_spot(spot_index: int) -> void:
 	teleport_to(spot.global_position, spot.global_rotation.y)
 
 
+## Where the walking stick points right now (tests).
+func get_walk_stick() -> Vector2:
+	return _walk_stick
+
+
 func is_smooth_movement() -> bool:
 	return Settings.get_bool(Settings.KEY_SMOOTH_MOVEMENT)
 
@@ -173,9 +183,9 @@ func _step_xr(delta: float) -> void:
 	if swing_velocity.length() > target_velocity.length():
 		target_velocity = swing_velocity
 	_move_with(target_velocity, delta, swing_velocity != Vector3.ZERO)
-	var is_turning_smoothly: bool = is_smooth_turning() and _aiming_pointer == null and _is_turn_gesture(_reposition_stick)
-	if is_turning_smoothly and absf(_reposition_stick.x) > stick_deadzone:
-		turn_by(-_reposition_stick.x * smooth_turn_degrees_per_second * delta)
+	var is_turning_smoothly: bool = is_smooth_turning() and _is_turn_gesture(_turn_stick)
+	if is_turning_smoothly and absf(_turn_stick.x) > stick_deadzone:
+		turn_by(-_turn_stick.x * smooth_turn_degrees_per_second * delta)
 	if _aiming_pointer != null:
 		_teleport_target = _find_teleport_target(_aiming_pointer)
 		_is_target_valid = _is_valid_target(_teleport_target)

@@ -11,31 +11,51 @@ resource_local_to_scene = true
 resource_name = "GhostBody"
 transparency = 1
 shading_mode = 0
-albedo_color = Color(0.84, 0.88, 0.96, 0.42)
+albedo_color = Color(0.1, 0.11, 0.14, 0.7)
+
+[sub_resource type="StandardMaterial3D" id="face_material"]
+resource_local_to_scene = true
+resource_name = "GhostFace"
+transparency = 1
+shading_mode = 0
+albedo_color = Color(0.66, 0.68, 0.7, 0.88)
 
 [sub_resource type="StandardMaterial3D" id="eye_material"]
 resource_local_to_scene = true
 resource_name = "GhostEyes"
 transparency = 1
 shading_mode = 0
-albedo_color = Color(0.02, 0.03, 0.05, 0.92)
+albedo_color = Color(1, 0.34, 0.24, 1)
+
+[sub_resource type="StandardMaterial3D" id="mouth_material"]
+resource_local_to_scene = true
+resource_name = "GhostMouth"
+transparency = 1
+shading_mode = 0
+albedo_color = Color(0.02, 0.02, 0.03, 0.95)
 
 [sub_resource type="CylinderMesh" id="shroud_mesh"]
-top_radius = 0.12
-bottom_radius = 0.3
+top_radius = 0.11
+bottom_radius = 0.34
 height = 1.5
 radial_segments = 18
 rings = 1
 
-[sub_resource type="SphereMesh" id="head_mesh"]
-radius = 0.19
-height = 0.4
-radial_segments = 18
-rings = 9
+[sub_resource type="SphereMesh" id="face_mesh"]
+radius = 0.12
+height = 0.3
+radial_segments = 16
+rings = 8
 
 [sub_resource type="SphereMesh" id="eye_mesh"]
-radius = 0.032
-height = 0.05
+radius = 0.022
+height = 0.034
+radial_segments = 8
+rings = 4
+
+[sub_resource type="SphereMesh" id="mouth_mesh"]
+radius = 0.03
+height = 0.06
 radial_segments = 8
 rings = 4
 
@@ -45,10 +65,18 @@ height = 0.5
 radial_segments = 18
 rings = 9
 
-[node name="Ghost" type="Node3D"]
+[sub_resource type="CylinderMesh" id="arm_mesh"]
+top_radius = 0.018
+bottom_radius = 0.032
+height = 0.78
+radial_segments = 8
+rings = 1
+
+[node name="Ghost" type="Node3D" node_paths=PackedStringArray("eyes")]
 visible = false
 script = ExtResource("ghost")
-fading_materials = Array[StandardMaterial3D]([SubResource("body_material"), SubResource("eye_material")])
+fading_materials = Array[StandardMaterial3D]([SubResource("body_material"), SubResource("face_material"), SubResource("eye_material"), SubResource("mouth_material")])
+eyes = [NodePath("Figure/EyeLeft"), NodePath("Figure/EyeRight")]
 
 [node name="Figure" type="Node3D" parent="."]
 unique_name_in_owner = true
@@ -60,29 +88,47 @@ cast_shadow = 0
 mesh = SubResource("shroud_mesh")
 material_override = SubResource("body_material")
 
-[node name="Head" type="MeshInstance3D" parent="Figure"]
-unique_name_in_owner = true
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.62, 0)
+[node name="Hood" type="MeshInstance3D" parent="Figure"]
+transform = Transform3D(1, 0, 0, 0, 1.2, 0, 0, 0, 1, 0, 1.64, 0.04)
 cast_shadow = 0
-mesh = SubResource("head_mesh")
+mesh = SubResource("hood_mesh")
 material_override = SubResource("body_material")
 
+[node name="Head" type="MeshInstance3D" parent="Figure"]
+unique_name_in_owner = true
+transform = Transform3D(0.85, 0, 0, 0, 1, 0, 0, 0, 0.8, 0, 1.6, -0.08)
+cast_shadow = 0
+mesh = SubResource("face_mesh")
+material_override = SubResource("face_material")
+
 [node name="EyeLeft" type="MeshInstance3D" parent="Figure"]
-transform = Transform3D(1, 0, 0, 0, 1.5, 0, 0, 0, 1, -0.066, 1.64, -0.165)
+transform = Transform3D(1, 0, 0, 0, 1.4, 0, 0, 0, 1, -0.042, 1.64, -0.17)
 cast_shadow = 0
 mesh = SubResource("eye_mesh")
 material_override = SubResource("eye_material")
 
 [node name="EyeRight" type="MeshInstance3D" parent="Figure"]
-transform = Transform3D(1, 0, 0, 0, 1.5, 0, 0, 0, 1, 0.066, 1.64, -0.165)
+transform = Transform3D(1, 0, 0, 0, 1.4, 0, 0, 0, 1, 0.042, 1.64, -0.17)
 cast_shadow = 0
 mesh = SubResource("eye_mesh")
 material_override = SubResource("eye_material")
 
-[node name="Hood" type="MeshInstance3D" parent="Figure"]
-transform = Transform3D(1, 0, 0, 0, 1.15, 0, 0, 0, 1, 0, 1.66, 0.05)
+[node name="Mouth" type="MeshInstance3D" parent="Figure"]
+transform = Transform3D(1, 0, 0, 0, 1.8, 0, 0, 0, 0.5, 0, 1.53, -0.165)
 cast_shadow = 0
-mesh = SubResource("hood_mesh")
+mesh = SubResource("mouth_mesh")
+material_override = SubResource("mouth_material")
+
+[node name="ArmLeft" type="MeshInstance3D" parent="Figure"]
+transform = Transform3D(1, 0, 0, 0, -0.2588, 0.9659, 0, -0.9659, -0.2588, -0.2, 1.25, -0.41)
+cast_shadow = 0
+mesh = SubResource("arm_mesh")
+material_override = SubResource("body_material")
+
+[node name="ArmRight" type="MeshInstance3D" parent="Figure"]
+transform = Transform3D(1, 0, 0, 0, -0.2588, 0.9659, 0, -0.9659, -0.2588, 0.2, 1.25, -0.41)
+cast_shadow = 0
+mesh = SubResource("arm_mesh")
 material_override = SubResource("body_material")
 
 [node name="StateChart" type="Node" parent="."]

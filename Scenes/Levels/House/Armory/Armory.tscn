@@ -14,6 +14,7 @@ weapon_catalog = ExtResource("weapon_catalog")
 unique_name_in_owner = true
 transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, -3, 1.4, -2.1)
 script = ExtResource("screen")
+uses_house_style = true
 content_scene = ExtResource("armory_board")
 resolution = Vector2i(1100, 1240)
 width_meters = 1.3

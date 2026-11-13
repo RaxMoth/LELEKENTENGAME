@@ -55,6 +55,13 @@ const HIP_DROP: float = 0.04
 @export var clothes_color: Color = Palette.STROKE
 @export var trouser_color: Color = Palette.SURFACE_RAISED
 @export var shoe_color: Color = Palette.BACKGROUND
+## The torso and collar show (the co-op partner); off for the player's own
+## body, so looking down shows the hips, the holsters and the legs.
+@export var shows_upper_body: bool = true:
+	set(value):
+		shows_upper_body = value
+		for part: Node3D in _upper_body_parts:
+			part.visible = value
 ## The collar (a player's color).
 @export var accent_color: Color = Palette.PRIMARY:
 	set(value):
@@ -67,6 +74,7 @@ var _torso: Node3D = null
 ## Per leg: [hip pivot, knee pivot, ankle pivot], left first.
 var _legs: Array[Array] = []
 var _collar: PlaceholderMesh3D = null
+var _upper_body_parts: Array[Node3D] = []
 var _holsters: Dictionary[StringName, Node3D] = {}
 var _phase: float = 0.0
 var _stride: float = 0.0
@@ -147,8 +155,8 @@ func _build() -> void:
 	_pelvis = Node3D.new()
 	_pelvis.name = "Pelvis"
 	add_child(_pelvis)
-	_add_part(_pelvis, PlaceholderMesh3D.ShapeKind.BOX, Vector3(0.32, 0.15, 0.19), Vector3(0.0, 0.0, 0.0), trouser_color)
-	_add_part(_pelvis, PlaceholderMesh3D.ShapeKind.BOX, Vector3(0.33, 0.035, 0.2), Vector3(0.0, 0.065, 0.0), shoe_color)
+	_add_part(_pelvis, PlaceholderMesh3D.ShapeKind.BOX, Vector3(0.3, 0.15, 0.17), Vector3(0.0, 0.0, 0.0), trouser_color)
+	_add_part(_pelvis, PlaceholderMesh3D.ShapeKind.BOX, Vector3(0.31, 0.035, 0.18), Vector3(0.0, 0.065, 0.0), shoe_color)
 	for side: float in [-1.0, 1.0]:
 		var hip: Node3D = _add_pivot(_pelvis, Vector3(0.09 * side, -HIP_DROP, 0.0))
 		_add_part(hip, PlaceholderMesh3D.ShapeKind.CAPSULE, Vector3(0.125, thigh_length + 0.06, 0.125), Vector3(0.0, -thigh_length * 0.5, 0.0), trouser_color)
@@ -159,9 +167,12 @@ func _build() -> void:
 		_legs.append([hip, knee, ankle])
 	_torso = _add_pivot(_pelvis, Vector3(0.0, 0.075, 0.0))
 	var chest_height: float = torso_length - 0.075
-	_add_part(_torso, PlaceholderMesh3D.ShapeKind.BOX, Vector3(0.36, chest_height, 0.21), Vector3(0.0, chest_height * 0.5, 0.0), clothes_color)
-	_collar = _add_part(_torso, PlaceholderMesh3D.ShapeKind.CYLINDER, Vector3(0.17, 0.045, 0.17), Vector3(0.0, chest_height + 0.02, 0.0), accent_color)
-	_holsters[HOLSTER_HIP] = _add_pivot(_pelvis, Vector3(0.21, 0.0, -0.03))
+	_upper_body_parts.append(_add_part(_torso, PlaceholderMesh3D.ShapeKind.BOX, Vector3(0.32, chest_height, 0.18), Vector3(0.0, chest_height * 0.5, 0.0), clothes_color))
+	_collar = _add_part(_torso, PlaceholderMesh3D.ShapeKind.CYLINDER, Vector3(0.16, 0.045, 0.16), Vector3(0.0, chest_height + 0.02, 0.0), accent_color)
+	_upper_body_parts.append(_collar)
+	for part: Node3D in _upper_body_parts:
+		part.visible = shows_upper_body
+	_holsters[HOLSTER_HIP] = _add_pivot(_pelvis, Vector3(0.2, 0.0, -0.06))
 	_holsters[HOLSTER_CHEST] = _add_pivot(_torso, Vector3(0.0, chest_height * 0.62, -0.125))
 	_holsters[HOLSTER_BACK] = _add_pivot(_torso, Vector3(0.0, chest_height * 0.72, 0.13))
 

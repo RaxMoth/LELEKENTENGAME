@@ -42,6 +42,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("2_safe_area_")
+max_content_width = 760
 
 [node name="Layout" type="VBoxContainer" parent="SafeArea" unique_id=780982314]
 layout_mode = 2

@@ -3,7 +3,8 @@
 ## button opens the CoopPopup on the in-world popup screen — host the house,
 ## or join a friend's game found on the same Wi-Fi — and the board shows
 ## who is playing. A co-op guest doesn't see it (they leave from the pause
-## menu; their presses on the world act in the host's house).
+## menu; their presses on the world act in the host's house). It wears the
+## house boards' look: a wooden frame, cream ink, a brass button.
 ##
 ## Dependencies: Coop, UI autoloads, PointerButton, Palette
 class_name CoopBoard
@@ -39,7 +40,7 @@ func _refresh() -> void:
 		Coop.Mode.HOSTING:
 			var guests: Array[int] = Coop.get_ready_peers()
 			_status_label.text = tr("Hosting: waiting for a friend") if guests.is_empty() else tr("%s is playing with you.") % Coop.get_player_name(guests[0])
-			_status_label.modulate = Palette.SUCCESS
+			_status_label.modulate = Palette.BOARD_SUCCESS
 		_:
 			_status_label.text = tr("Host, or join a friend on the same Wi-Fi")
-			_status_label.modulate = Palette.TEXT_MUTED
+			_status_label.modulate = Palette.BOARD_INK_MUTED

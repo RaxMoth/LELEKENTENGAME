@@ -46,6 +46,7 @@ glow = 1.5
 unique_name_in_owner = true
 transform = Transform3D(-0.515, 0, -0.8572, 0, 1, 0, 0.8572, 0, -0.515, 1.25, 1.45, -0.35)
 script = ExtResource("screen")
+uses_house_style = true
 content_scene = ExtResource("board")
 resolution = Vector2i(900, 720)
 width_meters = 0.95

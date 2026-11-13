@@ -2,7 +2,7 @@
 ## headset it shows on the in-world popup screen). Every control writes
 ## straight into the Settings autoload.
 ##
-## Dependencies: Settings, Platform, Profile, SceneManager, UI autoloads
+## Dependencies: Settings, Platform, Profile, SceneManager, UI, Events autoloads
 class_name SettingsPopup
 extends BasePopup
 
@@ -17,6 +17,7 @@ const LOCALE_OPTIONS: PackedStringArray = ["", "en", "de"]
 @onready var _standing_view_toggle: CheckButton = %StandingViewToggle
 @onready var _fresh_start_toggle: CheckButton = %FreshStartToggle
 @onready var _fps_toggle: CheckButton = %FpsToggle
+@onready var _fullscreen_toggle: CheckButton = %FullscreenToggle
 @onready var _language_option: OptionButton = %LanguageOption
 @onready var _privacy_button: Button = %PrivacyButton
 
@@ -33,6 +34,9 @@ func _on_opened(_data: Dictionary) -> void:
 	_fresh_start_toggle.visible = OS.is_debug_build()
 	_fresh_start_toggle.button_pressed = Settings.get_bool(Settings.KEY_FRESH_START_IN_DEV)
 	_fps_toggle.button_pressed = Settings.get_bool(Settings.KEY_SHOW_FPS)
+	# Only a desktop window can switch; phones and headsets always fill the screen.
+	_fullscreen_toggle.visible = Settings.has_desktop_window()
+	_fullscreen_toggle.button_pressed = Settings.get_bool(Settings.KEY_FULLSCREEN)
 	_language_option.clear()
 	_language_option.add_item(tr("System"))
 	_language_option.add_item("English")
@@ -49,7 +53,15 @@ func _on_opened(_data: Dictionary) -> void:
 	_standing_view_toggle.toggled.connect(func(enabled: bool) -> void: Settings.set_value(Settings.KEY_STANDING_VIEW, enabled))
 	_fresh_start_toggle.toggled.connect(func(enabled: bool) -> void: Settings.set_value(Settings.KEY_FRESH_START_IN_DEV, enabled))
 	_fps_toggle.toggled.connect(func(enabled: bool) -> void: Settings.set_value(Settings.KEY_SHOW_FPS, enabled))
+	_fullscreen_toggle.toggled.connect(func(enabled: bool) -> void: Settings.set_value(Settings.KEY_FULLSCREEN, enabled))
+	# F11 switches full screen while this popup is open, too.
+	Events.setting_changed.connect(_on_setting_changed)
 	_language_option.item_selected.connect(func(index: int) -> void: Settings.set_value(Settings.KEY_LOCALE, LOCALE_OPTIONS[index]))
+
+
+func _on_setting_changed(setting_key: StringName, value: Variant) -> void:
+	if setting_key == Settings.KEY_FULLSCREEN:
+		_fullscreen_toggle.set_pressed_no_signal(bool(value))
 
 
 func _on_sfx_slider_changed(value: float) -> void:
