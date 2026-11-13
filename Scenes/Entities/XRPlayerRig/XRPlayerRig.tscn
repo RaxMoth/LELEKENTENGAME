@@ -7,12 +7,6 @@
 [ext_resource type="PackedScene" path="res://Scenes/Entities/XRPlayerRig/GloveHand.tscn" id="6_glove"]
 [ext_resource type="PackedScene" path="res://Scenes/Entities/WalkingBody/WalkingBody.tscn" id="7_body"]
 
-[sub_resource type="CylinderMesh" id="teleport_ring"]
-top_radius = 0.28
-bottom_radius = 0.28
-height = 0.01
-radial_segments = 32
-
 [node name="XRPlayerRig" type="XROrigin3D"]
 script = ExtResource("1_rig")
 
@@ -106,15 +100,10 @@ resolution = Vector2i(720, 1280)
 width_meters = 0.9
 is_always_on_top = true
 
-[node name="TeleportMarker" type="MeshInstance3D" parent="."]
-mesh = SubResource("teleport_ring")
-cast_shadow = 0
-
-[node name="Locomotion" type="Node" parent="." node_paths=PackedStringArray("rig", "teleport_marker")]
+[node name="Locomotion" type="Node" parent="." node_paths=PackedStringArray("rig")]
 unique_name_in_owner = true
 script = ExtResource("5_locomotion")
 rig = NodePath("..")
-teleport_marker = NodePath("../TeleportMarker")
 
 [connection signal="button_pressed" from="LeftHand" to="." method="_on_left_hand_button_pressed"]
 [connection signal="button_released" from="LeftHand" to="." method="_on_left_hand_button_released"]

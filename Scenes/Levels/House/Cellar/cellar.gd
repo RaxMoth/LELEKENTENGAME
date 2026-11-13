@@ -18,8 +18,9 @@ extends HouseFront
 ## Height of the cellar floor.
 @export var floor_height: float = -2.6
 ## Opening in the main floor the player can't stand on: the stairwell
-## without its top step, where the player steps onto the stairs.
-@export var stairwell_hole: Rect2 = Rect2(1.25, 1.62, 3.05, 1.0)
+## without its top step. West of it a landing about 0.7 m wide (wall to
+## railing) leads onto the stairs.
+@export var stairwell_hole: Rect2 = Rect2(1.76, 1.62, 2.54, 1.0)
 ## Where the player can walk on the cellar floor (around the racks, not under the stairs).
 @export var floor_regions: Array[Rect2] = []
 ## What the racks grow (the grown recipe, shrooms).

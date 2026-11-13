@@ -604,7 +604,7 @@ func _update_socket_highlights() -> void:
 
 func _handle_thumbstick(hand: Types.Hand, action_name: StringName, value: Vector2) -> void:
 	if action_name == Types.XR_ACTION_THUMBSTICK:
-		locomotion.handle_stick(hand, value, _get_pointer(hand))
+		locomotion.handle_stick(hand, value)
 
 
 func _on_left_hand_button_pressed(action_name: String) -> void:

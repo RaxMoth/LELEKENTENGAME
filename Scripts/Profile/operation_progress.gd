@@ -18,6 +18,8 @@ var best_day: int = 0
 var stash_data: Dictionary = {}
 ## Asked price per product id.
 var prices: Dictionary[StringName, int] = {}
+## Day whose night the ghost last haunted (0 = never).
+var last_ghost_night: int = 0
 
 
 func get_save_key() -> StringName:
@@ -31,6 +33,7 @@ func to_dict() -> Dictionary:
 		"best_day": best_day,
 		"stash": stash_data,
 		"prices": prices,
+		"last_ghost_night": last_ghost_night,
 	}
 
 
@@ -42,6 +45,7 @@ func from_dict(data: Dictionary) -> void:
 	var stored_stash: Variant = data.get("stash", {})
 	stash_data = stored_stash if stored_stash is Dictionary else {}
 	prices = to_int_dictionary(data.get("prices", {}))
+	last_ghost_night = maxi(0, int(data.get("last_ghost_night", 0)))
 
 
 func reset() -> void:
@@ -50,6 +54,13 @@ func reset() -> void:
 	best_day = 0
 	stash_data = {}
 	prices = {}
+	last_ghost_night = 0
+
+
+## The ghost haunted tonight (it waits a few nights before it may come again).
+func record_ghost_night() -> void:
+	last_ghost_night = day_number
+	mark_dirty()
 
 
 func add_reputation(amount: int) -> void:

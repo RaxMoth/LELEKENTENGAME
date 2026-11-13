@@ -95,9 +95,8 @@ new day, in co-op the guest comes along (`DaySummaryPopup`).
 | Talk to someone | Dominant-hand trigger on a person in the street; pick a reply on the panel beside them | Click a person, then a reply |
 | Switch weapon | A / X: the next gun you own (a drawn gun is swapped right in your hand) | Q: the next weapon you own |
 | Build a tower | Buy a kit at the tower depot by the porch, carry it outside, point at the ground (a green ring shows the spot) and pull the trigger | Click the kit, then click the ground |
-| Walk | Off-hand stick walks where you look — forward, back and sideways, like WASD ("Smooth Movement", on by default) — easing in and out; push it all the way to sprint | WASD / arrows; 1–4 jump to lab, front, window, office |
+| Walk | Off-hand stick walks where you look — forward, back and sideways, like WASD — easing in and out; push it all the way to sprint. The sticks never teleport | WASD / arrows; 1–4 jump to lab, front, window, office |
 | Run with your arms | Hold both grips (hands empty) and swing your arms like jogging: the harder you swing, the faster you run, toward where your hands point; footsteps and a light tap in both hands every stride | — |
-| Reposition | Only with "Smooth Movement" off: off-hand stick forward aims a teleport, release to jump | — |
 | Turn | Dominant-hand stick left / right: 30° snaps (or smooth turning) | Drag |
 | Scroll a board's list | Point at the list, hold the trigger and drag it up or down (the scrollbar works too) | Drag the list |
 | Full screen | — | F11, or "Full Screen" in Settings (on by default on a desktop) |
@@ -107,7 +106,10 @@ new day, in co-op the guest comes along (`DaySummaryPopup`).
 | Status | Look at your off-hand wrist | Lower left of the view |
 | Your body | Gloved hands whose fingers follow the grip and trigger (a full grip makes a fist); look down to see your hips, legs and holstered knife walk with you (your own chest stays out of view) | — |
 
-Vive wands: trackpad click up teleports, left / right snap-turns. Bindings:
+Walls hold in the room too: walking or leaning into a wall (or the
+stairwell) stops you at its edge; leaning over furniture still works.
+Vive wands: trackpad click up teleports (only along the floor, never
+through a wall), left / right snap-turns. Bindings:
 `openxr_action_map.tres`.
 
 ## The fronts
@@ -428,8 +430,7 @@ is closed.
 - **Dig the Cellar** (needs More Plants): the planks nailed over the
   opening in the stash-room floor come off. Wooden stairs lead down to a
   brick cellar under the stash room and the office; walk down them like
-  anywhere else (smooth movement; teleports stay on the floor you are on;
-  quick travel brings you back up).
+  anywhere else (quick travel brings you back up).
 - **Grow Racks** (3 levels): a rack of four shroom plants per level. They
   grow on their own; harvest them by hand like the lab's plant.
 - **Grow Lights** (3 levels): +25% growth speed per level for the cellar.
@@ -483,7 +484,8 @@ You get better by doing, shown on the wrist and announced at each level
 
 ### The ghost
 
-On the night of day 4 a ghost turns up somewhere behind you, on your
+Now and then at night (a 15% chance a night, from the second night on, and
+never within four nights of the last time) a ghost turns up somewhere behind you, on your
 floor: a dark hooded shroud with a pale face, red eyes and reaching arms,
 hovering and turned away, whispering now and then. The moment you look at
 it, it whips round with a shriek, lunges half a meter at you (a jolt in
@@ -575,7 +577,7 @@ Scenes/Levels/House/House.tscn                inherits LevelBase; house_level.gd
     │   ├── SalesWindow        CUSTOMERS Sales/SalesWindow.tscn: window, queue, board, dealers, CustomerFlow
     │   ├── Lab                HOUSE     Lab/Lab.tscn: crates, grinder, cooker, press, crafters, recipes; motors, belts, hopper (LabAutomation)
     │   ├── Cellar             HOUSE     Cellar/Cellar.tscn: the boarded opening, stairs, brick cellar, grow racks, auto picker
-    │   ├── Ghost              HOUSE     Ghost/Ghost.tscn: the night-4 ghost (local to each player)
+    │   ├── Ghost              HOUSE     Ghost/Ghost.tscn: the ghost of a rare night (local to each player)
     │   ├── Office             HOUSE     Office/Office.tscn: upgrade board, bribes
     │   ├── Admin              HOUSE     Admin/Admin.tscn: admin terminal for testing (debug builds only)
     │   ├── Armory             DEFENSE   Armory/Armory.tscn: terminal for weapons (knife, axe, guns) and ammo
@@ -597,7 +599,7 @@ Scenes/Levels/House/House.tscn                inherits LevelBase; house_level.gd
 | `HouseLevel` | Runs the shift: time, wages for `Types.GROUP_CREW`, win at dawn (or when the raid is beaten), lose when a player goes down (`PlayerVitals`) or on `shift_lost`, wrist status (the player's health, the cycle and the fronts' status lines); at the end the day summary, then the next day (the house reloads) |
 | `HouseCycle` | The 3-day cycle: raid day, raid waves (`RaidPlanner` → `RaidWave`), tells the fronts through the raid hooks, closes the window during a raid |
 | `Grabbable`, `ItemSocket`, `PointerButton`, `InteractionQuery` (`Scripts/XR/`) | Physics-free hand interaction: grab at the hand or along the beam, drop into sockets, press 3D buttons |
-| `XRLocomotion` | Teleport, smooth movement, snap / smooth turning, flat WASD and travel spots; never leaves the `WalkableArea` |
+| `XRLocomotion` | Stick walking, snap / smooth turning, flat WASD and travel spots (Vive wands: trackpad teleport); never leaves the `WalkableArea` |
 | `Workstation` | StateChart Idle ⇄ Running; `TimingGauge` skill check; grinder / cooker / press by `step` |
 | `Customer`, `CustomerFlow`, `SalesWindow`, `SalesBoard` | Pooled customers with StateChart Walking ⇄ Waiting → Leaving; the window runs the sale rules (`SalesMath`) |
 | `Yard`, `Raider`, `RaidSquad`, `AttackerDirector` | The open yard (round obstacles, cover, line of sight; `YardNavigation`); pooled raiders with StateChart Alive { Moving ⇄ InCover, Attacking, Hunting } → Dead, moving in squads that leapfrog and rush together; once the door is down they hunt the nearest player through the house along `WalkableArea.find_path` routes |
@@ -640,8 +642,8 @@ raiders as exports on their scenes, the yard's obstacles on `Yard`, pacing on `A
   co-op partner's avatar keeps its torso. The camera never bobs: the legs
   carry the walking, not the view.
 - **Comfort.** The off-hand stick walks where you look (like WASD), the
-  dominant stick snap-turns; smooth turning, and teleporting instead of
-  stick walking, in Settings. Seated players are
+  dominant stick snap-turns (smooth turning in Settings); no teleporting.
+  Seated players are
   lifted to standing height (re-measured on recenter). No camera motion the
   player didn't make; popups and announcements appear where you look and
   stay world-locked.

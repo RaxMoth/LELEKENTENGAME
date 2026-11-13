@@ -21,8 +21,6 @@ const KEY_MUSIC_VOLUME: StringName = &"music_volume"
 const KEY_SFX_VOLUME: StringName = &"sfx_volume"
 const KEY_HAPTICS_ENABLED: StringName = &"haptics_enabled"
 const KEY_SHOW_FPS: StringName = &"show_fps"
-## Comfort: the off-hand stick walks like WASD; off: it aims a teleport instead.
-const KEY_SMOOTH_MOVEMENT: StringName = &"smooth_movement"
 ## Comfort: continuous turning instead of 30° snaps.
 const KEY_SMOOTH_TURNING: StringName = &"smooth_turning"
 ## Comfort: a player whose head is lower than standing height (seated) is
@@ -44,7 +42,6 @@ const DEFAULTS: Dictionary[StringName, Variant] = {
 	KEY_SFX_VOLUME: 0.9,
 	KEY_HAPTICS_ENABLED: true,
 	KEY_SHOW_FPS: false,
-	KEY_SMOOTH_MOVEMENT: true,
 	KEY_SMOOTH_TURNING: false,
 	KEY_STANDING_VIEW: true,
 	KEY_FRESH_START_IN_DEV: true,

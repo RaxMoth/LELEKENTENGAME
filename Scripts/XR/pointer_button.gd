@@ -11,6 +11,8 @@ signal pressed(button: PointerButton)
 const PRESS_DEPTH: float = 0.02
 const PRESS_SECONDS: float = 0.08
 const DISABLED_OPACITY: float = 0.35
+## Captions are drawn only within this distance.
+const CAPTION_VISIBLE_METERS: float = 8.0
 
 ## Radius of the sphere the pointer ray hits.
 @export var press_radius: float = 0.09
@@ -30,6 +32,8 @@ const DISABLED_OPACITY: float = 0.35
 
 var is_enabled: bool = true:
 	set(value):
+		if is_enabled == value:
+			return
 		is_enabled = value
 		_apply_color()
 
@@ -68,6 +72,8 @@ func _ready() -> void:
 	_caption_label.modulate = Palette.TEXT
 	_caption_label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 	_caption_label.position = Vector3(0.0, 0.13, 0.0)
+	# Too small to read from farther away; not drawing it saves a draw call per button.
+	_caption_label.visibility_range_end = CAPTION_VISIBLE_METERS
 	add_child(_caption_label)
 	_apply_color()
 

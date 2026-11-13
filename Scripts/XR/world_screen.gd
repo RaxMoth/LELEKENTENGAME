@@ -34,6 +34,9 @@ const DRAG_SCROLL_PIXELS: float = 14.0
 ## Content that rarely changes (a poster, a recipe book): drawn once and
 ## again only on request_redraw(), which saves a render pass every frame.
 @export var is_static: bool = false
+## A live board redraws at most this often (0 = every frame). Boards change
+## a few times a second; a redraw each headset frame is a wasted render pass.
+@export var max_redraws_per_second: float = 24.0
 ## A board hanging in the house: its content takes the house's worn wood and
 ## brass look (HouseBoardStyle) instead of the app's.
 @export var uses_house_style: bool = false
@@ -57,9 +60,13 @@ var _drag_start_scroll: int = 0
 var _is_drag_scrolling: bool = false
 ## Controls added to a house-style board this frame, restyled at its end.
 var _restyle_queue: Array[int] = []
+## True while the own viewport should keep redrawing (live, not paused or static).
+var _is_live: bool = false
+var _seconds_until_redraw: float = 0.0
 
 
 func _ready() -> void:
+	set_process(false)
 	add_to_group(Types.GROUP_WORLD_SCREEN)
 	_material = StandardMaterial3D.new()
 	_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
@@ -102,7 +109,7 @@ func set_active(should_be_active: bool) -> void:
 	if not should_be_active:
 		pointer_leave()
 	if _owns_viewport:
-		_viewport.render_target_update_mode = _get_live_update_mode() if should_be_active else SubViewport.UPDATE_DISABLED
+		_set_live(should_be_active)
 
 
 ## Keeps the panel visible but stops (or resumes) redrawing its own
@@ -110,7 +117,7 @@ func set_active(should_be_active: bool) -> void:
 ## player is far from or facing away from (each redraw costs a render pass).
 func set_rendering(should_render: bool) -> void:
 	if _owns_viewport and is_active:
-		_viewport.render_target_update_mode = _get_live_update_mode() if should_render else SubViewport.UPDATE_DISABLED
+		_set_live(should_render)
 
 
 ## Draws the content once more (after a change on a static screen).
@@ -119,8 +126,9 @@ func request_redraw() -> void:
 		_viewport.render_target_update_mode = SubViewport.UPDATE_ONCE
 
 
+## True while the own content keeps redrawing (near and facing, not static).
 func is_rendering() -> bool:
-	return _owns_viewport and is_active and _viewport.render_target_update_mode == SubViewport.UPDATE_ALWAYS
+	return _owns_viewport and is_active and _is_live
 
 
 func get_size_meters() -> Vector2:
@@ -160,6 +168,9 @@ func pixel_to_world(pixel: Vector2) -> Vector3:
 
 func pointer_move(world_point: Vector3) -> void:
 	var pixel: Vector2 = world_to_pixel(world_point)
+	# A steady beam: no new motion event (each one walks the GUI's hover handling).
+	if pixel.distance_squared_to(_last_pixel) < 0.25:
+		return
 	if _is_pointer_down and _drag_list != null and is_instance_valid(_drag_list):
 		if not _is_drag_scrolling and absf(pixel.y - _drag_start_pixel.y) >= DRAG_SCROLL_PIXELS:
 			# A drag, not a press: let go of the button it started on.
@@ -218,7 +229,24 @@ func pointer_leave() -> void:
 
 ## How the viewport redraws while it should: every frame, or (static) once.
 func _get_live_update_mode() -> SubViewport.UpdateMode:
-	return SubViewport.UPDATE_ONCE if is_static else SubViewport.UPDATE_ALWAYS
+	return SubViewport.UPDATE_ONCE if is_static or max_redraws_per_second > 0.0 else SubViewport.UPDATE_ALWAYS
+
+
+## Starts or stops redrawing the own viewport (a live, throttled board
+## redraws from _process; a static one only on request_redraw()).
+func _set_live(should_render: bool) -> void:
+	_is_live = should_render and not is_static
+	_viewport.render_target_update_mode = _get_live_update_mode() if should_render else SubViewport.UPDATE_DISABLED
+	_seconds_until_redraw = 0.0
+	set_process(_is_live and max_redraws_per_second > 0.0)
+
+
+func _process(delta: float) -> void:
+	_seconds_until_redraw -= delta
+	if _seconds_until_redraw > 0.0:
+		return
+	_seconds_until_redraw = 1.0 / max_redraws_per_second
+	_viewport.render_target_update_mode = SubViewport.UPDATE_ONCE
 
 
 func _create_own_viewport() -> void:
@@ -226,8 +254,8 @@ func _create_own_viewport() -> void:
 	_viewport.size = resolution
 	_viewport.transparent_bg = true
 	_viewport.disable_3d = true
-	_viewport.render_target_update_mode = _get_live_update_mode()
 	add_child(_viewport)
+	_set_live(true)
 	_owns_viewport = true
 	content = content_scene.instantiate() as Control
 	if uses_house_style:
