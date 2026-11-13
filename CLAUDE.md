@@ -16,9 +16,13 @@
    make; pooled spawning. Only the menus are 2D (the no-headset flow), and
    the house must stay playable in the rig's flat simulator.
 3. **Typed, documented GDScript** following `Docs/instructor.md`; state in StateCharts.
-4. **Nothing is done until the tests pass:** `Tools/unit_tests.sh`,
-   `Tools/smoke_test.sh` and `Tools/coop_test.sh` (exit 0). New pure logic
-   gets a gdUnit4 suite in `Tests/Unit/`.
+4. **Nothing is done until the tests pass:** `Tools/test.sh` (exit 0): one
+   import, the unit tests and the smoke test for just the areas your
+   changes touch (`Tools/affected_areas.sh`; shared code runs everything),
+   the co-op test when co-op code changed — what CI runs on a PR.
+   `Tools/test.sh full` runs everything (CI on `main`). New pure logic gets
+   a gdUnit4 suite in `Tests/Unit/`; a new area folder gets a line in
+   `Tools/affected_areas.sh`.
 5. **Data over code.** Tunables in Resources / `Ressources/game_config.tres`.
 6. **Two developers, one `main`.** Two people develop this game in parallel,
    each with Claude. Follow `Docs/WORKFLOW.md`:
@@ -27,8 +31,8 @@
      --ff-only && git switch -c <name>/<topic>`); ask the user for their name
      prefix if it isn't clear from the branch they are on.
    - Only commit, push or open a PR when the user asks. Before a PR: bring
-     the branch up to date with `origin/main`, run `Tools/unit_tests.sh` and
-     `Tools/smoke_test.sh`, then `gh pr create` with the template filled in.
+     the branch up to date with `origin/main`, run `Tools/test.sh`, then
+     `gh pr create` with the template filled in.
    - Never push to the other person's branch, never force-push except
      `--force-with-lease` on your own branch.
    - Before committing, check `git diff` and drop editor rewrites you didn't
@@ -47,9 +51,12 @@
   levels and content: `Docs/GETTING_STARTED.md`; visuals: `Docs/DESIGN.md`.
 - `Tools/godot.sh <args>` runs Godot from the project root (finds it via
   `$GODOT`, `PATH` or `/Applications/Godot.app`). Use it instead of a bare `godot`.
-- Tests: `Tools/unit_tests.sh` (gdUnit4, `Tests/Unit/*_test.gd`, extend
-  `GdUnitTestSuite`; classes under test must not need autoloads) and
-  `Tools/smoke_test.sh` (whole game). Screenshots + contact sheets:
+- Tests: `Tools/test.sh [changed|quick|core|full]` runs everything below
+  with one import. `Tools/unit_tests.sh` (gdUnit4, `Tests/Unit/*_test.gd`, extend
+  `GdUnitTestSuite`; classes under test must not need autoloads),
+  `Tools/smoke_test.sh [core|full|areas=lab,sales]` (the house's skeleton
+  plus the chosen areas; each area's checks run on their own) and
+  `Tools/coop_test.sh` (host + guest; on PRs only when co-op code changes). Screenshots + contact sheets:
   `Tools/screenshots.sh build/screenshots`.
 - Project skills: `/smoke-test`, `/design-review`, `/new-level <Name>`,
   `/new-popup <Name>`. Review before committing with the `godot-reviewer` agent.

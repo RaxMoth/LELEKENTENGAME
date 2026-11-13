@@ -269,7 +269,8 @@ static func _check_fists_and_blades(test: SmokeTest, level: HouseLevel) -> void:
 	test.check(fists != null and fists == catalog.get_starter() and fists.is_melee() and garden.get_shown_weapon() == null, "a new player fights with bare fists")
 	var near_cop: Raider = _spawn_at(garden, Vector2(0.0, -4.2))
 	_place_player(rig, Vector3(0.0, 0.0, -3.2), 0.0)
-	await test.frames(3)
+	# A punch thrown just before (another area's checks) must have cooled down.
+	await test.physics_frames(ceili(fists.fire_interval_seconds * Engine.physics_ticks_per_second) + 3)
 	var health_before: float = near_cop.health_component.current_health
 	rig.tap_world_point(near_cop.get_hit_center())
 	await test.frames(3)

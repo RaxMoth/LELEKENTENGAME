@@ -3,10 +3,13 @@
 # copy (both headless, over 127.0.0.1), lets them play a few steps and
 # checks both sides. Exit code 0 = both passed.
 #   Tools/coop_test.sh [port]   (default 17777)
+# SKIP_IMPORT=1 skips the import (Tools/test.sh imports once for every suite).
 set -uo pipefail
 TOOLS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PORT="${1:-17777}"
-"$TOOLS_DIR/godot.sh" --headless --xr-mode off --import >/dev/null 2>&1
+if [ "${SKIP_IMPORT:-0}" != "1" ]; then
+	"$TOOLS_DIR/godot.sh" --headless --xr-mode off --import >/dev/null 2>&1
+fi
 HOST_LOG="$(mktemp)"
 GUEST_LOG="$(mktemp)"
 "$TOOLS_DIR/godot.sh" --headless --xr-mode off res://Tests/CoopTest.tscn -- role=host "port=$PORT" >"$HOST_LOG" 2>&1 &

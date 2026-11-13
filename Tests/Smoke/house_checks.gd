@@ -400,6 +400,21 @@ static func _find_renovation(shell: HouseShell, upgrade_id: StringName, kind: Ho
 	return null
 
 
+## Hires the first crafter at the office (with the reputation and cash it
+## needs) and returns them, or null.
+static func _hire_crafter(level: HouseLevel) -> Worker:
+	var upgrade: UpgradeData = GameConfig.get_default().find_upgrade(Types.UPGRADE_CRAFTER)
+	Profile.operation.add_reputation(200)
+	Profile.wallet.add(Types.CURRENCY_CASH, Profile.upgrades.get_next_cost(upgrade), false)
+	(level.get_front(Office) as Office).buy_upgrade(upgrade)
+	for node: Node in level.get_tree().get_nodes_in_group(Types.GROUP_CREW):
+		var worker: Worker = node as Worker
+		if worker.is_hired():
+			worker.refresh_hired()
+			return worker
+	return null
+
+
 static func _check_crew_wages(test: SmokeTest, level: HouseLevel) -> void:
 	var operation: Operation = level.operation
 	var hired: Worker = null
@@ -409,7 +424,10 @@ static func _check_crew_wages(test: SmokeTest, level: HouseLevel) -> void:
 			hired = worker
 			break
 	if hired == null:
-		test.check(false, "some crew is hired by now")
+		# The areas that hire crew (lab, sales, defense) didn't run: hire a crafter here.
+		hired = _hire_crafter(level)
+	if hired == null:
+		test.check(false, "a crafter can be hired")
 		return
 	var cash: int = operation.get_cash()
 	operation.spend_cash(cash, "test")
@@ -526,6 +544,9 @@ static func _check_fuse_box(test: SmokeTest, level: HouseLevel) -> void:
 ## experience; a level-up widens the green zone and shows on the wrist.
 static func _check_skills(test: SmokeTest, level: HouseLevel) -> void:
 	var operation: Operation = level.operation
+	# The fights are the defense area's; without them, one landed hit stands in.
+	if Profile.skills.book.get_xp(SkillBook.Skill.FIGHTING) <= 0.0:
+		operation.record_melee_hit()
 	test.check(Profile.skills.book.get_xp(SkillBook.Skill.FIGHTING) > 0.0, "landing punches and blade hits trains fighting")
 	var zone_before: float = operation.get_sweet_zone_multiplier()
 	var level_before: int = Profile.skills.get_level(SkillBook.Skill.CRAFTING)
@@ -544,6 +565,14 @@ static func _check_holsters(test: SmokeTest, level: HouseLevel) -> void:
 	var rig: XRPlayerRig = level.rig
 	var holsters: WeaponHolsters = level.context.holsters
 	var catalog: WeaponCatalog = holsters.weapon_catalog
+	# The weapons are bought in the defense area's checks; without them, buy them here.
+	var armory: Armory = level.get_front(Armory) as Armory
+	for weapon_id: StringName in [&"knife", &"axe", &"pistol"]:
+		var weapon: WeaponData = catalog.find_weapon(weapon_id)
+		if not Profile.armory.loadout.owns(weapon):
+			Profile.wallet.add(Types.CURRENCY_CASH, weapon.cost, false)
+			armory.buy_weapon(weapon)
+	await test.frames(2)
 	test.check(holsters.get_holstered(WalkingBody.HOLSTER_HIP) == catalog.find_weapon(&"knife") and holsters.get_holstered(WalkingBody.HOLSTER_BACK) == catalog.find_weapon(&"axe") and holsters.get_holstered(WalkingBody.HOLSTER_CHEST) != null, "the knife hangs at the hip, the axe on the back, the gun on the chest")
 	var chest_gun: WeaponData = holsters.get_holstered(WalkingBody.HOLSTER_CHEST)
 	var left_hand: Node3D = rig.get_hand_pointer(Types.Hand.LEFT).get_parent_node_3d()

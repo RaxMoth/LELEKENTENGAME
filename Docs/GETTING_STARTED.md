@@ -99,7 +99,10 @@ and the README in your area's folder.
 - **Pacing:** exports on `AttackerDirector` (defense), `CustomerFlow`
   (customers), `DayCycle` and `Operation` (house).
 - Add checks for your change to your area's file in `Tests/Smoke/`, then
-  run `Tools/unit_tests.sh` and `Tools/smoke_test.sh`.
+  run `Tools/test.sh`. Each area's checks must pass on their own
+  (`Tools/smoke_test.sh areas=lab`): set up what they need instead of
+  relying on another area having run first. A new area folder gets a line
+  in `Tools/affected_areas.sh`.
 
 ## 4. Art, fonts, audio
 
@@ -188,4 +191,4 @@ layout in `_migrate()` when you change saved data after release.
 - [ ] App icons in the export presets; splash color in Project Settings.
 - [ ] Play on a standalone headset (Quest) and a PC headset; check comfort,
       reach and the frame rate with the Debug overlay's FPS readout.
-- [ ] Run `Tools/smoke_test.sh` and review `Tools/screenshots.sh` output.
+- [ ] Run `Tools/test.sh full` and review `Tools/screenshots.sh` output.

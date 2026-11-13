@@ -1,11 +1,15 @@
-# Runs the unit tests and the headless smoke test on every pull request and
-# every push to main. Both must pass before a PR is merged.
+# Pull requests run what they touch: the unit tests, the smoke test for
+# just the areas the changed files belong to (Tools/affected_areas.sh;
+# shared code runs everything, docs-only runs no smoke test) and the co-op
+# test when co-op code changed. Pushes to main (and a manual run) run
+# everything: the full smoke test and the co-op test. See Tools/test.sh.
 name: Tests
 
 on:
   pull_request:
   push:
     branches: [main]
+  workflow_dispatch:
 
 concurrency:
   group: tests-${{ github.ref }}
@@ -20,6 +24,9 @@ jobs:
       GODOT_VERSION: 4.7.2
     steps:
       - uses: actions/checkout@v4
+        with:
+          # The base branch too, to see which files a pull request changes.
+          fetch-depth: 0
 
       - name: Install Godot
         run: |
@@ -28,14 +35,13 @@ jobs:
           unzip -q "$RUNNER_TEMP/godot.zip" -d "$RUNNER_TEMP/godot"
           echo "GODOT=$RUNNER_TEMP/godot/Godot_v${GODOT_VERSION}-stable_linux.x86_64" >> "$GITHUB_ENV"
 
-      - name: Unit tests
-        run: Tools/unit_tests.sh
+      - name: "Tests (pull request: what it touches)"
+        if: github.event_name == 'pull_request'
+        run: Tools/test.sh "origin/${{ github.base_ref }}"
 
-      - name: Smoke test
-        run: Tools/smoke_test.sh
-
-      - name: Co-op test (host + guest over 127.0.0.1)
-        run: Tools/coop_test.sh
+      - name: Tests (everything)
+        if: github.event_name != 'pull_request'
+        run: Tools/test.sh full
 
       - name: Upload test reports
         if: failure()

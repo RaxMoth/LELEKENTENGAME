@@ -1,11 +1,19 @@
-## Automated smoke test. Boots every menu and level (levels run in the XR
-## rig's flat simulator), plays a few seconds, exercises pause / win / lose /
-## results, plays a whole shift at the house through the pointer paths a
-## headset uses (craft, sell, defend, upgrade, crew, night, losing the door),
-## opens every popup and checks the savegame round-trip. Exit code 0 = all good.
+## Automated smoke test. Boots the menus, opens every popup, checks the
+## savegame round-trip, plays a whole shift at the house through the pointer
+## paths a headset uses (craft, sell, defend, upgrade, crew, night, losing
+## the door) and a raid night start to finish. Exit code 0 = all good.
+##
+## The house's skeleton always runs (save, menus, popups, the house's start
+## and end, the raid night); the areas on top are picked per run:
+##   areas=lab,sales      just those (Tools/affected_areas.sh picks the ones
+##                        a change touches: pull requests)
+##   scope=core           lab, sales, defense
+##   scope=full           every area: lab, cellar, sales, town, defense,
+##                        towers (pushes to main)
+## Each section's time is printed at the end.
 ##
 ## Run from the project folder:
-##   godot --headless --fixed-fps 60 res://Tests/SmokeTest.tscn
+##   godot --headless --fixed-fps 60 res://Tests/SmokeTest.tscn -- scope=full
 ##
 ## Note: uses (and resets) the real user:// savegame of the project.
 ##
@@ -19,9 +27,17 @@ extends Node
 const TIMEOUT_MSEC: int = 20000
 ## The game; without a headset it runs in the rig's flat simulator.
 const HOUSE_LEVEL_ID: StringName = &"house"
+## Every area with its own checks, in the order they run.
+const ALL_AREAS: PackedStringArray = ["lab", "cellar", "sales", "town", "defense", "towers"]
+const CORE_AREAS: PackedStringArray = ["lab", "sales", "defense"]
+
+## The areas this run checks (on top of the skeleton).
+var areas: PackedStringArray = CORE_AREAS
 
 var _failures: PackedStringArray = []
 var _checks: int = 0
+## Section name -> milliseconds it took (printed at the end).
+var _section_msec: Dictionary[String, int] = {}
 
 
 func _ready() -> void:
@@ -39,15 +55,18 @@ func _run() -> void:
 		saved_settings[setting_key] = Settings.get_value(setting_key)
 	Settings.reset_to_defaults()
 	Profile.reset_progress()
-	await _test_save_roundtrip()
-	await _test_menus()
-	await _test_popups()
+	areas = _parse_areas(OS.get_cmdline_user_args())
 	var config: GameConfig = GameConfig.get_default()
-	for level_index: int in config.levels.size():
-		await _test_level(config.levels[level_index], level_index % 2 == 0)
+	await run_section("save", _test_save_roundtrip)
+	await run_section("menus", _test_menus)
+	await run_section("popups", _test_popups)
 	await _test_house(config.find_level(HOUSE_LEVEL_ID))
-	await _test_house_raid(config.find_level(HOUSE_LEVEL_ID))
-	print("\n==== SMOKE TEST: %d checks, %d failures ====" % [_checks, _failures.size()])
+	await run_section("raid night", _test_house_raid.bind(config.find_level(HOUSE_LEVEL_ID)))
+	var timings: PackedStringArray = []
+	for section: String in _section_msec:
+		timings.append("%s %.1f s" % [section, _section_msec[section] / 1000.0])
+	print("  time " + ", ".join(timings))
+	print("\n==== SMOKE TEST (%s): %d checks, %d failures ====" % [", ".join(areas) if not areas.is_empty() else "skeleton", _checks, _failures.size()])
 	for failure: String in _failures:
 		print("  FAIL: " + failure)
 	Profile.reset_progress()
@@ -121,35 +140,6 @@ func _test_popups() -> void:
 	check(not UI.has_open_popup(), "confirm dialog closes via back")
 
 
-func _test_level(level: LevelData, force_win: bool) -> void:
-	var attempts_before: int = Profile.levels.get_attempts(level.id)
-	LevelBase.start_level(level)
-	if not await _wait_for_scene(level.scene_path):
-		check(false, "level loads: " + level.id)
-		return
-	var active_level: LevelBase = get_tree().current_scene as LevelBase
-	check(active_level != null and active_level.level_data == level, "level receives its LevelData: " + level.id)
-	check(await wait_until(func() -> bool: return active_level.phase == LevelBase.Phase.PLAYING), "intro finishes: " + level.id)
-	await frames(180)
-	if active_level.phase == LevelBase.Phase.PLAYING:
-		active_level.pause_level()
-		await frames(20)
-		check(get_tree().paused and UI.has_open_popup(), "pause opens menu: " + level.id)
-		UI.close_top_popup()
-		check(await wait_until(func() -> bool: return active_level.phase == LevelBase.Phase.PLAYING), "resume works: " + level.id)
-		await frames(60)
-		if force_win and not level.is_endless:
-			active_level.win()
-		else:
-			active_level.lose()
-	check(await wait_until(func() -> bool: return UI.has_open_popup() and active_level.phase == LevelBase.Phase.FINISHED), "the day's summary shows: " + level.id)
-	check(Profile.levels.get_attempts(level.id) == attempts_before + 1, "attempt recorded: " + level.id)
-	await frames(30)
-	UI.close_top_popup()
-	check(await _wait_for_next_day(active_level), "the next day starts in the same world: " + level.id)
-	await _leave_to_menu()
-
-
 ## Plays a whole shift at the house through the pointer paths a headset uses
 ## (in the flat simulator). Each area keeps its own checks in Tests/Smoke/,
 ## so the developers of different areas never edit the same test file.
@@ -166,14 +156,15 @@ func _test_house(level_data: LevelData) -> void:
 	(level.get_front(SalesWindow) as SalesWindow).flow.is_active = false
 	(level.get_front(FrontGarden) as FrontGarden).director.is_active = false
 	Profile.wallet.add(Types.CURRENCY_CASH, 5000)
-	await HouseSmokeChecks.run_start(self, level)
-	await LabSmokeChecks.run(self, level)
-	await CellarSmokeChecks.run(self, level)
-	await SalesSmokeChecks.run(self, level)
-	await TownSmokeChecks.run(self, level)
-	await DefenseSmokeChecks.run(self, level)
-	await TowerSmokeChecks.run(self, level)
-	await HouseSmokeChecks.run_end(self, level)
+	await run_section("house start", HouseSmokeChecks.run_start.bind(self, level))
+	var area_checks: Dictionary[String, Callable] = {
+		"lab": LabSmokeChecks.run, "cellar": CellarSmokeChecks.run, "sales": SalesSmokeChecks.run,
+		"town": TownSmokeChecks.run, "defense": DefenseSmokeChecks.run, "towers": TowerSmokeChecks.run,
+	}
+	for area: String in ALL_AREAS:
+		if areas.has(area):
+			await run_section(area, area_checks[area].bind(self, level))
+	await run_section("house end", HouseSmokeChecks.run_end.bind(self, level))
 	# run_end loses the shift (the door breaks): no day is counted as done.
 	var lost_day: int = Profile.operation.day_number
 	check(await _wait_for_next_day(level) and Profile.operation.day_number == lost_day, "a lost day starts over in the house")
@@ -220,6 +211,29 @@ func _test_house_raid(level_data: LevelData) -> void:
 # HELPERS FOR THE AREA CHECKS (Tests/Smoke/*.gd)
 # ============================================
 
+## The areas the command line asks for: areas=a,b (those), scope=full
+## (all), scope=core or nothing (the core three). Unknown names are ignored.
+static func _parse_areas(arguments: PackedStringArray) -> PackedStringArray:
+	for argument: String in arguments:
+		if argument == "scope=full":
+			return ALL_AREAS
+		if argument.begins_with("areas="):
+			var picked: PackedStringArray = []
+			for area: String in argument.trim_prefix("areas=").split(",", false):
+				if ALL_AREAS.has(area.strip_edges()):
+					picked.append(area.strip_edges())
+			return picked
+	return CORE_AREAS
+
+
+## Runs one part of the test (an awaitable [param section]) and notes how
+## long it took under [param label].
+func run_section(label: String, section: Callable) -> void:
+	var started_msec: int = Time.get_ticks_msec()
+	await section.call()
+	_section_msec[label] = Time.get_ticks_msec() - started_msec
+
+
 func check(condition: bool, description: String) -> void:
 	_checks += 1
 	if condition:
@@ -251,9 +265,11 @@ func wait_until(condition: Callable) -> bool:
 ## The house is the only world: after the day's summary it reloads as the
 ## next morning (or the same day after a loss) instead of leaving.
 func _wait_for_next_day(previous_level: LevelBase) -> bool:
+	# By id: the old level is freed during the reload, and a check may not hold on to it.
+	var previous_id: int = previous_level.get_instance_id()
 	var reloaded: bool = await wait_until(func() -> bool:
 		var scene: LevelBase = get_tree().current_scene as LevelBase
-		return scene != null and scene != previous_level and not SceneManager.is_transitioning)
+		return scene != null and scene.get_instance_id() != previous_id and not SceneManager.is_transitioning)
 	await frames(5)
 	return reloaded
 

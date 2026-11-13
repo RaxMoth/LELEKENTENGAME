@@ -113,6 +113,10 @@ static func _check_lab_automation(test: SmokeTest, level: HouseLevel, office: Of
 	var grinder: Workstation = lab.get_station(&"Grinder")
 	var cooker: Workstation = lab.get_station(&"Cooker")
 	var press: Workstation = lab.get_station(&"Press")
+	# The stations themselves come from the lab area's checks; buy them if they didn't run.
+	for gadget_id: StringName in [Types.UPGRADE_GRINDER, Types.UPGRADE_COOKER, Types.UPGRADE_PRESS]:
+		if not Profile.upgrades.is_owned(gadget_id):
+			_buy(office, gadget_id)
 	for station: Workstation in [grinder, cooker, press]:
 		_clear(station)
 	_buy(office, Types.UPGRADE_GRINDER_MOTOR)
