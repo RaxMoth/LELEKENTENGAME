@@ -362,11 +362,6 @@ func _on_admin_spawn_requested(kind: StringName) -> void:
 		director.spawn_now(kind, context.cycle.raid_data)
 
 
-func _on_admin_spawn_requested(kind: StringName) -> void:
-	if context.cycle != null and context.cycle.is_raid_active():
-		director.spawn_now(kind, context.cycle.raid_data)
-
-
 ## Upgrade level of [param weapon] bought at the armory (Profile.armory).
 func _get_upgrade_level(weapon: WeaponData) -> int:
 	return Profile.armory.loadout.get_upgrade_level(weapon) if weapon != null else 0
