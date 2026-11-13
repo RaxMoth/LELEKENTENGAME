@@ -599,11 +599,23 @@ raiders as exports on their scenes, the yard's obstacles on `Yard`, pacing on `A
 
 ## Co-op (two players)
 
-Pause menu → **Play Together**. One player hosts, the other joins: a game
-on the same Wi-Fi shows up in the list (one click); over the internet the
-guest types the host's address with the keypad. The host's router is asked
-to open UDP port 7777 by itself (UPnP); when it refuses, forward UDP 7777 to
-the host's device by hand or put both players in a VPN such as Tailscale.
+**Play Together** opens from the main menu, the pause menu, or the board
+on the front room wall (beside the fuse box) — the way in for a headset
+player, who starts in the house. One player hosts, the other joins:
+
+1. **Host:** press *Host a Game*. Inside the house the session starts
+   right there; from the main menu the house starts with it (a friend who
+   joins meanwhile comes in once it runs). The board and the popup show
+   who is playing.
+2. **Join on the same Wi-Fi:** open Play Together on the second device —
+   the host's game shows up in the list within a second or two (a UDP
+   broadcast on port 7778); one press joins it. Both devices only need to
+   be on the same network (a Quest and a PC, two Quests, two PCs).
+3. **Join over the internet:** type the host's address with the keypad
+   (the host's popup shows it). The host's router is asked to open UDP port
+   7777 by itself (UPnP); when it refuses, forward UDP 7777 to the host's
+   device by hand or put both players in a VPN such as Tailscale. Without
+   that, playing across the internet would need a relay server (not built).
 
 - **The host's game is the world.** The guest's copy reloads as a mirror
   (`HouseLevel.is_mirror`): nothing simulates there, it shows the host's

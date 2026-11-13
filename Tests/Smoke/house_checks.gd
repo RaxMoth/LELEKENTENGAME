@@ -73,6 +73,7 @@ static func run_end(test: SmokeTest, level: HouseLevel) -> void:
 	_check_crew_wages(test, level)
 	await _check_controllers(test, level)
 	await _check_world_popup(test, level)
+	await _check_coop_board(test, level)
 	var day_cycle: DayCycle = level.day_cycle
 	var nights: Array[int] = [0]
 	day_cycle.nightfall.connect(func() -> void: nights[0] += 1)
@@ -468,6 +469,21 @@ static func _check_controllers(test: SmokeTest, level: HouseLevel) -> void:
 	test.check(level.get_tree().paused and UI.has_open_popup(), "controller menu button pauses")
 	rig.call("_on_right_hand_button_pressed", String(Types.XR_ACTION_SECONDARY_BUTTON))
 	test.check(await test.wait_until(func() -> bool: return level.is_playing() and not level.get_tree().paused), "controller menu button resumes")
+
+
+## The Play Together board on the front room wall opens host / join.
+static func _check_coop_board(test: SmokeTest, level: HouseLevel) -> void:
+	var board: CoopBoard = level.get_node("%CoopBoard") as CoopBoard
+	test.check(board != null and board.visible, "a Play Together board hangs in the house")
+	if board == null:
+		return
+	level.rig.locomotion.teleport_to(Vector3(-3.6, 0.0, -2.8), -PI * 0.5)
+	await test.frames(3)
+	level.rig.tap_world_point(board.get_open_button().get_press_center())
+	await test.frames(20)
+	test.check(UI.has_open_popup() and UI.get_top_popup() is CoopPopup, "pressing the board opens host / join")
+	UI.close_top_popup()
+	await test.frames(30)
 
 
 static func _check_world_popup(test: SmokeTest, level: HouseLevel) -> void:

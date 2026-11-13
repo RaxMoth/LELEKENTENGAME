@@ -75,8 +75,23 @@ func _test_menus() -> void:
 	for scene_path: String in [config.main_menu_scene, config.shop_scene]:
 		SceneManager.change_scene(scene_path)
 		check(await _wait_for_scene(scene_path), "menu loads: " + scene_path)
+		if scene_path == config.main_menu_scene:
+			await _check_play_together_button()
 	check(SceneManager.go_back(), "back stack works")
 	await _wait_for_transition()
+
+
+## The main menu's Play Together opens host / join (CoopPopup).
+func _check_play_together_button() -> void:
+	var button: Button = get_tree().current_scene.find_child("PlayTogetherButton", true, false) as Button
+	check(button != null and button.is_visible_in_tree(), "the main menu offers Play Together")
+	if button == null:
+		return
+	button.pressed.emit()
+	await frames(20)
+	check(UI.has_open_popup() and UI.get_top_popup() is CoopPopup, "Play Together opens host / join")
+	UI.close_top_popup()
+	await frames(30)
 
 
 func _test_popups() -> void:

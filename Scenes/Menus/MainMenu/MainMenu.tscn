@@ -13,6 +13,7 @@
 [ext_resource type="Texture2D" uid="uid://jrh1iudx8qin" path="res://Assets/Icons/trophy.svg" id="11_trophy"]
 [ext_resource type="Texture2D" uid="uid://dbt7p4ry6s26y" path="res://Assets/Icons/gift.svg" id="12_gift"]
 [ext_resource type="Texture2D" uid="uid://qbsbgufgonrn" path="res://Assets/Themes/screen_glow.tres" id="13_glow"]
+[ext_resource type="Texture2D" path="res://Assets/Icons/person.svg" id="14_person"]
 
 [node name="MainMenu" type="Control" unique_id=1218320551]
 layout_mode = 3
@@ -133,6 +134,15 @@ text = "Play"
 icon = ExtResource("9_play")
 expand_icon = true
 
+[node name="PlayTogetherButton" type="Button" parent="SafeArea/Layout/Buttons"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 100)
+layout_mode = 2
+theme_type_variation = &"SecondaryButton"
+text = "Play Together"
+icon = ExtResource("14_person")
+expand_icon = true
+
 [node name="Row" type="HBoxContainer" parent="SafeArea/Layout/Buttons" unique_id=1313838762]
 layout_mode = 2
 
@@ -172,6 +182,7 @@ text = "Quit"
 
 [connection signal="pressed" from="SafeArea/Layout/TopBar/SettingsButton" to="." method="_on_settings_button_pressed"]
 [connection signal="pressed" from="SafeArea/Layout/Buttons/PlayButton" to="." method="_on_play_button_pressed"]
+[connection signal="pressed" from="SafeArea/Layout/Buttons/PlayTogetherButton" to="." method="_on_play_together_button_pressed"]
 [connection signal="pressed" from="SafeArea/Layout/Buttons/Row/ShopButton" to="." method="_on_shop_button_pressed"]
 [connection signal="pressed" from="SafeArea/Layout/Buttons/Row/AchievementsButton" to="." method="_on_achievements_button_pressed"]
 [connection signal="pressed" from="SafeArea/Layout/Buttons/DailyRewardButton" to="." method="_on_daily_reward_button_pressed"]

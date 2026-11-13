@@ -126,7 +126,11 @@ New popup: a scene with root `Control` (script `extends BasePopup`), children
 Coop.host()                      # opens UDP 7777, announces on the LAN, asks the router (UPnP)
 Coop.join("203.0.113.5:7777")    # or a game from Coop.found_games (start_discovery())
 Coop.is_host() / is_client() / is_online() / leave()
+Coop.is_coop_scene(scene)        # a level two players can share (has a %CoopSync)
 ```
+Players reach it through `CoopPopup` (main menu, pause menu, and the
+`CoopBoard` on the House's front room wall). A host may start in a menu: a
+guest who joins meanwhile is welcomed once the co-op level runs.
 The host's level is the world. A guest's `HouseLevel` is a mirror: its
 `HouseCoopSync` shows the host's snapshots and forwards the guest's hand
 input (`XRPlayerRig.forwards_hand_input`), which the host runs through a

@@ -11,7 +11,7 @@
 ## the shared cash and the grinder running. A hit on the guest (the host
 ## keeps every player's health) must show on the guest's own health.
 ##
-## Dependencies: Coop, HouseLevel, HouseCoopSync, Lab, Workstation,
+## Dependencies: Coop, CoopDiscovery, HouseLevel, HouseCoopSync, Lab, Workstation,
 ##               IngredientCrate, SceneManager, Profile autoloads
 extends Node
 
@@ -191,10 +191,24 @@ func _run_guest() -> void:
 
 
 ## Retries until the host is up (it loads the house first).
+## Finds the host's game on the local network, as a player on the same
+## Wi-Fi would (its broadcast), and joins it; retries until the host has
+## loaded the house.
 func _join_host() -> bool:
+	Coop.start_discovery()
+	var found_address: Array[String] = [""]
+	await _wait_until(func() -> bool:
+		for game: Dictionary in Coop.found_games:
+			if int(game[CoopDiscovery.KEY_PORT]) == _port:
+				found_address[0] = "%s:%d" % [game[Coop.KEY_ADDRESS], _port]
+				return true
+		return false, 10000)
+	Coop.stop_discovery()
+	_check(not found_address[0].is_empty(), "guest: finds the host's game on the same network")
+	var address: String = found_address[0] if not found_address[0].is_empty() else "127.0.0.1:%d" % _port
 	var deadline_msec: int = Time.get_ticks_msec() + TIMEOUT_MSEC
 	while Time.get_ticks_msec() < deadline_msec:
-		Coop.join("127.0.0.1:%d" % _port)
+		Coop.join(address)
 		if await _wait_until(func() -> bool: return _get_house() != null or not Coop.is_online(), 4000):
 			if _get_house() != null:
 				return true

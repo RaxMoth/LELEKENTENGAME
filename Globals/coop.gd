@@ -8,7 +8,9 @@
 ##   if Coop.is_client(): ...            # the level mirrors the host
 ##
 ## Connection: Godot's ENet over UDP (port DEFAULT_PORT). On the same Wi-Fi
-## the host is found by a broadcast (CoopDiscovery). Over the internet the
+## the host is found by a broadcast (CoopDiscovery). A host may start from
+## a menu: a guest who joins meanwhile is let in once the host's co-op level
+## (one with a %CoopSync, the House) is running. Over the internet the
 ## client types the host's public address; the host's router must let the
 ## port through — UPnP asks it to automatically, otherwise forward UDP
 ## DEFAULT_PORT by hand or use a VPN (Tailscale, ZeroTier). A relay server
@@ -73,6 +75,8 @@ var internet_address: String = ""
 var _port: int = DEFAULT_PORT
 ## Clients whose copy of the current level is loaded (host side).
 var _ready_peers: Array[int] = []
+## Host: guests who joined while the host was in a menu, let in once the level runs.
+var _waiting_peers: Array[int] = []
 var _announcer: PacketPeerUDP = null
 var _listener: PacketPeerUDP = null
 var _seconds_until_announce: float = 0.0
@@ -248,6 +252,7 @@ func leave() -> void:
 	multiplayer.multiplayer_peer = OfflineMultiplayerPeer.new()
 	player_names.clear()
 	_ready_peers.clear()
+	_waiting_peers.clear()
 	_is_level_acknowledged = false
 	_pending_scene_path = ""
 	_set_mode(Mode.OFFLINE)
@@ -260,11 +265,19 @@ func leave() -> void:
 		SceneManager.reload_current_scene()
 
 
+## True for a level two players can share (it has a %CoopSync: the House).
+func is_coop_scene(scene: Node) -> bool:
+	return scene != null and scene.get_node_or_null(^"%CoopSync") != null
+
+
 ## Starts listening for games announced on the local network.
 func start_discovery() -> void:
 	if _listener != null:
 		return
 	_listener = PacketPeerUDP.new()
+	# On Android (Quest) this also holds the Wi-Fi multicast lock, without
+	# which some devices drop other devices' broadcasts.
+	_listener.set_broadcast_enabled(true)
 	if _listener.bind(DISCOVERY_PORT) != OK:
 		# Another game on this machine listens already (two copies while testing).
 		_listener = null
@@ -300,7 +313,11 @@ func _hello(protocol_version: int) -> void:
 	player_names[peer_id] = tr("Player %d") % (get_player_index(peer_id) + 1)
 	players_changed.emit()
 	_players.rpc(player_names)
-	_welcome.rpc_id(peer_id, SceneManager.current_scene_path)
+	if is_coop_scene(get_tree().current_scene):
+		_welcome.rpc_id(peer_id, SceneManager.current_scene_path)
+	elif not _waiting_peers.has(peer_id):
+		# The host is still in a menu: the guest comes in with the level.
+		_waiting_peers.append(peer_id)
 
 
 ## Host -> client: the version doesn't match. (A full game refuses at the
@@ -456,6 +473,7 @@ func _on_peer_disconnected(peer_id: int) -> void:
 		return
 	player_names.erase(peer_id)
 	_ready_peers.erase(peer_id)
+	_waiting_peers.erase(peer_id)
 	players_changed.emit()
 	_players.rpc(player_names)
 
@@ -478,11 +496,17 @@ func _on_scene_changed(scene_path: String) -> void:
 	_ready_peers.clear()
 	# Only levels with co-op support (a CoopSync) can be shared; going to the
 	# menu or such a level ends the session — the guest goes back to their own game.
-	var scene: Node = get_tree().current_scene
-	if scene == null or scene.get_node_or_null(^"%CoopSync") == null:
+	if not is_coop_scene(get_tree().current_scene):
 		leave()
 		return
-	_load_scene.rpc(scene_path)
+	for peer_id: int in _waiting_peers:
+		if player_names.has(peer_id):
+			_welcome.rpc_id(peer_id, scene_path)
+	var welcomed: Array[int] = _waiting_peers.duplicate()
+	_waiting_peers.clear()
+	for peer_id: int in player_names:
+		if peer_id != 1 and not welcomed.has(peer_id):
+			_load_scene.rpc_id(peer_id, scene_path)
 
 
 ## Guest: loads the host's level as soon as no other scene change is running.
