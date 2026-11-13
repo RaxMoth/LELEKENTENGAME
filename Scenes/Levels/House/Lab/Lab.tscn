@@ -274,17 +274,19 @@ ingredient = ExtResource("i_duskleaf")
 [node name="Crafters" type="Node3D" parent="."]
 unique_name_in_owner = true
 
-[node name="CrafterA" parent="Crafters" instance=ExtResource("worker")]
+[node name="CrafterA" parent="Crafters" node_paths=PackedStringArray("lab") instance=ExtResource("worker")]
 transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, -1.2, 0, 1.0)
 role = 0
 slot = 1
 wage_per_hour = 14
+lab = NodePath("../..")
 
-[node name="CrafterB" parent="Crafters" instance=ExtResource("worker")]
+[node name="CrafterB" parent="Crafters" node_paths=PackedStringArray("lab") instance=ExtResource("worker")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.4, 0, -0.9)
 role = 0
 slot = 2
 wage_per_hour = 14
+lab = NodePath("../..")
 
 [node name="RecipeBook" type="Node3D" parent="."]
 unique_name_in_owner = true

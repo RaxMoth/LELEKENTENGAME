@@ -122,11 +122,11 @@ pressed. Bindings: `openxr_action_map.tres` (Quest Touch, Pico, Vive, Index).
 
 ### Lab (inside, west)
 
-**A new operation starts small:** one **shroom plant** on the grow shelf by
-the back wall. It grows on its own (about 45 s); when it's ripe, point at
+**A new operation starts small:** one **shroom plant** (one pot, no empty
+ones) on the grow shelf by the back wall. It grows on its own (about 45 s); when it's ripe, point at
 it and pull the trigger (or click) to harvest the shrooms straight into the
 stash, then sell them at the back window. The office's **Lab** tab sells the
-rest, one after the other: **More Plants** (up to three), the **Grinder**
+rest, one after the other: **More Plants** (up to three, each a new pot on the shelf), the **Grinder**
 (with the ingredient crates), then the **Cooker**, then the **Press** — each
 shows up in the lab when bought, and the press unlocks Glow.
 
@@ -147,7 +147,7 @@ the better.
 |---|---|---|
 | Grinder | A raw ingredient that needs grinding | Its dust |
 | Cooker (3 slots) | The ingredients of one recipe (ground where needed) | A batch |
-| Press | A batch | Units in the stash (batch size from upgrades); waits while the stash has no room for the whole batch |
+| Press | A batch | A sealed **bag** of the product on its tray (batch size from upgrades). It is not in the stash yet: carry it to the **drop crate** in front of the stash shelf (a full stash refuses it), or let a crafter take it |
 
 | Product | Ingredients | Fair price | Heat / unit | Unlock |
 |---|---|---|---|---|
@@ -473,8 +473,11 @@ is closed.
   belt into the cooker, the cooked batch an overhead rail into the press.
 - **Ingredient Hopper** (after the belts): buys the ingredients of the last
   recipe you cooked from the crates (paid from the cash) and feeds them in,
-  one at a time, again and again. With every motor the lab now cooks that
-  recipe into the stash on its own.
+  one at a time, again and again. With every motor the lab now cooks and
+  packs that recipe on its own — but it still needs hands: now and then a
+  motor **jams** (the needle sticks, "Jammed!"; hit Stop to free it), and
+  the packed bags wait on the press until somebody carries them to the
+  stash. Hired **crafters** do both.
 
 ### Perks
 
@@ -525,7 +528,7 @@ reacts to it, and in co-op each player meets their own.
 
 | Role | Does | Limits |
 |---|---|---|
-| Crafter | Makes Street product (Pure after training) from cash | Lower quality than you |
+| Crafter | The lab's hands: frees jammed motors, stops a skill check nobody runs (no motor) at a Fine result, carries packed bags from the press to the stash; training makes them a little better. Before the lab has a press: makes Street product (Pure after training) from cash | Lower quality than you; looks for work every few seconds |
 | Dealer | Serves regulars, hagglers (takes their counteroffer) | Not bulk buyers or VIPs |
 | Guard | Shoots raiders in the yard from the front room | Cover hides raiders from them |
 

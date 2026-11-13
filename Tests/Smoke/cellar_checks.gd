@@ -119,6 +119,8 @@ static func _check_lab_automation(test: SmokeTest, level: HouseLevel, office: Of
 	test.check(grinder.is_motorized() and not cooker.is_motorized(), "Grinder Motor fits a motor to the grinder")
 	for station: Workstation in [grinder, cooker, press]:
 		station.motor_seconds = 0.2
+		# Jams are checked with the crafter (lab_checks); here the line must run through.
+		station.jam_chance = 0.0
 	var glowcap: Grabbable = lab.get_crate(&"glowcap").take_item()
 	grinder.get_input_sockets()[0].insert(glowcap)
 	test.check(await test.wait_until(func() -> bool: return not grinder.get_output_socket().is_empty()), "the motor finishes the grinder's skill check on its own")
@@ -132,8 +134,7 @@ static func _check_lab_automation(test: SmokeTest, level: HouseLevel, office: Of
 		_buy(office, Types.UPGRADE_STORAGE)
 	_buy(office, Types.UPGRADE_HOPPER)
 	automation.hopper_recipe = _find_recipe(lab, &"glow")
-	var glow_before: int = operation.stash.count(&"glow")
-	test.check(await test.wait_until(func() -> bool: return operation.stash.count(&"glow") > glow_before), "with motors, belts and the hopper the lab makes a batch of Glow on its own")
+	test.check(await test.wait_until(func() -> bool: return press.get_output_socket().item is ProductBag and (press.get_output_socket().item as ProductBag).recipe.id == &"glow"), "with motors, belts and the hopper the lab packs a bag of Glow on its own (somebody still carries it to the stash)")
 	# Let the last item land, then leave the stations empty.
 	automation.set_parts(false, false)
 	await test.wait_until(func() -> bool: return not automation.is_moving() and not grinder.is_running() and not cooker.is_running() and not press.is_running())
