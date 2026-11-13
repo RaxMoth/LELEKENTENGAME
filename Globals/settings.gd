@@ -23,6 +23,8 @@ const KEY_HAPTICS_ENABLED: StringName = &"haptics_enabled"
 const KEY_SHOW_FPS: StringName = &"show_fps"
 ## Comfort: continuous turning instead of 30° snaps.
 const KEY_SMOOTH_TURNING: StringName = &"smooth_turning"
+## The walking stick / pad heads where the head faces (off: where the off hand points).
+const KEY_WALK_WHERE_LOOKING: StringName = &"walk_where_looking"
 ## Comfort: a player whose head is lower than standing height (seated) is
 ## lifted to it, so the house is reachable from a chair.
 const KEY_STANDING_VIEW: StringName = &"standing_view"
@@ -43,6 +45,7 @@ const DEFAULTS: Dictionary[StringName, Variant] = {
 	KEY_HAPTICS_ENABLED: true,
 	KEY_SHOW_FPS: false,
 	KEY_SMOOTH_TURNING: false,
+	KEY_WALK_WHERE_LOOKING: false,
 	KEY_STANDING_VIEW: true,
 	KEY_FRESH_START_IN_DEV: true,
 	KEY_LOCALE: "",

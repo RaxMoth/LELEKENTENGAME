@@ -1,11 +1,13 @@
 ## Moves the player around the level. Never leaves the WalkableArea.
 ## In the flat simulator WASD walks and keys 1-4 jump to the travel spots.
 ##
-## Like most VR games: the off-hand stick (left by default) walks where the
-## head looks — forward, back and sideways, like WASD — and the dominant
-## stick turns (30° snaps, or smoothly). The sticks never teleport; only
-## HTC Vive wands, which have no stick, teleport with a trackpad click up
-## (left / right snap-turns).
+## Like most VR games: the off-hand stick (left by default) walks — forward,
+## back and sideways, like WASD — toward where that hand points, so the head
+## can look around freely ("Walk Where You Look" in Settings walks where the
+## head faces instead). The dominant stick turns (30° snaps, or smoothly).
+## Touchpads (HTC Vive, Valve Index) work the same while pressed: press the
+## off-hand pad toward a direction to walk there, the dominant pad's sides to
+## turn. Nothing ever teleports.
 ##
 ## Arm-swing running: hold both grips with empty hands and swing the arms
 ## like jogging — the harder the swing, the faster (WalkMotion); you head
@@ -13,22 +15,29 @@
 ## full speed, a fully pushed stick sprints, and footsteps sound every stride
 ## (with a light tap in both hands while arm-swinging). No head bob: the
 ## camera only ever moves as far as the player walks. Walking down stairs
-## (a WalkableRamp) lowers the player with each step, never on its own.
+## (a WalkableRamp) lowers the player with each step, never on its own; a
+## change in floor height (the top or the foot of the stairs) is eased over a
+## few frames instead of dropping the view at once.
 ##
 ## Walls hold for real steps too: a player who walks or leans into a wall
 ## (or the stairwell) in the room stops at its edge, as if it were there;
 ## furniture can still be leaned over. Real steps onto the stairs follow
 ## their height like stick walking does.
 ##
-## Dependencies: XRPlayerRig, XRPointer, WalkableArea, WalkMotion, RayMath, Settings, Audio,
+## Dependencies: XRPlayerRig, XRPointer, WalkableArea, WalkMotion, Settings, Audio,
 ##               SfxSynth, Types autoloads
 class_name XRLocomotion
 extends Node
 
 signal teleported(target: Vector3)
 
-## Spacing of the floor checks along a teleport's way.
+## Spacing of the floor checks along a real step's way.
 const PATH_SAMPLE_METERS: float = 0.1
+## How fast the view settles on a new floor height (share per second, eased).
+const FLOOR_EASE_PER_SECOND: float = 14.0
+## A walking hand pointing steeper than this (up or down) gives no direction:
+## the head's is used then.
+const MIN_HAND_FLATNESS: float = 0.3
 ## A head can't move this far in one frame: a jump this big is a teleport
 ## (travel spot, the cellar's opening), not a real step to check.
 const MAX_REAL_STEP_METERS: float = 0.6
@@ -38,7 +47,6 @@ const MAX_REAL_STEP_METERS: float = 0.6
 @export var flat_move_speed: float = 2.6
 @export var snap_turn_degrees: float = 30.0
 @export var smooth_turn_degrees_per_second: float = 100.0
-@export var teleport_range: float = 9.0
 
 @export_group("Controller sticks")
 ## A stick pushed this far snap-turns.
@@ -68,6 +76,8 @@ var _has_hand_samples: bool = false
 ## Last feet position on a floor, for keeping real steps out of walls.
 var _last_floor_feet: Vector3 = Vector3.ZERO
 var _has_floor_feet: bool = false
+## The floor height the feet are easing toward (NAN = none: stand as is).
+var _floor_y: float = NAN
 
 ## On = the player stays put (a turret seat); sticks, arm swing and WASD do nothing.
 var is_locked: bool = false
@@ -94,16 +104,6 @@ func handle_stick(hand: Types.Hand, value: Vector2) -> void:
 	_walk_stick = value
 
 
-## Trackpad click (HTC Vive wands): up teleports along the pointer, sides turn.
-func handle_trackpad_click(pad_position: Vector2, pointer: XRPointer) -> void:
-	if absf(pad_position.x) >= 0.35:
-		turn_by(-snap_turn_degrees if pad_position.x > 0.0 else snap_turn_degrees)
-	elif pad_position.y >= 0.35:
-		var target: Vector3 = _find_teleport_target(pointer)
-		if _is_valid_target(target):
-			teleport_to(target)
-
-
 ## Per physics frame (called by the rig): stick walking, turns, WASD.
 func step(delta: float) -> void:
 	if is_locked:
@@ -112,12 +112,14 @@ func step(delta: float) -> void:
 		# must not read as one huge swing.
 		_sample_hands()
 		_has_floor_feet = false
+		_floor_y = NAN
 		return
 	if rig.is_xr_active:
 		_step_xr(delta)
 		_keep_out_of_walls()
 	else:
 		_step_flat(delta)
+	_ease_to_floor(delta)
 
 
 ## Puts the player's feet at [param target], its height included (the head
@@ -126,6 +128,7 @@ func step(delta: float) -> void:
 func teleport_to(target: Vector3, facing: float = NAN) -> void:
 	var feet: Vector3 = rig.get_feet_position()
 	rig.move_origin_by(target - feet)
+	_floor_y = target.y
 	if not is_nan(facing):
 		rig.face_yaw(facing)
 	teleported.emit(target)
@@ -152,6 +155,20 @@ func get_walk_stick() -> Vector2:
 func is_smooth_turning() -> bool:
 	return Settings.get_bool(Settings.KEY_SMOOTH_TURNING)
 
+
+## Forward for the walking stick on the floor: where the off hand points
+## (or the head faces, with "Walk Where You Look" on or the hand held
+## straight up or down).
+func get_walk_forward() -> Vector3:
+	if not Settings.get_bool(Settings.KEY_WALK_WHERE_LOOKING):
+		var pointer: XRPointer = rig.get_hand_pointer(_get_walk_hand())
+		var aim: Vector3 = -pointer.global_basis.z
+		var flat_aim: Vector3 = Vector3(aim.x, 0.0, aim.z)
+		if flat_aim.length() > MIN_HAND_FLATNESS:
+			return flat_aim.normalized()
+	var head_basis: Basis = rig.get_head_transform().basis
+	return Vector3(-head_basis.z.x, 0.0, -head_basis.z.z).normalized()
+
 # ============================================
 # INTERNALS
 # ============================================
@@ -159,9 +176,8 @@ func is_smooth_turning() -> bool:
 func _step_xr(delta: float) -> void:
 	var target_velocity: Vector3 = Vector3.ZERO
 	if _walk_stick.length() > stick_deadzone:
-		var head_basis: Basis = rig.get_head_transform().basis
-		var forward: Vector3 = Vector3(-head_basis.z.x, 0.0, -head_basis.z.z).normalized()
-		var right: Vector3 = Vector3(head_basis.x.x, 0.0, head_basis.x.z).normalized()
+		var forward: Vector3 = get_walk_forward()
+		var right: Vector3 = forward.cross(Vector3.UP)
 		var stick_direction: Vector3 = (right * _walk_stick.x + forward * _walk_stick.y).normalized()
 		target_velocity = stick_direction * WalkMotion.get_stick_speed(_walk_stick, move_speed * speed_multiplier)
 	var swing_velocity: Vector3 = _get_arm_swing_velocity(delta) * speed_multiplier
@@ -237,16 +253,43 @@ func _play_footstep(with_hands: bool) -> void:
 
 
 func _walk(offset: Vector3) -> void:
-	var feet: Vector3 = rig.get_feet_position()
+	var feet: Vector3 = _get_floor_feet()
 	var target: Vector3 = feet + offset
 	if walkable_area != null:
-		# Also up or down to the floor there (stairs).
+		# Also up or down to the floor there (stairs): eased in _ease_to_floor().
 		target = walkable_area.clamp_move(feet, target)
-	rig.move_origin_by(target - feet)
+	rig.move_origin_by(Vector3(target.x - feet.x, 0.0, target.z - feet.z))
+	_floor_y = target.y
 
 
-## The off-hand stick points more sideways than forward: it turns rather
-## than aims a teleport.
+## The feet on the floor they stand on (the view may still be easing there).
+func _get_floor_feet() -> Vector3:
+	var feet: Vector3 = rig.get_feet_position()
+	if not is_nan(_floor_y):
+		feet.y = _floor_y
+	return feet
+
+
+## Lets the view settle on the floor height smoothly: a step onto or off
+## the stairs is a short glide, not a jolt. A jump of a storey (something
+## else moved the player) is taken over as it is.
+func _ease_to_floor(delta: float) -> void:
+	if is_nan(_floor_y):
+		return
+	var gap: float = _floor_y - rig.get_feet_position().y
+	if absf(gap) > WalkableArea.OFF_FLOOR_STEP:
+		_floor_y = NAN
+		return
+	if absf(gap) < 0.0005:
+		return
+	rig.move_origin_by(Vector3(0.0, gap * (1.0 - exp(-FLOOR_EASE_PER_SECOND * delta)), 0.0))
+
+
+func _get_walk_hand() -> Types.Hand:
+	return Types.Hand.LEFT if rig.dominant_hand == Types.Hand.RIGHT else Types.Hand.RIGHT
+
+
+## The dominant stick points more sideways than forward: a turn.
 func _is_turn_gesture(stick: Vector2) -> bool:
 	return absf(stick.x) > absf(stick.y)
 
@@ -270,7 +313,7 @@ func _handle_snap_turn(stick: Vector2) -> void:
 func _keep_out_of_walls() -> void:
 	if walkable_area == null:
 		return
-	var feet: Vector3 = rig.get_feet_position()
+	var feet: Vector3 = _get_floor_feet()
 	var height: float = walkable_area.get_floor_height_at(feet, WalkableArea.MAX_STEP, true)
 	var moved: float = Vector2(feet.x - _last_floor_feet.x, feet.z - _last_floor_feet.z).length()
 	var is_real_step: bool = _has_floor_feet and moved <= MAX_REAL_STEP_METERS
@@ -278,21 +321,21 @@ func _keep_out_of_walls() -> void:
 	if not is_nan(height) and is_real_step and not _has_clear_path(_last_floor_feet, Vector3(feet.x, _last_floor_feet.y, feet.z)):
 		height = NAN
 	if not is_nan(height):
-		if absf(height - feet.y) > 0.001:
-			# A real step onto the stairs: follow their height.
-			rig.move_origin_by(Vector3(0.0, height - feet.y, 0.0))
+		# A real step onto the stairs follows their height (eased).
+		_floor_y = height
 		_last_floor_feet = Vector3(feet.x, height, feet.z)
 		_has_floor_feet = true
 		return
 	if not is_real_step:
 		return
 	var allowed: Vector3 = walkable_area.clamp_move(_last_floor_feet, Vector3(feet.x, _last_floor_feet.y, feet.z))
-	rig.move_origin_by(Vector3(allowed.x - feet.x, allowed.y - feet.y, allowed.z - feet.z))
+	rig.move_origin_by(Vector3(allowed.x - feet.x, 0.0, allowed.z - feet.z))
+	_floor_y = allowed.y
 	_last_floor_feet = allowed
 
 
 ## True when the straight way from [param from] to [param to] stays on the
-## floor (a trackpad teleport never jumps through a wall or across the stairwell).
+## floor (a real step never crosses a wall or the stairwell).
 func _has_clear_path(from: Vector3, to: Vector3) -> bool:
 	if walkable_area == null:
 		return true
@@ -302,19 +345,6 @@ func _has_clear_path(from: Vector3, to: Vector3) -> bool:
 		if is_nan(walkable_area.get_floor_height_at(Vector3(point.x, from.y, point.z), WalkableArea.MAX_STEP, true)):
 			return false
 	return true
-
-
-func _find_teleport_target(pointer: XRPointer) -> Vector3:
-	# Teleports stay on the floor the player stands on (the cellar or the house).
-	var distance: float = RayMath.intersect_ground(pointer.ray_origin, pointer.ray_direction, rig.get_feet_position().y)
-	if distance == RayMath.NO_HIT or distance > teleport_range:
-		return Vector3(INF, INF, INF)
-	return pointer.get_point(distance)
-
-
-func _is_valid_target(target: Vector3) -> bool:
-	return target.is_finite() and (walkable_area == null or walkable_area.contains(target)) \
-		and _has_clear_path(rig.get_feet_position(), target)
 
 
 func _sample_hands() -> void:

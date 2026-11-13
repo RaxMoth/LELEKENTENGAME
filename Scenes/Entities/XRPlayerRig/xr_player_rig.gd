@@ -56,6 +56,9 @@ signal hand_input_forwarded(hand: Types.Hand, action_name: StringName, is_presse
 const ARGUMENT_WORLD_UI: String = "world_ui=1"
 ## Pointer grabs and button presses reach this far.
 const POINTER_REACH: float = HandInteractor.POINTER_REACH
+## A touchpad pressed at its rim reads 1: a little less, so it walks briskly and
+## only a stick pushed all the way sprints.
+const PAD_STICK_SCALE: float = 0.85
 
 ## Hand that points at UI and uses things; the other hand is the off-hand.
 @export var dominant_hand: Types.Hand = Types.Hand.RIGHT
@@ -124,6 +127,10 @@ var _default_physics_ticks: int = 60
 var _hands: HandInteractor = null
 ## Grip buttons held down right now, per hand (arm-swing walking).
 var _grip_down: Dictionary[Types.Hand, bool] = {Types.Hand.LEFT: false, Types.Hand.RIGHT: false}
+## Touchpads held down (they walk and turn like sticks while pressed).
+var _pad_down: Dictionary[Types.Hand, bool] = {Types.Hand.LEFT: false, Types.Hand.RIGHT: false}
+## Where each touchpad is touched (-1..1).
+var _pad_position: Dictionary[Types.Hand, Vector2] = {Types.Hand.LEFT: Vector2.ZERO, Types.Hand.RIGHT: Vector2.ZERO}
 var _flat_held_item: Grabbable = null
 ## Meters the play space is raised for seated play (see StandingView).
 var _standing_lift: float = 0.0
@@ -384,8 +391,9 @@ func handle_controller_button(hand: Types.Hand, action_name: StringName, is_pres
 			if is_pressed:
 				next_weapon_pressed.emit()
 		Types.XR_ACTION_TRACKPAD_CLICK:
-			if is_pressed:
-				locomotion.handle_trackpad_click(_get_controller(hand).get_vector2(Types.XR_ACTION_TRACKPAD), _get_pointer(hand))
+			# A touchpad (Vive, Index) walks / turns toward where it is pressed.
+			_pad_down[hand] = is_pressed
+			locomotion.handle_stick(hand, _pad_position[hand] * PAD_STICK_SCALE if is_pressed else Vector2.ZERO)
 
 
 ## Items currently held (by either hand or the flat cursor).
@@ -613,6 +621,10 @@ func _update_socket_highlights() -> void:
 func _handle_thumbstick(hand: Types.Hand, action_name: StringName, value: Vector2) -> void:
 	if action_name == Types.XR_ACTION_THUMBSTICK:
 		locomotion.handle_stick(hand, value)
+	elif action_name == Types.XR_ACTION_TRACKPAD:
+		_pad_position[hand] = value
+		if _pad_down[hand]:
+			locomotion.handle_stick(hand, value * PAD_STICK_SCALE)
 
 
 func _on_left_hand_button_pressed(action_name: String) -> void:
@@ -657,6 +669,11 @@ func _on_xr_session_focussed() -> void:
 ## Button releases are lost while the system has focus: don't wait for them.
 func _forget_grip_state() -> void:
 	_hands.forget_grip_state()
+	# A pad held when the headset came off must not keep walking.
+	for hand: Types.Hand in _pad_down:
+		if _pad_down[hand]:
+			_pad_down[hand] = false
+			locomotion.handle_stick(hand, Vector2.ZERO)
 
 
 ## The player held the system button to recenter: measure their height again
