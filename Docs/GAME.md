@@ -99,9 +99,9 @@ new day, in co-op the guest comes along (`DaySummaryPopup`).
 | Talk to someone | Dominant-hand trigger on a person in the street; pick a reply on the panel beside them | Click a person, then a reply |
 | Switch weapon | A / X: the next gun you own (a drawn gun is swapped right in your hand) | Q: the next weapon you own |
 | Build a tower | Buy a kit at the tower depot by the porch, carry it outside, point at the ground (a green ring shows the spot) and pull the trigger | Click the kit, then click the ground |
-| Walk | Off-hand stick walks where you look — forward, back and sideways, like WASD — easing in and out; push it all the way to sprint. The sticks never teleport | WASD / arrows; 1–4 jump to lab, front, window, office |
+| Walk | Off-hand stick (or touchpad, pressed) walks toward where that hand points — forward, back and sideways, like WASD — so you can look around while walking ("Walk Where You Look" in Settings follows the head instead); eases in and out, a stick pushed all the way sprints. Nothing teleports | WASD / arrows; 1–4 jump to lab, front, window, office |
 | Run with your arms | Hold both grips (hands empty) and swing your arms like jogging: the harder you swing, the faster you run, toward where your hands point; footsteps and a light tap in both hands every stride | — |
-| Turn | Dominant-hand stick left / right: 30° snaps (or smooth turning) | Drag |
+| Turn | Dominant-hand stick (or touchpad, pressed) left / right: 30° snaps (or smooth turning) | Drag |
 | Scroll a board's list | Point at the list, hold the trigger and drag it up or down (the scrollbar works too) | Drag the list |
 | Full screen | — | F11, or "Full Screen" in Settings (on by default on a desktop) |
 | Seated play | "Standing View When Seated" (on by default) lifts a seated player to standing eye height (1.8 m); after sitting down or standing up, hold the headset's system button to recenter | — |
@@ -112,9 +112,10 @@ new day, in co-op the guest comes along (`DaySummaryPopup`).
 
 Walls hold in the room too: walking or leaning into a wall (or the
 stairwell) stops you at its edge; leaning over furniture still works.
-Vive wands: trackpad click up teleports (only along the floor, never
-through a wall), left / right snap-turns. Bindings:
-`openxr_action_map.tres`.
+Stepping on or off the stairs eases the view down or up over a moment
+instead of dropping it; the stairs are walkable nearly their full width.
+Touchpads (HTC Vive wands, Valve Index) walk and turn like the sticks while
+pressed. Bindings: `openxr_action_map.tres` (Quest Touch, Pico, Vive, Index).
 
 ## The fronts
 
@@ -608,7 +609,7 @@ Scenes/Levels/House/House.tscn                inherits LevelBase; house_level.gd
 | `HouseLevel` | Runs the shift: time, wages for `Types.GROUP_CREW`, win at dawn (or when the raid is beaten), lose when a player goes down (`PlayerVitals`) or on `shift_lost`, wrist status (the player's health, the cycle and the fronts' status lines); at the end the day summary, then the next day (the house reloads) |
 | `HouseCycle` | The 3-day cycle: raid day, raid waves (`RaidPlanner` → `RaidWave`), tells the fronts through the raid hooks, closes the window during a raid |
 | `Grabbable`, `ItemSocket`, `PointerButton`, `InteractionQuery` (`Scripts/XR/`) | Physics-free hand interaction: grab at the hand or along the beam, drop into sockets, press 3D buttons |
-| `XRLocomotion` | Stick walking, snap / smooth turning, flat WASD and travel spots (Vive wands: trackpad teleport); never leaves the `WalkableArea` |
+| `XRLocomotion` | Stick or pressed-touchpad walking toward the off hand's pointing, snap / smooth turning, eased floor heights, flat WASD and travel spots; never leaves the `WalkableArea` |
 | `Workstation` | StateChart Idle ⇄ Running; `TimingGauge` skill check; grinder / cooker / press by `step` |
 | `Customer`, `CustomerFlow`, `SalesWindow`, `SalesBoard` | Pooled customers with StateChart Walking ⇄ Waiting → Leaving; the window runs the sale rules (`SalesMath`) |
 | `Yard`, `Raider`, `RaidSquad`, `AttackerDirector` | The open yard (round obstacles, cover, line of sight; `YardNavigation`); pooled raiders with StateChart Alive { Moving ⇄ InCover, Attacking, Hunting } → Dead, moving in squads that leapfrog and rush together; once the door is down they hunt the nearest player through the house along `WalkableArea.find_path` routes |
@@ -650,8 +651,9 @@ raiders as exports on their scenes, the yard's obstacles on `Yard`, pacing on `A
   own chest is left out so looking down shows the knife on your hip. The
   co-op partner's avatar keeps its torso. The camera never bobs: the legs
   carry the walking, not the view.
-- **Comfort.** The off-hand stick walks where you look (like WASD), the
-  dominant stick snap-turns (smooth turning in Settings); no teleporting.
+- **Comfort.** The off-hand stick or touchpad walks where that hand points
+  (like WASD; where you look, if set), the dominant one snap-turns (smooth
+  turning in Settings); no teleporting; floor-height changes are eased.
   Seated players are
   lifted to standing height (re-measured on recenter). No camera motion the
   player didn't make; popups and announcements appear where you look and

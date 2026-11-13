@@ -13,6 +13,7 @@ const LOCALE_OPTIONS: PackedStringArray = ["", "en", "de"]
 @onready var _sfx_slider: HSlider = %SfxSlider
 @onready var _haptics_toggle: CheckButton = %HapticsToggle
 @onready var _smooth_turn_toggle: CheckButton = %SmoothTurnToggle
+@onready var _walk_where_looking_toggle: CheckButton = %WalkWhereLookingToggle
 @onready var _standing_view_toggle: CheckButton = %StandingViewToggle
 @onready var _fresh_start_toggle: CheckButton = %FreshStartToggle
 @onready var _fps_toggle: CheckButton = %FpsToggle
@@ -27,6 +28,7 @@ func _on_opened(_data: Dictionary) -> void:
 	_sfx_slider.value = Settings.get_float(Settings.KEY_SFX_VOLUME)
 	_haptics_toggle.button_pressed = Settings.get_bool(Settings.KEY_HAPTICS_ENABLED)
 	_smooth_turn_toggle.button_pressed = Settings.get_bool(Settings.KEY_SMOOTH_TURNING)
+	_walk_where_looking_toggle.button_pressed = Settings.get_bool(Settings.KEY_WALK_WHERE_LOOKING)
 	_standing_view_toggle.button_pressed = Settings.get_bool(Settings.KEY_STANDING_VIEW)
 	# A development switch: exported release builds always load the save.
 	_fresh_start_toggle.visible = OS.is_debug_build()
@@ -47,6 +49,7 @@ func _on_opened(_data: Dictionary) -> void:
 	_sfx_slider.value_changed.connect(_on_sfx_slider_changed)
 	_haptics_toggle.toggled.connect(func(enabled: bool) -> void: Settings.set_value(Settings.KEY_HAPTICS_ENABLED, enabled))
 	_smooth_turn_toggle.toggled.connect(func(enabled: bool) -> void: Settings.set_value(Settings.KEY_SMOOTH_TURNING, enabled))
+	_walk_where_looking_toggle.toggled.connect(func(enabled: bool) -> void: Settings.set_value(Settings.KEY_WALK_WHERE_LOOKING, enabled))
 	_standing_view_toggle.toggled.connect(func(enabled: bool) -> void: Settings.set_value(Settings.KEY_STANDING_VIEW, enabled))
 	_fresh_start_toggle.toggled.connect(func(enabled: bool) -> void: Settings.set_value(Settings.KEY_FRESH_START_IN_DEV, enabled))
 	_fps_toggle.toggled.connect(func(enabled: bool) -> void: Settings.set_value(Settings.KEY_SHOW_FPS, enabled))
