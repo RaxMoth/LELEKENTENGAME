@@ -57,6 +57,8 @@ SHOT_RESOLUTION=$WIDE shot level_18_cellar level=house showcase=house_cellar sta
 SHOT_RESOLUTION=$WIDE shot level_19_stairwell level=house showcase=house_automation stand=2.0,3.8 look=2.4,-0.8,2.0 frames=120
 SHOT_RESOLUTION=$WIDE shot level_20_lab_automation level=house showcase=house_automation stand=-2.6,0.4 look=-2.6,1.2,-1.6 frames=120
 SHOT_RESOLUTION=$WIDE shot level_21_ghost level=house showcase=house_ghost frames=60
+# The door is down: raiders stormed into the front room, the player is hurt (wrist health).
+SHOT_RESOLUTION=$WIDE shot level_22_storm level=house showcase=house_storm stand=0.3,-1.2 look=0,1.0,-5 frames=40
 "$TOOLS_DIR/godot.sh" --headless --script "$TOOLS_DIR/contact_sheet.gd" -- "$OUT_DIR/sheet_menus.png" 5 360 640 \
 	"$OUT_DIR"/0*.png >/dev/null 2>&1
 "$TOOLS_DIR/godot.sh" --headless --script "$TOOLS_DIR/contact_sheet.gd" -- "$OUT_DIR/sheet_levels.png" 3 640 360 \

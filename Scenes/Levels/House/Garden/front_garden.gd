@@ -12,8 +12,12 @@
 ## porch is walkable. Turrets are house upgrades ("Roof Turrets", "Security
 ## PC" in the office), not things built in the yard.
 ##
-## Reports to the House level only through HouseFront's signals: the door
-## breaking loses the shift, raids are warnings, stopped raiders are score.
+## If the door breaks the raiders storm in and hunt the players through the
+## house (Yard.start_hunting); the gun then hits from anywhere. The players'
+## health (PlayerVitals) is the House level's: going down ends the shift.
+##
+## Reports to the House level only through HouseFront's signals: raids and
+## the broken door are warnings, stopped raiders are score.
 ##
 ## Dependencies: HouseFront, Yard, Raider, FrontDoor, HouseTurret, SecurityPc,
 ##               AttackerDirector, GunModel, WeaponCatalog, WeaponData,
@@ -90,6 +94,7 @@ func _on_setup() -> void:
 	yard.raider_defeated.connect(func(raider: Raider) -> void: score_earned.emit(raider.score_value))
 	door.broken.connect(_on_door_broken)
 	door.passage_changed.connect(_on_door_passage_changed)
+	yard.walkable = context.rig.walkable_area
 	if context.rig.walkable_area != null:
 		context.rig.walkable_area.add_region(porch_region)
 		# The garden: out of the front door, across the yard up to its fence,
@@ -177,6 +182,8 @@ func remove_raiders() -> void:
 
 
 func get_status_line() -> String:
+	if door.is_broken():
+		return tr("Door broken")
 	var door_state: String = tr("open") if door.is_open() else (tr("locked") if door.is_locked() else tr("unlocked"))
 	return tr("Door %d%% %s") % [roundi(door.get_health_ratio() * 100.0), door_state]
 
@@ -187,6 +194,12 @@ func get_status_line() -> String:
 ## True while the player stands in the front room or on the porch, where they can defend.
 func is_in_defense_zone() -> bool:
 	return _is_defense_spot(context.rig.get_feet_position())
+
+
+## True where the player's shots hit raiders: in the front room, on the
+## porch or in the garden — and anywhere in the house once they stormed in.
+func can_defend() -> bool:
+	return is_in_defense_zone() or yard.is_hunting()
 
 
 func _is_defense_spot(feet: Vector3) -> bool:
@@ -239,7 +252,7 @@ func fire_weapon(pointer: XRPointer) -> Raider:
 	var bloom: float = WeaponBallistics.get_bloom(weapon, _shots_in_burst)
 	_shots_in_burst += 1
 	_seconds_since_shot = 0.0
-	var first_hit: Raider = _fire_projectiles(pointer, _get_muzzle_position(pointer), weapon, bloom, is_in_defense_zone())
+	var first_hit: Raider = _fire_projectiles(pointer, _get_muzzle_position(pointer), weapon, bloom, can_defend())
 	if _shown_gun != null:
 		_shown_gun.play_shot()
 	Audio.play_sfx_at(SfxSynth.get_preset(weapon.sound_preset), pointer.ray_origin, 0.06, -3.0)
@@ -291,7 +304,7 @@ func _on_rig_primary_action_pressed(pointer: XRPointer) -> void:
 			turret_seat.get_turret().fire()
 			turret_seat.set_firing(false)
 		return
-	if not context.is_playing() or not is_in_defense_zone() or context.rig.is_xr_active:
+	if not context.is_playing() or not can_defend() or context.rig.is_xr_active:
 		return
 	if yard.pick_raider(pointer.ray_origin, pointer.ray_direction, _get_weapon_range()) != null:
 		fire_weapon(pointer)
@@ -343,7 +356,7 @@ func _fire_for_guest() -> void:
 	var bloom: float = WeaponBallistics.get_bloom(weapon, _guest_shots_in_burst)
 	_guest_shots_in_burst += 1
 	_guest_seconds_since_shot = 0.0
-	_fire_projectiles(pointer, pointer.ray_origin, weapon, bloom, _is_defense_spot(_guest_feet))
+	_fire_projectiles(pointer, pointer.ray_origin, weapon, bloom, _is_defense_spot(_guest_feet) or yard.is_hunting())
 	Audio.play_sfx_at(SfxSynth.get_preset(weapon.sound_preset), pointer.ray_origin, 0.06, -3.0)
 	if _guest_recoil.is_valid():
 		_guest_recoil.call(weapon.recoil as Types.HapticStrength)
@@ -353,8 +366,11 @@ func _stop_trigger() -> void:
 	_held_trigger_pointer = null
 
 
+## The door is down: the raiders storm in after the players. The shift goes
+## on — beat them (or go down: HouseLevel ends the shift then).
 func _on_door_broken() -> void:
-	shift_lost.emit(tr("The door is down"))
+	warning_requested.emit(tr("The door is down! They're coming in!"))
+	yard.start_hunting()
 
 
 ## The threshold is walkable only while the door stands wide open.
@@ -380,7 +396,7 @@ func _update_gun() -> void:
 	var wanted: GunModel = _get_gun_model(weapon)
 	var anchor: Node3D = context.rig.get_weapon_anchor()
 	var should_show: bool = wanted != null and anchor != null and not context.rig.is_weapon_hand_busy() \
-		and not turret_seat.is_active() and (context.rig.is_xr_active or is_in_defense_zone())
+		and not turret_seat.is_active() and (context.rig.is_xr_active or can_defend())
 	if _shown_gun != null and (_shown_gun != wanted or not should_show):
 		_shown_gun.visible = false
 		_shown_gun = null
@@ -415,9 +431,9 @@ func _get_gun_model(weapon: WeaponData) -> GunModel:
 
 ## Per frame: end each beam on the raider or ground it points at in the yard.
 func _update_pointers() -> void:
-	var can_defend: bool = is_in_defense_zone()
+	var is_defending: bool = can_defend()
 	for pointer: XRPointer in context.rig.get_active_pointers():
-		if pointer.is_over_screen() or not can_defend:
+		if pointer.is_over_screen() or not is_defending:
 			pointer.set_world_hit_distance(RayMath.NO_HIT)
 			continue
 		var hit_distance: float = yard.get_ground_distance(pointer.ray_origin, pointer.ray_direction)

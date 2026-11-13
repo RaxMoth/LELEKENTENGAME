@@ -1,8 +1,9 @@
 ## Smoke checks of the house itself: walking and travel, the office (buying
 ## upgrades, bribes, reputation gates), how upgrades change the house's look
 ## (renovations, door straps, steel frame, stash shelves), crew wages and
-## strikes, controller mapping, popups on the in-world screen, nightfall and
-## losing the shift.
+## strikes, controller mapping, popups on the in-world screen, nightfall,
+## raiders storming in through a broken door and hunting the player, and
+## losing the shift when the player goes down.
 ## Owned by whoever works on the house (level, office, crew, XR).
 ##
 ## Dependencies: SmokeTest, HouseLevel, HouseStages, Office, FrontGarden, Worker, DayCycle,
@@ -74,11 +75,12 @@ static func run_end(test: SmokeTest, level: HouseLevel) -> void:
 		test.check(not level.get_ghost().is_haunting(), "no ghost on other nights")
 	await _check_ghost(test, level)
 	await _check_raid_waves(test, level)
+	await _check_storming_in(test, level)
 	var operation: Operation = level.operation
 	operation.add_product(operation.recipes[0], 2, 3)
-	(level.get_front(FrontGarden) as FrontGarden).door.health_component.damage(1000000.0)
-	test.check(await test.wait_until(func() -> bool: return UI.has_open_popup() and level.phase == LevelBase.Phase.FINISHED), "a broken door ends the shift (mid-raid)")
-	test.check(operation.stash.get_total() == 0, "losing the door loses the stash")
+	level.player_vitals.take_damage(level.player_vitals.get_health() + 1.0)
+	test.check(await test.wait_until(func() -> bool: return UI.has_open_popup() and level.phase == LevelBase.Phase.FINISHED), "going down ends the shift (mid-raid)")
+	test.check(operation.stash.get_total() == 0, "going down loses the stash")
 	test.check(operation.is_shift_over() and operation.add_product(operation.recipes[0], 2, 3) == 0, "nothing more goes into the stash once the shift is lost")
 	await test.frames(30)
 	UI.close_top_popup()
@@ -260,6 +262,40 @@ static func _check_raid_waves(test: SmokeTest, level: HouseLevel) -> void:
 	test.check(await test.wait_until(func() -> bool: return not cycle.is_wave_active() and cycle.is_raid_active()), "beating every officer ends the wave, the raid goes on")
 	cycle.skip_wave_break()
 	test.check(await test.wait_until(func() -> bool: return cycle.is_wave_active() and cycle.get_wave_number() == 2), "the next wave follows")
+
+
+## Mid-raid the door breaks: it swings open, the shift goes on, and every
+## raider — including the next ones — comes into the house after the player
+## (along the floors' routes, through the doorway) and hits them; the gun
+## then works anywhere in the house.
+static func _check_storming_in(test: SmokeTest, level: HouseLevel) -> void:
+	var garden: FrontGarden = level.get_front(FrontGarden) as FrontGarden
+	var door: FrontDoor = garden.door
+	var rig: XRPlayerRig = level.rig
+	var vitals: PlayerVitals = level.player_vitals
+	test.check(is_equal_approx(vitals.get_health(), vitals.get_max_health()), "the player starts the shift unhurt")
+	test.check(await test.wait_until(func() -> bool: return garden.director.get_pending_spawn_count() == 0 and garden.yard.get_alive_count() > 0), "the second wave is in the yard")
+	rig.locomotion.teleport_to(Vector3(0.0, 0.0, -3.0), PI)
+	door.set_locked(true)
+	door.health_component.damage(1000000.0)
+	test.check(await test.wait_until(func() -> bool: return door.is_passable()), "a broken door bursts wide open")
+	test.check(level.is_playing() and door.is_broken() and not door.is_locked(), "a broken door doesn't end the shift")
+	door.close_fully()
+	await test.frames(30)
+	test.check(door.is_passable(), "a broken door can't be shut")
+	var raiders: Array[Raider] = []
+	for raider: Raider in garden.yard.get_raiders():
+		if raider.is_alive():
+			raiders.append(raider)
+	test.check(garden.yard.is_hunting() and raiders.all(func(raider: Raider) -> bool: return raider.is_hunting()), "every raider comes after the players")
+	# One of them right off the porch, so the check doesn't wait for a walk across the yard.
+	raiders[0].global_position = Vector3(0.0, 0.0, -7.5)
+	test.check(await test.wait_until(func() -> bool: return vitals.get_health() < vitals.get_max_health()), "a raider follows the player through the doorway into the house and hits them")
+	test.check(raiders[0].global_position.z > door.global_position.z, "it came in through the front door")
+	test.check(vitals.is_alive(), "one hit doesn't put the player down")
+	rig.locomotion.teleport_to(Vector3(2.4, 0.0, -0.4), 0.0)
+	await test.frames(2)
+	test.check(not garden.is_in_defense_zone() and garden.can_defend(), "once they stormed in, the gun works anywhere in the house")
 
 
 ## Without a headset the controller callbacks are the only way to run the XR input mapping.

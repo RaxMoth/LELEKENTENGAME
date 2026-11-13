@@ -119,3 +119,29 @@ func test_walking_out_of_furniture_stays_on_its_floor() -> void:
 	var inside: Vector3 = Vector3(3.0, 0.0, 1.2)
 	var moved: Vector3 = area.clamp_move(inside, inside + Vector3(0.0, 0.0, -0.3))
 	assert_float(moved.y).is_equal_approx(0.0, 0.001)
+
+
+func test_a_route_goes_through_doorways_room_to_room() -> void:
+	var area: WalkableArea = auto_free(WalkableArea.new()) as WalkableArea
+	# Two rooms side by side, joined by a small doorway rect.
+	area.regions = [Rect2(0.0, 0.0, 3.0, 3.0), Rect2(4.0, 0.0, 3.0, 3.0), Rect2(2.9, 1.2, 1.2, 0.6)]
+	var route: PackedVector3Array = area.find_path(Vector3(0.5, 0.0, 0.5), Vector3(6.5, 0.0, 2.5))
+	assert_int(route.size()).is_equal(3)
+	assert_float(route[0].x).is_between(2.8, 3.1)
+	assert_float(route[1].x).is_between(3.9, 4.2)
+	assert_vector(route[2]).is_equal(Vector3(6.5, 0.0, 2.5))
+
+
+func test_a_route_goes_down_the_stairs_into_the_cellar() -> void:
+	var area: WalkableArea = _make_area()
+	var route: PackedVector3Array = area.find_path(Vector3(1.0, 0.0, 3.0), Vector3(5.5, CELLAR_HEIGHT, 0.5))
+	assert_bool(route.size() >= 2).is_true()
+	# It reaches the cellar floor's height before the end.
+	assert_float(route[route.size() - 2].y).is_less(-1.0)
+
+
+func test_no_route_to_a_closed_off_room() -> void:
+	var area: WalkableArea = auto_free(WalkableArea.new()) as WalkableArea
+	area.regions = [Rect2(0.0, 0.0, 2.0, 2.0), Rect2(5.0, 0.0, 2.0, 2.0)]
+	assert_bool(area.find_path(Vector3(1.0, 0.0, 1.0), Vector3(6.0, 0.0, 1.0)).is_empty()).is_true()
+	assert_int(area.find_path(Vector3(1.0, 0.0, 1.0), Vector3(1.5, 0.0, 1.5)).size()).is_equal(1)

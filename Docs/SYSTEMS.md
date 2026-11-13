@@ -195,6 +195,7 @@ the House's sales board and armory, or a `Label3D`), driven by `score_changed`.
 | `WalkBlocker` | Node3D | Furniture footprint (`size`, turned with the node) the player can't walk through while it is visible; handed to `WalkableArea.add_obstacle()` |
 | `UpgradeLook` | UpgradeReaction | A part that shows once an upgrade reaches `min_level` (iron door straps, a steel frame, real shelves); hides the old look it `replaces` and can restyle meshes with another material. The House level applies every look in `Types.GROUP_UPGRADE_LOOK` when upgrades change |
 | `WaveSpawner` | Node | `WaveData` waves; spawns at `Marker3D`s by default; endless scaling; override `_create_enemy()` for other spawn rules |
+| `PlayerVitals` | Node | A player's health (`PlayerHealth`: 100 HP, slow regeneration after a quiet spell) in `Types.GROUP_PLAYER_TARGET`; `take_damage()`, signals `hit_taken`, `health_changed`, `died`; `feet_source` tells raiders where the player is; a co-op guest's mirrors the host's numbers (`apply_net_health`) |
 | `NpcVoice` | Node3D | An NPC's speech: `say(category, is_important)` plays a `VoiceData` line from its position with a subtitle; `say_last_words()` outlives the NPC; chatter is rationed across NPCs; signal `line_finished` |
 
 Component wiring in scenes uses exported node references (e.g. a hit
@@ -208,7 +209,7 @@ Details and setup: [GAME.md](GAME.md).
 |---|---|---|
 | `XRPlayerRig` | XROrigin3D | Headset camera + two controllers; falls back to a flat simulator (mouse, WASD) without a headset. Signals `primary_action_pressed(pointer)`, `secondary_action_pressed(pointer)`, `menu_pressed`, `item_grabbed`, `item_placed`; `walkable_area`, `get_tool_pointer()`, `get_wrist_anchor()`, `pulse(pointer, strength)`, `set_world_space_ui()`, `tap_world_point()` (tests) |
 | `XRLocomotion` | Node | Teleport (off-hand stick), smooth movement, snap / smooth turning (dominant stick), flat WASD and `travel_spots` (keys 1–4); clamps to the `WalkableArea` |
-| `WalkableArea` | Node3D | Floor rectangles the player may stand on, minus round and rectangular blockers; `contains()`, `clamp_move()`, `add_region()`, `add_blockers()`, `add_rect_blockers()`. More floors: `add_floor(WalkableFloor)` (a cellar at its own height), `add_ramp(WalkableRamp)` (stairs between floors), `add_hole()` (a stairwell in the main floor), `add_obstacle()` (furniture, blocks only its own floor); `get_floor_height_at()` picks the surface nearest the feet within `MAX_STEP`, and `clamp_move()` returns the new height, so walking down stairs lowers the player |
+| `WalkableArea` | Node3D | Floor rectangles the player may stand on, minus round and rectangular blockers; `contains()`, `clamp_move()`, `add_region()`, `add_blockers()`, `add_rect_blockers()`. More floors: `add_floor(WalkableFloor)` (a cellar at its own height), `add_ramp(WalkableRamp)` (stairs between floors), `add_hole()` (a stairwell in the main floor), `add_obstacle()` (furniture, blocks only its own floor); `find_path(from, to)` routes across rooms, doorways and stairs (waypoints at the joins); `get_floor_height_at()` picks the surface nearest the feet within `MAX_STEP`, and `clamp_move()` returns the new height, so walking down stairs lowers the player |
 | `Stairs3D` (`Scripts/Utils/`) | MeshInstance3D | A straight flight of stairs (treads and side boards) as one mesh, textured in meters; `get_ramp()` gives the matching WalkableRamp |
 | `GroundHole` (`Scripts/Utils/`) | Node3D | An opening every `GroundPlane3D` leaves out (a stairwell under the lawn and the town's asphalt) |
 | `SightMath` (`Scripts/Utils/`) | static | `is_in_view(eye, point, half_angle, max_distance)`: view-cone checks (the ghost) |
@@ -284,6 +285,7 @@ SalesMath.evaluate(asked_price, max_price, haggles)   # Verdict.ACCEPT / COUNTER
 AutomationMath.get_missing_ingredients(recipe_ids, present_ids)   # what the hopper still feeds
 AutomationMath.find_nearest(from, positions, ready_flags)          # the picker's next ripe plant
 heat.add(n) / cool(delta) / get_ratio()
+health.take(amount) / recover(delta) / is_down()   # PlayerHealth: hits, regeneration after a quiet spell
 RaidPlanner.build_raid(data, raid_number, heat_ratio) / is_raid_day(day, data)   # waves of cops, SWAT, rams
 YardNavigation.steer(position, target, obstacles) / find_cover_spot(position, door, obstacles)
 WeaponBallistics.get_shot_directions(forward, weapon, bloom) / get_damage_at(weapon, distance)   # pellets, cone, falloff

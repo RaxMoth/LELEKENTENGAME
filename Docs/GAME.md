@@ -36,6 +36,11 @@ The game runs in **3-day cycles** (`HouseCycle`, tuned by
    house in **waves** (cops, later SWAT and a battering ram). Close and
    **bolt the front door**, then hold it with your guns and turrets. A wave
    ends when every raider is down; a short break follows, then the next.
+   If the door breaks, the raiders **storm in and hunt you** through the
+   house (and every raider after them). You have **100 health**; it comes
+   back slowly a few seconds after the last hit. Your gun now hits from
+   anywhere in the house. Beat them all and the night goes on; the door is
+   fixed by morning.
 3. **Raid beaten → next cycle.** The shift is won, the heat drops to 0 and
    the next three days of selling begin. Every raid is harder than the one
    before (more waves, more cops, SWAT and a ram from raid 2, tougher officers), and
@@ -66,8 +71,9 @@ select: the main menu's Play (or putting on the headset) goes straight into
 the house, on the day you're on, and the game is one day after another.
 
 **Win the day:** reach dawn on a selling day, or beat every wave of the raid
-— the day counter goes up. **Lose it:** the front door breaks — the stash is
-lost and repairs cost 20% of your cash, but upgrades, guns, crew and banked
+— the day counter goes up. **Lose it:** you go down (raiders that stormed in
+through a broken door hit you; in co-op, either player going down) — the
+stash is lost and repairs cost 20% of your cash, but upgrades, guns, crew and banked
 cash stay, and you play that day again (a lost raid is fought again). Either
 way a **day summary** shows what the shift earned, sold and crafted (or what
 it cost) with one button into the next morning — the house reloads as the
@@ -132,14 +138,15 @@ Quality = average step accuracy plus equipment → tiers **Cut, Street, Pure,
 Premium** (`QualityMath`). Customers care: each wants a minimum tier and
 pays more for better.
 
-A **"How to cook" poster** above the grinder and cooker shows the plant and
+Once the grinder and the cooker are both bought, a **"How to cook"
+poster** goes up above them. It shows the plant and
 the three gadget steps and the skill check; a gadget not bought yet is
 dimmed and says where to get it. Empty station slots show a white ring; while you
 hold something the ring it would go into turns blue, and a slot it doesn't
 fit turns red — let go there and the station says why ("Grind it first").
 Stop buttons only appear while a skill check runs.
 
-The **recipe book** on the wall above the crates lists every product,
+The **recipe book** goes up with it, on the wall above the crates. It lists every product,
 open: ingredients → product (or "Grows on the plant"), and for one the lab
 can't make yet a lock with what it needs ("Needs Press", "Needs Recipe:
 Fizz"). An upgrade that builds on another (the cooker on the grinder) shows
@@ -247,7 +254,9 @@ step onto the porch and back. Each side has a **bolt** (press it with the
 trigger): it locks only a shut door, and a bolted door doesn't open.
 In a raid the door's state matters — raiders hit an **open** door 3× and an
 **unbolted** one 1.5× as hard as a bolted one; the **Steel Door Frame**
-upgrade takes 25% off every hit per level.
+upgrade takes 25% off every hit per level. When its health runs out the
+door **breaks**: the bolt gives, it swings wide open and can't be shut or
+bolted again that day.
 
 ### Armory (front room, back wall)
 
@@ -462,6 +471,7 @@ Scenes/Levels/House/House.tscn                inherits LevelBase; house_level.gd
     │   ├── WalkableArea       floor rectangles the player may stand on
     │   ├── TravelSpots        lab, front, window, office (flat keys 1-4)
     │   └── WristStatus        moved onto the off-hand wrist at setup
+    ├── PlayerVitals           this player's health (raiders that got in hit it)
     ├── XRPlayerRig            from LevelBase
     └── Announcer              from LevelBase; placed where the player looks
 ```
@@ -470,18 +480,18 @@ Scenes/Levels/House/House.tscn                inherits LevelBase; house_level.gd
 |---|---|
 | `HouseFront` / `HouseContext` | The front contract: setup with the context, hooks the level calls, signals back (announce, warn, score, lose) |
 | `Operation` | One node every front reads and writes — the only shared state, and the natural place to replicate for co-op |
-| `HouseLevel` | Runs the shift: time, wages for `Types.GROUP_CREW`, win at dawn (or when the raid is beaten), lose on `shift_lost`, wrist status from the cycle and the fronts' status lines; at the end the day summary, then the next day (the house reloads) |
+| `HouseLevel` | Runs the shift: time, wages for `Types.GROUP_CREW`, win at dawn (or when the raid is beaten), lose when a player goes down (`PlayerVitals`) or on `shift_lost`, wrist status (the player's health, the cycle and the fronts' status lines); at the end the day summary, then the next day (the house reloads) |
 | `HouseCycle` | The 3-day cycle: raid day, raid waves (`RaidPlanner` → `RaidWave`), tells the fronts through the raid hooks, closes the window during a raid |
 | `Grabbable`, `ItemSocket`, `PointerButton`, `InteractionQuery` (`Scripts/XR/`) | Physics-free hand interaction: grab at the hand or along the beam, drop into sockets, press 3D buttons |
 | `XRLocomotion` | Teleport, smooth movement, snap / smooth turning, flat WASD and travel spots; never leaves the `WalkableArea` |
 | `Workstation` | StateChart Idle ⇄ Running; `TimingGauge` skill check; grinder / cooker / press by `step` |
 | `Customer`, `CustomerFlow`, `SalesWindow`, `SalesBoard` | Pooled customers with StateChart Walking ⇄ Waiting → Leaving; the window runs the sale rules (`SalesMath`) |
-| `Yard`, `Raider`, `RaidSquad`, `AttackerDirector` | The open yard (round obstacles, cover, line of sight; `YardNavigation`); pooled raiders with StateChart Alive { Moving ⇄ InCover, Attacking } → Dead, moving in squads that leapfrog and rush together |
+| `Yard`, `Raider`, `RaidSquad`, `AttackerDirector` | The open yard (round obstacles, cover, line of sight; `YardNavigation`); pooled raiders with StateChart Alive { Moving ⇄ InCover, Attacking, Hunting } → Dead, moving in squads that leapfrog and rush together; once the door is down they hunt the nearest player through the house along `WalkableArea.find_path` routes |
 | `HouseTurret`, `SecurityPc`, `TurretConsole` | Roof turrets (house upgrade) that aim on their own or from the office PC's camera view |
 | `GunModel` | The animated gun in hand (slide, pump, bolt, flash, kick) |
 | `RaiderBody` | A raider's jointed body (hips, torso, head, arms, legs) built from exports and animated procedurally: walk cycle, crouch, strike |
 | `TurretSeat` | "VR in VR": the goggles put the player into a roof turret (view at its camera, barrel follows the hand) |
-| `FrontDoor`, `HingeHandle` | The door: StateChart Closed { Unlocked ⇄ Locked } ⇄ Open; grab-and-swing handles, bolts on both sides, opens the doorway in the `WalkableArea` |
+| `FrontDoor`, `HingeHandle` | The door: StateChart Closed { Unlocked ⇄ Locked } ⇄ Open; grab-and-swing handles, bolts on both sides, opens the doorway in the `WalkableArea`; broken, it swings open and stays open |
 | `Armory`, `WeaponData`, `WeaponLoadout`, `Profile.armory` | Guns and ammo: bought at the terminal, fired by the FrontGarden |
 | `Worker` | StateChart Absent → Working ⇄ Striking; lives in its front's scene |
 | Pure logic (`Scripts/Game/`) | `TimingGauge`, `QualityMath`, `Stash`, `SalesMath`, `CustomerOrder`, `HeatMeter`, `DayClock`, `RaidPlanner`, `WeaponLoadout`, `YardNavigation`, `WeaponBallistics`, `WalkMotion` — unit-tested |

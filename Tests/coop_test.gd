@@ -8,7 +8,8 @@
 ## The guest buys an ingredient with its (forwarded) click and puts it into
 ## the grinder; the host must see the guest, carry out both in its world and
 ## pay from the shared cash; the guest must see the item in its own hand,
-## the shared cash and the grinder running.
+## the shared cash and the grinder running. A hit on the guest (the host
+## keeps every player's health) must show on the guest's own health.
 ##
 ## Dependencies: Coop, HouseLevel, HouseCoopSync, Lab, Workstation,
 ##               IngredientCrate, SceneManager, Profile autoloads
@@ -91,6 +92,11 @@ func _run_host() -> void:
 	var units_before: int = level.operation.stash.get_total()
 	_check(await _wait_until(func() -> bool: return level.operation.stash.get_total() < units_before), "host: the guest's press on Sell sold from the stash")
 	_check(await _wait_until(func() -> bool: return garden.door.is_passable()), "host: the guest swung the front door open")
+	var guest_vitals: Array[PlayerVitals] = sync.get_remote_vitals()
+	_check(guest_vitals.size() == 1 and guest_vitals[0].is_alive(), "host: keeps the guest's health")
+	if not guest_vitals.is_empty():
+		guest_vitals[0].take_damage(25.0)
+		_check(is_equal_approx(guest_vitals[0].get_health(), guest_vitals[0].get_max_health() - 25.0), "host: a raider's hit lands on the guest")
 	_check(sync.sounds_relayed > 0, "host: the guest hears the host's world (sounds are sent)")
 	# The guest shoots last; then its connection drops (no goodbye) and it must come back by itself.
 	var shots: Array[int] = [0]
@@ -160,6 +166,8 @@ func _run_guest() -> void:
 	rig.tap_world_point(garden.door.get_inside_handle().get_grab_center())
 	_check(await _wait_until(func() -> bool: return garden.door.is_passable()), "guest: the door I opened stands open here too")
 	_check(rig.walkable_area.contains(Vector3(garden.doorway_region.get_center().x, 0.0, garden.doorway_region.get_center().y)), "guest: I can walk through the open doorway")
+	var vitals: PlayerVitals = level.player_vitals
+	_check(await _wait_until(func() -> bool: return vitals.get_health() < vitals.get_max_health()), "guest: the hit the host saw shows on my own health")
 
 	# The host drops our connection after the shot below: we must get back in.
 	var reconnections: Array[int] = [0]

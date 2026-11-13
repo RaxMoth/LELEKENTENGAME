@@ -31,6 +31,11 @@ Every front (`FrontGarden`, `SalesWindow`, `Lab`, `Office`, `Armory`, `AdminPane
   through `HouseCycle` the raid hooks `on_raid_started`,
   `on_raid_wave_started(RaidWave)`, `get_raiders_left`, `remove_raiders`,
   `on_raid_cleared`.
+- **Players' health belongs to the House level**: `PlayerVitals` nodes in
+  `Types.GROUP_PLAYER_TARGET` (the host's own, plus one per co-op guest).
+  A front may hit them (`take_damage`, the raiders inside the house do).
+  A player going down ends the shift; a front doesn't send `shift_lost`
+  for it (a broken front door no longer loses the shift).
 - **Fronts never reference each other.** Everything shared goes through
   **`Operation`** (stash, heat, cash, prices, recipes, upgrade values).
   Crew live inside their front's scene; the House pays everyone in

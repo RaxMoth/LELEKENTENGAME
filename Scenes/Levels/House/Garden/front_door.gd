@@ -7,8 +7,9 @@
 ##
 ## The door matters in a raid: officers hammer it, and an open or unlocked
 ## door gives way much faster (get_damage_multiplier). When its health runs
-## out it breaks and the shift is lost. Reinforcement upgrades raise its
-## health; a bar above the frame shows it and the leaf shakes when hit.
+## out it breaks: the bolt gives, the leaf swings wide open and stays so
+## until the next day (the raiders storm in). Reinforcement upgrades raise
+## its health; a bar above the frame shows it and the leaf shakes when hit.
 ##
 ## Local frame: the leaf closes along +X from the hinge, +Z is the house's
 ## inside. Angles are degrees of opening toward the inside.
@@ -83,7 +84,7 @@ func _ready() -> void:
 	_bar_back.material_override = PlaceholderMesh3D.get_shared_material(Palette.BACKGROUND, 0.0, true)
 	health_component.damaged.connect(_on_damaged)
 	health_component.health_changed.connect(_on_health_changed)
-	health_component.died.connect(func() -> void: broken.emit())
+	health_component.died.connect(_on_died)
 	for handle: HingeHandle in [_inside_handle, _outside_handle]:
 		handle.hinge_origin = _hinge
 		handle.angle_dragged.connect(drag_to_angle)
@@ -105,6 +106,11 @@ func _ready() -> void:
 ## False once raiders broke it down.
 func is_alive() -> bool:
 	return not health_component.is_dead
+
+
+## True once raiders broke it down: it stands wide open and can't be shut.
+func is_broken() -> bool:
+	return health_component.is_dead
 
 
 ## Sets a new maximum (reinforcement upgrades) and repairs the door fully.
@@ -148,6 +154,8 @@ func get_damage_multiplier() -> float:
 
 ## A hand pulls the leaf to [param angle_degrees] (HingeHandle). A bolted door rattles.
 func drag_to_angle(angle_degrees: float) -> void:
+	if is_broken():
+		return
 	if _is_locked:
 		var now_msec: int = Time.get_ticks_msec()
 		if angle_degrees > latch_below_degrees and now_msec - _last_rattle_msec >= roundi(RATTLE_INTERVAL_SECONDS * 1000.0):
@@ -184,8 +192,11 @@ func open_fully() -> bool:
 	return true
 
 
-## Swings the door shut; it latches at the end.
+## Swings the door shut; it latches at the end. A broken door won't.
 func close_fully() -> void:
+	if is_broken():
+		_say(tr("The door is broken"), Palette.DANGER)
+		return
 	_swing_to(0.0)
 
 
@@ -197,6 +208,9 @@ func toggle_lock() -> bool:
 func set_locked(should_lock: bool) -> bool:
 	if should_lock == _is_locked:
 		return true
+	if should_lock and is_broken():
+		_say(tr("The door is broken"), Palette.DANGER)
+		return false
 	if should_lock and (_is_open or _open_angle > 0.0):
 		_say(tr("Close the door first"), Palette.WARNING)
 		return false
@@ -278,6 +292,15 @@ func _on_open_state_entered() -> void:
 # ============================================
 # INTERNALS
 # ============================================
+
+## Broken down: the bolt gives and the leaf swings wide open (and stays so).
+func _on_died() -> void:
+	if _is_locked:
+		state_chart.send_event(Types.EVENT_DOOR_UNLOCKED)
+	_swing_to(max_open_degrees)
+	Audio.play_sfx_at(SfxSynth.get_preset(&"hit"), global_position + Vector3(0.0, 1.0, 0.0), 0.05, 0.0)
+	broken.emit()
+
 
 func _set_angle(angle_degrees: float) -> void:
 	_open_angle = clampf(angle_degrees, 0.0, max_open_degrees)

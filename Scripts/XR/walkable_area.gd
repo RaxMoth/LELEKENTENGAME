@@ -18,13 +18,17 @@
 ##   walkable.add_rect_blockers(town.get_building_footprints())
 ##   walkable.add_hole(stairwell); walkable.add_ramp(stairs); walkable.add_floor(cellar)
 ##   walkable.get_floor_height_at(feet)   # NAN off every floor
+##   walkable.find_path(raider, player)   # waypoints through doorways and down stairs
 ##
 ## Dependencies: WalkableFloor, WalkableRamp
 class_name WalkableArea
 extends Node3D
 
 ## Floor rectangles in world X / Z: position = (min x, min z), size = (width, depth).
-@export var regions: Array[Rect2] = []
+@export var regions: Array[Rect2] = []:
+	set(value):
+		regions = value
+		_is_route_graph_dirty = true
 @export var floor_height: float = 0.0
 ## Round things in the way: Vector3(x, z, radius) on the floor plane.
 @export var blockers: Array[Vector3] = []
@@ -45,20 +49,41 @@ const MAX_STEP: float = 0.35
 ## so the player can stand at a table and work at it.
 const OBSTACLE_MARGIN: float = 0.15
 
+## Patches meeting this close (meters) count as joined (a doorway's rect
+## against a room's).
+const ROUTE_JOIN_MARGIN: float = 0.05
+
 ## Furniture footprints (world X / Z) and the floor height each stands on.
 var _obstacles: Array[Rect2] = []
 var _obstacle_heights: Array[float] = []
+## Route finding: every walkable patch and, per patch, [neighbor index, portal point] links.
+var _route_patches: Array[RoutePatch] = []
+var _route_links: Array[Array] = []
+var _is_route_graph_dirty: bool = true
+
+
+## One walkable patch for route finding: a rect on a floor, or a ramp.
+class RoutePatch:
+	var rect: Rect2 = Rect2()
+	var height: float = 0.0
+	var ramp: WalkableRamp = null
+
+	func height_at(point: Vector2) -> float:
+		return ramp.get_height(point) if ramp != null else height
 
 
 ## Opens up a floor rectangle at runtime (an open door's threshold).
 func add_region(region: Rect2) -> void:
 	if not regions.has(region):
 		regions.append(region)
+		_is_route_graph_dirty = true
 
 
 ## Closes a rectangle added with add_region() again.
 func remove_region(region: Rect2) -> void:
-	regions.erase(region)
+	if regions.has(region):
+		regions.erase(region)
+		_is_route_graph_dirty = true
 
 
 func has_region(region: Rect2) -> bool:
@@ -93,20 +118,26 @@ func remove_hole(hole: Rect2) -> void:
 func add_floor(extra_floor: WalkableFloor) -> void:
 	if not extra_floors.has(extra_floor):
 		extra_floors.append(extra_floor)
+		_is_route_graph_dirty = true
 
 
 func remove_floor(extra_floor: WalkableFloor) -> void:
-	extra_floors.erase(extra_floor)
+	if extra_floors.has(extra_floor):
+		extra_floors.erase(extra_floor)
+		_is_route_graph_dirty = true
 
 
 ## Adds a slope between floors (stairs).
 func add_ramp(ramp: WalkableRamp) -> void:
 	if not ramps.has(ramp):
 		ramps.append(ramp)
+		_is_route_graph_dirty = true
 
 
 func remove_ramp(ramp: WalkableRamp) -> void:
-	ramps.erase(ramp)
+	if ramps.has(ramp):
+		ramps.erase(ramp)
+		_is_route_graph_dirty = true
 
 
 ## Furniture standing on the floor at [param floor_y] (a table, a rack):
@@ -125,6 +156,39 @@ func clear_obstacles() -> void:
 
 func get_obstacle_count() -> int:
 	return _obstacles.size()
+
+
+## A walking route from [param from] to [param to] across the floors, ramps
+## and doorways: the middle of where each patch meets the next, then
+## [param to] itself. Empty when no route joins them, or when either end is
+## off every floor. Raiders follow it to hunt the player down.
+func find_path(from: Vector3, to: Vector3) -> PackedVector3Array:
+	_build_route_graph()
+	var start: int = _find_route_patch(from)
+	var goal: int = _find_route_patch(to)
+	var route: PackedVector3Array = PackedVector3Array()
+	if start < 0 or goal < 0:
+		return route
+	var parents: Dictionary[int, int] = {start: -1}
+	var queue: Array[int] = [start]
+	while not queue.is_empty() and not parents.has(goal):
+		var current: int = queue.pop_front()
+		for link: Array in _route_links[current]:
+			var neighbor: int = int(link[0])
+			if not parents.has(neighbor):
+				parents[neighbor] = current
+				queue.append(neighbor)
+	if not parents.has(goal):
+		return route
+	var chain: Array[int] = []
+	var patch_index: int = goal
+	while patch_index != -1:
+		chain.push_front(patch_index)
+		patch_index = parents[patch_index]
+	for chain_index: int in range(1, chain.size()):
+		route.append(_get_link_portal(chain[chain_index - 1], chain[chain_index]))
+	route.append(to)
+	return route
 
 
 ## True when a player standing at [param world_position] (its y is their
@@ -181,6 +245,78 @@ func clamp_move(from_position: Vector3, to_position: Vector3) -> Vector3:
 		if not is_nan(height):
 			return Vector3(candidate.x, height, candidate.y)
 	return from_position
+
+
+## (Re)builds the patches and their links once the floors changed.
+func _build_route_graph() -> void:
+	if not _is_route_graph_dirty:
+		return
+	_is_route_graph_dirty = false
+	_route_patches.clear()
+	_route_links.clear()
+	for region: Rect2 in regions:
+		_add_route_patch(region, floor_height, null)
+	for extra_floor: WalkableFloor in extra_floors:
+		for region: Rect2 in extra_floor.regions:
+			_add_route_patch(region, extra_floor.height, null)
+	for ramp: WalkableRamp in ramps:
+		_add_route_patch(ramp.rect, ramp.top_height, ramp)
+	for patch_index: int in _route_patches.size():
+		_route_links.append([])
+	for first: int in _route_patches.size():
+		for second: int in range(first + 1, _route_patches.size()):
+			var portal: Vector3 = _find_portal(_route_patches[first], _route_patches[second])
+			if portal.is_finite():
+				_route_links[first].append([second, portal])
+				_route_links[second].append([first, portal])
+
+
+func _add_route_patch(rect: Rect2, height: float, ramp: WalkableRamp) -> void:
+	var patch: RoutePatch = RoutePatch.new()
+	patch.rect = rect
+	patch.height = height
+	patch.ramp = ramp
+	_route_patches.append(patch)
+
+
+## Where two patches join at about the same height (a doorway, the top or
+## foot of the stairs), or INF when they don't.
+static func _find_portal(first: RoutePatch, second: RoutePatch) -> Vector3:
+	var overlap: Rect2 = first.rect.grow(ROUTE_JOIN_MARGIN).intersection(second.rect.grow(ROUTE_JOIN_MARGIN))
+	if overlap.size.x <= 0.0 or overlap.size.y <= 0.0:
+		return Vector3.INF
+	# A ramp meets a floor only at its ends: try the middle, then the middle of each side.
+	var center: Vector2 = overlap.get_center()
+	var candidates: Array[Vector2] = [center, Vector2(overlap.position.x, center.y), Vector2(overlap.end.x, center.y), Vector2(center.x, overlap.position.y), Vector2(center.x, overlap.end.y)]
+	for point: Vector2 in candidates:
+		var first_height: float = first.height_at(point)
+		var second_height: float = second.height_at(point)
+		if absf(first_height - second_height) <= MAX_STEP:
+			return Vector3(point.x, (first_height + second_height) * 0.5, point.y)
+	return Vector3.INF
+
+
+func _get_link_portal(from_patch: int, to_patch: int) -> Vector3:
+	for link: Array in _route_links[from_patch]:
+		if int(link[0]) == to_patch:
+			return link[1] as Vector3
+	return Vector3.INF
+
+
+## The patch under [param world_position] at about its height, or -1.
+func _find_route_patch(world_position: Vector3) -> int:
+	var point: Vector2 = Vector2(world_position.x, world_position.z)
+	var best: int = -1
+	var best_gap: float = MAX_STEP * 2.0
+	for patch_index: int in _route_patches.size():
+		var patch: RoutePatch = _route_patches[patch_index]
+		if not patch.rect.has_point(point):
+			continue
+		var gap: float = absf(patch.height_at(point) - world_position.y)
+		if gap <= best_gap:
+			best_gap = gap
+			best = patch_index
+	return best
 
 
 ## True when furniture on the floor at [param height] stands at [param point].

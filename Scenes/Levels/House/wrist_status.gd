@@ -1,15 +1,24 @@
 ## A small status panel on the off-hand wrist (lower left of the view in the
-## flat simulator): time of day, cash, reputation, stash and heat, plus one
-## line from each front (door health, the queue at the window) — everything
-## the player splits attention between, one glance away.
+## flat simulator): time of day and the player's health, cash, reputation,
+## stash and heat, plus one line from each front (door health, the queue at
+## the window) — everything the player splits attention between, one glance
+## away.
 ##
 ## Dependencies: Palette
 class_name WristStatus
 extends Node3D
 
+## Health shares below which the wrist shows it amber (hurt) and red (low).
+const HURT_HEALTH_RATIO: float = 0.5
+const LOW_HEALTH_RATIO: float = 0.25
+
 @onready var _time_label: Label3D = %TimeLabel
 @onready var _details_label: Label3D = %DetailsLabel
+@onready var _health_label: Label3D = %HealthLabel
 @onready var _backdrop: MeshInstance3D = %Backdrop
+
+## Whole health points shown now (the label only changes when they do).
+var _shown_health: int = -1
 
 
 func _ready() -> void:
@@ -33,6 +42,18 @@ func show_status(time_text: String, is_night: bool, cash: int, reputation: int, 
 		tr("Stash"), stash_units, stash_capacity, tr("Heat"), roundi(heat),
 		_pair_lines(front_lines),
 	]
+
+
+## The player's health (PlayerVitals): plain while fine, amber when hurt,
+## red when low.
+func show_health(current: float, maximum: float) -> void:
+	var whole_points: int = ceili(current)
+	if whole_points == _shown_health:
+		return
+	_shown_health = whole_points
+	_health_label.text = "%s %d" % [tr("Health"), whole_points]
+	var ratio: float = current / maxf(1.0, maximum)
+	_health_label.modulate = Palette.TEXT if ratio > HURT_HEALTH_RATIO else (Palette.WARNING if ratio > LOW_HEALTH_RATIO else Palette.DANGER)
 
 
 ## The first line (the 3-day cycle: raid countdown or wave) gets its own row;

@@ -55,6 +55,8 @@ const GROUP_NET_NODE: StringName = &"net_node"
 const GROUP_UPGRADE_LOOK: StringName = &"upgrade_look"
 ## Furniture the player can't walk through (WalkBlocker): stations, shelves, racks.
 const GROUP_WALK_BLOCKER: StringName = &"walk_blocker"
+## Players raiders can hunt once the front door is down (PlayerVitals).
+const GROUP_PLAYER_TARGET: StringName = &"player_target"
 
 # ============================================
 # INPUT ACTIONS (defined in Project Settings > Input Map)
@@ -224,6 +226,8 @@ const EVENT_RESPAWN: StringName = &"respawn"
 ## Raiders in the yard (Garden/Raider.tscn): leave cover / reach cover.
 const EVENT_MOVE: StringName = &"move"
 const EVENT_TAKE_COVER: StringName = &"take_cover"
+## The front door is down: a raider goes after the players (Hunting).
+const EVENT_HUNT: StringName = &"hunt"
 # --- Defense: the front door (Garden/FrontDoor.tscn) ---
 ## The door swung open / fell shut and latched / was bolted / was unbolted.
 const EVENT_DOOR_OPENED: StringName = &"door_opened"

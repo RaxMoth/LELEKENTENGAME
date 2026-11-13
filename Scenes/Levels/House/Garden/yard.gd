@@ -7,11 +7,16 @@
 ## Obstacles are data (x, z, radius, kind); the visuals are built from them
 ## at load (and in the editor), like the HouseShell.
 ##
+## Once the front door is down (start_hunting), every raider — and every one
+## that comes later — goes after the nearest living player (PlayerVitals in
+## Types.GROUP_PLAYER_TARGET), walking the routes of the player's own
+## WalkableArea through the doorway and the rooms.
+##
 ##   var raider: Raider = yard.spawn_raider(COP_SCENE)
 ##   var target: Raider = yard.pick_raider(ray_origin, ray_direction, 30.0)
 ##
 ## Dependencies: Raider, FrontDoor, YardNavigation, RayMath, PlaceholderMesh3D,
-##               Pools autoload, Palette
+##               WalkableArea, PlayerVitals, Pools, Types autoloads, Palette
 @tool
 class_name Yard
 extends Node3D
@@ -52,7 +57,13 @@ const FENCE_POST_SPACING: float = 2.4
 		gate_width = value
 		_queue_rebuild()
 
+## The player's walkable area (set by the FrontGarden): hunting raiders walk its routes.
+var walkable: WalkableArea = null
+
 var _obstacle_circles: Array[Vector3] = []
+var _is_hunting: bool = false
+## While hunting: the living players raiders may go after, gathered once per physics frame.
+var _hunt_targets: Array[PlayerVitals] = []
 var _raiders: Array[Raider] = []
 ## Living raiders' ground positions, refreshed once per physics frame.
 var _positions: PackedVector2Array = PackedVector2Array()
@@ -70,12 +81,15 @@ func _ready() -> void:
 
 
 # Once per physics frame, before the raiders move: forget the ones back in
-# the pool and gather everyone's position for separation.
+# the pool, gather everyone's position for separation and, while hunting,
+# the players they may go after.
 func _physics_process(_delta: float) -> void:
 	if Engine.is_editor_hint():
 		return
 	_forget_despawned()
 	_refresh_positions()
+	if _is_hunting:
+		_refresh_hunt_targets()
 
 # ============================================
 # THE FIELD
@@ -204,6 +218,34 @@ func get_raiders() -> Array[Raider]:
 	return _raiders
 
 
+## The front door is down: every raider, and every one that comes later,
+## goes after the players.
+func start_hunting() -> void:
+	_is_hunting = true
+	_refresh_hunt_targets()
+	for raider: Raider in _raiders:
+		if raider.is_alive():
+			raider.start_hunting()
+
+
+func is_hunting() -> bool:
+	return _is_hunting
+
+
+## The living player nearest [param from] (on the host), or null.
+func find_hunt_target(from: Vector3) -> PlayerVitals:
+	var nearest: PlayerVitals = null
+	var nearest_distance: float = INF
+	for player: PlayerVitals in _hunt_targets:
+		if not is_instance_valid(player) or not player.is_alive():
+			continue
+		var distance: float = from.distance_squared_to(player.get_feet_position())
+		if distance < nearest_distance:
+			nearest_distance = distance
+			nearest = player
+	return nearest
+
+
 func get_alive_count() -> int:
 	var alive: int = 0
 	for raider: Raider in get_raiders():
@@ -288,6 +330,15 @@ func freeze() -> void:
 
 func _on_raider_defeated(raider: Raider) -> void:
 	raider_defeated.emit(raider)
+
+
+## The players in Types.GROUP_PLAYER_TARGET that raiders hunt (not a guest's mirror).
+func _refresh_hunt_targets() -> void:
+	_hunt_targets.clear()
+	for node: Node in get_tree().get_nodes_in_group(Types.GROUP_PLAYER_TARGET):
+		var player: PlayerVitals = node as PlayerVitals
+		if player != null and not player.is_mirror and not player.is_queued_for_deletion():
+			_hunt_targets.append(player)
 
 
 func _refresh_positions() -> void:
