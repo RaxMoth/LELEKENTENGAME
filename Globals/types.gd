@@ -57,6 +57,8 @@ const GROUP_UPGRADE_LOOK: StringName = &"upgrade_look"
 const GROUP_WALK_BLOCKER: StringName = &"walk_blocker"
 ## Players raiders can hunt once the front door is down (PlayerVitals).
 const GROUP_PLAYER_TARGET: StringName = &"player_target"
+## Things besides raiders the player's weapons hit (HitTarget: the cabin's rats).
+const GROUP_HIT_TARGET: StringName = &"hit_target"
 
 # ============================================
 # INPUT ACTIONS (defined in Project Settings > Input Map)
@@ -73,6 +75,8 @@ const ACTION_TRAVEL_1: StringName = &"travel_1"
 const ACTION_TRAVEL_2: StringName = &"travel_2"
 const ACTION_TRAVEL_3: StringName = &"travel_3"
 const ACTION_TRAVEL_4: StringName = &"travel_4"
+## Desktop: full screen on / off (F11).
+const ACTION_TOGGLE_FULLSCREEN: StringName = &"toggle_fullscreen"
 const ACTION_DEBUG_TOGGLE: StringName = &"debug_toggle"
 
 # ============================================

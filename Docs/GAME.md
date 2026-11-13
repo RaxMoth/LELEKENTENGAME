@@ -88,20 +88,22 @@ new day, in co-op the guest comes along (`DaySummaryPopup`).
 | Carry by hand | Grip (either hand, at the hand or along the beam): hold to carry, let go at — or pointing at — a slot; a quick grip click keeps holding until the next click | — |
 | Use (station buttons, screens, door bolt) | Dominant-hand trigger | Click |
 | Draw a weapon | Your weapons hang on your body: the knife at your dominant hip, the axe over your back, the gun across your chest. Close a grip there to draw it into that hand; open the grip and it goes back. One weapon is out at a time | The weapon equipped at the armory is in hand |
-| Fight with fists, the knife or the axe | Swing a fist (an empty hand) or the drawn blade into a raider within reach; a hand's trigger also strikes what's in reach along its beam | Click a raider in reach, or right-click |
-| Fire your gun | Draw it, then pull that hand's trigger (from the front room, the porch or the garden); hold it for the SMG | Right-click (hold for the SMG), or click a raider |
+| Fight with fists, the knife or the axe | Swing a fist (an empty hand) or the drawn blade into a raider or a rat within reach; a hand's trigger also strikes what's in reach along its beam | Click a raider or rat in reach, or right-click |
+| Fire your gun | Draw it, then pull that hand's trigger (from the front room, the porch or the garden; a rat in the way is hit anywhere); hold it for the SMG | Right-click (hold for the SMG), or click a raider |
 | Use what you hold | The extinguisher sprays with the trigger of the hand that holds it; the grip puts it down | Click to spray a burst; click its hook to hang it back |
 | Front door | Trigger on a handle swings it fully open / shut; grip a handle to swing it by hand | Click a handle |
 | Talk to someone | Dominant-hand trigger on a person in the street; pick a reply on the panel beside them | Click a person, then a reply |
-| Walk | Dominant-hand stick walks where you look (like VRChat; "Smooth Movement", on by default), easing in and out; push it all the way to sprint | WASD / arrows; 1–4 jump to lab, front, window, office |
+| Walk | Off-hand stick walks where you look — forward, back and sideways, like WASD ("Smooth Movement", on by default) — easing in and out; push it all the way to sprint | WASD / arrows; 1–4 jump to lab, front, window, office |
 | Run with your arms | Hold both grips (hands empty) and swing your arms like jogging: the harder you swing, the faster you run, toward where your hands point; footsteps and a light tap in both hands every stride | — |
-| Reposition | Off-hand stick forward: aim a teleport, release to jump | — |
-| Turn | Off-hand stick left / right: 30° snaps (or smooth turning) | Drag |
+| Reposition | Only with "Smooth Movement" off: off-hand stick forward aims a teleport, release to jump | — |
+| Turn | Dominant-hand stick left / right: 30° snaps (or smooth turning) | Drag |
+| Scroll a board's list | Point at the list, hold the trigger and drag it up or down (the scrollbar works too) | Drag the list |
+| Full screen | — | F11, or "Full Screen" in Settings (on by default on a desktop) |
 | Seated play | "Standing View When Seated" (on by default) lifts a seated player to standing eye height (1.8 m); after sitting down or standing up, hold the headset's system button to recenter | — |
 | Admin (debug builds) | Terminal on the office wall | Same, or F3 |
 | Pause | Menu or B / Y | Esc |
 | Status | Look at your off-hand wrist | Lower left of the view |
-| Your body | Gloved hands whose fingers follow the grip and trigger (a full grip makes a fist); look down to see your torso and legs walk with you | — |
+| Your body | Gloved hands whose fingers follow the grip and trigger (a full grip makes a fist); look down to see your hips, legs and holstered knife walk with you (your own chest stays out of view) | — |
 
 Vive wands: trackpad click up teleports, left / right snap-turns. Bindings:
 `openxr_action_map.tres`.
@@ -338,7 +340,7 @@ feet — a rat bites: 1 health, each rat only once. Worse, they go for the
 stash shelf and chew through a bag (a unit lost). A box of **snap traps**
 stands by the shelf: take a trap and let go of it over the floor and it
 is set there; a rat that runs over it is caught for the day (four traps a
-day). The rats are gone once the house is extended. Beside it, planks cover an old
+day). A punch, a blade or a shot kills one too. The rats are gone once the house is extended. Beside it, planks cover an old
 cellar hatch in the grass. **Extend the House** builds the rest: the
 office with its desk, the stash room (the shelf moves in) and the hallway;
 the hatch is now under the stash-room floor. **Dig the Cellar** (needs the
@@ -432,13 +434,15 @@ You get better by doing, shown on the wrist and announced at each level
   darker, the lab's stations and its automation stop, and the wrist says
   so, until you flip the lever on the **fuse box** on the front room wall.
 - **Rats** (the cabin only): they bite now and then and chew stash bags;
-  set traps (above).
+  set traps (above), or punch, cut or shoot them.
 
 ### The ghost
 
 On the night of day 4 a ghost turns up somewhere behind you, on your
-floor, hovering and turned away. The moment you look at it, it freezes,
-turns to stare at you for a second and fades away for good. Nothing else
+floor: a dark hooded shroud with a pale face, red eyes and reaching arms,
+hovering and turned away, whispering now and then. The moment you look at
+it, it whips round with a shriek, lunges half a meter at you (a jolt in
+both hands) and is gone in a fifth of a second, for good. Nothing else
 reacts to it, and in co-op each player meets their own.
 
 ### Crew
@@ -473,9 +477,11 @@ These are the defaults this build uses; all are easy to change.
 ## Running it
 
 **Without a headset (any desktop, also macOS):** press F5 → Play → The
-House. The rig runs the flat simulator. The game is designed for a wide
-view, so resize the window to landscape. Add `-- world_ui=1` to the command
-line to see popups on the in-world screen exactly as a headset would.
+House. The rig runs the flat simulator. The game opens full screen (F11 or
+"Full Screen" in Settings switches to a window; the menus keep a centered
+column on a wide screen). Add `-- world_ui=1` to the command line to see
+popups on the in-world screen exactly as a headset would, and
+`-- windowed=1` to keep the project's window (the screenshot tool does).
 
 **PC headset with SteamVR (Windows):**
 1. Install SteamVR and connect the headset (a Quest connects through Steam
@@ -583,11 +589,14 @@ raiders as exports on their scenes, the yard's obstacles on `Yard`, pacing on `A
   trigger, an empty hand punches. The off-hand trigger never picks
   anything up, so aiming past the door handle still strikes or fires.
   Distance grab along the beam keeps reach comfortable.
-- **Body.** A low-poly torso and legs stand under you and walk as you move
-  (stick, arm swing or real steps; the knees bend when you crouch). The
-  camera never bobs: the legs carry the walking, not the view.
-- **Comfort.** Stick walking where you look plus teleport and snap turning
-  on the off-hand stick; smooth turning in Settings. Seated players are
+- **Body.** Low-poly hips and legs stand under you and walk as you move
+  (stick, arm swing or real steps; the knees bend when you crouch); your
+  own chest is left out so looking down shows the knife on your hip. The
+  co-op partner's avatar keeps its torso. The camera never bobs: the legs
+  carry the walking, not the view.
+- **Comfort.** The off-hand stick walks where you look (like WASD), the
+  dominant stick snap-turns; smooth turning, and teleporting instead of
+  stick walking, in Settings. Seated players are
   lifted to standing height (re-measured on recenter). No camera motion the
   player didn't make; popups and announcements appear where you look and
   stay world-locked.

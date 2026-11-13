@@ -69,6 +69,7 @@ static func _check_house_stages(test: SmokeTest, level: HouseLevel) -> void:
 static func run_end(test: SmokeTest, level: HouseLevel) -> void:
 	await _check_admin(test, level)
 	await _check_office(test, level)
+	await _check_board_drag(test, level)
 	await _check_house_looks(test, level)
 	_check_crew_wages(test, level)
 	await _check_controllers(test, level)
@@ -134,6 +135,16 @@ static func _check_rats(test: SmokeTest, level: HouseLevel) -> void:
 	for rat: Rat in rat_list:
 		rat.process_mode = Node.PROCESS_MODE_INHERIT
 	await _check_rat_traps(test, level, rats)
+	# A punch (a stomp, really) kills a rat.
+	var punched: Rat = rat_list[3]
+	level.rig.locomotion.teleport_to(Vector3(-2.0, 0.0, 0.0), 0.0)
+	await test.frames(2)
+	punched.process_mode = Node.PROCESS_MODE_DISABLED
+	punched.global_position = level.rig.get_feet_position() + Vector3(0.0, 0.0, -0.7)
+	punched.process_mode = Node.PROCESS_MODE_INHERIT
+	level.rig.tap_world_point(punched.get_hit_center())
+	await test.frames(3)
+	test.check(punched.is_caught() and not punched.is_alive(), "a punch kills a rat")
 
 
 ## The rats chew through stash bags; traps from the box beside the shelf,
@@ -165,6 +176,32 @@ static func _check_rat_traps(test: SmokeTest, level: HouseLevel, rats: RatPack) 
 	stray.global_position = Vector3(-2.2, 12.0, 0.6)
 	stray.drop_nowhere()
 	test.check(box.get_traps_left() == traps_before - 1, "a trap let go off the floor goes back into the box")
+
+
+## A long list on a board (the office's upgrades) scrolls by grabbing it and
+## pulling, not only by its thin scroll bar.
+static func _check_board_drag(test: SmokeTest, level: HouseLevel) -> void:
+	var office: Office = level.get_front(Office) as Office
+	var screen: WorldScreen = office.get_screen()
+	var list: ScrollContainer = null
+	for node: Node in screen.content.find_children("*", "ScrollContainer", true, false):
+		var candidate: ScrollContainer = node as ScrollContainer
+		if candidate.is_visible_in_tree() and candidate.get_v_scroll_bar().max_value > candidate.size.y:
+			list = candidate
+	test.check(list != null, "the office board has a list longer than the board")
+	if list == null:
+		return
+	list.scroll_vertical = 0
+	var start: Vector2 = list.get_global_rect().get_center()
+	screen.pointer_press(screen.pixel_to_world(start))
+	screen.pointer_move(screen.pixel_to_world(start - Vector2(0.0, 60.0)))
+	screen.pointer_move(screen.pixel_to_world(start - Vector2(0.0, 140.0)))
+	var bar: VScrollBar = list.get_v_scroll_bar()
+	# Pulled up 140 px: the list scrolls as far (or to its end, if that is nearer).
+	var expected_scroll: int = mini(140, int(bar.max_value - bar.page))
+	test.check(screen.is_drag_scrolling() and list.scroll_vertical >= expected_scroll - 1 and list.scroll_vertical > 0, "dragging the office's list up scrolls it down")
+	screen.pointer_release(screen.pixel_to_world(start - Vector2(0.0, 140.0)))
+	test.check(not screen.is_drag_scrolling(), "letting go ends the drag")
 
 
 ## The admin terminal in the office (debug builds): cash and day by pointer.
@@ -222,12 +259,12 @@ static func _check_ghost(test: SmokeTest, level: HouseLevel) -> void:
 	await test.frames(10)
 	var to_ghost: Vector3 = ghost.global_position - rig.get_feet_position()
 	test.check(ghost.is_haunting() and not ghost.was_seen() and to_ghost.z > 2.0, "on night 4 a ghost turns up behind the player")
+	var spot_before: Vector3 = ghost.global_position
 	rig.aim_at_world_point(ghost.get_head_position())
-	await test.frames(3)
-	test.check(ghost.was_seen() and ghost.is_haunting(), "looking at the ghost makes it stop and stare")
+	await test.frames(6)
+	test.check(ghost.was_seen() and ghost.visible and ghost.global_position.distance_to(spot_before) > 0.05, "looking at the ghost makes it lunge at the player")
 	await test.frames(20)
-	test.check(ghost.is_haunting(), "it keeps staring for a moment")
-	test.check(await test.wait_until(func() -> bool: return not ghost.visible), "then it vanishes")
+	test.check(not ghost.visible and not ghost.is_haunting(), "and it is gone at once")
 
 
 ## Upgrades change how the house looks: a renovation swaps a shell surface
@@ -455,15 +492,18 @@ static func _check_controllers(test: SmokeTest, level: HouseLevel) -> void:
 	rig.call("_on_left_hand_button_released", String(Types.XR_ACTION_TRIGGER_CLICK))
 	test.check(action_counts[&"primary"] == 1 and action_counts[&"secondary"] == 1, "controller triggers map to use (dominant) and blaster (off-hand)")
 	var forward_before: Vector3 = -rig.get_head_transform().basis.z
-	rig.call("_on_right_hand_input_vector2_changed", String(Types.XR_ACTION_THUMBSTICK), Vector2(0.9, 0.0))
-	rig.call("_on_right_hand_input_vector2_changed", String(Types.XR_ACTION_THUMBSTICK), Vector2.ZERO)
-	var forward_walk_stick: Vector3 = -rig.get_head_transform().basis.z
-	test.check(forward_walk_stick.is_equal_approx(forward_before), "the dominant (walking) stick doesn't turn the player")
 	rig.call("_on_left_hand_input_vector2_changed", String(Types.XR_ACTION_THUMBSTICK), Vector2(0.9, 0.0))
 	rig.call("_on_left_hand_input_vector2_changed", String(Types.XR_ACTION_THUMBSTICK), Vector2.ZERO)
+	var forward_walk_stick: Vector3 = -rig.get_head_transform().basis.z
+	test.check(forward_walk_stick.is_equal_approx(forward_before), "the off-hand (walking) stick doesn't turn the player")
+	rig.call("_on_left_hand_input_vector2_changed", String(Types.XR_ACTION_THUMBSTICK), Vector2(0.0, 1.0))
+	test.check(rig.locomotion.get_walk_stick().is_equal_approx(Vector2(0.0, 1.0)), "the off-hand stick walks like WASD (no teleport)")
+	rig.call("_on_left_hand_input_vector2_changed", String(Types.XR_ACTION_THUMBSTICK), Vector2.ZERO)
+	rig.call("_on_right_hand_input_vector2_changed", String(Types.XR_ACTION_THUMBSTICK), Vector2(0.9, 0.0))
+	rig.call("_on_right_hand_input_vector2_changed", String(Types.XR_ACTION_THUMBSTICK), Vector2.ZERO)
 	var forward_after: Vector3 = -rig.get_head_transform().basis.z
 	var turned_degrees: float = rad_to_deg(Vector2(forward_before.x, forward_before.z).angle_to(Vector2(forward_after.x, forward_after.z)))
-	test.check(absf(absf(turned_degrees) - rig.locomotion.snap_turn_degrees) < 1.0, "an off-hand stick flick sideways snap-turns the player")
+	test.check(absf(absf(turned_degrees) - rig.locomotion.snap_turn_degrees) < 1.0, "a dominant stick flick sideways snap-turns the player")
 	rig.call("_on_left_hand_button_pressed", String(Types.XR_ACTION_MENU_BUTTON))
 	await test.frames(30)
 	test.check(level.get_tree().paused and UI.has_open_popup(), "controller menu button pauses")

@@ -5,7 +5,8 @@ game: calm, consistent, readable. Never childish, noisy or "programmer art".
 This file is the reference for colors, type, icons, layout and gameplay art.
 The game is played in a headset: the world is 3D and UI lives in it
 (WorldScreens, Label3Ds, the in-world popup screen). The menus are 2D
-screens for the flat (no headset) flow and share the same theme.
+screens for the flat (no headset) flow and use the main theme; the boards
+in the house wear the same theme recolored in old-house wood and brass.
 Check visual work with screenshots (`/design-review`) before calling it done.
 
 ## Golden rules
@@ -110,9 +111,11 @@ primitives in `Palette` colors — matte, lit from above, grounded by a
   quality `GOLD` / `SUCCESS`; products use one distinct hue each.
 - Each raider has its own silhouette, not just a color (cop: riot shield
   and cap; SWAT: helmet and vest; the ram team: two officers and a ram).
-- The night-4 ghost is the only translucent figure: a tall pale hooded
-  shroud (unshaded, about 40% opaque) with dark eye hollows and no limbs —
-  eerie, never cartoonish. It fades out; it never pops or jumps at the player.
+- The night-4 ghost is the only translucent figure: a dark hooded shroud
+  (unshaded, about 70% opaque) with a pale face, two small red eyes, a dark
+  mouth and long reaching arms — scary, never cartoonish or gory. Seen, it
+  lunges half a meter and fades out within a quarter second; no screen
+  flash, no camera motion.
 - Machines (motors, belts, the hopper, the picker's gantry) are steel and
   iron `TexturedBox3D` parts with one small green status lamp (gold while
   busy); they sit on or above the stations and never block a walkway.
@@ -129,6 +132,12 @@ primitives in `Palette` colors — matte, lit from above, grounded by a
   announcements: `LevelBase.announce()` (Label3D, `TEXT` or `DANGER`).
 - UI in the world is the same theme on a `WorldScreen`; size type for the
   viewing distance (text should span at least 0.6° — about 1 cm per meter).
+  Boards that hang in the house (office, armory, sales board, recipe book,
+  how-to poster, co-op board, admin) set `uses_house_style`: the theme is
+  recolored by `HouseBoardStyle` to the `BOARD_*` tokens — dark stained
+  wood, cream ink, `BRASS` accents, muted green / red — and they hang in a
+  `wood_trim` frame. Never a blue app panel on a house wall; new board
+  colors go into `HouseBoardStyle.COLOR_MAP`, not into the scene.
 
 ### Real art (set dressing)
 

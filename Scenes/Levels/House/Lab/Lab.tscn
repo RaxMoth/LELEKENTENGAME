@@ -22,6 +22,7 @@
 [ext_resource type="PackedScene" path="res://Scenes/Levels/House/Lab/LabGuideBoard.tscn" id="guide_board"]
 [ext_resource type="Script" path="res://Scenes/Levels/House/Lab/lab_automation.gd" id="automation"]
 [ext_resource type="Script" path="res://Scripts/Utils/textured_box_3d.gd" id="box"]
+[ext_resource type="Material" path="res://Assets/Materials/wood_trim.tres" id="frame_wood"]
 [ext_resource type="Script" path="res://Scripts/Components/upgrade_look.gd" id="look"]
 [ext_resource type="Material" path="res://Assets/Materials/iron_strap.tres" id="iron"]
 [ext_resource type="Material" path="res://Assets/Materials/steel_frame.tres" id="steel"]
@@ -291,14 +292,14 @@ transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -4.9, 1.62, 0)
 
 [node name="Frame" type="MeshInstance3D" parent="RecipeBook"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.015)
-script = ExtResource("mesh")
-shape_kind = 1
+script = ExtResource("box")
 size = Vector3(2.68, 1.12, 0.02)
-color = Color(0.051, 0.0627, 0.0902, 1)
+box_material = ExtResource("frame_wood")
 
 [node name="RecipeScreen" type="Node3D" parent="RecipeBook"]
 unique_name_in_owner = true
 script = ExtResource("screen")
+uses_house_style = true
 content_scene = ExtResource("recipe_board")
 resolution = Vector2i(1800, 720)
 width_meters = 2.6
@@ -311,14 +312,14 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.7, 2.12, -1.9)
 
 [node name="Frame" type="MeshInstance3D" parent="GuidePoster"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.012)
-script = ExtResource("mesh")
-shape_kind = 1
+script = ExtResource("box")
 size = Vector3(3.18, 0.85, 0.02)
-color = Color(0.051, 0.0627, 0.0902, 1)
+box_material = ExtResource("frame_wood")
 
 [node name="GuideScreen" type="Node3D" parent="GuidePoster"]
 unique_name_in_owner = true
 script = ExtResource("screen")
+uses_house_style = true
 content_scene = ExtResource("guide_board")
 resolution = Vector2i(1800, 440)
 width_meters = 3.1

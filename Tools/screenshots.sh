@@ -13,7 +13,7 @@ touch "$OUT_DIR/.gdignore"
 # shot <name> <args...>; set SHOT_RESOLUTION for anything other than portrait.
 shot() {
 	local name="$1"; shift
-	"$TOOLS_DIR/godot.sh" --resolution "${SHOT_RESOLUTION:-720x1280}" res://Tests/ScreenshotTool.tscn -- "$@" "out=$OUT_DIR/$name.png" >/dev/null 2>&1 || echo "failed: $name" >&2
+	"$TOOLS_DIR/godot.sh" --resolution "${SHOT_RESOLUTION:-720x1280}" res://Tests/ScreenshotTool.tscn -- "$@" windowed=1 "out=$OUT_DIR/$name.png" >/dev/null 2>&1 || echo "failed: $name" >&2
 }
 MENU=res://Scenes/Menus/MainMenu/MainMenu.tscn
 shot 01_main_menu scene=$MENU frames=120
