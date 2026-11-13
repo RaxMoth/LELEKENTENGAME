@@ -24,7 +24,7 @@ yard stays quiet.
 | `HouseTurret.tscn`, `house_turret.gd` | Roof turrets (Roof Turrets upgrade): auto-aim at visible raiders, or manual from the PC |
 | `SecurityPc.tscn`, `security_pc.gd`, `TurretConsole.tscn`, `turret_console.gd` | The office desk PC (Security PC upgrade): live turret camera, take control, aim, fire |
 | `TurretSeat.tscn`, `turret_seat.gd` | "VR in VR": the goggles beside the PC put the player into a turret (head at its camera, barrel follows the hand, triggers fire); `TurretHud` (`TurretHudStatus.tscn` / `TurretHudControls.tscn`) is its overlay: status, previous / next turret, take off |
-| `FrontDoor.tscn`, `front_door.gd` (+ `Scripts/XR/hinge_handle.gd`) | The objective and the way out: trigger or grip a handle, bolt it from either side; StateChart Closed { Unlocked ⇄ Locked } ⇄ Open |
+| `FrontDoor.tscn`, `front_door.gd` (+ `Scripts/XR/hinge_handle.gd`) | The objective and the way out: trigger or grip a handle to swing it, no lock; StateChart Closed ⇄ Open. Open in a raid, the raiders walk in (`FrontGarden._let_raiders_through_open_door`) |
 | `BeamTracer.tscn` | Pooled shot tracer |
 | `../Armory/` (+ `Guns/`) | The armory terminal and the animated gun models — also this area |
 | `Ressources/Weapons/`, `Ressources/Raids/` | Gun and raid data |

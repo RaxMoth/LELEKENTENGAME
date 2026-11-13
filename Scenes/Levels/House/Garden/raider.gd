@@ -49,6 +49,8 @@ const STRIKE_HEIGHT: float = 1.2
 const ENGAGE_CHECK_SECONDS: float = 0.25
 ## A strike: how far the body lunges (a ram team further), and the lunge's
 ## out and back seconds.
+## A hunting raider shut out stops this close (meters) to the door to hit it.
+const DOOR_STRIKE_REACH: float = 1.4
 const STRIKE_LUNGE: float = 0.25
 const RAM_STRIKE_LUNGE: float = 0.45
 const STRIKE_OUT_SECONDS: float = 0.08
@@ -428,7 +430,7 @@ func _on_attacking_state_physics_processing(delta: float) -> void:
 	if _seconds_until_hit > 0.0:
 		return
 	_seconds_until_hit = hit_interval_seconds
-	# An open or unbolted front door gives way faster (FrontDoor.get_damage_multiplier).
+	# A steel frame takes some of every hit (FrontDoor.get_damage_multiplier).
 	_yard.door.health_component.damage(door_damage * _yard.door.get_damage_multiplier(), self)
 	Audio.play_sfx_at(SfxSynth.get_preset(&"hit"), global_position, 0.15, -2.0 if is_battering_ram else -6.0)
 	_play_strike(RAM_STRIKE_LUNGE if is_battering_ram else STRIKE_LUNGE)
@@ -468,6 +470,11 @@ func _on_hunting_state_physics_processing(delta: float) -> void:
 			_seconds_until_hit = hit_interval_seconds
 			_strike_player(target)
 		return
+	# Storming the house but shut out (the door was shut again): break it
+	# down first. A fight out in the street is not about the door.
+	if _yard.is_hunting() and _yard.is_outdoors(global_position) and _yard.door != null and _yard.door.is_alive() and not _yard.door.is_passable():
+		_hit_door_on_the_way(delta)
+		return
 	var walkable: WalkableArea = _yard.walkable
 	if walkable == null or not walkable.contains(global_position):
 		# Off the player's floors (beyond the garden fence, in a bush): no
@@ -487,6 +494,24 @@ func _on_hunting_state_physics_processing(delta: float) -> void:
 			break
 		_route.remove_at(0)
 	_walk_toward(waypoint, rush_speed, delta)
+
+
+## On the hunt but shut out: walks to the door and hammers it until it gives.
+func _hit_door_on_the_way(delta: float) -> void:
+	var door_point: Vector2 = _yard.get_door_point()
+	var to_door: Vector2 = door_point - Vector2(global_position.x, global_position.z)
+	if to_door.length() > DOOR_STRIKE_REACH:
+		_walk_toward(Vector3(door_point.x, global_position.y, door_point.y), rush_speed, delta)
+		return
+	_animate_bodies(delta, 0.0)
+	_face_toward(door_point, clampf(TURN_SPEED * delta, 0.0, 1.0))
+	_seconds_until_hit -= delta
+	if _seconds_until_hit > 0.0:
+		return
+	_seconds_until_hit = hit_interval_seconds
+	_yard.door.health_component.damage(door_damage * _yard.door.get_damage_multiplier(), self)
+	Audio.play_sfx_at(SfxSynth.get_preset(&"hit"), global_position, 0.15, -6.0)
+	_play_strike(STRIKE_LUNGE)
 
 
 ## Out in the yard: a player close by draws the raider into a fight

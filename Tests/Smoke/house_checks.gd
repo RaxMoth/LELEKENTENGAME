@@ -458,7 +458,8 @@ static func _check_raid_waves(test: SmokeTest, level: HouseLevel) -> void:
 	test.check(garden.director.get_raiders_left() >= left_before + 2, "admin: they join the wave")
 
 
-## Mid-raid the door breaks: it swings open, the shift goes on, and every
+## Mid-raid the door is opened (the raiders walk in), then breaks: it swings
+## open for good, the shift goes on, and every
 ## raider — including the next ones — comes into the house after the player
 ## (along the floors' routes, through the doorway) and hits them; the gun
 ## then works anywhere in the house.
@@ -470,10 +471,13 @@ static func _check_storming_in(test: SmokeTest, level: HouseLevel) -> void:
 	test.check(is_equal_approx(vitals.get_health(), vitals.get_max_health()), "the player starts the shift unhurt")
 	test.check(await test.wait_until(func() -> bool: return garden.director.get_pending_spawn_count() == 0 and garden.yard.get_alive_count() > 0), "the second wave is in the yard")
 	rig.locomotion.teleport_to(Vector3(0.0, 0.0, -3.0), PI)
-	door.set_locked(true)
+	# No lock any more: an open door in a raid lets the raiders straight in.
+	test.check(not garden.yard.is_hunting(), "while the door is shut the raiders stay outside")
+	door.open_fully()
+	test.check(await test.wait_until(func() -> bool: return garden.yard.is_hunting()), "an open door in a raid lets the raiders in")
 	door.health_component.damage(1000000.0)
 	test.check(await test.wait_until(func() -> bool: return door.is_passable()), "a broken door bursts wide open")
-	test.check(level.is_playing() and door.is_broken() and not door.is_locked(), "a broken door doesn't end the shift")
+	test.check(level.is_playing() and door.is_broken(), "a broken door doesn't end the shift")
 	door.close_fully()
 	await test.frames(30)
 	test.check(door.is_passable(), "a broken door can't be shut")

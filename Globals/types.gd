@@ -244,11 +244,9 @@ const EVENT_TAKE_COVER: StringName = &"take_cover"
 ## The front door is down: a raider goes after the players (Hunting).
 const EVENT_HUNT: StringName = &"hunt"
 # --- Defense: the front door (Garden/FrontDoor.tscn) ---
-## The door swung open / fell shut and latched / was bolted / was unbolted.
+## The door swung open / fell shut and latched.
 const EVENT_DOOR_OPENED: StringName = &"door_opened"
 const EVENT_DOOR_CLOSED: StringName = &"door_closed"
-const EVENT_DOOR_LOCKED: StringName = &"door_locked"
-const EVENT_DOOR_UNLOCKED: StringName = &"door_unlocked"
 
 # --- Sales: customers (Sales/Customer.tscn) ---
 ## A customer starts walking to a spot / reached it / was served or gave up.

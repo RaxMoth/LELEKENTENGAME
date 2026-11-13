@@ -1,6 +1,6 @@
 ## The raid night at the end of a 3-day cycle: day 3, the police in the
 ## yard (cops, SWAT and a battering ram working their way in from cover to
-## cover), the front door bolted, a gun bought at the armory.
+## cover), the front door shut, a gun bought at the armory.
 ## Loaded by Tests/screenshot_tool.gd with `showcase=house_raid`.
 ##
 ## Dependencies: HouseLevel, HouseCycle, FrontGarden, FrontDoor, Armory, RaidWave, AttackerDirector
@@ -18,7 +18,6 @@ static func apply(scene: Node) -> void:
 		armory.buy_weapon(armory.weapon_catalog.find_weapon(weapon_id))
 	Profile.operation.day_number = level.cycle.get_days_per_cycle() * 2
 	level.day_cycle.advance(level.day_cycle.day_seconds + 5.0 - level.day_cycle.clock.elapsed_seconds)
-	garden.door.set_locked(true)
 	level.cycle.skip_wave_break()
 	# A ram team on top of the wave; the squads then work their way in on their own.
 	garden.director.queue_wave(RaidWave.new(1, 3, 2, 1.0, 1), null, 0.0)

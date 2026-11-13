@@ -274,61 +274,6 @@ shape_kind = 0
 size = Vector3(0.16, 0.16, 0.16)
 color = Color(0.9608, 0.7216, 0.2549, 1)
 
-[node name="LabSign" type="Label3D" parent="World/Stage"]
-transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -0.72, 2.3, 0)
-pixel_size = 0.004
-render_priority = 2
-outline_render_priority = 1
-modulate = Color(0.9333, 0.9451, 0.9686, 1)
-outline_modulate = Color(0.051, 0.0627, 0.0902, 0.9)
-text = "Lab"
-font_size = 56
-outline_size = 14
-
-[node name="WindowSign" type="Label3D" parent="World/Stage"]
-transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -0.72, 2.3, 3.5)
-pixel_size = 0.004
-render_priority = 2
-outline_render_priority = 1
-modulate = Color(0.9333, 0.9451, 0.9686, 1)
-outline_modulate = Color(0.051, 0.0627, 0.0902, 0.9)
-text = "Back window"
-font_size = 56
-outline_size = 14
-
-[node name="OfficeSign" type="Label3D" parent="World/Stage"]
-transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 0.72, 2.3, 0)
-pixel_size = 0.004
-render_priority = 2
-outline_render_priority = 1
-modulate = Color(0.9333, 0.9451, 0.9686, 1)
-outline_modulate = Color(0.051, 0.0627, 0.0902, 0.9)
-text = "Office"
-font_size = 56
-outline_size = 14
-
-[node name="StashSign" type="Label3D" parent="World/Stage"]
-transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 0.72, 2.3, 3.5)
-pixel_size = 0.004
-render_priority = 2
-outline_render_priority = 1
-modulate = Color(0.9333, 0.9451, 0.9686, 1)
-outline_modulate = Color(0.051, 0.0627, 0.0902, 0.9)
-text = "Stash"
-font_size = 56
-outline_size = 14
-
-[node name="FrontSign" type="Label3D" parent="World/Stage"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.3, -1.92)
-pixel_size = 0.004
-render_priority = 2
-outline_render_priority = 1
-modulate = Color(0.9333, 0.9451, 0.9686, 1)
-outline_modulate = Color(0.051, 0.0627, 0.0902, 0.9)
-text = "Front"
-font_size = 56
-outline_size = 14
-
 [node name="WalkableArea" type="Node3D" parent="World/Stage"]
 unique_name_in_owner = true
 script = ExtResource("walkable")
@@ -388,7 +333,7 @@ before = NodePath("../CabinPlaces/OfficeSpot")
 [node name="Rooms" type="Node3D" parent="World/Stage/Stages" node_paths=PackedStringArray("also_shows")]
 script = ExtResource("look")
 upgrade_id = &"house_extension"
-also_shows = [NodePath("../../LabSign"), NodePath("../../WindowSign"), NodePath("../../OfficeSign"), NodePath("../../StashSign"), NodePath("../../FrontSign"), NodePath("../../Lamps/Lamp4"), NodePath("../../Lamps/Lamp7")]
+also_shows = [NodePath("../../Lamps/Lamp4"), NodePath("../../Lamps/Lamp7")]
 
 [node name="WristStatus" type="Node3D" parent="World/Stage"]
 unique_name_in_owner = true

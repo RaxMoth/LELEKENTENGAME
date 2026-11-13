@@ -224,8 +224,8 @@ Rifle,Rifle,Gewehr
 %s ammo,%s ammo,Munition: %s
 %s bought,%s bought,%s gekauft
 +%d rounds · %d / %d carried,+%d rounds · %d / %d carried,+%d Schuss · %d / %d dabei
-Close and lock the front door!,Close and lock the front door!,Haustür schließen und abschließen!
-Close the door first,Close the door first,Erst die Tür schließen
+Close the front door!,Close the front door!,Schließ die Haustür!
+The door is open! They're coming in!,The door is open! They're coming in!,Die Tür steht offen! Sie kommen rein!
 Damage %d · %.1f shots/s · Range %d m,Damage %d · %.1f shots/s · Range %d m,Schaden %d · %.1f Schuss/s · Reichweite %d m
 Door %d%% %s,Door %d%% %s,Tür %d%% %s
 Equip,Equip,Ausrüsten
@@ -244,16 +244,13 @@ Raid beaten,Raid beaten,Razzia abgewehrt
 Raid in %d days,Raid in %d days,Razzia in %d Tagen
 Raid tomorrow night,Raid tomorrow night,Razzia morgen Nacht
 Raid tonight,Raid tonight,Razzia heute Nacht
-Unbolted,Unbolted,Entriegelt
-Bolted,Bolted,Verriegelt
 Wave %d of %d,Wave %d of %d,Welle %d von %d
 Wave %d/%d in %ds,Wave %d/%d in %ds,Welle %d/%d in %ds
 Wave %d/%d · %d left,Wave %d/%d · %d left,Welle %d/%d · noch %d
 Wave beaten — next one is coming,Wave beaten — next one is coming,Welle abgewehrt – die nächste kommt
 Window closed,Window closed,Fenster zu
-locked,locked,verriegelt
+closed,closed,zu
 open,open,offen
-unlocked,unlocked,entriegelt
 unlimited ammo,unlimited ammo,unbegrenzte Munition
 Admin,Admin,Admin
 "+$1,000","+$1,000","+1.000 $"
