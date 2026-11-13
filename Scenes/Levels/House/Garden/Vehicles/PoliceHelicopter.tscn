@@ -1,0 +1,80 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://Scenes/Levels/House/Garden/Vehicles/police_helicopter.gd" id="vehicle"]
+[ext_resource type="Script" path="res://Scripts/Utils/blob_shadow_3d.gd" id="shadow"]
+[ext_resource type="Script" path="res://Scripts/Components/health_component.gd" id="health"]
+[ext_resource type="Script" path="res://Scripts/Components/hit_flash_3d_component.gd" id="flash"]
+[ext_resource type="Script" path="res://Scripts/Components/npc_voice.gd" id="voice_component"]
+[ext_resource type="Resource" path="res://Ressources/Voices/polizist.tres" id="police_voice"]
+[ext_resource type="Script" path="res://addons/godot_state_charts/state_chart.gd" id="chart"]
+[ext_resource type="Script" path="res://addons/godot_state_charts/compound_state.gd" id="compound"]
+[ext_resource type="Script" path="res://addons/godot_state_charts/atomic_state.gd" id="atomic"]
+[ext_resource type="Script" path="res://addons/godot_state_charts/transition.gd" id="transition"]
+[ext_resource type="PackedScene" path="res://Scenes/Levels/House/Garden/Swat.tscn" id="swat"]
+
+[node name="PoliceHelicopter" type="Node3D"]
+script = ExtResource("vehicle")
+base_max_health = 950.0
+march_speed = 14.0
+score_value = 180
+faction_name = "Helicopter"
+armor = 8.0
+hit_radius = 2.4
+hit_height = 0.0
+body_radius = 2.0
+wreck_blast_diameter = 6.0
+crew_scene = ExtResource("swat")
+
+[node name="Visual" type="Node3D" parent="."]
+unique_name_in_owner = true
+
+[node name="Voice" type="Node3D" parent="."]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.8, 0)
+script = ExtResource("voice_component")
+voice = ExtResource("police_voice")
+chatter_cooldown_seconds = 8.0
+
+[node name="HealthComponent" type="Node" parent="."]
+unique_name_in_owner = true
+script = ExtResource("health")
+
+[node name="HitFlash3DComponent" type="Node" parent="." node_paths=PackedStringArray("flash_root", "health_component")]
+unique_name_in_owner = true
+script = ExtResource("flash")
+flash_root = NodePath("../Visual")
+health_component = NodePath("../HealthComponent")
+
+[node name="StateChart" type="Node" parent="."]
+unique_name_in_owner = true
+script = ExtResource("chart")
+
+[node name="Root" type="Node" parent="StateChart"]
+script = ExtResource("compound")
+initial_state = NodePath("Alive")
+
+[node name="Alive" type="Node" parent="StateChart/Root"]
+script = ExtResource("compound")
+initial_state = NodePath("Moving")
+
+[node name="Moving" type="Node" parent="StateChart/Root/Alive"]
+script = ExtResource("atomic")
+
+[node name="ToDead" type="Node" parent="StateChart/Root/Alive"]
+script = ExtResource("transition")
+to = NodePath("../../Dead")
+event = &"died"
+delay_in_seconds = "0.0"
+
+[node name="Dead" type="Node" parent="StateChart/Root"]
+script = ExtResource("atomic")
+
+[node name="ToAlive" type="Node" parent="StateChart/Root/Dead"]
+script = ExtResource("transition")
+to = NodePath("../../Alive")
+event = &"respawn"
+delay_in_seconds = "0.0"
+
+[connection signal="state_entered" from="StateChart/Root/Alive/Moving" to="." method="_on_moving_state_entered"]
+[connection signal="state_physics_processing" from="StateChart/Root/Alive/Moving" to="." method="_on_moving_state_physics_processing"]
+[connection signal="state_entered" from="StateChart/Root/Dead" to="." method="_on_dead_state_entered"]

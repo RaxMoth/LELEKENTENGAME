@@ -21,5 +21,5 @@ static func apply(scene: Node) -> void:
 	garden.door.set_locked(true)
 	level.cycle.skip_wave_break()
 	# A ram team on top of the wave; the squads then work their way in on their own.
-	garden.director.queue_wave(RaidWave.new(1, 3, 2, 1.0, 1), 0.0)
+	garden.director.queue_wave(RaidWave.new(1, 3, 2, 1.0, 1), null, 0.0)
 	garden.director.step(0.01)

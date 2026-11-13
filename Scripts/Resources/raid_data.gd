@@ -1,6 +1,7 @@
 ## How the house's 3-day cycle and its police raids are tuned: how many days
 ## of selling come before a raid, how many waves a raid has, how many cops and
-## SWAT officers each wave brings and how much tougher every raid gets.
+## SWAT officers each wave brings, which vehicles join, how much tougher
+## every raid gets and how the police come through the town.
 ## RaidPlanner turns this into the waves of one raid; HouseCycle runs them.
 ##
 ##   var waves: Array[RaidWave] = RaidPlanner.build_raid(raid_data, 2, heat_ratio)
@@ -26,8 +27,15 @@ extends Resource
 @export var seconds_before_first_wave: float = 10.0
 ## Seconds of calm between two waves.
 @export var seconds_between_waves: float = 8.0
-## Seconds between two officers of one wave entering the garden.
-@export var seconds_between_spawns: float = 1.4
+## Seconds between two officers of one squad setting off (they jog in a column).
+@export var seconds_between_spawns: float = 0.4
+## Seconds between two squads of a wave setting off (each from its own direction).
+@export var seconds_between_squads: float = 3.0
+## Officers who set off together and take the same way through the town.
+@export_range(1, 20) var squad_size: int = 6
+## No wave brings more officers on foot than this (vehicles and their crews
+## come on top): a horde a standalone headset can still draw.
+@export_range(1, 200) var max_officers_per_wave: int = 54
 
 @export_group("Cops")
 ## Cops in the first wave of the first raid.
@@ -53,6 +61,42 @@ extends Resource
 @export_range(1, 20) var ram_from_raid: int = 2
 ## Every this many raids after that, the last wave brings one more ram.
 @export_range(1, 20) var raids_per_extra_ram: int = 3
+
+@export_group("Squad cars")
+## First raid with squad cars (they come in the last wave first, then in every wave).
+@export_range(1, 20) var cars_from_raid: int = 1
+## Squad cars in the last wave of that raid; each later raid adds one, and
+## from the next raid every wave brings half as many (at least one).
+@export_range(0, 10) var cars_in_first_car_raid: int = 1
+
+@export_group("Armored vehicle")
+## First raid whose last wave brings an armored vehicle...
+@export_range(1, 20) var tanks_from_raid: int = 2
+## ...and every this many raids one more.
+@export_range(1, 20) var raids_per_extra_tank: int = 3
+
+@export_group("Helicopter")
+## First raid whose last wave brings a helicopter...
+@export_range(1, 20) var helicopters_from_raid: int = 3
+## ...and every this many raids one more.
+@export_range(1, 20) var raids_per_extra_helicopter: int = 3
+
+@export_group("Through the town")
+## Squads set off at a street crossing this far from the house (meters,
+## random between x and y) and take their own way through the streets.
+@export var march_start_distance: Vector2 = Vector2(110.0, 190.0)
+## How much a squad prefers detours (1 = always the shortest way; higher
+## = more different ways from raid to raid).
+@export_range(1.0, 5.0) var route_variety: float = 2.2
+## Farthest an officer walks from the middle of the street (meters): a squad
+## spreads over the street instead of walking in single file.
+@export var lane_spread: float = 3.4
+## Seconds after a wave starts before its armored vehicle and its
+## helicopters set off (squad cars go with the squads).
+@export var tank_delay_seconds: float = 4.0
+@export var helicopter_delay_seconds: float = 8.0
+## The helicopter comes in from this far away (meters).
+@export var helicopter_start_distance: float = 170.0
 
 @export_group("Toughness")
 ## Officer health grows by this share every raid after the first.

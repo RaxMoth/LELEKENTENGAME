@@ -17,7 +17,7 @@ extends RefCounted
 
 enum BlockKind { CITY, HOME, PARK, PLAZA, OUTSKIRTS }
 ## How a building looks (TownMeshBuilder picks the facade).
-enum BuildingStyle { BRICK, PLASTER, OFFICE }
+enum BuildingStyle { BRICK, PLASTER, OFFICE, INDUSTRIAL }
 
 ## A parked car's size on the ground (meters).
 const CAR_LENGTH: float = 4.3
@@ -145,6 +145,9 @@ func _add_block(block: Rect2, kind: BlockKind, cell: Vector2i) -> void:
 ## Splits a block's inside into lots along its longer side (two rows when it
 ## is deep) and puts one building on each, alleys between them.
 func _fill_with_buildings(area: Rect2) -> void:
+	# Halls in the industrial quarter take wider lots.
+	var lot_scale: float = 1.9 if _is_industrial(area.get_center()) else 1.0
+	var min_lot: float = _data.min_lot_width * lot_scale
 	var is_wide: bool = area.size.x >= area.size.y
 	var length: float = area.size.x if is_wide else area.size.y
 	var depth: float = area.size.y if is_wide else area.size.x
@@ -155,8 +158,8 @@ func _fill_with_buildings(area: Rect2) -> void:
 		while cursor < length - 0.01:
 			var remaining: float = length - cursor
 			var lot_width: float = remaining
-			if remaining > _data.min_lot_width * 2.0:
-				lot_width = _random.randf_range(_data.min_lot_width, minf(remaining - _data.min_lot_width, _data.min_lot_width * 2.4))
+			if remaining > min_lot * 2.0:
+				lot_width = _random.randf_range(min_lot, minf(remaining - min_lot, min_lot * 2.4))
 			var lot: Rect2
 			if is_wide:
 				lot = Rect2(area.position.x + cursor, area.position.y + row * row_depth, lot_width, row_depth)
@@ -177,6 +180,9 @@ func _add_building(lot: Rect2) -> void:
 	var style: BuildingStyle = BuildingStyle.OFFICE
 	if downtown < 0.45 or _random.randf() < 0.15:
 		style = BuildingStyle.BRICK if _random.randf() < 0.55 else BuildingStyle.PLASTER
+	if _is_industrial(footprint.get_center()):
+		style = BuildingStyle.INDUSTRIAL
+		height = _random.randf_range(_data.industrial_height.x, _data.industrial_height.y)
 	building_footprints.append(footprint)
 	building_heights.append(snappedf(height, 0.5))
 	building_styles.append(style)
@@ -234,6 +240,10 @@ func _park_cars(block: Rect2) -> void:
 				var car_size: Vector2 = Vector2(CAR_LENGTH, CAR_WIDTH) if absf(direction.x) > 0.5 else Vector2(CAR_WIDTH, CAR_LENGTH)
 				car_blockers.append(Rect2(spot - car_size * 0.5, car_size))
 			along += _data.parking_spacing
+
+
+func _is_industrial(point: Vector2) -> bool:
+	return point.distance_to(_data.industrial_center) <= _data.industrial_radius
 
 
 ## A ring of buildings beyond the outer streets so the town doesn't end in

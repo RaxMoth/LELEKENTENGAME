@@ -13,9 +13,9 @@ extends Resource
 
 @export_group("Streets")
 ## Centre lines (world X) of the streets running north-south, ascending.
-@export var street_x: PackedFloat32Array = PackedFloat32Array([-118.0, -71.0, -24.0, 24.0, 71.0, 118.0])
+@export var street_x: PackedFloat32Array = PackedFloat32Array([-259.0, -212.0, -165.0, -118.0, -71.0, -24.0, 24.0, 71.0, 118.0, 165.0, 212.0, 259.0])
 ## Centre lines (world Z) of the streets running east-west, ascending.
-@export var street_z: PackedFloat32Array = PackedFloat32Array([-133.0, -84.0, -35.0, 19.0, 68.0, 117.0])
+@export var street_z: PackedFloat32Array = PackedFloat32Array([-280.0, -231.0, -182.0, -133.0, -84.0, -35.0, 19.0, 68.0, 117.0, 166.0, 215.0, 264.0])
 ## Curb to curb (meters).
 @export var street_width: float = 10.0
 ## Sidewalk along every block edge (meters).
@@ -26,9 +26,9 @@ extends Resource
 
 @export_group("Blocks")
 ## The block the house stands on (column, row).
-@export var home_block: Vector2i = Vector2i(2, 2)
-@export var park_blocks: Array[Vector2i] = [Vector2i(2, 1), Vector2i(0, 3)]
-@export var plaza_blocks: Array[Vector2i] = [Vector2i(2, 3)]
+@export var home_block: Vector2i = Vector2i(5, 5)
+@export var park_blocks: Array[Vector2i] = [Vector2i(5, 4), Vector2i(3, 6), Vector2i(8, 2), Vector2i(1, 8), Vector2i(9, 8)]
+@export var plaza_blocks: Array[Vector2i] = [Vector2i(5, 6), Vector2i(8, 5)]
 ## The house's walls (world X / Z): the town's floor stops here, the house's
 ## own rooms take over.
 @export var house_footprint: Rect2 = Rect2(-5.3, -5.3, 10.6, 10.6)
@@ -36,12 +36,17 @@ extends Resource
 @export_group("Buildings")
 @export var layout_seed: int = 7
 ## Buildings grow taller toward this point (world X / Z)...
-@export var downtown_center: Vector2 = Vector2(85.0, -105.0)
+@export var downtown_center: Vector2 = Vector2(165.0, -180.0)
 ## ...within this distance (meters).
-@export var downtown_radius: float = 110.0
+@export var downtown_radius: float = 160.0
 ## Height range (meters) of ordinary buildings and of downtown towers.
 @export var low_height: Vector2 = Vector2(7.0, 15.0)
 @export var high_height: Vector2 = Vector2(24.0, 58.0)
+## The industrial quarter: low, wide halls and warehouses within
+## industrial_radius of industrial_center (world X / Z).
+@export var industrial_center: Vector2 = Vector2(-190.0, 190.0)
+@export var industrial_radius: float = 110.0
+@export var industrial_height: Vector2 = Vector2(6.0, 11.0)
 ## Width of the alleys between neighbouring buildings (walkable).
 @export var alley_width: float = 1.4
 ## Narrowest building front (meters).

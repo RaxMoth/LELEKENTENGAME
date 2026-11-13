@@ -1,5 +1,7 @@
-## A police raider in the open yard. Enters at the edge and works its way to
-## the front door with its RaidSquad: dashes to the next cover (a tree, rock,
+## A police raider. In a raid it first jogs its way through the town
+## (march(): a street route from the AttackerDirector) and climbs into the
+## yard; officers spawned without a route enter at the yard's edge. In the
+## yard it works its way to the front door with its RaidSquad: dashes to the next cover (a tree, rock,
 ## bush or the car, picked by YardNavigation), crouches there a while —
 ## longer when it is being shot at — and waits for the squad; from the last
 ## cover before the house the whole squad rushes the door together and
@@ -79,6 +81,10 @@ const STRIKE_BACK_SECONDS: float = 0.22
 ## A battering-ram team: no cover, waits at the stage line, rams the door.
 @export var is_battering_ram: bool = false
 
+@export_group("Through the town")
+## Meters per second while jogging through the streets to the house.
+@export var march_speed: float = 3.2
+
 @export_group("Hunting")
 ## Damage each hit does to a player once the door is down.
 @export var player_damage: float = 10.0
@@ -119,6 +125,10 @@ var _is_hunting: bool = false
 var _route: PackedVector3Array = PackedVector3Array()
 var _seconds_until_route: float = 0.0
 var _seconds_until_engage_check: float = 0.0
+## The way through the town still ahead (world X / Z) and the next point on it.
+var _street_route: PackedVector2Array = PackedVector2Array()
+var _street_index: int = 0
+var _is_far_drawn: bool = false
 var _tween: Tween
 
 @onready var health_component: HealthComponent = %HealthComponent
@@ -144,6 +154,23 @@ func _ready() -> void:
 # PUBLIC API
 # ============================================
 
+## Called by the yard for a raider that comes through the town: it jogs
+## [param route] (world X / Z, from where it stands to a point in the yard),
+## then fights in the yard like one that entered there.
+func march(route: PackedVector2Array, yard: Yard) -> void:
+	_yard = yard
+	_street_route = route
+	_street_index = 1
+	_on_march_started()
+	if _street_route.size() < 2:
+		_finish_march()
+
+
+## True while it is still on its way through the town.
+func is_marching() -> bool:
+	return not _street_route.is_empty()
+
+
 ## Called by the yard after spawning.
 func enter_yard(yard: Yard) -> void:
 	_yard = yard
@@ -155,6 +182,10 @@ func enter_yard(yard: Yard) -> void:
 ## The front door is down: from now on it goes after the nearest player.
 func start_hunting() -> void:
 	if not is_alive() or _is_hunting:
+		return
+	# Still on the way through the town: it hunts once it reaches the yard
+	# (_finish_march), instead of cutting straight through the buildings.
+	if is_marching():
 		return
 	_is_hunting = true
 	is_staged = false
@@ -230,6 +261,36 @@ func shout_raid_call() -> void:
 	voice.say(VoiceLineData.RAID, true)
 
 
+## True for a single officer (not a ram team or a vehicle): far away a
+## CrowdLod draws it as a simple figure instead of its jointed body.
+func uses_crowd_figure() -> bool:
+	return _bodies.size() == 1
+
+
+## Far away (true): the jointed body is hidden and a CrowdLod draws it.
+func set_far_drawn(is_far: bool) -> void:
+	_is_far_drawn = is_far
+	_visual.visible = not is_far
+
+
+## True while far away and drawn by a CrowdLod.
+func is_far_drawn() -> bool:
+	return _is_far_drawn
+
+
+## True while it keeps its wave going (alive; a vehicle that has done its
+## job and is leaving doesn't).
+func counts_for_wave() -> bool:
+	return is_alive()
+
+
+## The simple figure's colors: [uniform, head (cap or helmet)].
+func get_crowd_colors() -> PackedColorArray:
+	if _bodies.is_empty():
+		return PackedColorArray([Palette.STROKE, Palette.BACKGROUND])
+	return PackedColorArray([_bodies[0].uniform_color, _bodies[0].vest_color])
+
+
 ## Stops it where it stands (end of the shift, staged scenes) or lets it go again.
 func freeze(should_freeze: bool = true) -> void:
 	_is_frozen = should_freeze
@@ -246,6 +307,7 @@ func _on_pool_spawned() -> void:
 		_tween.kill()
 	_visual.scale = Vector3.ONE
 	_visual.position = Vector3.ZERO
+	set_far_drawn(false)
 	_visual.rotation = Vector3.ZERO
 	for body: RaiderBody in _bodies:
 		body.reset_pose()
@@ -256,6 +318,8 @@ func _on_pool_spawned() -> void:
 	_is_hunting = false
 	_route = PackedVector3Array()
 	_seconds_until_engage_check = randf() * ENGAGE_CHECK_SECONDS
+	_street_route = PackedVector2Array()
+	_street_index = 0
 	# Every (re)spawn starts in Moving (the chart's initial / respawn state).
 	_is_in_motion = true
 	_is_frozen = false
@@ -282,7 +346,13 @@ func _on_moving_state_entered() -> void:
 
 
 func _on_moving_state_physics_processing(delta: float) -> void:
-	if _yard == null or _is_frozen or _watch_for_players(delta):
+	if _yard == null or _is_frozen:
+		return
+	# On the way through the town it keeps going (it fights in the yard).
+	if is_marching():
+		_step_march(delta)
+		return
+	if _watch_for_players(delta):
 		return
 	_seconds_since_hit += delta
 	var here: Vector2 = Vector2(global_position.x, global_position.z)
@@ -478,6 +548,39 @@ func _on_dead_state_entered() -> void:
 # ============================================
 # INTERNALS
 # ============================================
+
+## One frame of jogging through the town toward the next point of the way.
+func _step_march(delta: float) -> void:
+	var here: Vector2 = Vector2(global_position.x, global_position.z)
+	var target: Vector2 = _street_route[_street_index]
+	var to_target: Vector2 = target - here
+	var step_length: float = march_speed * delta
+	if to_target.length() <= step_length:
+		global_position = Vector3(target.x, global_position.y, target.y)
+		_street_index += 1
+		if _street_index >= _street_route.size():
+			_finish_march()
+		return
+	var direction: Vector2 = to_target.normalized()
+	global_position += Vector3(direction.x, 0.0, direction.y) * step_length
+	_face(direction, delta)
+	_animate_bodies(delta, march_speed / maxf(0.1, move_speed))
+
+
+## @virtual Setting off through the town (vehicles take off, lift up...).
+func _on_march_started() -> void:
+	pass
+
+
+## @virtual At the end of the way through the town: an officer is in the
+## yard now and fights there like one that entered at its edge.
+func _finish_march() -> void:
+	_street_route = PackedVector2Array()
+	_street_index = 0
+	_plan_next_move()
+	if _yard != null and _yard.is_hunting():
+		start_hunting()
+
 
 ## Picks where to go next: the squad's rush → the door; otherwise the next
 ## cover toward the house, or — near the house — wait here for the rush.

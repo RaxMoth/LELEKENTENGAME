@@ -13,6 +13,11 @@
 [ext_resource type="PackedScene" path="res://Scenes/Levels/House/Garden/Swat.tscn" id="swat"]
 [ext_resource type="PackedScene" path="res://Scenes/Levels/House/Garden/RamTeam.tscn" id="ram_team"]
 [ext_resource type="Script" path="res://Scripts/Components/upgrade_placement.gd" id="placement"]
+[ext_resource type="PackedScene" path="res://Scenes/Levels/House/Garden/Vehicles/SquadCar.tscn" id="squad_car"]
+[ext_resource type="PackedScene" path="res://Scenes/Levels/House/Garden/Vehicles/ArmoredVehicle.tscn" id="armored_vehicle"]
+[ext_resource type="PackedScene" path="res://Scenes/Levels/House/Garden/Vehicles/PoliceHelicopter.tscn" id="police_helicopter"]
+[ext_resource type="Resource" path="res://Ressources/Town/town.tres" id="town_data"]
+[ext_resource type="Script" path="res://Scenes/Levels/House/Garden/crowd_lod.gd" id="crowd_lod"]
 
 [node name="FrontGarden" type="Node3D"]
 script = ExtResource("front_garden")
@@ -64,6 +69,15 @@ script = ExtResource("attacker_director")
 cop_scene = ExtResource("cop")
 swat_scene = ExtResource("swat")
 ram_scene = ExtResource("ram_team")
+car_scene = ExtResource("squad_car")
+tank_scene = ExtResource("armored_vehicle")
+helicopter_scene = ExtResource("police_helicopter")
+town_data = ExtResource("town_data")
+
+[node name="CrowdLod" type="Node3D" parent="." node_paths=PackedStringArray("yard")]
+unique_name_in_owner = true
+script = ExtResource("crowd_lod")
+yard = NodePath("../Yard")
 
 [node name="Guards" type="Node3D" parent="."]
 unique_name_in_owner = true

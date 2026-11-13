@@ -20,7 +20,7 @@ static func apply(scene: Node) -> void:
 	Profile.operation.day_number = level.cycle.get_days_per_cycle()
 	level.day_cycle.advance(level.day_cycle.day_seconds + 5.0 - level.day_cycle.clock.elapsed_seconds)
 	level.cycle.skip_wave_break()
-	garden.director.queue_wave(RaidWave.new(1, 2, 1, 1.0, 0), 0.0)
+	garden.director.queue_wave(RaidWave.new(1, 2, 1, 1.0, 0), null, 0.0)
 	garden.director.step(0.01)
 	garden.door.health_component.damage(1000000.0)
 	var raiders: Array[Raider] = garden.yard.get_raiders()

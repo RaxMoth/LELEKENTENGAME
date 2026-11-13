@@ -43,6 +43,8 @@ extends Node3D
 
 ## How far (meters) the player's body keeps from a blocker's edge.
 const BODY_RADIUS: float = 0.25
+## Side (meters) of the grid cells blockers are sorted into for quick lookups.
+const BLOCKER_CELL_SIZE: float = 16.0
 ## Highest step up or down a move may take; more is a wall, an edge or a ceiling.
 const MAX_STEP: float = 0.35
 ## How far (meters) the body keeps from furniture: less than from a wall,
@@ -60,6 +62,14 @@ var _obstacle_heights: Array[float] = []
 var _route_patches: Array[RoutePatch] = []
 var _route_links: Array[Array] = []
 var _is_route_graph_dirty: bool = true
+## Blockers sorted into square cells of BLOCKER_CELL_SIZE (indices into
+## blockers / rect_blockers), and the rect blockers grown by BODY_RADIUS.
+var _circle_grid: Dictionary[Vector2i, PackedInt32Array] = {}
+var _rect_grid: Dictionary[Vector2i, PackedInt32Array] = {}
+var _grown_rects: Array[Rect2] = []
+var _is_blocker_grid_dirty: bool = true
+var _grid_circle_count: int = -1
+var _grid_rect_count: int = -1
 
 
 ## One walkable patch for route finding: a rect on a floor, or a ramp.
@@ -95,6 +105,7 @@ func add_blockers(circles: Array[Vector3]) -> void:
 	for circle: Vector3 in circles:
 		if not blockers.has(circle):
 			blockers.append(circle)
+	_is_blocker_grid_dirty = true
 
 
 ## Adds rectangular blockers (world X / Z) the player can't walk into.
@@ -102,6 +113,7 @@ func add_rect_blockers(rects: Array[Rect2]) -> void:
 	for rect: Rect2 in rects:
 		if not rect_blockers.has(rect):
 			rect_blockers.append(rect)
+	_is_blocker_grid_dirty = true
 
 
 ## Cuts an opening into the main floor (a stairwell that was opened).
@@ -327,8 +339,51 @@ func _is_obstructed(point: Vector2, height: float) -> bool:
 	return false
 
 
+## True when [param point] is within a body's width of a blocker. Only the
+## blockers in its grid cell are tested (a town has hundreds).
 func _is_blocked(point: Vector2) -> bool:
-	return not contains_point([], point, blockers, rect_blockers)
+	_build_blocker_grid()
+	var cell: Vector2i = Vector2i(floori(point.x / BLOCKER_CELL_SIZE), floori(point.y / BLOCKER_CELL_SIZE))
+	var circle_indices: PackedInt32Array = _circle_grid.get(cell, PackedInt32Array())
+	for circle_index: int in circle_indices:
+		var blocker: Vector3 = blockers[circle_index]
+		if point.distance_to(Vector2(blocker.x, blocker.y)) < blocker.z + BODY_RADIUS:
+			return true
+	var rect_indices: PackedInt32Array = _rect_grid.get(cell, PackedInt32Array())
+	for rect_index: int in rect_indices:
+		if _grown_rects[rect_index].has_point(point):
+			return true
+	return false
+
+
+## Sorts the blockers into grid cells (once, after blockers were added).
+func _build_blocker_grid() -> void:
+	# Blockers set in the inspector (or assigned) count too: rebuild when the counts changed.
+	if not _is_blocker_grid_dirty and _grid_circle_count == blockers.size() and _grid_rect_count == rect_blockers.size():
+		return
+	_is_blocker_grid_dirty = false
+	_grid_circle_count = blockers.size()
+	_grid_rect_count = rect_blockers.size()
+	_circle_grid.clear()
+	_rect_grid.clear()
+	_grown_rects.clear()
+	for circle_index: int in blockers.size():
+		var circle: Vector3 = blockers[circle_index]
+		var reach: float = circle.z + BODY_RADIUS
+		_add_to_grid(_circle_grid, Rect2(circle.x - reach, circle.y - reach, reach * 2.0, reach * 2.0), circle_index)
+	for rect_index: int in rect_blockers.size():
+		var grown: Rect2 = rect_blockers[rect_index].grow(BODY_RADIUS)
+		_grown_rects.append(grown)
+		_add_to_grid(_rect_grid, grown, rect_index)
+
+
+static func _add_to_grid(grid: Dictionary[Vector2i, PackedInt32Array], area: Rect2, index: int) -> void:
+	for cell_x: int in range(floori(area.position.x / BLOCKER_CELL_SIZE), floori(area.end.x / BLOCKER_CELL_SIZE) + 1):
+		for cell_y: int in range(floori(area.position.y / BLOCKER_CELL_SIZE), floori(area.end.y / BLOCKER_CELL_SIZE) + 1):
+			var cell: Vector2i = Vector2i(cell_x, cell_y)
+			var indices: PackedInt32Array = grid.get(cell, PackedInt32Array())
+			indices.append(index)
+			grid[cell] = indices
 
 
 func _is_on_main_floor(point: Vector2) -> bool:

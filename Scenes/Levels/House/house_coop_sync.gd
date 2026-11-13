@@ -48,6 +48,9 @@ const STREAMED_SCENES: PackedStringArray = [
 	"res://Scenes/Levels/House/Garden/Cop.tscn",
 	"res://Scenes/Levels/House/Garden/Swat.tscn",
 	"res://Scenes/Levels/House/Garden/RamTeam.tscn",
+	"res://Scenes/Levels/House/Garden/Vehicles/SquadCar.tscn",
+	"res://Scenes/Levels/House/Garden/Vehicles/ArmoredVehicle.tscn",
+	"res://Scenes/Levels/House/Garden/Vehicles/PoliceHelicopter.tscn",
 ]
 const POSE_INTERVAL_SECONDS: float = 0.05
 const SNAPSHOT_INTERVAL_SECONDS: float = 1.0 / 15.0

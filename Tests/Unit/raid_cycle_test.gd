@@ -20,6 +20,10 @@ func _data() -> RaidData:
 	data.swat_per_later_raid = 1
 	data.health_growth_per_raid = 0.2
 	data.last_wave_health_multiplier = 1.0
+	# No vehicles unless a test asks for them.
+	data.cars_in_first_car_raid = 0
+	data.tanks_from_raid = 99
+	data.helicopters_from_raid = 99
 	return data
 
 
@@ -114,3 +118,39 @@ func test_battering_rams_come_with_later_raids() -> void:
 	assert_int(second_raid[second_raid.size() - 1].ram_count).is_equal(1)
 	var fifth_raid: Array[RaidWave] = RaidPlanner.build_raid(data, 5)
 	assert_int(fifth_raid[fifth_raid.size() - 1].ram_count).is_equal(2)
+
+
+func test_a_wave_never_brings_more_officers_on_foot_than_the_cap() -> void:
+	var data: RaidData = _data()
+	data.first_wave_cops = 40
+	data.cops_per_later_raid = 30
+	data.max_officers_per_wave = 54
+	for wave: RaidWave in RaidPlanner.build_raid(data, 6, 1.0):
+		assert_int(wave.cop_count + wave.swat_count).is_less_equal(54)
+	# SWAT keep their places, cops fill up the rest.
+	var last: RaidWave = RaidPlanner.build_raid(data, 6, 1.0)[3]
+	assert_int(last.swat_count).is_greater(0)
+	assert_int(last.cop_count + last.swat_count).is_equal(54)
+
+
+func test_vehicles_join_from_their_raids_on() -> void:
+	var data: RaidData = _data()
+	data.cars_from_raid = 1
+	data.cars_in_first_car_raid = 1
+	data.tanks_from_raid = 2
+	data.raids_per_extra_tank = 3
+	data.helicopters_from_raid = 3
+	data.raids_per_extra_helicopter = 3
+	var first_raid: Array[RaidWave] = RaidPlanner.build_raid(data, 1)
+	assert_int(first_raid[0].car_count).is_equal(0)
+	assert_int(first_raid[1].car_count).is_equal(1)
+	assert_int(first_raid[1].tank_count + first_raid[1].helicopter_count).is_equal(0)
+	var second_raid: Array[RaidWave] = RaidPlanner.build_raid(data, 2)
+	assert_int(second_raid[second_raid.size() - 1].tank_count).is_equal(1)
+	assert_int(second_raid[1].car_count).is_equal(1)
+	assert_int(second_raid[second_raid.size() - 1].helicopter_count).is_equal(0)
+	var third_raid: Array[RaidWave] = RaidPlanner.build_raid(data, 3)
+	var finale: RaidWave = third_raid[third_raid.size() - 1]
+	assert_int(finale.helicopter_count).is_equal(1)
+	assert_int(finale.car_count).is_equal(3)
+	assert_int(finale.get_total()).is_equal(finale.cop_count + finale.swat_count + finale.ram_count + 3 + 1 + 1)
