@@ -1,6 +1,7 @@
 ## The other player in a co-op game: their head and hands drawn where that
 ## player has them, their beams and their name. Poses arrive about 20 times
-## a second and are smoothed in between. On the host it also carries the
+## a second; the drawn pose glides between them a moment behind
+## (SnapshotBuffer), while button presses use the newest one. On the host it also carries the
 ## player's HandInteractor, so their trigger and grip act in the host's
 ## world by exactly the same rules as the host's own hands.
 ##
@@ -9,12 +10,10 @@
 ##   avatars_root.add_child(other)
 ##   other.apply_pose(head, left_hold, left_origin, left_direction, right_hold, ...)
 ##
-## Dependencies: HandInteractor, XRPointer, PlaceholderMesh3D, Palette, Types autoload
+## Dependencies: HandInteractor, XRPointer, SnapshotBuffer, PlaceholderMesh3D, Palette, Types autoload
 class_name RemotePlayer
 extends Node3D
 
-## How fast the drawn pose catches up with the last received one (1/s).
-const POSE_SMOOTHING: float = 16.0
 ## The torso hangs this far below the head and only turns with it (no tilt).
 const NECK_DROP: float = 0.12
 ## Metadata on a hold anchor: Vector2i(peer id, hand) of whoever holds there.
@@ -31,6 +30,8 @@ var _acts_in_world: bool = false
 var _target_head: Transform3D = Transform3D.IDENTITY
 var _target_hands: Dictionary[Types.Hand, Transform3D] = {Types.Hand.LEFT: Transform3D.IDENTITY, Types.Hand.RIGHT: Transform3D.IDENTITY}
 var _has_pose: bool = false
+var _head_buffer: SnapshotBuffer = SnapshotBuffer.new()
+var _hand_buffers: Dictionary[Types.Hand, SnapshotBuffer] = {Types.Hand.LEFT: SnapshotBuffer.new(), Types.Hand.RIGHT: SnapshotBuffer.new()}
 var _pointers: Dictionary[Types.Hand, XRPointer] = {}
 
 @onready var _head: Node3D = %Head
@@ -78,15 +79,14 @@ func _ready() -> void:
 		hands.setup({Types.Hand.LEFT: _left_hand, Types.Hand.RIGHT: _right_hand}, _pointers)
 
 
-func _process(delta: float) -> void:
+func _process(_delta: float) -> void:
 	if not _has_pose:
 		return
-	var weight: float = clampf(delta * POSE_SMOOTHING, 0.0, 1.0)
-	_head.global_transform = _head.global_transform.interpolate_with(_target_head, weight)
+	var shown_time: float = _now() - SnapshotBuffer.INTERPOLATION_DELAY
+	_head.global_transform = _head_buffer.sample(shown_time)
 	_place_body()
-	for hand: Types.Hand in _target_hands:
-		var hand_node: Node3D = _get_hand(hand)
-		hand_node.global_transform = hand_node.global_transform.interpolate_with(_target_hands[hand], weight)
+	for hand: Types.Hand in _hand_buffers:
+		_get_hand(hand).global_transform = _hand_buffers[hand].sample(shown_time)
 
 # ============================================
 # PUBLIC API
@@ -98,6 +98,10 @@ func apply_pose(head: Transform3D, left_hold: Transform3D, left_origin: Vector3,
 	_target_head = head
 	_target_hands[Types.Hand.LEFT] = left_hold
 	_target_hands[Types.Hand.RIGHT] = right_hold
+	var now: float = _now()
+	_head_buffer.push(now, head)
+	_hand_buffers[Types.Hand.LEFT].push(now, left_hold)
+	_hand_buffers[Types.Hand.RIGHT].push(now, right_hold)
 	_pointers[Types.Hand.LEFT].set_ray(left_origin, left_direction)
 	_pointers[Types.Hand.RIGHT].set_ray(right_origin, right_direction)
 	if not _has_pose:
@@ -146,3 +150,8 @@ func _place_body() -> void:
 
 func _get_hand(hand: Types.Hand) -> Node3D:
 	return _left_hand if hand == Types.Hand.LEFT else _right_hand
+
+
+## Seconds on this machine's clock (poses are timed by when they arrive).
+func _now() -> float:
+	return Time.get_ticks_usec() / 1000000.0

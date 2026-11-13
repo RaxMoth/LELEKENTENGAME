@@ -73,8 +73,10 @@ func _run_host() -> void:
 	_check(await _wait_until(func() -> bool: return Coop.get_ready_peers().size() == 1), "host: the guest joined and loaded the house")
 	var sync: HouseCoopSync = level.get_node("%CoopSync") as HouseCoopSync
 	_check(await _wait_until(func() -> bool: return sync.get_remote_players().size() == 1), "host: the guest appears as a second player")
-	var guest: RemotePlayer = sync.get_remote_players()[0]
-	_check(await _wait_until(func() -> bool: return guest.hands.get_held_items().size() == 1), "host: the guest's click buys an ingredient into their hand")
+	# Looked up on every poll: the avatar is made anew if the guest's copy reloads.
+	_check(await _wait_until(func() -> bool:
+		var players: Array[RemotePlayer] = sync.get_remote_players()
+		return players.size() == 1 and players[0].hands.get_held_items().size() == 1), "host: the guest's click buys an ingredient into their hand")
 	_check(level.operation.get_cash() == cash_before - crate.ingredient.cost, "host: it is paid from the shared cash")
 	_check(await _wait_until(func() -> bool: return grinder.is_running()), "host: the guest put it into the grinder")
 	_check(await _wait_until(func() -> bool: return grinder.get_output_socket().item != null), "host: the guest's press on Stop ground it")
@@ -89,6 +91,16 @@ func _run_host() -> void:
 	var units_before: int = level.operation.stash.get_total()
 	_check(await _wait_until(func() -> bool: return level.operation.stash.get_total() < units_before), "host: the guest's press on Sell sold from the stash")
 	_check(await _wait_until(func() -> bool: return garden.door.is_passable()), "host: the guest swung the front door open")
+	_check(sync.sounds_relayed > 0, "host: the guest hears the host's world (sounds are sent)")
+	# The guest shoots last; then its connection drops (no goodbye) and it must come back by itself.
+	var shots: Array[int] = [0]
+	Events.beam_fired.connect(func(_from: Vector3, _to: Vector3) -> void: shots[0] += 1)
+	await _wait_until(func() -> bool: return shots[0] > 0)
+	await _seconds(0.5)
+	var guest_peer_id: int = Coop.get_ready_peers()[0]
+	(multiplayer.multiplayer_peer as ENetMultiplayerPeer).disconnect_peer(guest_peer_id)
+	_check(await _wait_until(func() -> bool: return Coop.get_ready_peers().is_empty()), "host: the guest's connection dropped")
+	_check(await _wait_until(func() -> bool: return Coop.get_ready_peers().size() == 1 and Coop.get_ready_peers()[0] != guest_peer_id), "host: the dropped guest gets back in on its own")
 	_check(await _wait_until(func() -> bool: return Coop.get_ready_peers().is_empty()), "host: the guest left again")
 
 
@@ -149,6 +161,9 @@ func _run_guest() -> void:
 	_check(await _wait_until(func() -> bool: return garden.door.is_passable()), "guest: the door I opened stands open here too")
 	_check(rig.walkable_area.contains(Vector3(garden.doorway_region.get_center().x, 0.0, garden.doorway_region.get_center().y)), "guest: I can walk through the open doorway")
 
+	# The host drops our connection after the shot below: we must get back in.
+	var reconnections: Array[int] = [0]
+	Coop.reconnected.connect(func() -> void: reconnections[0] += 1)
 	# A shot with the gun trigger: the host fires it and its tracer comes back.
 	var tracers: Array[int] = [0]
 	Events.beam_fired.connect(func(_from: Vector3, _to: Vector3) -> void: tracers[0] += 1)
@@ -158,6 +173,8 @@ func _run_guest() -> void:
 	rig.handle_controller_button(off_hand, Types.XR_ACTION_TRIGGER_CLICK, true)
 	rig.handle_controller_button(off_hand, Types.XR_ACTION_TRIGGER_CLICK, false)
 	_check(await _wait_until(func() -> bool: return tracers[0] > 0), "guest: my gun trigger fires (the host's shot comes back as a tracer)")
+	_check(await _wait_until(func() -> bool: return reconnections[0] > 0), "guest: after a dropped connection I'm back in on my own")
+	_check(await _wait_until(func() -> bool: return _get_house() != null and _get_house().is_mirror and Coop.is_level_acknowledged()), "guest: and see the host's house again")
 
 
 ## Retries until the host is up (it loads the house first).

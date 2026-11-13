@@ -14,7 +14,12 @@
 ## DEFAULT_PORT by hand or use a VPN (Tailscale, ZeroTier). A relay server
 ## for players behind strict NAT is the next step (see Docs/GAME.md).
 ##
-## Dependencies: Events, SceneManager, SaveManager autoloads, CoopDiscovery
+## A dropped connection: the guest keeps its mirror on screen and tries to
+## get back in (RECONNECT_ATTEMPTS, RECONNECT_INTERVAL_SECONDS apart); the
+## host lets them in like a new join. A host that really ends the session
+## says goodbye first, so its guest goes straight back to their own game.
+##
+## Dependencies: Events, SceneManager, SaveManager, UI autoloads, CoopDiscovery
 extends Node
 
 enum Mode { OFFLINE, HOSTING, CLIENT }
@@ -28,6 +33,10 @@ signal connection_failed(reason: String)
 signal found_games_changed
 ## The host's router answered (or not): the address to give a friend online.
 signal internet_address_changed(address: String)
+## Guest: the connection dropped; trying to get back in ([param attempt] of [param attempts]).
+signal reconnecting(attempt: int, attempts: int)
+## Guest: back in the host's game after a dropped connection.
+signal reconnected
 
 ## Bump when the messages between host and client change: older builds
 ## can't play together and are told so.
@@ -44,6 +53,10 @@ const UPNP_TIMEOUT_MILLISECONDS: int = 2500
 ## killed without closing it; a session longer than that renews it.
 const UPNP_LEASE_SECONDS: int = 4 * 60 * 60
 const UPNP_DESCRIPTION: String = "Porchlight VR"
+## A guest whose connection drops tries this many times to get back in ...
+const RECONNECT_ATTEMPTS: int = 5
+## ... this many seconds apart.
+const RECONNECT_INTERVAL_SECONDS: float = 2.0
 const KEY_ADDRESS: String = "address"
 const KEY_SEEN_AT: String = "seen_at"
 
@@ -71,6 +84,15 @@ var _mapped_port: int = 0
 var _is_level_acknowledged: bool = false
 ## Guest: a level the host asked for while a scene change was still running.
 var _pending_scene_path: String = ""
+## Guest: the host's address, to reconnect after a drop.
+var _host_address: String = ""
+## Guest: we played in the host's level (a drop then means reconnecting).
+var _has_played: bool = false
+## Guest: the host ended the session on purpose (no reconnecting).
+var _host_said_goodbye: bool = false
+var _is_reconnecting: bool = false
+var _reconnect_attempts_done: int = 0
+var _seconds_until_reconnect: float = -1.0
 
 
 func _ready() -> void:
@@ -91,6 +113,10 @@ func _process(delta: float) -> void:
 			_announcer.put_packet(CoopDiscovery.encode(get_player_name(1), _port, PROTOCOL_VERSION))
 	if _listener != null:
 		_poll_discovery()
+	if _is_reconnecting and _seconds_until_reconnect >= 0.0:
+		_seconds_until_reconnect -= delta
+		if _seconds_until_reconnect < 0.0:
+			_try_reconnect()
 
 
 ## Quitting: close the connection and the router port, nothing else (no
@@ -98,6 +124,8 @@ func _process(delta: float) -> void:
 func _exit_tree() -> void:
 	stop_discovery()
 	_stop_announcing()
+	if is_host() and not player_names.is_empty():
+		_say_goodbye()
 	if multiplayer.multiplayer_peer != null:
 		multiplayer.multiplayer_peer.close()
 	_close_router_port()
@@ -181,24 +209,32 @@ func join(address: String) -> Error:
 	if not CoopDiscovery.is_valid_address(address):
 		connection_failed.emit(tr("That address doesn't look right"))
 		return ERR_INVALID_PARAMETER
-	var parts: Array = CoopDiscovery.split_address(address, DEFAULT_PORT)
-	var peer: ENetMultiplayerPeer = ENetMultiplayerPeer.new()
-	var error: Error = peer.create_client(str(parts[0]), int(parts[1]))
+	var error: Error = _connect_to(address)
 	if error != OK:
 		connection_failed.emit(tr("Could not connect to %s") % address)
 		return error
-	multiplayer.multiplayer_peer = peer
-	_port = int(parts[1])
-	_is_level_acknowledged = false
-	_set_mode(Mode.CLIENT)
+	_host_address = address
+	_host_said_goodbye = false
+	_has_played = false
 	return OK
+
+
+## Guest: true while trying to get back in after a dropped connection.
+func is_reconnecting() -> bool:
+	return _is_reconnecting
 
 
 ## Ends the session. A client goes back to its own saved game.
 func leave() -> void:
 	var was_client: bool = mode == Mode.CLIENT
+	_is_reconnecting = false
+	_seconds_until_reconnect = -1.0
+	_host_address = ""
+	_has_played = false
 	if mode == Mode.OFFLINE and multiplayer.multiplayer_peer is OfflineMultiplayerPeer:
 		return
+	if is_host() and not player_names.is_empty():
+		_say_goodbye()
 	_stop_announcing()
 	_close_router_port()
 	if multiplayer.multiplayer_peer != null:
@@ -308,6 +344,18 @@ func _level_ready(scene_path: String) -> void:
 @rpc("authority", "reliable")
 func _level_acknowledged() -> void:
 	_is_level_acknowledged = true
+	_has_played = true
+	if _is_reconnecting:
+		_is_reconnecting = false
+		_reconnect_attempts_done = 0
+		reconnected.emit()
+		UI.toast(tr("Back in the game"))
+
+
+## Host -> clients: the host ends the session on purpose (don't reconnect).
+@rpc("authority", "reliable")
+func _goodbye() -> void:
+	_host_said_goodbye = true
 
 # ============================================
 # INTERNALS
@@ -325,13 +373,71 @@ func _on_connected_to_server() -> void:
 
 
 func _on_connection_failed() -> void:
+	if _is_reconnecting:
+		_retry_or_give_up()
+		return
 	connection_failed.emit(tr("Could not reach the host"))
 	leave()
 
 
 func _on_server_disconnected() -> void:
+	if is_client() and _has_played and not _host_said_goodbye and not _host_address.is_empty():
+		_begin_reconnecting()
+		return
 	connection_failed.emit(tr("The host left the game"))
 	leave()
+
+
+## Opens a client connection to [param address] (joining or reconnecting).
+func _connect_to(address: String) -> Error:
+	var parts: Array = CoopDiscovery.split_address(address, DEFAULT_PORT)
+	var peer: ENetMultiplayerPeer = ENetMultiplayerPeer.new()
+	var error: Error = peer.create_client(str(parts[0]), int(parts[1]))
+	if error != OK:
+		return error
+	multiplayer.multiplayer_peer = peer
+	_port = int(parts[1])
+	_is_level_acknowledged = false
+	_set_mode(Mode.CLIENT)
+	return OK
+
+
+## Guest: the connection dropped without a goodbye. The mirror stays on
+## screen (nothing is sent meanwhile) while we try to get back in.
+func _begin_reconnecting() -> void:
+	_is_reconnecting = true
+	_reconnect_attempts_done = 0
+	_is_level_acknowledged = false
+	multiplayer.multiplayer_peer = OfflineMultiplayerPeer.new()
+	_seconds_until_reconnect = 0.5
+	UI.toast(tr("Connection lost: reconnecting"))
+
+
+func _try_reconnect() -> void:
+	_reconnect_attempts_done += 1
+	reconnecting.emit(_reconnect_attempts_done, RECONNECT_ATTEMPTS)
+	if _connect_to(_host_address) != OK:
+		_retry_or_give_up()
+
+
+func _retry_or_give_up() -> void:
+	multiplayer.multiplayer_peer = OfflineMultiplayerPeer.new()
+	if _reconnect_attempts_done < RECONNECT_ATTEMPTS:
+		_seconds_until_reconnect = RECONNECT_INTERVAL_SECONDS
+		return
+	_is_reconnecting = false
+	connection_failed.emit(tr("Lost the connection to the host"))
+	UI.toast(tr("Lost the connection to the host"))
+	leave()
+
+
+## Host: tells every guest the session really ends, and sends it right away
+## (the connection closes right after).
+func _say_goodbye() -> void:
+	_goodbye.rpc()
+	var peer: ENetMultiplayerPeer = multiplayer.multiplayer_peer as ENetMultiplayerPeer
+	if peer != null and peer.host != null:
+		peer.host.flush()
 
 
 func _on_peer_connected(_peer_id: int) -> void:

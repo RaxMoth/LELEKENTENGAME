@@ -540,9 +540,16 @@ the host's device by hand or put both players in a VPN such as Tailscale.
   same gun with shared ammo; every tracer is shown to both), every in-world
   board (sales, office, armory, build board: `ControlMirror` sends a board's
   look when it changes), customers and raiders (as figures), announcements,
-  floating texts and the guest's rumbles. Each player sees the other's head,
-  hands, beam and name (`RemotePlayer`).
-- **Not shared yet:** sounds, the gun model in the guest's hand, raiders'
+  floating texts, the host's world sounds (stations, coins, shots, steps)
+  and the guest's rumbles. Each player sees the other's head, hands, beam
+  and name (`RemotePlayer`).
+- **Smooth:** the other player, items, customers and raiders glide between
+  the host's snapshots a tenth of a second behind (`SnapshotBuffer`), at
+  constant speed instead of jumping 15–20 times a second.
+- **Sturdy:** a guest whose connection drops keeps the house on screen and
+  gets back in by itself (up to 5 tries, 2 s apart); a host that really
+  ends the session says goodbye first, so the guest goes straight home.
+- **Not shared yet:** the gun model in the guest's hand, raiders'
   and customers' animations and health bars on the guest's side (they move
   but are frozen pictures), more than two players.
 - The host's pause menu doesn't stop the world; the guest's copy never
@@ -553,7 +560,7 @@ the host's device by hand or put both players in a VPN such as Tailscale.
 
 ## Not built yet / next steps
 
-- **Co-op, part 3:** sounds, the guest's gun model, live raider / customer
+- **Co-op, part 4:** the guest's gun model, live raider / customer
   animations on the guest's side; a relay for strict NAT; more players.
 - **Meta layer:** contracts, rival territory, random events, the campaign
   and bosses that change the world.
