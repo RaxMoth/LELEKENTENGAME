@@ -307,6 +307,8 @@ stash.add(&"glow", tier, units) / take(&"glow", min_tier, amount) / steal(n) / c
 SalesMath.evaluate(asked_price, max_price, haggles)   # Verdict.ACCEPT / COUNTER / REFUSE
 AutomationMath.get_missing_ingredients(recipe_ids, present_ids)   # what the hopper still feeds
 AutomationMath.find_nearest(from, positions, ready_flags)          # the picker's next ripe plant
+AutomationMath.rolls_jam(roll, chance, runs_since_jam, min_runs)   # does a motor jam (Workstation)
+AutomationMath.pick_crew_task(has_jam, has_waiting_gauge, has_bag, stash_has_room)   # a crafter's next job (Worker.tend_lab())
 heat.add(n) / cool(delta) / get_ratio()
 health.take(amount) / recover(delta) / is_down()   # PlayerHealth: hits, regeneration after a quiet spell
 book.add_xp(SkillBook.Skill.CRAFTING, xp, tuning) / get_level(skill, tuning)   # skills grow by doing

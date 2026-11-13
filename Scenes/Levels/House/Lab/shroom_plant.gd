@@ -68,11 +68,12 @@ func setup(house_operation: Operation, grown_recipe: RecipeData) -> void:
 	_show_growth()
 
 
-## Bought (or not yet): a spot not bought yet shows an empty pot (a hint
-## that the office sells more plants) and grows nothing.
+## Bought (or not yet): a spot not bought yet is hidden (pot and all) and
+## grows nothing; More Plants puts the next pot on the shelf.
 func set_active(is_active: bool) -> void:
 	_is_active = is_active
 	process_mode = Node.PROCESS_MODE_INHERIT if is_active else Node.PROCESS_MODE_DISABLED
+	visible = is_active
 	_show_growth()
 
 

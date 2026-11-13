@@ -310,6 +310,13 @@ The press is behind you.,The press is behind you.,Die Presse steht hinter dir.
 "Every station is a skill check: press Stop while the needle is in the green. The closer to the middle, the better the product.","Every station is a skill check: press Stop while the needle is in the green. The closer to the middle, the better the product.","Jede Station ist ein Geschicklichkeitstest: Drück Stopp, solange die Nadel im Grünen ist. Je näher an der Mitte, desto besser die Ware."
 Press Stop when the needle is in the green,Press Stop when the needle is in the green,"Drück Stopp, wenn die Nadel im Grünen ist"
 Done: take the result,Done: take the result,Fertig: nimm das Ergebnis
+Packed: carry the bag to the stash,Packed: carry the bag to the stash,Verpackt: Beutel ins Lager tragen
+Jammed! Hit Stop to free it,Jammed! Hit Stop to free it,Verklemmt! Drück Stop zum Lösen
+Jammed!,Jammed!,Verklemmt!
+Bags into the stash,Bags into the stash,Beutel ins Lager
+Only packed bags go into the stash,Only packed bags go into the stash,Nur verpackte Beutel kommen ins Lager
+Freed the %s,Freed the %s,%s gelöst
+Took a bag to the stash,Took a bag to the stash,Beutel ins Lager gebracht
 Put in a raw ingredient to grind,Put in a raw ingredient to grind,Leg eine rohe Zutat zum Mahlen hinein
 Put in ground ingredients (2 or 3),Put in ground ingredients (2 or 3),Leg gemahlene Zutaten hinein (2 oder 3)
 %d in: add the rest of the recipe,%d in: add the rest of the recipe,%d drin: leg den Rest des Rezepts dazu

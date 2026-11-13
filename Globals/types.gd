@@ -59,6 +59,8 @@ const GROUP_WALK_BLOCKER: StringName = &"walk_blocker"
 const GROUP_PLAYER_TARGET: StringName = &"player_target"
 ## Things besides raiders the player's weapons hit (HitTarget: the cabin's rats).
 const GROUP_HIT_TARGET: StringName = &"hit_target"
+## The stash shelf: packed bags are put in through its drop crate (crafters find it here).
+const GROUP_STASH_SHELF: StringName = &"stash_shelf"
 
 # ============================================
 # INPUT ACTIONS (defined in Project Settings > Input Map)

@@ -7,6 +7,7 @@ extends RefCounted
 
 
 const BATCH_SCENE: PackedScene = preload("res://Scenes/Levels/House/Lab/BatchItem.tscn")
+const BAG_SCENE: PackedScene = preload("res://Scenes/Levels/House/Lab/ProductBag.tscn")
 
 
 static func run(test: SmokeTest, level: HouseLevel) -> void:
@@ -70,10 +71,14 @@ static func run(test: SmokeTest, level: HouseLevel) -> void:
 	rig.tap_world_point(press.get_input_sockets()[0].global_position)
 	await test.frames(3)
 	test.check(press.is_running(), "a batch in the press starts packaging")
+	var glow_recipe: RecipeData = batch.recipe
 	await _stop_in_the_middle(test, rig, press)
-	var units: int = operation.stash.get_total() - stash_before
-	test.check(units == operation.get_batch_size(batch.recipe), "packaging puts a full batch into the stash")
-	test.check(operation.stash.count(&"glow", 3) == units, "perfect handwork makes Pure quality or better")
+	var bag: ProductBag = press.get_output_socket().item as ProductBag
+	test.check(bag != null and bag.units == operation.get_batch_size(glow_recipe) and operation.stash.get_total() == stash_before, "the press packs a bag on its tray; nothing is in the stash yet")
+	await _check_carry_bag_to_stash(test, level, bag, stash_before)
+	test.check(operation.stash.count(&"glow", 3) == operation.get_batch_size(glow_recipe), "perfect handwork makes Pure quality or better")
+	rig.locomotion.travel_to_spot(0)
+	await test.frames(2)
 
 	await _check_vr_hands(test, rig, operation, glowcap_crate, grinder, cooker)
 
@@ -84,11 +89,70 @@ static func run(test: SmokeTest, level: HouseLevel) -> void:
 	var crafter: Worker = lab.get_node("%Crafters").get_child(0) as Worker
 	var second_crafter: Worker = lab.get_node("%Crafters").get_child(1) as Worker
 	test.check(crafter.is_working() and not second_crafter.visible, "a hired crafter shows up, the unhired slot stays empty")
-	var stock_before: int = operation.stash.get_total()
-	crafter.work_now()
-	test.check(operation.stash.get_total() > stock_before, "a crafter makes product")
+	await _check_crafter_tends_lab(test, level, lab, crafter)
 	test.check(Profile.skills.book.get_xp(SkillBook.Skill.CRAFTING) > 0.0 and Profile.skills.book.get_xp(SkillBook.Skill.HARVESTING) > 0.0, "skill checks stopped by hand and hand harvests train crafting and harvesting")
 	await _check_cooker_fire(test, level, lab)
+
+
+## Carried by hand: click the bag on the press, then the drop crate at the
+## stash shelf; its units go into the stash.
+static func _check_carry_bag_to_stash(test: SmokeTest, level: HouseLevel, bag: ProductBag, stash_before: int) -> void:
+	var rig: XRPlayerRig = level.rig
+	var shelf: StashShelf = level.get_tree().get_first_node_in_group(Types.GROUP_STASH_SHELF) as StashShelf
+	var units: int = bag.units
+	rig.tap_world_point(bag.get_grab_center())
+	await test.frames(2)
+	test.check(rig.get_held_items().has(bag), "the packed bag comes off the press into the hand")
+	var drop: ItemSocket = shelf.get_drop_socket()
+	var in_front: Vector3 = drop.global_position + shelf.global_basis.z * 1.1
+	rig.locomotion.teleport_to(Vector3(in_front.x, 0.0, in_front.z))
+	await test.frames(2)
+	rig.tap_world_point(drop.global_position)
+	await test.frames(4)
+	test.check(units > 0 and rig.get_held_items().is_empty() and level.operation.stash.get_total() == stash_before + units, "put in the stash shelf's drop crate, the bag's units are stored")
+
+
+## Automation still needs hands: a hired crafter frees a jammed motor, stops
+## a needle nobody stops (no motor), and carries packed bags to the stash.
+static func _check_crafter_tends_lab(test: SmokeTest, level: HouseLevel, lab: Lab, crafter: Worker) -> void:
+	var operation: Operation = level.operation
+	var grinder: Workstation = lab.get_station(&"Grinder")
+	var press: Workstation = lab.get_station(&"Press")
+	# A needle nobody stops (no motor): the crafter steps in.
+	crafter.hand_wait_seconds = 0.0
+	grinder.get_input_sockets()[0].insert(lab.get_crate(&"glowcap").take_item())
+	await test.frames(3)
+	test.check(grinder.is_running() and crafter.tend_lab() == AutomationMath.CrewTask.STOP_GAUGE and not grinder.get_output_socket().is_empty(), "a crafter stops a skill check nobody runs")
+	_clear(grinder)
+	# A jammed motor: the crafter frees it, the step finishes.
+	grinder.set_motorized(true)
+	grinder.motor_seconds = 0.1
+	grinder.jam_chance = 1.0
+	grinder.min_runs_between_jams = 0
+	grinder.get_input_sockets()[0].insert(lab.get_crate(&"glowcap").take_item())
+	test.check(await test.wait_until(func() -> bool: return grinder.is_jammed()), "now and then a motor jams and the needle sticks")
+	test.check(crafter.tend_lab() == AutomationMath.CrewTask.UNJAM and not grinder.is_jammed() and not grinder.get_output_socket().is_empty(), "a crafter frees the jammed motor")
+	grinder.jam_chance = 0.0
+	grinder.set_motorized(Profile.upgrades.is_owned(Types.UPGRADE_GRINDER_MOTOR))
+	_clear(grinder)
+	# A packed bag on the press: the crafter takes it to the stash.
+	var bag: ProductBag = Pools.spawn(BAG_SCENE, Global.get_world_root(), press.get_output_socket().global_position) as ProductBag
+	bag.setup(operation.find_recipe(&"glow"), 2, 3)
+	bag.home_socket = press.get_output_socket()
+	press.get_output_socket().insert(bag)
+	var stock_before: int = operation.stash.get_total()
+	test.check(crafter.tend_lab() == AutomationMath.CrewTask.CARRY_BAG and operation.stash.get_total() == stock_before + 3 and press.get_output_socket().is_empty(), "a crafter carries the packed bag to the stash")
+	crafter.hand_wait_seconds = 3.0
+
+
+## Empties a station's slots and tray (items back into their pools).
+static func _clear(station: Workstation) -> void:
+	var sockets: Array[ItemSocket] = station.get_input_sockets()
+	sockets.append(station.get_output_socket())
+	for socket: ItemSocket in sockets:
+		var item: Grabbable = socket.remove_item()
+		if item != null:
+			Pools.despawn(item)
 
 
 ## A batch left on the cooker smokes, then catches fire and burns; the
@@ -184,6 +248,7 @@ static func _check_start_and_gadgets(test: SmokeTest, level: HouseLevel, lab: La
 	var grinder: Workstation = lab.get_station(&"Grinder")
 	var cooker: Workstation = lab.get_station(&"Cooker")
 	var press: Workstation = lab.get_station(&"Press")
+	test.check(plants[0].is_active() and plants[0].visible and not plants[1].is_active() and not plants[1].visible, "a new lab shows only the one pot it has, no empty ones")
 	test.check(plants[0].is_active() and not plants[1].is_active() and not grinder.visible and not cooker.visible and not press.visible and not lab.get_crate(&"glowcap").visible, "a new lab has one shroom plant and no gadgets yet")
 	var recipe_board: RecipeBoard = lab.get_recipe_board()
 	test.check(recipe_board.get_row_count() == lab.recipes.size() and recipe_board.get_unlocked_count() == 1, "the recipe book shows every recipe, open; only shrooms are unlocked")
