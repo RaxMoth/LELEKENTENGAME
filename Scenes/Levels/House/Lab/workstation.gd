@@ -4,24 +4,32 @@
 ## is in the green zone; the closer to its middle, the better the product.
 ## A bought motor (set_motorized) stops the needle on its own after
 ## motor_seconds with motor_accuracy (Good); pressing Stop first can still do better.
+## Now and then a motor jams (jam_chance, never twice in a row): the needle
+## sticks until somebody frees it — the player with Stop, or a hired crafter.
+## A station without a motor waits for a hand: the player, or a crafter who
+## stops the needle when nobody else does. The press packs the batch into a
+## ProductBag on its tray: it reaches the stash only when it is carried there.
 ## Without power (the fuse box tripped) it stands still; while it burns
 ## (StationFire, the cooker) it takes nothing and starts nothing.
 ## State: Idle (waiting for inputs) <-> Running (the gauge sweeps).
 ##
-## Dependencies: TimingGauge, QualityMath, IngredientItem, BatchItem,
+## Dependencies: TimingGauge, QualityMath, AutomationMath, IngredientItem, BatchItem, ProductBag,
 ##               ItemSocket, PointerButton, Operation, FloatingText3D,
 ##               PopEffect3D, PlaceholderMesh3D, Palette, Pools, Audio,
 ##               Types autoloads, SfxSynth
 class_name Workstation
 extends Node3D
 
-## The press finished: units went into the stash.
+## The press packed a bag of [param units] (on its tray, not yet in the stash).
 signal product_packaged(recipe: RecipeData, tier: int, units: int)
+## The motor got stuck: somebody has to free it.
+signal jammed
 signal step_finished(step: Types.CraftStep, accuracy: float)
 ## The cooker turned its ingredients into a batch of [param recipe].
 signal batch_cooked(recipe: RecipeData)
 
 const BATCH_SCENE: PackedScene = preload("res://Scenes/Levels/House/Lab/BatchItem.tscn")
+const BAG_SCENE: PackedScene = preload("res://Scenes/Levels/House/Lab/ProductBag.tscn")
 const GAUGE_LENGTH: float = 0.5
 const GAUGE_THICKNESS: float = 0.035
 
@@ -36,6 +44,10 @@ const GAUGE_THICKNESS: float = 0.035
 @export_range(0.5, 20.0, 0.5) var motor_seconds: float = 4.0
 ## Accuracy a motor stops the needle at (0.6 = Good, never Perfect).
 @export_range(0.0, 1.0, 0.05) var motor_accuracy: float = 0.6
+## Chance a motor jams when it would stop the needle.
+@export_range(0.0, 1.0, 0.01) var jam_chance: float = 0.18
+## Clean motor runs between two jams at least.
+@export_range(0, 20) var min_runs_between_jams: int = 2
 
 ## The house's shared state (handed over by the Lab at setup).
 var operation: Operation = null
@@ -48,6 +60,9 @@ var _has_motor: bool = false
 var _running_seconds: float = 0.0
 var _has_power: bool = true
 var _is_burning: bool = false
+var _is_jammed: bool = false
+var _runs_since_jam: int = 0
+var _random: RandomNumberGenerator = RandomNumberGenerator.new()
 
 @onready var _inputs: Node3D = %Inputs
 @onready var _output: ItemSocket = %Output
@@ -107,8 +122,32 @@ func is_burning() -> bool:
 ## Called by the Lab at the start of a shift.
 func setup(house_operation: Operation) -> void:
 	operation = house_operation
-	# A full stash holds the press back; start as soon as there is room again.
-	operation.stash_changed.connect(func() -> void: _try_start.call_deferred())
+	_random.randomize()
+
+
+## True while the motor is stuck (the needle stands still).
+func is_jammed() -> bool:
+	return _is_jammed
+
+
+## Frees a jammed motor (Stop, or a crafter): it finishes the step as it would have.
+func clear_jam() -> void:
+	if not _is_jammed:
+		return
+	_is_jammed = false
+	Audio.play_sfx_at(SfxSynth.get_preset(&"breaker"), global_position, 0.1, -6.0)
+	_finish(motor_accuracy)
+
+
+## True while a skill check without a motor has run [param seconds] with
+## nobody stopping it (a crafter steps in then).
+func is_waiting_for_hand(seconds: float) -> bool:
+	return is_running() and not _has_motor and not _is_jammed and _has_power and _running_seconds >= seconds
+
+
+## A crafter stops the needle (crew work: [param accuracy], no skill growth).
+func stop_by_crew(accuracy: float) -> void:
+	_finish(accuracy)
 
 func get_input_sockets() -> Array[ItemSocket]:
 	var sockets: Array[ItemSocket] = []
@@ -207,15 +246,31 @@ func _on_running_state_entered() -> void:
 func _on_running_state_processing(delta: float) -> void:
 	if _gauge == null or not _has_power:
 		return
+	if _is_jammed:
+		return
 	_gauge.advance(delta)
 	_needle.position.x = (_gauge.get_needle() - 0.5) * GAUGE_LENGTH
 	_running_seconds += delta
 	if _has_motor and _running_seconds >= motor_seconds:
+		if AutomationMath.rolls_jam(_random.randf(), jam_chance, _runs_since_jam, min_runs_between_jams):
+			_jam()
+			return
+		_runs_since_jam += 1
 		_finish(motor_accuracy)
 
 # ============================================
 # INTERNALS
 # ============================================
+
+## The motor got stuck: the needle stands still until somebody frees it.
+func _jam() -> void:
+	_is_jammed = true
+	_runs_since_jam = 0
+	_status_label.text = tr(station_name) + "\n" + tr("Jammed! Hit Stop to free it")
+	FloatingText3D.spawn(tr("Jammed!"), _output.global_position + Vector3(0.0, 0.35, 0.0), Palette.DANGER, Global.get_world_root())
+	Audio.play_sfx_at(SfxSynth.get_preset(&"error"), global_position, 0.05, -2.0)
+	jammed.emit()
+
 
 func _accepts_input(item: Grabbable) -> bool:
 	if is_running() or operation == null or _is_burning:
@@ -253,9 +308,6 @@ func _try_start() -> void:
 				return
 			if step == Types.CraftStep.PACKAGE:
 				_active_recipe = (_get_input_items()[0] as BatchItem).recipe
-				if operation.stash.get_free_space() < operation.get_batch_size(_active_recipe):
-					_status_label.text = tr("Stash is full")
-					return
 		Types.CraftStep.COMBINE:
 			_active_recipe = _find_matching_recipe()
 			if _active_recipe == null:
@@ -266,6 +318,10 @@ func _try_start() -> void:
 
 func _on_stop_pressed(_button: PointerButton) -> void:
 	if _gauge == null:
+		return
+	if _is_jammed:
+		# A kick frees the motor; it finishes the step itself.
+		clear_jam()
 		return
 	var accuracy: float = _gauge.stop()
 	# Stopped by hand (not by the motor): the player's crafting grows.
@@ -312,19 +368,21 @@ func _complete(accuracy: float) -> void:
 			batch_cooked.emit(_active_recipe)
 		Types.CraftStep.PACKAGE:
 			var batch_item: BatchItem = _get_input_items()[0] as BatchItem
-			if operation.stash.get_free_space() < operation.get_batch_size(batch_item.recipe):
-				# The stash filled up during the skill check: keep the batch for later.
-				_status_label.text = tr("Stash is full")
-				return
 			var accuracies_so_far: Array[float] = batch_item.step_accuracies.duplicate()
 			accuracies_so_far.append(accuracy)
 			var tier: int = QualityMath.tier_from_score(QualityMath.combine(accuracies_so_far, operation.get_equipment_bonus()))
-			var units: int = operation.add_product(batch_item.recipe, tier, operation.get_batch_size(batch_item.recipe))
+			var units: int = operation.get_batch_size(batch_item.recipe)
+			var packed_recipe: RecipeData = batch_item.recipe
 			batch_item.socket.remove_item()
 			Pools.despawn(batch_item)
+			# Packed, not stored: the bag waits on the tray to be carried to the stash.
+			var bag: ProductBag = Pools.spawn(BAG_SCENE, Global.get_world_root(), _output.global_position) as ProductBag
+			bag.setup(packed_recipe, tier, units)
+			bag.home_socket = _output
+			_output.insert(bag)
 			FloatingText3D.spawn("%s ×%d" % [tr(QualityMath.get_tier_name(tier)), units], feedback_position + Vector3(0.0, 0.25, 0.0), Palette.GOLD, Global.get_world_root())
-			Audio.play_sfx_at(SfxSynth.get_preset(&"coin"), global_position, 0.05)
-			product_packaged.emit(batch_item.recipe, tier, units)
+			Audio.play_sfx_at(SfxSynth.get_preset(&"pop"), global_position, 0.05)
+			product_packaged.emit(packed_recipe, tier, units)
 
 
 func _get_input_items() -> Array[Grabbable]:
@@ -368,7 +426,8 @@ func _update_idle_status() -> void:
 	if is_running():
 		return
 	if not _output.is_empty():
-		_status_label.text = tr(station_name) + "\n" + tr("Done: take the result")
+		var done_hint: String = tr("Packed: carry the bag to the stash") if step == Types.CraftStep.PACKAGE else tr("Done: take the result")
+		_status_label.text = tr(station_name) + "\n" + done_hint
 		return
 	var hint: String = ""
 	match step:

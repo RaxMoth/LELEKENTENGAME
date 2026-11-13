@@ -7,6 +7,8 @@
 [ext_resource type="Material" path="res://Assets/Materials/house_ceiling.tres" id="concrete"]
 [ext_resource type="Material" path="res://Assets/Materials/wood_refinished.tres" id="new_wood"]
 [ext_resource type="Script" path="res://Scripts/Components/walk_blocker.gd" id="blocker"]
+[ext_resource type="Script" path="res://Scripts/Utils/crate_mesh_3d.gd" id="crate_mesh"]
+[ext_resource type="Script" path="res://Scripts/XR/item_socket.gd" id="socket"]
 
 [node name="StashShelf" type="Node3D"]
 script = ExtResource("stash_shelf")
@@ -192,3 +194,37 @@ outline_modulate = Color(0.051, 0.0627, 0.0902, 0.9)
 text = "Stash 0 / 30"
 font_size = 56
 outline_size = 14
+
+[node name="DropCrate" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.55, 0, 0.45)
+
+[node name="Crate" type="MeshInstance3D" parent="DropCrate"]
+script = ExtResource("crate_mesh")
+size = Vector3(0.42, 0.26, 0.32)
+crate_material = ExtResource("old_wood")
+
+[node name="Drop" type="Node3D" parent="DropCrate"]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.3, 0)
+script = ExtResource("socket")
+snap_radius = 0.32
+marker_diameter = 0.3
+shows_empty_marker = true
+
+[node name="DropLabel" type="Label3D" parent="DropCrate"]
+visibility_range_end = 8.0
+visibility_range_end_margin = 0.5
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.62, 0)
+pixel_size = 0.0014
+billboard = 1
+render_priority = 2
+outline_render_priority = 1
+modulate = Color(0.9333, 0.9451, 0.9686, 1)
+outline_modulate = Color(0.051, 0.0627, 0.0902, 0.9)
+text = "Bags into the stash"
+font_size = 40
+outline_size = 10
+
+[node name="Footprint" type="Node3D" parent="DropCrate"]
+script = ExtResource("blocker")
+size = Vector2(0.42, 0.32)
