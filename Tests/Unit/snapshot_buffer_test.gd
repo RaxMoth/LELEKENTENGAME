@@ -51,3 +51,11 @@ func test_keeps_only_the_newest_snapshots() -> void:
 		buffer.push(float(step), _at(float(step)))
 	# The oldest kept is 10 - MAX_SNAPSHOTS.
 	assert_float(buffer.sample(0.0).origin.x).is_equal_approx(float(10 - SnapshotBuffer.MAX_SNAPSHOTS), TOLERANCE)
+
+
+func test_a_jump_cuts_instead_of_gliding() -> void:
+	var buffer: SnapshotBuffer = SnapshotBuffer.new()
+	buffer.push(1.0, _at(0.0))
+	buffer.push(1.1, _at(SnapshotBuffer.JUMP_DISTANCE + 3.0))
+	# No glide through the room in between: it is already at the new place.
+	assert_float(buffer.sample(1.05).origin.x).is_equal_approx(SnapshotBuffer.JUMP_DISTANCE + 3.0, TOLERANCE)

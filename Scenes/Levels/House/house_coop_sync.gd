@@ -87,6 +87,7 @@ func setup(house_level: HouseLevel) -> void:
 	Events.floating_text_shown.connect(_on_floating_text_shown)
 	Events.beam_fired.connect(_on_beam_fired)
 	Events.positional_sound_played.connect(_on_positional_sound_played)
+	Coop.reconnecting.connect(_on_reconnecting)
 	if _level.is_mirror:
 		var rig: XRPlayerRig = _level.rig
 		rig.forwards_hand_input = true
@@ -418,6 +419,12 @@ func _on_floating_text_shown(label_text: String, world_position: Vector3, color:
 		return
 	for peer_id: int in Coop.get_ready_peers():
 		_receive_floating_text.rpc_id(peer_id, label_text, world_position, color)
+
+
+## Guest: the connection dropped; show in the world that we're trying to get back.
+func _on_reconnecting(attempt: int, attempts: int) -> void:
+	if _level != null and is_instance_valid(_level):
+		_level.announce(tr("Reconnecting (%d of %d)") % [attempt, attempts], Palette.WARNING, 1.6)
 
 
 ## Host: the other player hears the host's world too (synthesized sounds, by name).
