@@ -17,6 +17,7 @@
 [ext_resource type="PackedScene" path="res://Scenes/Levels/House/SteelDoorFrame.tscn" id="steel_door_frame_scene"]
 [ext_resource type="PackedScene" path="res://Scenes/Levels/House/Cellar/Cellar.tscn" id="cellar_scene"]
 [ext_resource type="PackedScene" path="res://Scenes/Levels/House/Ghost/Ghost.tscn" id="ghost_scene"]
+[ext_resource type="PackedScene" path="res://Scenes/Levels/House/Rats/Rats.tscn" id="rats_scene"]
 [ext_resource type="Script" path="res://Scenes/Levels/House/wrist_status.gd" id="wrist"]
 [ext_resource type="Script" path="res://Scripts/Components/player_vitals.gd" id="player_vitals"]
 [ext_resource type="Script" path="res://Scripts/XR/walkable_area.gd" id="walkable"]
@@ -165,6 +166,10 @@ unique_name_in_owner = true
 
 [node name="Ghost" parent="World/Stage" instance=ExtResource("ghost_scene")]
 unique_name_in_owner = true
+
+[node name="Rats" parent="World/Stage" node_paths=PackedStringArray("walkable") instance=ExtResource("rats_scene")]
+unique_name_in_owner = true
+walkable = NodePath("../WalkableArea")
 
 [node name="Office" parent="World/Stage" instance=ExtResource("office_scene")]
 unique_name_in_owner = true

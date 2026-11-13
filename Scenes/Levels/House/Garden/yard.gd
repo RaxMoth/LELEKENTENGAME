@@ -16,7 +16,7 @@
 ##   var target: Raider = yard.pick_raider(ray_origin, ray_direction, 30.0)
 ##
 ## Dependencies: Raider, FrontDoor, YardNavigation, RayMath, PlaceholderMesh3D,
-##               WalkableArea, PlayerVitals, Pools, Types autoloads, Palette
+##               WalkableArea, PlayerVitals, MeleeMath, Pools, Types autoloads, Palette
 @tool
 class_name Yard
 extends Node3D
@@ -32,6 +32,11 @@ enum ObstacleKind { PINE, TREE, ROCK, BUSH, CAR, COVER_ONLY }
 const COVER_HEIGHTS: Array[float] = [5.0, 4.2, 0.85, 1.0, 1.65, 4.5]
 const FENCE_HEIGHT: float = 1.1
 const FENCE_POST_SPACING: float = 2.4
+## The yard counts this far past its bounds as outdoors (the porch).
+const OUTDOOR_MARGIN: float = 0.6
+## Seconds between two looks at who the players are (they join and leave
+## rarely; where they stand is read live).
+const HUNT_TARGET_REFRESH_SECONDS: float = 0.25
 
 ## The house's front door: where every raider wants to go.
 @export var door: FrontDoor
@@ -62,8 +67,10 @@ var walkable: WalkableArea = null
 
 var _obstacle_circles: Array[Vector3] = []
 var _is_hunting: bool = false
-## While hunting: the living players raiders may go after, gathered once per physics frame.
+## The players raiders may go after (Types.GROUP_PLAYER_TARGET), gathered
+## a few times a second while there are raiders.
 var _hunt_targets: Array[PlayerVitals] = []
+var _seconds_until_target_refresh: float = 0.0
 var _raiders: Array[Raider] = []
 ## Living raiders' ground positions, refreshed once per physics frame.
 var _positions: PackedVector2Array = PackedVector2Array()
@@ -81,14 +88,16 @@ func _ready() -> void:
 
 
 # Once per physics frame, before the raiders move: forget the ones back in
-# the pool, gather everyone's position for separation and, while hunting,
-# the players they may go after.
-func _physics_process(_delta: float) -> void:
+# the pool, gather everyone's position for separation and, a few times a
+# second while there are raiders, the players they may go after.
+func _physics_process(delta: float) -> void:
 	if Engine.is_editor_hint():
 		return
 	_forget_despawned()
 	_refresh_positions()
-	if _is_hunting:
+	_seconds_until_target_refresh -= delta
+	if _seconds_until_target_refresh <= 0.0 and (_is_hunting or not _raiders.is_empty()):
+		_seconds_until_target_refresh = HUNT_TARGET_REFRESH_SECONDS
 		_refresh_hunt_targets()
 
 # ============================================
@@ -232,14 +241,19 @@ func is_hunting() -> bool:
 	return _is_hunting
 
 
-## The living player nearest [param from] (on the host), or null.
-func find_hunt_target(from: Vector3) -> PlayerVitals:
+## The living player nearest [param from] (on the host) — only one out in
+## the yard when [param outdoors_only], only one within [param max_distance]
+## — or null.
+func find_hunt_target(from: Vector3, outdoors_only: bool = false, max_distance: float = INF) -> PlayerVitals:
 	var nearest: PlayerVitals = null
-	var nearest_distance: float = INF
+	var nearest_distance: float = max_distance * max_distance if is_finite(max_distance) else INF
 	for player: PlayerVitals in _hunt_targets:
 		if not is_instance_valid(player) or not player.is_alive():
 			continue
-		var distance: float = from.distance_squared_to(player.get_feet_position())
+		var feet: Vector3 = player.get_feet_position()
+		if outdoors_only and not is_outdoors(feet):
+			continue
+		var distance: float = from.distance_squared_to(feet)
 		if distance < nearest_distance:
 			nearest_distance = distance
 			nearest = player
@@ -252,6 +266,26 @@ func get_alive_count() -> int:
 		if raider.is_alive():
 			alive += 1
 	return alive
+
+
+## True for a point out in the yard (or on the porch), not in the house.
+func is_outdoors(point: Vector3) -> bool:
+	return bounds.grow(OUTDOOR_MARGIN).has_point(Vector2(point.x, point.z))
+
+
+## The living raider nearest [param from] that the stretch [param from] →
+## [param to] (a fist, a blade) touches, give or take [param margin]; null when none.
+func find_raider_in_reach(from: Vector3, to: Vector3, margin: float) -> Raider:
+	var nearest: Raider = null
+	var nearest_distance: float = INF
+	for raider: Raider in _raiders:
+		if not raider.is_alive():
+			continue
+		var distance: float = MeleeMath.get_distance_to_body(from, to, raider.global_position, raider.get_body_height())
+		if distance <= raider.body_radius + margin and distance < nearest_distance:
+			nearest_distance = distance
+			nearest = raider
+	return nearest
 
 
 ## Ground positions of every living raider, gathered once per physics frame

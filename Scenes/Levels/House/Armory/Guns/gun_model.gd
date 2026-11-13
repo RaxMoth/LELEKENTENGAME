@@ -8,9 +8,9 @@
 ##   model.play_shot()
 ##   var muzzle: Vector3 = model.get_muzzle_position()
 ##
-## Dependencies: none
+## Dependencies: WeaponModel
 class_name GunModel
-extends Node3D
+extends WeaponModel
 
 ## The part that moves with every shot (slide, pump, bolt).
 @export var moving_part: Node3D
@@ -41,6 +41,18 @@ func _ready() -> void:
 
 func get_muzzle_position() -> Vector3:
 	return _muzzle.global_position
+
+
+func play_use() -> void:
+	play_shot()
+
+
+func play_empty() -> void:
+	play_dry_fire()
+
+
+func get_tip_position() -> Vector3:
+	return get_muzzle_position()
 
 
 ## One shot: kick, flash and the moving part cycling.

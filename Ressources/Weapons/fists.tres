@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="WeaponData" format=3]
+
+[ext_resource type="Script" path="res://Scripts/Resources/weapon_data.gd" id="script"]
+
+[resource]
+script = ExtResource("script")
+id = &"fists"
+display_name = "Fists"
+description = "Your bare hands. Swing a punch at a raider in reach."
+kind = 1
+cost = 0
+damage = 10.0
+fire_interval_seconds = 0.45
+range_meters = 1.6
+pierces_armor = false
+recoil = 0
+sound_preset = &"punch"
+has_unlimited_ammo = true
+starting_ammo = 0
+ammo_pack_size = 1
+ammo_pack_cost = 0
+max_ammo = 1
+swing_reach_meters = 0.1

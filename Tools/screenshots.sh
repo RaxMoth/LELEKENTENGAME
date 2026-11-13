@@ -59,6 +59,9 @@ SHOT_RESOLUTION=$WIDE shot level_20_lab_automation level=house showcase=house_au
 SHOT_RESOLUTION=$WIDE shot level_21_ghost level=house showcase=house_ghost frames=60
 # The door is down: raiders stormed into the front room, the player is hurt (wrist health).
 SHOT_RESOLUTION=$WIDE shot level_22_storm level=house showcase=house_storm stand=0.3,-1.2 look=0,1.0,-5 frames=40
+# A new player: rats in the one-room cabin, fists, then a knife and an axe from the armory.
+SHOT_RESOLUTION=$WIDE shot level_23_rats level=house showcase=house_rats stand=-1.9,1.3 look=-1.9,0.0,-0.5 frames=60
+SHOT_RESOLUTION=$WIDE shot level_24_melee level=house showcase=house_melee stand=0.1,-2.9 look=0.1,1.0,-4.3 frames=60
 "$TOOLS_DIR/godot.sh" --headless --script "$TOOLS_DIR/contact_sheet.gd" -- "$OUT_DIR/sheet_menus.png" 5 360 640 \
 	"$OUT_DIR"/0*.png >/dev/null 2>&1
 "$TOOLS_DIR/godot.sh" --headless --script "$TOOLS_DIR/contact_sheet.gd" -- "$OUT_DIR/sheet_levels.png" 3 640 360 \

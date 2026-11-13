@@ -1,7 +1,11 @@
-## One gun the player can buy at the armory terminal and fire from the front
-## room (off-hand trigger / right-click). Weapons differ in damage, fire rate,
-## range, armor piercing and ammo; the starter pistol is free and never runs
-## dry, so a raid can never leave the player unarmed.
+## One weapon the player fights with. A new player has only their fists;
+## the armory terminal sells the rest one after the other — a knife, an axe,
+## then the guns ([member required_weapon_id]). Guns (Kind.GUN) are fired
+## along the beam from the front room or porch (off-hand trigger /
+## right-click); melee weapons (Kind.MELEE: fists, knife, axe) hit a raider
+## in reach anywhere — swung at them in a headset, or with the trigger /
+## a click. Weapons differ in damage, rate, reach, armor piercing and ammo;
+## melee weapons and the pistol never run dry.
 ##
 ## Instances: Ressources/Weapons/*.tres, listed in weapon_catalog.tres.
 ##
@@ -9,12 +13,19 @@
 class_name WeaponData
 extends Resource
 
+## How a weapon is used.
+enum Kind { GUN, MELEE }
+
 @export var id: StringName = &""
 @export var display_name: String = "Weapon"
 @export_multiline var description: String = ""
-## Cash to buy the gun (0 = owned from the start).
+@export var kind: Kind = Kind.GUN
+## Cash to buy the weapon (0 = owned from the start: the fists).
 @export_range(0, 100000) var cost: int = 0
-## The animated model held in the hand (a GunModel scene).
+## For sale only once the player owns this weapon (the axe needs the knife,
+## the pistol the axe); empty = always for sale.
+@export var required_weapon_id: StringName = &""
+## The animated model held in the hand (a WeaponModel scene); none for fists.
 @export var model_scene: PackedScene
 
 @export_group("Firing")
@@ -22,7 +33,8 @@ extends Resource
 @export var damage: float = 20.0
 ## Seconds between two shots.
 @export var fire_interval_seconds: float = 0.3
-## Meters a shot reaches.
+## Meters a shot reaches; for a melee weapon, the reach of a strike with the
+## trigger or a click (from the hand in a headset, the eyes on a screen).
 @export var range_meters: float = 30.0
 ## Ignores the target's armor (rifles against SWAT).
 @export var pierces_armor: bool = false
@@ -33,6 +45,10 @@ extends Resource
 @export var sound_preset: StringName = &"shoot"
 ## Keeps firing while the trigger is held (SMG); otherwise one shot per pull.
 @export var is_automatic: bool = false
+
+@export_group("Melee")
+## How far past the hand a swing reaches (the knuckles, the blade, the axe head).
+@export var swing_reach_meters: float = 0.1
 
 @export_group("Projectiles")
 ## Projectiles per shot (a shotgun's pellets); damage is per projectile.
@@ -66,6 +82,11 @@ extends Resource
 @export_range(1, 10000) var max_ammo: int = 240
 
 
-## True for the gun every player starts with.
+## True for the weapon every player starts with (the fists).
 func is_starter() -> bool:
 	return cost <= 0
+
+
+## True for fists, the knife and the axe.
+func is_melee() -> bool:
+	return kind == Kind.MELEE

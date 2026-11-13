@@ -11,7 +11,7 @@ yard stays quiet.
 
 | Files | What |
 |---|---|
-| `FrontGarden.tscn`, `front_garden.gd` | The front: yard, door, porch, turrets, Security PC, guards, director; firing the equipped gun and showing its model, raid hooks, door → `shift_lost` |
+| `FrontGarden.tscn`, `front_garden.gd` | The front: yard, door, porch, turrets, Security PC, guards, director; firing the equipped gun or striking with fists / a blade (headset swings, `MeleeMath`) and showing its model, raid hooks |
 | `Yard` (`yard.gd`, in `FrontGarden.tscn`) | The open field: obstacles (x, z, radius, kind) → trees, pines, rocks, bushes, a car, the fence; raider registry, picking, line of sight (`is_shot_blocked`), door spots |
 | `Raider.tscn`, `raider.gd` + `Cop/Swat/RamTeam.tscn` | Raiders; StateChart Alive { Moving ⇄ InCover, Attacking } → Dead; tune with exports (health, armor, speeds, cover times, door damage, `is_battering_ram`) |
 | `raid_squad.gd` | `RaidSquad`: leapfrogging from cover to cover, gathering, the rush |
@@ -46,8 +46,10 @@ The Security PC stands on the office desk but belongs to this front.
   `RaidData` / `RaidPlanner` (unit-tested in `Tests/Unit/raid_cycle_test.gd`).
 - **Cover:** add a `Vector4(x, z, radius, kind)` to the Yard's `obstacles`
   in `FrontGarden.tscn` (kinds: pine, tree, rock, bush, car).
-- **Gun:** a `GunModel` scene in `../Armory/Guns/` and a `WeaponData` in
-  `Ressources/Weapons/` pointing at it; add it to `weapon_catalog.tres`.
+- **Gun / blade:** a `GunModel` scene in `../Armory/Guns/` (or a
+  `MeleeModel` in `../Armory/Melee/`) and a `WeaponData` in
+  `Ressources/Weapons/` pointing at it (kind, `required_weapon_id`); add it
+  to `weapon_catalog.tres` in shop order.
 - **Turret mount:** another `HouseTurret` under `Turrets` with the next
   `mount_level`, and raise `def_turrets.tres`'s `max_level`.
 - **Upgrade:** `UpgradeData` in `Ressources/Upgrades/Defense/`, add it to

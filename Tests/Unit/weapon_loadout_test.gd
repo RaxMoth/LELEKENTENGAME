@@ -105,3 +105,51 @@ func test_catalog_finds_weapons_and_the_starter() -> void:
 	var catalog: WeaponCatalog = _catalog()
 	assert_object(catalog.find_weapon(&"missing")).is_null()
 	assert_str(String(catalog.get_starter().id)).is_equal("pistol")
+
+
+## Fists → knife → axe → pistol: each is for sale only once the one before is owned.
+func _ladder() -> WeaponCatalog:
+	var fists: WeaponData = _weapon(&"fists", 0, true)
+	fists.kind = WeaponData.Kind.MELEE
+	var knife: WeaponData = _weapon(&"knife", 60, true)
+	knife.kind = WeaponData.Kind.MELEE
+	var axe: WeaponData = _weapon(&"axe", 160, true)
+	axe.kind = WeaponData.Kind.MELEE
+	axe.required_weapon_id = &"knife"
+	var pistol: WeaponData = _weapon(&"pistol", 200, true)
+	pistol.required_weapon_id = &"axe"
+	var catalog: WeaponCatalog = WeaponCatalog.new()
+	catalog.weapons = [fists, knife, axe, pistol]
+	return catalog
+
+
+func test_a_new_player_has_only_fists() -> void:
+	var catalog: WeaponCatalog = _ladder()
+	var loadout: WeaponLoadout = WeaponLoadout.new()
+	var in_hand: WeaponData = loadout.get_equipped(catalog)
+	assert_str(String(in_hand.id)).is_equal("fists")
+	assert_bool(in_hand.is_melee()).is_true()
+	assert_bool(loadout.owns(catalog.find_weapon(&"knife"))).is_false()
+
+
+func test_weapons_unlock_one_after_the_other() -> void:
+	var catalog: WeaponCatalog = _ladder()
+	var loadout: WeaponLoadout = WeaponLoadout.new()
+	var knife: WeaponData = catalog.find_weapon(&"knife")
+	var axe: WeaponData = catalog.find_weapon(&"axe")
+	var pistol: WeaponData = catalog.find_weapon(&"pistol")
+	assert_bool(loadout.can_buy(knife, catalog)).is_true()
+	assert_bool(loadout.can_buy(axe, catalog)).is_false()
+	assert_bool(loadout.can_buy(pistol, catalog)).is_false()
+	loadout.buy_weapon(knife)
+	assert_bool(loadout.can_buy(knife, catalog)).is_false()
+	assert_bool(loadout.can_buy(axe, catalog)).is_true()
+	assert_bool(loadout.can_buy(pistol, catalog)).is_false()
+	loadout.buy_weapon(axe)
+	assert_bool(loadout.can_buy(pistol, catalog)).is_true()
+
+
+func test_a_missing_requirement_keeps_it_locked() -> void:
+	var catalog: WeaponCatalog = _ladder()
+	catalog.find_weapon(&"axe").required_weapon_id = &"unknown"
+	assert_bool(WeaponLoadout.new().is_unlocked(catalog.find_weapon(&"axe"), catalog)).is_false()

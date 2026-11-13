@@ -207,9 +207,17 @@ Put in a cooked batch,Put in a cooked batch,Gekochte Charge einlegen
 Armory,Armory,Waffenkammer
 Pistol,Pistol,Pistole
 SMG,SMG,MP
+Fists,Fists,Fäuste
+Knife,Knife,Messer
+Axe,Axe,Axt
+Your bare hands. Swing a punch at a raider in reach.,Your bare hands. Swing a punch at a raider in reach.,Deine bloßen Hände. Schlag zu, wenn ein Angreifer in Reichweite ist.
+A kitchen knife with a real edge. Quick cuts in close.,A kitchen knife with a real edge. Quick cuts in close.,Ein scharfes Küchenmesser. Schnelle Schnitte aus nächster Nähe.
+"A heavy splitting axe. Slow, but it bites through armor.","A heavy splitting axe. Slow, but it bites through armor.","Eine schwere Spaltaxt. Langsam, aber sie geht durch jede Panzerung."
+Damage %d · %.1f hits/s · Close combat,Damage %d · %.1f hits/s · Close combat,Schaden %d · %.1f Schläge/s · Nahkampf
+close combat,close combat,Nahkampf
 Shotgun,Shotgun,Schrotflinte
 Rifle,Rifle,Gewehr
-"Your old sidearm. Weak, but it never runs dry.","Your old sidearm. Weak, but it never runs dry.","Deine alte Dienstwaffe. Schwach, aber die Munition geht nie aus."
+"Your first gun: a worn sidearm. Weak, but it never runs dry.","Your first gun: a worn sidearm. Weak, but it never runs dry.","Deine erste Waffe: eine abgenutzte Pistole. Schwach, aber die Munition geht nie aus."
 %d rounds,%d rounds,%d Schuss
 %s ammo,%s ammo,Munition: %s
 %s bought,%s bought,%s gekauft

@@ -1,7 +1,9 @@
-## The armory terminal's screen: every gun with its price, the one in hand,
-## and ammo boxes for the guns the player owns. Shown in the world on a
-## WorldScreen. It displays Profile data and emits signals; the Armory front
-## does the buying.
+## The armory terminal's screen: every weapon for sale with its price (one
+## not for sale yet says what it needs: "Needs Axe"), the ones owned, and an
+## ammo box for the gun in hand. The fists aren't listed (always there), nor
+## a blade the next one replaced (the knife once the axe is owned) unless
+## it's in hand — the list stays one screen tall. Shown in the world on a WorldScreen. It displays Profile data and
+## emits signals; the Armory front does the buying.
 ##
 ## Dependencies: WeaponCatalog, WeaponData, WeaponLoadout, ShopItemRow,
 ##               IconLabel, NumberFormat, Profile, Events autoloads
@@ -14,6 +16,7 @@ signal ammo_buy_requested(weapon: WeaponData)
 
 const ROW_SCENE: PackedScene = preload("res://Scenes/Menus/Shop/ShopItemRow.tscn")
 const CASH_ICON: Texture2D = preload("res://Assets/Icons/cash.svg")
+const LOCK_ICON: Texture2D = preload("res://Assets/Icons/lock.svg")
 
 var _catalog: WeaponCatalog = null
 var _is_refresh_queued: bool = false
@@ -46,8 +49,10 @@ func refresh() -> void:
 	var loadout: WeaponLoadout = Profile.armory.loadout
 	var equipped: WeaponData = loadout.get_equipped(_catalog)
 	for weapon: WeaponData in _catalog.weapons:
+		if weapon.is_starter() or (weapon != equipped and _is_replaced(weapon, loadout)):
+			continue
 		_add_weapon_row(weapon, loadout, weapon == equipped)
-		if loadout.owns(weapon) and not weapon.has_unlimited_ammo:
+		if weapon == equipped and loadout.owns(weapon) and not weapon.has_unlimited_ammo:
 			_add_ammo_row(weapon, loadout)
 	if equipped != null:
 		_equipped_label.text = tr("In hand: %s · %s") % [tr(equipped.display_name), _describe_ammo(equipped, loadout)]
@@ -73,6 +78,10 @@ func _add_weapon_row(weapon: WeaponData, loadout: WeaponLoadout, is_equipped: bo
 	elif loadout.owns(weapon):
 		row.setup(tr(weapon.display_name), tr(weapon.description), detail, tr("Equip"), true)
 		row.buy_pressed.connect(func() -> void: weapon_equip_requested.emit(weapon))
+	elif not loadout.is_unlocked(weapon, _catalog):
+		var required: WeaponData = _catalog.find_weapon(weapon.required_weapon_id)
+		var required_name: String = tr(required.display_name) if required != null else String(weapon.required_weapon_id)
+		row.setup(tr(weapon.display_name), tr(weapon.description), detail, tr("Needs %s") % required_name, false, LOCK_ICON)
 	else:
 		var can_afford: bool = Profile.wallet.can_afford(Types.CURRENCY_CASH, weapon.cost)
 		row.setup(tr(weapon.display_name), tr(weapon.description), detail, NumberFormat.with_separators(weapon.cost), can_afford, CASH_ICON)
@@ -87,6 +96,16 @@ func _add_ammo_row(weapon: WeaponData, loadout: WeaponLoadout) -> void:
 	row.buy_pressed.connect(func() -> void: ammo_buy_requested.emit(weapon))
 
 
+## True for an owned blade that a stronger owned one needs (the knife once the axe is owned).
+func _is_replaced(weapon: WeaponData, loadout: WeaponLoadout) -> bool:
+	if not weapon.is_melee() or not loadout.owns(weapon):
+		return false
+	for other: WeaponData in _catalog.weapons:
+		if other.is_melee() and other.required_weapon_id == weapon.id and loadout.owns(other):
+			return true
+	return false
+
+
 func _create_row(key: String) -> ShopItemRow:
 	var row: ShopItemRow = ROW_SCENE.instantiate() as ShopItemRow
 	_rows.add_child(row)
@@ -95,6 +114,9 @@ func _create_row(key: String) -> ShopItemRow:
 
 
 func _describe_stats(weapon: WeaponData) -> String:
+	if weapon.is_melee():
+		var melee_stats: String = tr("Damage %d · %.1f hits/s · Close combat") % [roundi(weapon.damage), 1.0 / maxf(0.01, weapon.fire_interval_seconds)]
+		return melee_stats + (" · " + tr("Pierces armor") if weapon.pierces_armor else "")
 	var shots_per_second: float = 1.0 / maxf(0.01, weapon.fire_interval_seconds)
 	var stats: String = tr("Damage %d · %.1f shots/s · Range %d m") % [roundi(weapon.damage), shots_per_second, roundi(weapon.range_meters)]
 	if weapon.pierces_armor:
@@ -103,6 +125,8 @@ func _describe_stats(weapon: WeaponData) -> String:
 
 
 func _describe_ammo(weapon: WeaponData, loadout: WeaponLoadout) -> String:
+	if weapon.is_melee():
+		return tr("close combat")
 	if weapon.has_unlimited_ammo:
 		return tr("unlimited ammo")
 	return tr("%d rounds") % loadout.get_ammo(weapon)

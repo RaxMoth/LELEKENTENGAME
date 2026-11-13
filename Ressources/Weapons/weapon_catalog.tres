@@ -2,6 +2,9 @@
 
 [ext_resource type="Script" path="res://Scripts/Resources/weapon_catalog.gd" id="catalog"]
 [ext_resource type="Script" path="res://Scripts/Resources/weapon_data.gd" id="weapon"]
+[ext_resource type="Resource" path="res://Ressources/Weapons/fists.tres" id="fists"]
+[ext_resource type="Resource" path="res://Ressources/Weapons/knife.tres" id="knife"]
+[ext_resource type="Resource" path="res://Ressources/Weapons/axe.tres" id="axe"]
 [ext_resource type="Resource" path="res://Ressources/Weapons/pistol.tres" id="pistol"]
 [ext_resource type="Resource" path="res://Ressources/Weapons/smg.tres" id="smg"]
 [ext_resource type="Resource" path="res://Ressources/Weapons/shotgun.tres" id="shotgun"]
@@ -9,4 +12,4 @@
 
 [resource]
 script = ExtResource("catalog")
-weapons = Array[ExtResource("weapon")]([ExtResource("pistol"), ExtResource("smg"), ExtResource("shotgun"), ExtResource("rifle")])
+weapons = Array[ExtResource("weapon")]([ExtResource("fists"), ExtResource("knife"), ExtResource("axe"), ExtResource("pistol"), ExtResource("smg"), ExtResource("shotgun"), ExtResource("rifle")])

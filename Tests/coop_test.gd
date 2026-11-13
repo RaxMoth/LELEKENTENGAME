@@ -69,6 +69,11 @@ func _run_host() -> void:
 	for gadget_id: StringName in [Types.UPGRADE_GRINDER, Types.UPGRADE_COOKER, Types.UPGRADE_PRESS, Types.UPGRADE_RENOVATE_WALLS, Types.UPGRADE_PLANTS, Types.UPGRADE_HOUSE_EXTENSION, Types.UPGRADE_CELLAR]:
 		Profile.upgrades.purchase(GameConfig.get_default().find_upgrade(gadget_id))
 	level.apply_upgrades()
+	# A gun for the guest's shot below (a new player has only fists).
+	var catalog: WeaponCatalog = (level.get_front(Armory) as Armory).weapon_catalog
+	for weapon_id: StringName in [&"knife", &"axe", &"pistol"]:
+		Profile.armory.loadout.buy_weapon(catalog.find_weapon(weapon_id))
+	Profile.armory.loadout.equip(catalog.find_weapon(&"pistol"))
 	var cash_before: int = level.operation.get_cash()
 	_check(Coop.host(_port, false) == OK, "host: hosting on port %d" % _port)
 	_check(await _wait_until(func() -> bool: return Coop.get_ready_peers().size() == 1), "host: the guest joined and loaded the house")

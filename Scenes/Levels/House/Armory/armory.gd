@@ -1,15 +1,18 @@
 ## The armory: a terminal on the front room's back wall where the cash made
-## selling buys guns and ammo for the raid at the end of every 3-day cycle.
-## The bought gun is equipped here and fired from the front room or porch
-## (the FrontGarden reads Profile.armory). Part of the defense area; it reads
-## and writes only the Operation (cash) and Profile.armory.
+## selling buys weapons and ammo for the raid at the end of every 3-day
+## cycle. A new player fights with their fists; the terminal sells a knife
+## first, then the axe, then the guns — each only once the one before is
+## owned (WeaponData.required_weapon_id). The bought weapon is equipped here
+## and used by the FrontGarden (it reads Profile.armory). Part of the
+## defense area; it reads and writes only the Operation (cash) and
+## Profile.armory.
 ##
 ## Dependencies: HouseFront, ArmoryBoard, WeaponCatalog, WeaponData,
 ##               WeaponLoadout, WorldScreen, Operation, Profile, Audio autoloads, Palette
 class_name Armory
 extends HouseFront
 
-## Every gun the terminal sells, in shop order.
+## Every weapon there is (fists first), in shop order.
 @export var weapon_catalog: WeaponCatalog
 
 var _is_board_dirty: bool = false
@@ -43,10 +46,11 @@ func get_screen() -> WorldScreen:
 	return _screen
 
 
-## Buys a gun for cash and puts it in the player's hand. Returns true on success.
+## Buys a weapon for cash and puts it in the player's hand. Returns true on
+## success; false when it isn't for sale yet (the one before isn't owned).
 func buy_weapon(weapon: WeaponData) -> bool:
 	var loadout: WeaponLoadout = Profile.armory.loadout
-	if weapon == null or loadout.owns(weapon) or not context.operation.spend_cash(weapon.cost, "weapons"):
+	if not loadout.can_buy(weapon, weapon_catalog) or not context.operation.spend_cash(weapon.cost, "weapons"):
 		Audio.play_ui(Audio.UI_ERROR)
 		return false
 	loadout.buy_weapon(weapon)
@@ -57,7 +61,7 @@ func buy_weapon(weapon: WeaponData) -> bool:
 	return true
 
 
-## Puts an owned gun in the player's hand.
+## Puts an owned weapon in the player's hand.
 func equip_weapon(weapon: WeaponData) -> bool:
 	if not Profile.armory.loadout.equip(weapon):
 		Audio.play_ui(Audio.UI_ERROR)

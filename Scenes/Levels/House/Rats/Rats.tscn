@@ -1,0 +1,20 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://Scenes/Levels/House/Rats/rat_pack.gd" id="pack"]
+[ext_resource type="PackedScene" path="res://Scenes/Levels/House/Rats/Rat.tscn" id="rat"]
+
+[node name="Rats" type="Node3D"]
+script = ExtResource("pack")
+upgrade_id = &"house_extension"
+
+[node name="Rat1" parent="." instance=ExtResource("rat")]
+transform = Transform3D(0.8253, 0, 0.5646, 0, 1, 0, -0.5646, 0, 0.8253, -3.6, 0, -3.2)
+
+[node name="Rat2" parent="." instance=ExtResource("rat")]
+transform = Transform3D(-0.5885, 0, 0.8085, 0, 1, 0, -0.8085, 0, -0.5885, -2.2, 0, 0.4)
+
+[node name="Rat3" parent="." instance=ExtResource("rat")]
+transform = Transform3D(0.5403, 0, -0.8415, 0, 1, 0, 0.8415, 0, 0.5403, -3.9, 0, 3.4)
+
+[node name="Rat4" parent="." instance=ExtResource("rat")]
+transform = Transform3D(-0.7259, 0, -0.6878, 0, 1, 0, 0.6878, 0, -0.7259, 0.2, 0, -0.6)

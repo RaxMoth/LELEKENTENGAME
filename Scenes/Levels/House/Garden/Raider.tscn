@@ -87,6 +87,12 @@ script = ExtResource("atomic")
 [node name="Hunting" type="Node" parent="StateChart/Root/Alive"]
 script = ExtResource("atomic")
 
+[node name="ToMoving" type="Node" parent="StateChart/Root/Alive/Hunting"]
+script = ExtResource("transition")
+to = NodePath("../../Moving")
+event = &"move"
+delay_in_seconds = "0.0"
+
 [node name="ToHunting" type="Node" parent="StateChart/Root/Alive"]
 script = ExtResource("transition")
 to = NodePath("../Hunting")

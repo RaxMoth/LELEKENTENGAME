@@ -1,0 +1,180 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://Scenes/Levels/House/Rats/rat.gd" id="rat"]
+[ext_resource type="Script" path="res://Scripts/Utils/blob_shadow_3d.gd" id="shadow"]
+[ext_resource type="Script" path="res://addons/godot_state_charts/state_chart.gd" id="chart"]
+[ext_resource type="Script" path="res://addons/godot_state_charts/compound_state.gd" id="compound"]
+[ext_resource type="Script" path="res://addons/godot_state_charts/atomic_state.gd" id="atomic"]
+[ext_resource type="Script" path="res://addons/godot_state_charts/transition.gd" id="transition"]
+
+[sub_resource type="StandardMaterial3D" id="fur"]
+resource_name = "RatFur"
+albedo_color = Color(0.27, 0.245, 0.225, 1)
+roughness = 0.95
+
+[sub_resource type="StandardMaterial3D" id="skin"]
+resource_name = "RatSkin"
+albedo_color = Color(0.58, 0.45, 0.43, 1)
+roughness = 0.7
+
+[sub_resource type="StandardMaterial3D" id="eye"]
+resource_name = "RatEye"
+albedo_color = Color(0.02, 0.02, 0.025, 1)
+roughness = 0.15
+
+[sub_resource type="SphereMesh" id="torso"]
+radius = 0.05
+height = 0.1
+radial_segments = 14
+rings = 8
+
+[sub_resource type="SphereMesh" id="head"]
+radius = 0.03
+height = 0.06
+radial_segments = 12
+rings = 6
+
+[sub_resource type="SphereMesh" id="nose"]
+radius = 0.007
+height = 0.014
+radial_segments = 8
+rings = 4
+
+[sub_resource type="SphereMesh" id="ear"]
+radius = 0.014
+height = 0.028
+radial_segments = 10
+rings = 5
+
+[sub_resource type="SphereMesh" id="eye_mesh"]
+radius = 0.0048
+height = 0.0096
+radial_segments = 8
+rings = 4
+
+[sub_resource type="CylinderMesh" id="tail"]
+top_radius = 0.0018
+bottom_radius = 0.0065
+height = 0.2
+radial_segments = 6
+rings = 1
+
+[node name="Rat" type="Node3D"]
+script = ExtResource("rat")
+
+[node name="Body" type="Node3D" parent="."]
+unique_name_in_owner = true
+
+[node name="Torso" type="MeshInstance3D" parent="Body"]
+transform = Transform3D(1.0, 0, 0, 0, 0.72, 0, 0, 0, 1.9, 0, 0.036, 0)
+mesh = SubResource("torso")
+surface_material_override/0 = SubResource("fur")
+cast_shadow = 0
+visibility_range_end = 9.0
+
+[node name="Head" type="MeshInstance3D" parent="Body"]
+transform = Transform3D(0.9, 0, 0, 0, 0.85, 0, 0, 0, 1.45, 0, 0.042, -0.1)
+mesh = SubResource("head")
+surface_material_override/0 = SubResource("fur")
+cast_shadow = 0
+visibility_range_end = 9.0
+
+[node name="Nose" type="MeshInstance3D" parent="Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.036, -0.142)
+mesh = SubResource("nose")
+surface_material_override/0 = SubResource("skin")
+cast_shadow = 0
+visibility_range_end = 9.0
+
+[node name="EarLeft" type="MeshInstance3D" parent="Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 0.35, -0.02, 0.066, -0.088)
+mesh = SubResource("ear")
+surface_material_override/0 = SubResource("skin")
+cast_shadow = 0
+visibility_range_end = 9.0
+
+[node name="EarRight" type="MeshInstance3D" parent="Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 0.35, 0.02, 0.066, -0.088)
+mesh = SubResource("ear")
+surface_material_override/0 = SubResource("skin")
+cast_shadow = 0
+visibility_range_end = 9.0
+
+[node name="EyeLeft" type="MeshInstance3D" parent="Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.016, 0.05, -0.118)
+mesh = SubResource("eye_mesh")
+surface_material_override/0 = SubResource("eye")
+cast_shadow = 0
+visibility_range_end = 9.0
+
+[node name="EyeRight" type="MeshInstance3D" parent="Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.016, 0.05, -0.118)
+mesh = SubResource("eye_mesh")
+surface_material_override/0 = SubResource("eye")
+cast_shadow = 0
+visibility_range_end = 9.0
+
+[node name="Tail" type="Node3D" parent="Body"]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.03, 0.088)
+
+[node name="TailMesh" type="MeshInstance3D" parent="Body/Tail"]
+transform = Transform3D(1, 0, 0, 0, -0.1219, -0.9925, 0, 0.9925, -0.1219, 0, -0.012, 0.098)
+mesh = SubResource("tail")
+surface_material_override/0 = SubResource("skin")
+cast_shadow = 0
+visibility_range_end = 9.0
+
+[node name="Shadow" type="MeshInstance3D" parent="."]
+script = ExtResource("shadow")
+diameter = 0.2
+
+[node name="StateChart" type="Node" parent="."]
+unique_name_in_owner = true
+script = ExtResource("chart")
+
+[node name="Root" type="Node" parent="StateChart"]
+script = ExtResource("compound")
+initial_state = NodePath("Roaming")
+
+[node name="Roaming" type="Node" parent="StateChart/Root"]
+script = ExtResource("compound")
+initial_state = NodePath("Sniffing")
+
+[node name="Sniffing" type="Node" parent="StateChart/Root/Roaming"]
+script = ExtResource("atomic")
+
+[node name="ToScurrying" type="Node" parent="StateChart/Root/Roaming/Sniffing"]
+script = ExtResource("transition")
+to = NodePath("../../Scurrying")
+event = &"walk"
+delay_in_seconds = "0.0"
+
+[node name="Scurrying" type="Node" parent="StateChart/Root/Roaming"]
+script = ExtResource("atomic")
+
+[node name="ToSniffing" type="Node" parent="StateChart/Root/Roaming/Scurrying"]
+script = ExtResource("transition")
+to = NodePath("../../Sniffing")
+event = &"arrived"
+delay_in_seconds = "0.0"
+
+[node name="ToBiting" type="Node" parent="StateChart/Root/Roaming"]
+script = ExtResource("transition")
+to = NodePath("../../Biting")
+event = &"target_in_range"
+delay_in_seconds = "0.0"
+
+[node name="Biting" type="Node" parent="StateChart/Root"]
+script = ExtResource("atomic")
+
+[node name="ToRoaming" type="Node" parent="StateChart/Root/Biting"]
+script = ExtResource("transition")
+to = NodePath("../../Roaming/Scurrying")
+event = &"walk"
+delay_in_seconds = "0.0"
+
+[connection signal="state_entered" from="StateChart/Root/Roaming/Sniffing" to="." method="_on_sniffing_state_entered"]
+[connection signal="state_physics_processing" from="StateChart/Root/Roaming/Sniffing" to="." method="_on_sniffing_state_physics_processing"]
+[connection signal="state_physics_processing" from="StateChart/Root/Roaming/Scurrying" to="." method="_on_scurrying_state_physics_processing"]
+[connection signal="state_entered" from="StateChart/Root/Biting" to="." method="_on_biting_state_entered"]

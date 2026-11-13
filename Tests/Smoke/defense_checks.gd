@@ -1,5 +1,6 @@
-## Smoke checks of the defense front: the open yard and its cover, the gun
-## in hand, raiders at the door, raid waves (cops, SWAT, a battering ram) in
+## Smoke checks of the defense front: the open yard and its cover, fists
+## and blades (a new player has only fists; knife, axe, then guns), the gun
+## in hand, raiders at the door and turning on a player out in the yard, raid waves (cops, SWAT, a battering ram) in
 ## squads that take cover and rush, guards, roof turrets and the Security
 ## PC, the armory terminal (guns, ammo) and the front door (open, walk
 ## through, close, bolt from both sides). Owned by whoever works on the
@@ -7,7 +8,7 @@
 ##
 ## Dependencies: SmokeTest, HouseLevel, FrontGarden, FrontDoor, Yard, Raider,
 ##               RaidSquad, HouseTurret, SecurityPc, Armory, Office, RaidWave,
-##               WeaponCatalog, WalkableArea
+##               WeaponCatalog, WeaponLoadout, ArmoryBoard, PlayerVitals, WalkableArea
 class_name DefenseSmokeChecks
 extends RefCounted
 
@@ -24,13 +25,16 @@ static func run(test: SmokeTest, level: HouseLevel) -> void:
 	rig.locomotion.travel_to_spot(1)
 	test.check(garden.is_in_defense_zone(), "the front room is the defense position")
 	test.check(yard.get_obstacle_circles().size() >= 10, "the yard is open ground with trees, rocks and a car for cover")
+	await _check_fists_and_blades(test, level)
+	rig.locomotion.travel_to_spot(1)
+	await test.frames(3)
 
 	var cop: Raider = _spawn_at(garden, Vector2(0.0, -8.5))
 	var cop_health: float = cop.health_component.current_health
 	rig.tap_world_point(cop.get_hit_center())
 	await test.frames(3)
 	test.check(cop.health_component.current_health < cop_health, "clicking a raider fires the gun")
-	test.check(garden.get_shown_gun() != null and garden.get_shown_gun().is_visible_in_tree(), "the gun shows in hand while defending")
+	test.check(garden.get_shown_weapon() != null and garden.get_shown_weapon().is_visible_in_tree(), "the gun shows in hand while defending")
 	var hidden: Raider = _spawn_at(garden, BEHIND_CAR)
 	var head: Vector3 = rig.get_head_transform().origin
 	test.check(yard.pick_raider(head, (hidden.get_hit_center() - head).normalized(), 40.0) == null, "the parked car hides a raider from shots")
@@ -139,7 +143,8 @@ static func _check_armory(test: SmokeTest, level: HouseLevel) -> void:
 	var operation: Operation = level.operation
 	var catalog: WeaponCatalog = armory.weapon_catalog
 	var smg: WeaponData = catalog.find_weapon(&"smg")
-	test.check(garden.get_equipped_weapon() == catalog.get_starter(), "the player starts with the free pistol")
+	var pistol: WeaponData = catalog.find_weapon(&"pistol")
+	test.check(garden.get_equipped_weapon() == pistol, "the bought pistol is in hand")
 	rig.locomotion.teleport_to(Vector3(-3.0, 0.0, -3.4), PI)
 	await test.frames(3)
 	var screen: WorldScreen = armory.get_screen()
@@ -177,7 +182,7 @@ static func _check_armory(test: SmokeTest, level: HouseLevel) -> void:
 	var empty_health: float = cop.health_component.current_health
 	garden.fire_weapon(_aim(rig, cop))
 	test.check(cop.health_component.current_health == empty_health, "an empty gun does not fire")
-	Profile.armory.loadout.equip(catalog.get_starter())
+	Profile.armory.loadout.equip(pistol)
 	await test.frames(20)
 	garden.fire_weapon(_aim(rig, cop))
 	test.check(cop.health_component.current_health < empty_health, "the pistol never runs dry")
@@ -260,6 +265,77 @@ static func _check_door_with_tracked_hand(test: SmokeTest, rig: XRPlayerRig, doo
 
 
 ## Points the flat cursor at an attacker and returns the cursor's pointer.
+## A new player fights with bare fists: a click on a raider in reach
+## punches it, one further off isn't hit. The armory sells the knife first,
+## then the axe, then the pistol; a blade hits harder than a fist. A raider
+## out in the yard turns on a player who comes close and hits them — and
+## goes back to the door once they are inside again. Ends with the pistol in hand.
+static func _check_fists_and_blades(test: SmokeTest, level: HouseLevel) -> void:
+	var rig: XRPlayerRig = level.rig
+	var garden: FrontGarden = level.get_front(FrontGarden) as FrontGarden
+	var armory: Armory = level.get_front(Armory) as Armory
+	var catalog: WeaponCatalog = armory.weapon_catalog
+	var loadout: WeaponLoadout = Profile.armory.loadout
+	var knife: WeaponData = catalog.find_weapon(&"knife")
+	var axe: WeaponData = catalog.find_weapon(&"axe")
+	var pistol: WeaponData = catalog.find_weapon(&"pistol")
+	var fists: WeaponData = garden.get_equipped_weapon()
+	test.check(fists != null and fists == catalog.get_starter() and fists.is_melee() and garden.get_shown_weapon() == null, "a new player fights with bare fists")
+	var near_cop: Raider = _spawn_at(garden, Vector2(0.0, -4.2))
+	_place_player(rig, Vector3(0.0, 0.0, -3.2), 0.0)
+	await test.frames(3)
+	var health_before: float = near_cop.health_component.current_health
+	rig.tap_world_point(near_cop.get_hit_center())
+	await test.frames(3)
+	test.check(is_equal_approx(health_before - near_cop.health_component.current_health, fists.damage - near_cop.armor), "a click on a raider in reach punches it")
+	var far_cop: Raider = _spawn_at(garden, Vector2(0.0, -8.5))
+	await test.frames(40)
+	var far_health: float = far_cop.health_component.current_health
+	rig.tap_world_point(far_cop.get_hit_center())
+	await test.frames(3)
+	test.check(far_cop.health_component.current_health == far_health, "a raider out of reach isn't hit by a fist")
+	far_cop.take_hit(100000.0)
+
+	# The armory's order: knife, then axe, then the pistol.
+	Profile.wallet.add(Types.CURRENCY_CASH, knife.cost + axe.cost + pistol.cost, false)
+	rig.locomotion.teleport_to(Vector3(-3.0, 0.0, -3.4), PI)
+	await test.frames(3)
+	var board: ArmoryBoard = armory.get_board()
+	board.refresh()
+	# New rows lay themselves out in the next frames.
+	await test.frames(2)
+	test.check(board.get_row("weapon", &"fists") == null and board.get_row("weapon", &"knife") != null, "the armory lists the knife first (fists aren't for sale)")
+	test.check(board.get_row("weapon", &"axe").get_buy_button().disabled and board.get_row("weapon", &"pistol").get_buy_button().disabled, "the axe and the pistol are locked at first")
+	test.check(not armory.buy_weapon(axe) and not armory.buy_weapon(pistol), "nothing is sold before the knife")
+	rig.tap_world_point(armory.get_screen().pixel_to_world(board.get_row("weapon", &"knife").get_buy_button().get_global_rect().get_center()))
+	await test.frames(3)
+	test.check(loadout.owns(knife) and garden.get_equipped_weapon() == knife, "buying the knife puts it in hand")
+	await test.frames(2)
+	test.check(not board.get_row("weapon", &"axe").get_buy_button().disabled and board.get_row("weapon", &"pistol").get_buy_button().disabled, "the knife unlocks the axe, not yet the guns")
+	_place_player(rig, Vector3(0.0, 0.0, -3.2), 0.0)
+	await test.frames(30)
+	test.check(garden.get_shown_weapon() != null and garden.get_shown_weapon().is_visible_in_tree(), "the knife shows in hand")
+	health_before = near_cop.health_component.current_health
+	rig.tap_world_point(near_cop.get_hit_center())
+	await test.frames(3)
+	test.check(health_before - near_cop.health_component.current_health > fists.damage, "the knife cuts harder than a fist")
+	near_cop.take_hit(100000.0)
+	test.check(armory.buy_weapon(axe) and armory.buy_weapon(pistol), "then the axe, then the pistol")
+
+	# Out in the yard a raider turns on the player, hits them, and goes back to the door once they are inside.
+	var vitals: PlayerVitals = level.player_vitals
+	var yard_cop: Raider = _spawn_at(garden, Vector2(0.0, -10.0))
+	_place_player(rig, Vector3(0.0, 0.0, -8.4), 0.0)
+	var player_health: float = vitals.get_health()
+	yard_cop.freeze(false)
+	test.check(await test.wait_until(func() -> bool: return yard_cop.is_hunting()), "a raider in the yard turns on a player who comes close")
+	test.check(await test.wait_until(func() -> bool: return vitals.get_health() < player_health), "and hits them")
+	_place_player(rig, Vector3(0.0, 0.0, -3.2), 0.0)
+	test.check(await test.wait_until(func() -> bool: return not yard_cop.is_hunting()), "back inside behind the shut door, it goes for the door again")
+	yard_cop.take_hit(100000.0)
+	loadout.equip(pistol)
+
+
 static func _aim(rig: XRPlayerRig, enemy: Raider) -> XRPointer:
 	rig.aim_at_world_point(enemy.get_hit_center())
 	return rig.get_tool_pointer()
@@ -326,7 +402,7 @@ static func _check_weapon_types(test: SmokeTest, level: HouseLevel) -> void:
 	await test.frames(10)
 	test.check(fired >= 4 and Profile.armory.loadout.get_ammo(smg) == rounds_before - fired, "holding the trigger keeps the SMG firing; letting go stops it")
 	burst_target.take_hit(100000.0)
-	Profile.armory.loadout.equip(catalog.get_starter())
+	Profile.armory.loadout.equip(catalog.find_weapon(&"pistol"))
 
 
 ## "VR in VR": the goggles at the Security PC put the player into the turret.

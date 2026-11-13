@@ -9,6 +9,7 @@ id = &"rifle"
 display_name = "Rifle"
 description = "Dead accurate, armor-piercing rounds that go through one raider into the next. The answer to SWAT."
 cost = 800
+required_weapon_id = &"pistol"
 model_scene = ExtResource("model")
 damage = 60.0
 fire_interval_seconds = 0.55
