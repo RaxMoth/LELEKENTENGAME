@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="HouseLayout" format=3]
+
+[ext_resource type="Script" path="res://Scripts/Resources/house_layout.gd" id="script"]
+
+[resource]
+script = ExtResource("script")
+stage_name = "Cabin"
+walls = Array[Vector4]([Vector4(-5, -5, 1, -5), Vector4(-5, 5, 1, 5), Vector4(-5, -5, -5, 5), Vector4(1, -5, 1, 5), Vector4(-5, -2, -1, -2), Vector4(-5, 2, -1, 2)])
+doors = Array[Vector4]([Vector4(-0.6, -5, 0.6, -5)])
+windows = Array[Vector4]([Vector4(-4.2, -5, -1.6, -5), Vector4(-3.9, 5, -2.1, 5)])
+floor_rect = Rect2(-5, -5, 6, 10)
+floor_openings = Array[Rect2]([])
+walk_regions = Array[Rect2]([Rect2(-4.75, -4.75, 5.5, 2.5), Rect2(-4.75, -1.75, 5.5, 3.5), Rect2(-4.75, 2.25, 5.5, 2.5), Rect2(-0.75, -4.75, 1.5, 9.5)])

@@ -9,7 +9,9 @@
 ## cut openings into the main floor (the stairwell). A position counts as
 ## walkable on the surface nearest its height, no more than MAX_STEP away,
 ## so the player walks down a ramp onto the floor below but never steps off
-## an edge or through a ceiling. Blockers stand on every floor.
+## an edge or through a ceiling. Blockers stand on every floor; furniture
+## (add_obstacle(): tables, shelves, racks) only on the floor it stands on,
+## with a smaller margin so stations stay within reach.
 ##
 ##   rig.walkable_area = %WalkableArea
 ##   walkable.add_blockers(yard.get_obstacle_circles())   # Vector3(x, z, radius)
@@ -39,6 +41,13 @@ extends Node3D
 const BODY_RADIUS: float = 0.25
 ## Highest step up or down a move may take; more is a wall, an edge or a ceiling.
 const MAX_STEP: float = 0.35
+## How far (meters) the body keeps from furniture: less than from a wall,
+## so the player can stand at a table and work at it.
+const OBSTACLE_MARGIN: float = 0.15
+
+## Furniture footprints (world X / Z) and the floor height each stands on.
+var _obstacles: Array[Rect2] = []
+var _obstacle_heights: Array[float] = []
 
 
 ## Opens up a floor rectangle at runtime (an open door's threshold).
@@ -100,6 +109,24 @@ func remove_ramp(ramp: WalkableRamp) -> void:
 	ramps.erase(ramp)
 
 
+## Furniture standing on the floor at [param floor_y] (a table, a rack):
+## its [param footprint] (world X / Z) blocks only that floor.
+func add_obstacle(footprint: Rect2, floor_y: float) -> void:
+	_obstacles.append(footprint)
+	_obstacle_heights.append(floor_y)
+
+
+## Removes every furniture footprint (the House level hands them in again
+## whenever upgrades change what stands where).
+func clear_obstacles() -> void:
+	_obstacles.clear()
+	_obstacle_heights.clear()
+
+
+func get_obstacle_count() -> int:
+	return _obstacles.size()
+
+
 ## True when a player standing at [param world_position] (its y is their
 ## feet) is on a floor: one within MAX_STEP of that height, off every blocker.
 func contains(world_position: Vector3) -> bool:
@@ -109,8 +136,10 @@ func contains(world_position: Vector3) -> bool:
 ## Height of the walkable surface under [param world_position] — of the
 ## floors, ramps and the main floor there, the one nearest its y and no more
 ## than [param max_step] away — or NAN when there is none (off the floor, in
-## a hole, at a blocker, or a floor much higher or lower).
-func get_floor_height_at(world_position: Vector3, max_step: float = MAX_STEP) -> float:
+## a hole, at a blocker or furniture, or a floor much higher or lower).
+## [param ignores_obstacles] lets furniture through (walking out of a table
+## that appeared around the player).
+func get_floor_height_at(world_position: Vector3, max_step: float = MAX_STEP, ignores_obstacles: bool = false) -> float:
 	var point: Vector2 = Vector2(world_position.x, world_position.z)
 	if _is_blocked(point):
 		return NAN
@@ -126,6 +155,8 @@ func get_floor_height_at(world_position: Vector3, max_step: float = MAX_STEP) ->
 		if ramp.has_point(point):
 			candidates.append(ramp.get_height(point))
 	for height: float in candidates:
+		if not ignores_obstacles and _is_obstructed(point, height):
+			continue
 		var gap: float = absf(height - world_position.y)
 		if gap <= best_gap:
 			best_gap = gap
@@ -136,16 +167,28 @@ func get_floor_height_at(world_position: Vector3, max_step: float = MAX_STEP) ->
 ## Where a move from [param from_position] toward [param to_position] ends:
 ## the target when it is walkable, otherwise sliding along one axis, or no
 ## move at all. The result's y is the floor height there (down a ramp, it
-## goes down). From a spot with no floor under it (a hole opened beneath
-## the player) any floor counts, so nobody gets stuck.
+## goes down). Nobody gets stuck: from inside furniture that appeared
+## around the player, furniture is let through (same floor only); from a
+## spot with no floor at all (a hole opened beneath them) any floor counts.
 func clamp_move(from_position: Vector3, to_position: Vector3) -> Vector3:
-	var step_limit: float = MAX_STEP if not is_nan(get_floor_height_at(from_position)) else INF
+	var is_off_floor: bool = is_nan(get_floor_height_at(from_position, MAX_STEP, true))
+	var is_in_furniture: bool = not is_off_floor and is_nan(get_floor_height_at(from_position))
+	var step_limit: float = INF if is_off_floor else MAX_STEP
+	var ignores_obstacles: bool = is_off_floor or is_in_furniture
 	var candidates: Array[Vector2] = [Vector2(to_position.x, to_position.z), Vector2(to_position.x, from_position.z), Vector2(from_position.x, to_position.z)]
 	for candidate: Vector2 in candidates:
-		var height: float = get_floor_height_at(Vector3(candidate.x, from_position.y, candidate.y), step_limit)
+		var height: float = get_floor_height_at(Vector3(candidate.x, from_position.y, candidate.y), step_limit, ignores_obstacles)
 		if not is_nan(height):
 			return Vector3(candidate.x, height, candidate.y)
 	return from_position
+
+
+## True when furniture on the floor at [param height] stands at [param point].
+func _is_obstructed(point: Vector2, height: float) -> bool:
+	for obstacle_index: int in _obstacles.size():
+		if absf(_obstacle_heights[obstacle_index] - height) <= MAX_STEP and _obstacles[obstacle_index].grow(OBSTACLE_MARGIN).has_point(point):
+			return true
+	return false
 
 
 func _is_blocked(point: Vector2) -> bool:

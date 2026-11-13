@@ -90,3 +90,32 @@ func test_a_single_floor_works_as_before() -> void:
 	assert_bool(area.contains(Vector3(7.0, 0.0, 2.0))).is_false()
 	var slid: Vector3 = area.clamp_move(Vector3(5.8, 0.0, 2.0), Vector3(6.3, 0.0, 2.5))
 	assert_vector(slid).is_equal(Vector3(5.8, 0.0, 2.5))
+
+
+func test_furniture_blocks_only_its_own_floor() -> void:
+	var area: WalkableArea = _make_area()
+	area.add_obstacle(Rect2(2.5, 2.5, 1.0, 0.5), 0.0)
+	assert_bool(area.contains(Vector3(3.0, 0.0, 2.75))).is_false()
+	# The cellar under the table is free.
+	assert_bool(area.contains(Vector3(3.0, CELLAR_HEIGHT, 2.75))).is_true()
+	# Close to the table is fine (a smaller margin than a wall's blocker).
+	assert_bool(area.contains(Vector3(3.0, 0.0, 2.5 - WalkableArea.OBSTACLE_MARGIN - 0.02))).is_true()
+	area.clear_obstacles()
+	assert_bool(area.contains(Vector3(3.0, 0.0, 2.75))).is_true()
+
+
+func test_a_player_caught_in_furniture_can_walk_out() -> void:
+	var area: WalkableArea = _make_area()
+	area.add_obstacle(Rect2(2.0, 2.0, 2.0, 1.0), 0.0)
+	var inside: Vector3 = Vector3(3.0, 0.0, 2.5)
+	var moved: Vector3 = area.clamp_move(inside, inside + Vector3(0.0, 0.0, 0.1))
+	assert_float(moved.z).is_equal_approx(2.6, 0.001)
+
+
+func test_walking_out_of_furniture_stays_on_its_floor() -> void:
+	var area: WalkableArea = _make_area()
+	# A table over the stairwell's top: inside it, the stairs below must not catch the player.
+	area.add_obstacle(Rect2(0.0, 1.0, 6.0, 3.0), 0.0)
+	var inside: Vector3 = Vector3(3.0, 0.0, 1.2)
+	var moved: Vector3 = area.clamp_move(inside, inside + Vector3(0.0, 0.0, -0.3))
+	assert_float(moved.y).is_equal_approx(0.0, 0.001)

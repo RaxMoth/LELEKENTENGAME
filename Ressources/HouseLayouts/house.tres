@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="HouseLayout" format=3]
+
+[ext_resource type="Script" path="res://Scripts/Resources/house_layout.gd" id="script"]
+
+[resource]
+script = ExtResource("script")
+stage_name = "House"
+walls = Array[Vector4]([Vector4(-5, -5, 5, -5), Vector4(-5, 5, 5, 5), Vector4(-5, -5, -5, 5), Vector4(5, -5, 5, 5), Vector4(-5, -2, 5, -2), Vector4(-0.8, -2, -0.8, 5), Vector4(0.8, -2, 0.8, 5), Vector4(-5, 2, -0.8, 2), Vector4(0.8, 1.5, 5, 1.5)])
+doors = Array[Vector4]([Vector4(-0.6, -5, 0.6, -5), Vector4(-0.7, -2, 0.7, -2), Vector4(-0.8, -0.5, -0.8, 0.5), Vector4(-0.8, 3, -0.8, 4), Vector4(0.8, -0.5, 0.8, 0.5), Vector4(0.8, 3, 0.8, 4)])
+windows = Array[Vector4]([Vector4(-4.2, -5, -1.6, -5), Vector4(1.6, -5, 4.2, -5), Vector4(-3.9, 5, -2.1, 5)])
+floor_rect = Rect2(-5, -5, 10, 10)
+floor_openings = Array[Rect2]([Rect2(1, 1.62, 3.3, 1)])
+walk_regions = Array[Rect2]([Rect2(-4.75, -4.75, 9.5, 2.5), Rect2(-0.55, -2.4, 1.1, 7.15), Rect2(-4.75, -1.75, 3.7, 3.5), Rect2(-1.2, -0.45, 0.8, 0.9), Rect2(-4.75, 2.25, 3.7, 2.5), Rect2(-1.2, 3.05, 0.8, 0.9), Rect2(1.05, -1.75, 3.7, 3), Rect2(0.4, -0.45, 0.8, 0.9), Rect2(1.05, 1.75, 3.7, 3), Rect2(0.4, 3.05, 0.8, 0.9)])

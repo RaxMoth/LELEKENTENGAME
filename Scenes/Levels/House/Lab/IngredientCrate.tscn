@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" path="res://Scenes/Levels/House/Lab/ingredient_crate.gd" id="crate"]
 [ext_resource type="Script" path="res://Scripts/Utils/placeholder_mesh_3d.gd" id="mesh"]
+[ext_resource type="Script" path="res://Scripts/Components/walk_blocker.gd" id="blocker"]
 
 [node name="IngredientCrate" type="Node3D"]
 script = ExtResource("crate")
@@ -35,3 +36,8 @@ outline_modulate = Color(0.051, 0.0627, 0.0902, 0.9)
 text = "Ingredient"
 font_size = 40
 outline_size = 10
+
+[node name="Footprint" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+script = ExtResource("blocker")
+size = Vector2(0.48, 0.38)

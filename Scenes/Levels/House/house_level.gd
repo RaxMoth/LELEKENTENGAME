@@ -20,7 +20,7 @@
 ## host's world — time, money, stash, items, stations — instead.
 ##
 ## Dependencies: LevelBase, HouseFront, HouseContext, HouseCycle, Operation, DayCycle,
-##               HouseShell, UpgradeLook, Ghost, Worker, WristStatus, XRPlayerRig, HouseCoopSync, Profile, Audio,
+##               HouseShell, UpgradeReaction, WalkBlocker, Ghost, Worker, WristStatus, XRPlayerRig, HouseCoopSync, Profile, Audio,
 ##               Events, Platform, Coop, Types autoloads, Palette, SfxSynth
 class_name HouseLevel
 extends LevelBase
@@ -178,6 +178,20 @@ func _present_result(_result: LevelResult) -> void:
 # PUBLIC API
 # ============================================
 
+## Hands every piece of furniture that stands in the house now (bought
+## stations, shelves, racks) to the player's walkable area, so nobody walks
+## through tables.
+func _refresh_furniture() -> void:
+	var walkable: WalkableArea = rig.walkable_area
+	if walkable == null:
+		return
+	walkable.clear_obstacles()
+	for node: Node in get_tree().get_nodes_in_group(Types.GROUP_WALK_BLOCKER):
+		var blocker: WalkBlocker = node as WalkBlocker
+		if blocker != null and is_ancestor_of(blocker) and blocker.is_blocking():
+			walkable.add_obstacle(blocker.get_footprint(), blocker.global_position.y)
+
+
 ## The night-4 ghost (tests).
 func get_ghost() -> Ghost:
 	return _ghost
@@ -197,21 +211,24 @@ func get_front(front_script: Script) -> HouseFront:
 
 
 ## Re-applies everything upgrades change: the operation, the player's
-## perks (walking speed), how the house looks (renovated walls, floor,
-## facade and roof; every UpgradeLook such as door straps or stash shelves),
-## hired crew, every front.
+## perks (walking speed), the house's size and looks (renovated walls,
+## floor, facade and roof; every UpgradeReaction: the cabin or the full
+## house, door straps, stash shelves, things that move when the house
+## grows), hired crew, every front, and the furniture the player can't
+## walk through.
 func apply_upgrades() -> void:
 	operation.apply_upgrades()
 	rig.locomotion.speed_multiplier = operation.get_walk_speed_multiplier()
 	_house_shell.apply_renovations(Profile.upgrades)
 	for node: Node in get_tree().get_nodes_in_group(Types.GROUP_UPGRADE_LOOK):
-		var look: UpgradeLook = node as UpgradeLook
-		if look != null and is_ancestor_of(look):
-			look.apply_level(Profile.upgrades.get_level(look.upgrade_id))
+		var reaction: UpgradeReaction = node as UpgradeReaction
+		if reaction != null and is_ancestor_of(reaction):
+			reaction.apply_level(Profile.upgrades.get_level(reaction.upgrade_id))
 	for worker: Node in get_tree().get_nodes_in_group(Types.GROUP_CREW):
 		(worker as Worker).refresh_hired()
 	for front: HouseFront in _fronts:
 		front.apply_upgrades()
+	_refresh_furniture()
 
 
 ## Shows the announcement world-locked in front of wherever the player looks

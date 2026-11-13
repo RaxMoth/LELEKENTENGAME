@@ -3,6 +3,7 @@
 [ext_resource type="Script" path="res://Scenes/Levels/House/Admin/admin_panel.gd" id="admin"]
 [ext_resource type="Script" path="res://Scripts/XR/world_screen.gd" id="screen"]
 [ext_resource type="PackedScene" path="res://Scenes/Levels/House/Admin/AdminBoard.tscn" id="admin_board"]
+[ext_resource type="Script" path="res://Scripts/Components/upgrade_placement.gd" id="placement"]
 
 [node name="Admin" type="Node3D"]
 script = ExtResource("admin")
@@ -14,3 +15,14 @@ script = ExtResource("screen")
 content_scene = ExtResource("admin_board")
 resolution = Vector2i(1100, 860)
 width_meters = 1.0
+
+[node name="CabinPlaces" type="Node3D" parent="."]
+
+[node name="AdminScreen" type="Marker3D" parent="CabinPlaces"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 0.9, 1.95, -3.6)
+
+[node name="ScreenPlacement" type="Node3D" parent="." node_paths=PackedStringArray("target", "before")]
+script = ExtResource("placement")
+upgrade_id = &"house_extension"
+target = NodePath("../AdminScreen")
+before = NodePath("../CabinPlaces/AdminScreen")

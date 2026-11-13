@@ -7,6 +7,12 @@
 [ext_resource type="Script" path="res://Scenes/Levels/House/operation.gd" id="operation"]
 [ext_resource type="Script" path="res://Scenes/Levels/House/day_cycle.gd" id="day_cycle"]
 [ext_resource type="Script" path="res://Scenes/Levels/House/house_shell.gd" id="shell"]
+[ext_resource type="Resource" path="res://Ressources/HouseLayouts/house.tres" id="house_layout"]
+[ext_resource type="Resource" path="res://Ressources/HouseLayouts/cabin.tres" id="cabin_layout"]
+[ext_resource type="Script" path="res://Scenes/Levels/House/house_stages.gd" id="stages"]
+[ext_resource type="Script" path="res://Scripts/Resources/house_layout.gd" id="house_layout_script"]
+[ext_resource type="Script" path="res://Scripts/Components/upgrade_placement.gd" id="placement"]
+[ext_resource type="Script" path="res://Scripts/Components/upgrade_look.gd" id="look"]
 [ext_resource type="PackedScene" path="res://Scenes/Levels/House/StashShelf.tscn" id="stash_shelf_scene"]
 [ext_resource type="PackedScene" path="res://Scenes/Levels/House/SteelDoorFrame.tscn" id="steel_door_frame_scene"]
 [ext_resource type="PackedScene" path="res://Scenes/Levels/House/Cellar/Cellar.tscn" id="cellar_scene"]
@@ -138,10 +144,7 @@ light_energy = 0.6
 [node name="HouseShell" type="Node3D" parent="World/Stage"]
 unique_name_in_owner = true
 script = ExtResource("shell")
-walls = Array[Vector4]([Vector4(-5, -5, 5, -5), Vector4(-5, 5, 5, 5), Vector4(-5, -5, -5, 5), Vector4(5, -5, 5, 5), Vector4(-5, -2, 5, -2), Vector4(-0.8, -2, -0.8, 5), Vector4(0.8, -2, 0.8, 5), Vector4(-5, 2, -0.8, 2), Vector4(0.8, 1.5, 5, 1.5)])
-doors = Array[Vector4]([Vector4(-0.6, -5, 0.6, -5), Vector4(-0.7, -2, 0.7, -2), Vector4(-0.8, -0.5, -0.8, 0.5), Vector4(-0.8, 3, -0.8, 4), Vector4(0.8, -0.5, 0.8, 0.5), Vector4(0.8, 3, 0.8, 4)])
-windows = Array[Vector4]([Vector4(-4.2, -5, -1.6, -5), Vector4(1.6, -5, 4.2, -5), Vector4(-3.9, 5, -2.1, 5)])
-floor_openings = Array[Rect2]([Rect2(1, 1.62, 3.3, 1)])
+layout = ExtResource("house_layout")
 inside_wall_material = ExtResource("wall_inside_material")
 outside_wall_material = ExtResource("wall_outside_material")
 floor_material = ExtResource("floor_material")
@@ -307,7 +310,6 @@ outline_size = 14
 [node name="WalkableArea" type="Node3D" parent="World/Stage"]
 unique_name_in_owner = true
 script = ExtResource("walkable")
-regions = Array[Rect2]([Rect2(-4.75, -4.75, 9.5, 2.5), Rect2(-0.55, -2.4, 1.1, 7.15), Rect2(-4.75, -1.75, 3.7, 3.5), Rect2(-1.2, -0.45, 0.8, 0.9), Rect2(-4.75, 2.25, 3.7, 2.5), Rect2(-1.2, 3.05, 0.8, 0.9), Rect2(1.05, -1.75, 3.7, 3), Rect2(0.4, -0.45, 0.8, 0.9), Rect2(1.05, 1.75, 3.7, 3), Rect2(0.4, 3.05, 0.8, 0.9)])
 
 [node name="TravelSpots" type="Node3D" parent="World/Stage"]
 unique_name_in_owner = true
@@ -323,6 +325,48 @@ transform = Transform3D(-0.8339, 0, -0.5519, 0, 1, 0, 0.5519, 0, -0.8339, -3, 0,
 
 [node name="OfficeSpot" type="Marker3D" parent="World/Stage/TravelSpots"]
 transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 3.2, 0, -0.2)
+
+[node name="Stages" type="Node3D" parent="World/Stage" node_paths=PackedStringArray("shell", "walkable")]
+unique_name_in_owner = true
+script = ExtResource("stages")
+upgrade_id = &"house_extension"
+shell = NodePath("../HouseShell")
+walkable = NodePath("../WalkableArea")
+layouts = Array[ExtResource("house_layout_script")]([ExtResource("cabin_layout"), ExtResource("house_layout")])
+
+[node name="CabinPlaces" type="Node3D" parent="World/Stage/Stages"]
+
+[node name="StashShelf" type="Marker3D" parent="World/Stage/Stages/CabinPlaces"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 0.68, 0, 3.4)
+
+[node name="FrontSpot" type="Marker3D" parent="World/Stage/Stages/CabinPlaces"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.3, 0, -3.4)
+
+[node name="OfficeSpot" type="Marker3D" parent="World/Stage/Stages/CabinPlaces"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -0.45, 0, -0.2)
+
+[node name="StashShelfPlacement" type="Node3D" parent="World/Stage/Stages" node_paths=PackedStringArray("target", "before")]
+script = ExtResource("placement")
+upgrade_id = &"house_extension"
+target = NodePath("../../StashShelf")
+before = NodePath("../CabinPlaces/StashShelf")
+
+[node name="FrontSpotPlacement" type="Node3D" parent="World/Stage/Stages" node_paths=PackedStringArray("target", "before")]
+script = ExtResource("placement")
+upgrade_id = &"house_extension"
+target = NodePath("../../TravelSpots/FrontSpot")
+before = NodePath("../CabinPlaces/FrontSpot")
+
+[node name="OfficeSpotPlacement" type="Node3D" parent="World/Stage/Stages" node_paths=PackedStringArray("target", "before")]
+script = ExtResource("placement")
+upgrade_id = &"house_extension"
+target = NodePath("../../TravelSpots/OfficeSpot")
+before = NodePath("../CabinPlaces/OfficeSpot")
+
+[node name="Rooms" type="Node3D" parent="World/Stage/Stages" node_paths=PackedStringArray("also_shows")]
+script = ExtResource("look")
+upgrade_id = &"house_extension"
+also_shows = [NodePath("../../LabSign"), NodePath("../../WindowSign"), NodePath("../../OfficeSign"), NodePath("../../StashSign"), NodePath("../../FrontSign"), NodePath("../../Lamps/Lamp4"), NodePath("../../Lamps/Lamp7")]
 
 [node name="WristStatus" type="Node3D" parent="World/Stage"]
 unique_name_in_owner = true

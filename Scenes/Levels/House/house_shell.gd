@@ -22,7 +22,7 @@
 ##   shell.apply_renovations(Profile.upgrades)
 ##   shell.get_surface_material(HouseShell.SurfaceKind.FLOOR)
 ##
-## Dependencies: WorldUVMesh, ShellRenovation, UpgradeLevels,
+## Dependencies: WorldUVMesh, ShellRenovation, UpgradeLevels, HouseLayout,
 ##               PlaceholderMesh3D (fallback materials), Palette
 @tool
 class_name HouseShell
@@ -35,6 +35,15 @@ const FOOTING_DEPTH: float = 0.05
 ## Faces this far beyond floor_rect count as the outside of the house.
 const OUTSIDE_TOLERANCE: float = 0.01
 
+## The walls, doors, windows, floor and floor openings as one resource (a
+## HouseLayout: the cabin or the full house). Set, it fills the lists below,
+## which then aren't stored in the scene.
+@export var layout: HouseLayout:
+	set(value):
+		layout = value
+		if value != null:
+			_take_layout(value)
+		notify_property_list_changed()
 ## Wall segments (x1, z1, x2, z2) on the floor plane; must be axis-aligned.
 @export var walls: Array[Vector4] = []:
 	set(value):
@@ -158,6 +167,29 @@ func apply_renovations(upgrade_levels: UpgradeLevels) -> void:
 	for renovation: ShellRenovation in renovations:
 		if renovation != null:
 			set_surface_material(renovation.surface, renovation.get_material(upgrade_levels.get_level(renovation.upgrade_id)))
+
+
+## Takes [param new_layout]'s walls, doors, windows, floor and floor
+## openings and rebuilds once, right away (the house grows from the cabin).
+func apply_layout(new_layout: HouseLayout) -> void:
+	# The setters would queue a rebuild each.
+	_is_rebuild_queued = true
+	layout = new_layout
+	rebuild()
+
+
+func _take_layout(source: HouseLayout) -> void:
+	walls = source.walls
+	doors = source.doors
+	windows = source.windows
+	floor_rect = source.floor_rect
+	floor_openings = source.floor_openings
+
+
+func _validate_property(property: Dictionary) -> void:
+	# A layout is the source: its lists are shown but not stored twice.
+	if layout != null and property.name in [&"walls", &"doors", &"windows", &"floor_rect", &"floor_openings"]:
+		property.usage = PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_READ_ONLY
 
 
 ## Gives one surface [param material] in place of its exported one; null
