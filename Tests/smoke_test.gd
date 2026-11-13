@@ -3,13 +3,17 @@
 ## paths a headset uses (craft, sell, defend, upgrade, crew, night, losing
 ## the door) and a raid night start to finish. Exit code 0 = all good.
 ##
-## Two scopes: `core` (pull requests, Tools/test.sh) plays the core of every
-## area — the lab, the window, the defense, the house and the raid; `full`
-## (pushes to main, Tools/test.sh full) adds the extras: the cellar, the
-## town's streets and the towers. Each section's time is printed at the end.
+## The house's skeleton always runs (save, menus, popups, the house's start
+## and end, the raid night); the areas on top are picked per run:
+##   areas=lab,sales      just those (Tools/affected_areas.sh picks the ones
+##                        a change touches: pull requests)
+##   scope=core           lab, sales, defense
+##   scope=full           every area: lab, cellar, sales, town, defense,
+##                        towers (pushes to main)
+## Each section's time is printed at the end.
 ##
 ## Run from the project folder:
-##   godot --headless --fixed-fps 60 res://Tests/SmokeTest.tscn -- scope=core
+##   godot --headless --fixed-fps 60 res://Tests/SmokeTest.tscn -- scope=full
 ##
 ## Note: uses (and resets) the real user:// savegame of the project.
 ##
@@ -23,10 +27,12 @@ extends Node
 const TIMEOUT_MSEC: int = 20000
 ## The game; without a headset it runs in the rig's flat simulator.
 const HOUSE_LEVEL_ID: StringName = &"house"
-const ARGUMENT_FULL: String = "scope=full"
+## Every area with its own checks, in the order they run.
+const ALL_AREAS: PackedStringArray = ["lab", "cellar", "sales", "town", "defense", "towers"]
+const CORE_AREAS: PackedStringArray = ["lab", "sales", "defense"]
 
-## The extras run too (cellar, town, towers): pushes to main.
-var is_full: bool = false
+## The areas this run checks (on top of the skeleton).
+var areas: PackedStringArray = CORE_AREAS
 
 var _failures: PackedStringArray = []
 var _checks: int = 0
@@ -49,7 +55,7 @@ func _run() -> void:
 		saved_settings[setting_key] = Settings.get_value(setting_key)
 	Settings.reset_to_defaults()
 	Profile.reset_progress()
-	is_full = ARGUMENT_FULL in OS.get_cmdline_user_args()
+	areas = _parse_areas(OS.get_cmdline_user_args())
 	var config: GameConfig = GameConfig.get_default()
 	await run_section("save", _test_save_roundtrip)
 	await run_section("menus", _test_menus)
@@ -60,7 +66,7 @@ func _run() -> void:
 	for section: String in _section_msec:
 		timings.append("%s %.1f s" % [section, _section_msec[section] / 1000.0])
 	print("  time " + ", ".join(timings))
-	print("\n==== SMOKE TEST (%s): %d checks, %d failures ====" % ["full" if is_full else "core", _checks, _failures.size()])
+	print("\n==== SMOKE TEST (%s): %d checks, %d failures ====" % [", ".join(areas) if not areas.is_empty() else "skeleton", _checks, _failures.size()])
 	for failure: String in _failures:
 		print("  FAIL: " + failure)
 	Profile.reset_progress()
@@ -151,15 +157,13 @@ func _test_house(level_data: LevelData) -> void:
 	(level.get_front(FrontGarden) as FrontGarden).director.is_active = false
 	Profile.wallet.add(Types.CURRENCY_CASH, 5000)
 	await run_section("house start", HouseSmokeChecks.run_start.bind(self, level))
-	await run_section("lab", LabSmokeChecks.run.bind(self, level))
-	if is_full:
-		await run_section("cellar", CellarSmokeChecks.run.bind(self, level))
-	await run_section("sales", SalesSmokeChecks.run.bind(self, level))
-	if is_full:
-		await run_section("town", TownSmokeChecks.run.bind(self, level))
-	await run_section("defense", DefenseSmokeChecks.run.bind(self, level))
-	if is_full:
-		await run_section("towers", TowerSmokeChecks.run.bind(self, level))
+	var area_checks: Dictionary[String, Callable] = {
+		"lab": LabSmokeChecks.run, "cellar": CellarSmokeChecks.run, "sales": SalesSmokeChecks.run,
+		"town": TownSmokeChecks.run, "defense": DefenseSmokeChecks.run, "towers": TowerSmokeChecks.run,
+	}
+	for area: String in ALL_AREAS:
+		if areas.has(area):
+			await run_section(area, area_checks[area].bind(self, level))
 	await run_section("house end", HouseSmokeChecks.run_end.bind(self, level))
 	# run_end loses the shift (the door breaks): no day is counted as done.
 	var lost_day: int = Profile.operation.day_number
@@ -206,6 +210,21 @@ func _test_house_raid(level_data: LevelData) -> void:
 # ============================================
 # HELPERS FOR THE AREA CHECKS (Tests/Smoke/*.gd)
 # ============================================
+
+## The areas the command line asks for: areas=a,b (those), scope=full
+## (all), scope=core or nothing (the core three). Unknown names are ignored.
+static func _parse_areas(arguments: PackedStringArray) -> PackedStringArray:
+	for argument: String in arguments:
+		if argument == "scope=full":
+			return ALL_AREAS
+		if argument.begins_with("areas="):
+			var picked: PackedStringArray = []
+			for area: String in argument.trim_prefix("areas=").split(",", false):
+				if ALL_AREAS.has(area.strip_edges()):
+					picked.append(area.strip_edges())
+			return picked
+	return CORE_AREAS
+
 
 ## Runs one part of the test (an awaitable [param section]) and notes how
 ## long it took under [param label].

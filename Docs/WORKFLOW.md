@@ -51,7 +51,7 @@ files. Remove finished worktrees with `git worktree remove <folder>`.
 ## Pull requests
 
 ```bash
-Tools/test.sh                                  # unit + core smoke + co-op; must exit 0
+Tools/test.sh                                  # unit + the smoke areas you touched (+ co-op); must exit 0
 git push -u origin anna/sales-loyalty
 gh pr create --fill                            # or ask Claude to open it
 ```
@@ -59,10 +59,12 @@ gh pr create --fill                            # or ask Claude to open it
 - The template asks what changed, which area, which tests ran, screenshots
   for visual changes and which shared files (contract, hotspots) were
   touched.
-- **CI** (`.github/workflows/tests.yml`, Linux) runs the core on every PR —
-  the unit tests and the core smoke test, plus the co-op test when the PR
-  touches co-op code — and everything (full smoke test, co-op) on every push
-  to `main` and on a manual run (Actions → Tests → Run workflow).
+- **CI** (`.github/workflows/tests.yml`, Linux) runs on every PR what it
+  touches: the unit tests, the smoke test for the areas of the changed files
+  (lab, cellar, sales, town, defense, towers — `Tools/affected_areas.sh`;
+  a change to shared code runs every area, a docs-only PR none) and the
+  co-op test when co-op code changed. Every push to `main` and a manual run
+  (Actions → Tests → Run workflow) run everything.
 - **Review:** the other person reviews (Claude can do a first pass with the
   `godot-reviewer` agent or `/code-review`, but a human approves).
 - **Merge:** squash-merge, then delete the branch. Pull `main` afterwards.

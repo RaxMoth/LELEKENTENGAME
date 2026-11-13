@@ -99,9 +99,10 @@ and the README in your area's folder.
 - **Pacing:** exports on `AttackerDirector` (defense), `CustomerFlow`
   (customers), `DayCycle` and `Operation` (house).
 - Add checks for your change to your area's file in `Tests/Smoke/`, then
-  run `Tools/test.sh`. A check for a feature outside an area's core goes
-  in an `is_full` branch of `Tests/smoke_test.gd` (run on `main`, or with
-  `Tools/test.sh full`).
+  run `Tools/test.sh`. Each area's checks must pass on their own
+  (`Tools/smoke_test.sh areas=lab`): set up what they need instead of
+  relying on another area having run first. A new area folder gets a line
+  in `Tools/affected_areas.sh`.
 
 ## 4. Art, fonts, audio
 

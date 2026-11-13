@@ -336,4 +336,4 @@ Every `.gd` script starts with a `##` doc comment: purpose, usage, dependencies.
 - [ ] Doc comments on all public API
 - [ ] Visual changes follow `Docs/DESIGN.md` and were checked with screenshots
 - [ ] New pure logic has a gdUnit4 suite in `Tests/Unit/`
-- [ ] `Tools/test.sh` passes (unit, core smoke, co-op)
+- [ ] `Tools/test.sh` passes (unit, the touched smoke areas, co-op when touched)

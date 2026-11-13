@@ -9,7 +9,7 @@
 ## Checklist
 
 - [ ] Branch is up to date with `main`
-- [ ] `Tools/test.sh` passes (unit tests, core smoke test, co-op test)
+- [ ] `Tools/test.sh` passes (unit tests, the smoke areas this PR touches, co-op when touched)
 - [ ] New pure logic has a test in `Tests/Unit/`
 - [ ] Visual change: screenshots attached (`Tools/screenshots.sh` / `/design-review`)
 - [ ] No unintended editor rewrites (`.import` churn, renumbered `unique_id`s)

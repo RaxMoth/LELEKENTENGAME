@@ -17,10 +17,12 @@
    the house must stay playable in the rig's flat simulator.
 3. **Typed, documented GDScript** following `Docs/instructor.md`; state in StateCharts.
 4. **Nothing is done until the tests pass:** `Tools/test.sh` (exit 0): one
-   import, the unit tests and the core smoke test side by side, then the
-   co-op test (`Tools/test.sh quick` skips co-op while working; `full` adds
-   the cellar, town and tower checks, as CI does on `main`). New pure logic
-   gets a gdUnit4 suite in `Tests/Unit/`.
+   import, the unit tests and the smoke test for just the areas your
+   changes touch (`Tools/affected_areas.sh`; shared code runs everything),
+   the co-op test when co-op code changed — what CI runs on a PR.
+   `Tools/test.sh full` runs everything (CI on `main`). New pure logic gets
+   a gdUnit4 suite in `Tests/Unit/`; a new area folder gets a line in
+   `Tools/affected_areas.sh`.
 5. **Data over code.** Tunables in Resources / `Ressources/game_config.tres`.
 6. **Two developers, one `main`.** Two people develop this game in parallel,
    each with Claude. Follow `Docs/WORKFLOW.md`:
@@ -49,10 +51,11 @@
   levels and content: `Docs/GETTING_STARTED.md`; visuals: `Docs/DESIGN.md`.
 - `Tools/godot.sh <args>` runs Godot from the project root (finds it via
   `$GODOT`, `PATH` or `/Applications/Godot.app`). Use it instead of a bare `godot`.
-- Tests: `Tools/test.sh [quick|core|full]` runs everything below with one
-  import. `Tools/unit_tests.sh` (gdUnit4, `Tests/Unit/*_test.gd`, extend
+- Tests: `Tools/test.sh [changed|quick|core|full]` runs everything below
+  with one import. `Tools/unit_tests.sh` (gdUnit4, `Tests/Unit/*_test.gd`, extend
   `GdUnitTestSuite`; classes under test must not need autoloads),
-  `Tools/smoke_test.sh [core|full]` (the whole game; core on PRs) and
+  `Tools/smoke_test.sh [core|full|areas=lab,sales]` (the house's skeleton
+  plus the chosen areas; each area's checks run on their own) and
   `Tools/coop_test.sh` (host + guest; on PRs only when co-op code changes). Screenshots + contact sheets:
   `Tools/screenshots.sh build/screenshots`.
 - Project skills: `/smoke-test`, `/design-review`, `/new-level <Name>`,
