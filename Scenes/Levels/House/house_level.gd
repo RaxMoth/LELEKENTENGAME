@@ -222,7 +222,7 @@ func _refresh_furniture() -> void:
 			walkable.add_obstacle(blocker.get_footprint(), blocker.global_position.y)
 
 
-## The night-4 ghost (tests).
+## The ghost that haunts now and then at night (tests).
 func get_ghost() -> Ghost:
 	return _ghost
 
@@ -375,8 +375,9 @@ func _on_shift_lost(reason: String) -> void:
 
 
 func _on_nightfall() -> void:
-	# Each player meets the ghost on their own (the guest's too).
-	if Profile.operation.day_number == _ghost.night_number:
+	# Now and then a ghost; each player meets their own (the guest's too).
+	if _ghost.rolls_tonight(Profile.operation.day_number, Profile.operation.last_ghost_night):
+		Profile.operation.record_ghost_night()
 		_ghost.haunt(rig)
 	if is_mirror:
 		return

@@ -39,6 +39,8 @@ var operation: Operation = null
 var crop: RecipeData = null
 
 var _growth: float = 0.0
+## The growth percent the label last showed (-1 = not yet).
+var _shown_percent: int = -1
 var _is_ripe: bool = false
 var _is_active: bool = true
 
@@ -160,7 +162,9 @@ func _advance(seconds: float) -> void:
 	if _is_ripe:
 		return
 	_growth = minf(1.0, _growth + seconds * growth_multiplier / maxf(1.0, grow_seconds))
-	_show_growth()
+	# The label shows whole percents: redraw only when that changes.
+	if roundi(_growth * 100.0) != _shown_percent:
+		_show_growth()
 	if _growth >= 1.0:
 		state_chart.send_event(Types.EVENT_PLANT_RIPE)
 
@@ -168,6 +172,7 @@ func _advance(seconds: float) -> void:
 func _show_growth() -> void:
 	if _crop_root == null:
 		return
+	_shown_percent = roundi(_growth * 100.0)
 	_crop_root.visible = _is_active
 	_status_label.visible = _is_active and shows_status
 	_crop_root.scale = Vector3.ONE * lerpf(seedling_scale, 1.0, _growth)

@@ -15,12 +15,23 @@
 ## camera only ever moves as far as the player walks. Walking down stairs
 ## (a WalkableRamp) lowers the player with each step, never on its own.
 ##
+## Walls hold for real steps too: a player who walks or leans into a wall
+## (or the stairwell) in the room stops at its edge, as if it were there;
+## furniture can still be leaned over. Real steps onto the stairs follow
+## their height like stick walking does.
+##
 ## Dependencies: XRPlayerRig, XRPointer, WalkableArea, WalkMotion, RayMath, Settings, Audio,
 ##               SfxSynth, Types autoloads
 class_name XRLocomotion
 extends Node
 
 signal teleported(target: Vector3)
+
+## Spacing of the floor checks along a teleport's way.
+const PATH_SAMPLE_METERS: float = 0.1
+## A head can't move this far in one frame: a jump this big is a teleport
+## (travel spot, the cellar's opening), not a real step to check.
+const MAX_REAL_STEP_METERS: float = 0.6
 
 @export var rig: XRPlayerRig
 @export var move_speed: float = 2.0
@@ -54,6 +65,9 @@ var _stride_carry: float = 0.0
 var _last_left_hand: Vector3 = Vector3.ZERO
 var _last_right_hand: Vector3 = Vector3.ZERO
 var _has_hand_samples: bool = false
+## Last feet position on a floor, for keeping real steps out of walls.
+var _last_floor_feet: Vector3 = Vector3.ZERO
+var _has_floor_feet: bool = false
 
 ## On = the player stays put (a turret seat); sticks, arm swing and WASD do nothing.
 var is_locked: bool = false
@@ -97,9 +111,11 @@ func step(delta: float) -> void:
 		# Keep sampling the hands: leaving a turret seat with both grips held
 		# must not read as one huge swing.
 		_sample_hands()
+		_has_floor_feet = false
 		return
 	if rig.is_xr_active:
 		_step_xr(delta)
+		_keep_out_of_walls()
 	else:
 		_step_flat(delta)
 
@@ -247,6 +263,47 @@ func _handle_snap_turn(stick: Vector2) -> void:
 		_is_turn_flicked = false
 
 
+## Real steps and leaning: when the head went where nobody can stand (a
+## wall, the stairwell, out of the house), the play space is held back so
+## the feet stay at the last spot on a floor, slid along the wall. Furniture
+## doesn't count, so leaning over a table to reach something still works.
+func _keep_out_of_walls() -> void:
+	if walkable_area == null:
+		return
+	var feet: Vector3 = rig.get_feet_position()
+	var height: float = walkable_area.get_floor_height_at(feet, WalkableArea.MAX_STEP, true)
+	var moved: float = Vector2(feet.x - _last_floor_feet.x, feet.z - _last_floor_feet.z).length()
+	var is_real_step: bool = _has_floor_feet and moved <= MAX_REAL_STEP_METERS
+	# A floor on the other side of a wall doesn't count: the way there must be floor too.
+	if not is_nan(height) and is_real_step and not _has_clear_path(_last_floor_feet, Vector3(feet.x, _last_floor_feet.y, feet.z)):
+		height = NAN
+	if not is_nan(height):
+		if absf(height - feet.y) > 0.001:
+			# A real step onto the stairs: follow their height.
+			rig.move_origin_by(Vector3(0.0, height - feet.y, 0.0))
+		_last_floor_feet = Vector3(feet.x, height, feet.z)
+		_has_floor_feet = true
+		return
+	if not is_real_step:
+		return
+	var allowed: Vector3 = walkable_area.clamp_move(_last_floor_feet, Vector3(feet.x, _last_floor_feet.y, feet.z))
+	rig.move_origin_by(Vector3(allowed.x - feet.x, allowed.y - feet.y, allowed.z - feet.z))
+	_last_floor_feet = allowed
+
+
+## True when the straight way from [param from] to [param to] stays on the
+## floor (a trackpad teleport never jumps through a wall or across the stairwell).
+func _has_clear_path(from: Vector3, to: Vector3) -> bool:
+	if walkable_area == null:
+		return true
+	var sample_count: int = maxi(1, ceili(Vector2(to.x - from.x, to.z - from.z).length() / PATH_SAMPLE_METERS))
+	for sample_index: int in range(1, sample_count + 1):
+		var point: Vector3 = from.lerp(to, float(sample_index) / float(sample_count))
+		if is_nan(walkable_area.get_floor_height_at(Vector3(point.x, from.y, point.z), WalkableArea.MAX_STEP, true)):
+			return false
+	return true
+
+
 func _find_teleport_target(pointer: XRPointer) -> Vector3:
 	# Teleports stay on the floor the player stands on (the cellar or the house).
 	var distance: float = RayMath.intersect_ground(pointer.ray_origin, pointer.ray_direction, rig.get_feet_position().y)
@@ -256,7 +313,8 @@ func _find_teleport_target(pointer: XRPointer) -> Vector3:
 
 
 func _is_valid_target(target: Vector3) -> bool:
-	return target.is_finite() and (walkable_area == null or walkable_area.contains(target))
+	return target.is_finite() and (walkable_area == null or walkable_area.contains(target)) \
+		and _has_clear_path(rig.get_feet_position(), target)
 
 
 func _sample_hands() -> void:

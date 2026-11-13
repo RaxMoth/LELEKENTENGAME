@@ -104,7 +104,10 @@ new day, in co-op the guest comes along (`DaySummaryPopup`).
 | Status | Look at your off-hand wrist | Lower left of the view |
 | Your body | Gloved hands whose fingers follow the grip and trigger (a full grip makes a fist); look down to see your hips, legs and holstered knife walk with you (your own chest stays out of view) | — |
 
-Vive wands: trackpad click up teleports, left / right snap-turns. Bindings:
+Walls hold in the room too: walking or leaning into a wall (or the
+stairwell) stops you at its edge; leaning over furniture still works.
+Vive wands: trackpad click up teleports (only along the floor, never
+through a wall), left / right snap-turns. Bindings:
 `openxr_action_map.tres`.
 
 ## The fronts
@@ -448,7 +451,8 @@ You get better by doing, shown on the wrist and announced at each level
 
 ### The ghost
 
-On the night of day 4 a ghost turns up somewhere behind you, on your
+Now and then at night (a 15% chance a night, from the second night on, and
+never within four nights of the last time) a ghost turns up somewhere behind you, on your
 floor: a dark hooded shroud with a pale face, red eyes and reaching arms,
 hovering and turned away, whispering now and then. The moment you look at
 it, it whips round with a shriek, lunges half a meter at you (a jolt in
@@ -540,7 +544,7 @@ Scenes/Levels/House/House.tscn                inherits LevelBase; house_level.gd
     │   ├── SalesWindow        CUSTOMERS Sales/SalesWindow.tscn: window, queue, board, dealers, CustomerFlow
     │   ├── Lab                HOUSE     Lab/Lab.tscn: crates, grinder, cooker, press, crafters, recipes; motors, belts, hopper (LabAutomation)
     │   ├── Cellar             HOUSE     Cellar/Cellar.tscn: the boarded opening, stairs, brick cellar, grow racks, auto picker
-    │   ├── Ghost              HOUSE     Ghost/Ghost.tscn: the night-4 ghost (local to each player)
+    │   ├── Ghost              HOUSE     Ghost/Ghost.tscn: the ghost of a rare night (local to each player)
     │   ├── Office             HOUSE     Office/Office.tscn: upgrade board, bribes
     │   ├── Admin              HOUSE     Admin/Admin.tscn: admin terminal for testing (debug builds only)
     │   ├── Armory             DEFENSE   Armory/Armory.tscn: terminal for weapons (knife, axe, guns) and ammo

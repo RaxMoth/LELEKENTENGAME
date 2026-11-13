@@ -34,6 +34,9 @@ static var _material_cache: Dictionary[String, StandardMaterial3D] = {}
 		_rebuild()
 @export var color: Color = Color(0.357, 0.486, 0.98):
 	set(value):
+		# Set every frame by some callers: unchanged, it costs nothing.
+		if color == value:
+			return
 		color = value
 		_rebuild()
 
@@ -41,6 +44,8 @@ static var _material_cache: Dictionary[String, StandardMaterial3D] = {}
 ## Emission strength; values above 1 bloom when the environment has glow.
 @export_range(0.0, 4.0, 0.05) var glow: float = 0.0:
 	set(value):
+		if glow == value:
+			return
 		glow = value
 		_rebuild()
 ## Ignore lighting (beams, markers, UI-like shapes).

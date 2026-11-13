@@ -70,6 +70,7 @@ static func run_end(test: SmokeTest, level: HouseLevel) -> void:
 	await _check_admin(test, level)
 	await _check_office(test, level)
 	await _check_board_drag(test, level)
+	_check_real_steps(test, level)
 	await _check_house_looks(test, level)
 	_check_crew_wages(test, level)
 	await _check_controllers(test, level)
@@ -78,12 +79,13 @@ static func run_end(test: SmokeTest, level: HouseLevel) -> void:
 	var day_cycle: DayCycle = level.day_cycle
 	var nights: Array[int] = [0]
 	day_cycle.nightfall.connect(func() -> void: nights[0] += 1)
+	# This night rolls no ghost (it is haunted on purpose below).
+	level.get_ghost().haunt_chance = 0.0
 	day_cycle.advance(day_cycle.day_seconds)
 	await test.frames(3)
 	test.check(day_cycle.is_night() and nights[0] == 1, "the day turns into night")
 	test.check(not level.cycle.is_raid_active() and level.cycle.allows_customers(), "the night of a selling day brings no raid")
-	if Profile.operation.day_number != level.get_ghost().night_number:
-		test.check(not level.get_ghost().is_haunting(), "no ghost on other nights")
+	test.check(not level.get_ghost().is_haunting(), "no ghost on a night that didn't roll one")
 	await _check_ghost(test, level)
 	await _check_fuse_box(test, level)
 	_check_skills(test, level)
@@ -180,6 +182,30 @@ static func _check_rat_traps(test: SmokeTest, level: HouseLevel, rats: RatPack) 
 
 ## A long list on a board (the office's upgrades) scrolls by grabbing it and
 ## pulling, not only by its thin scroll bar.
+## In a headset a real step (or lean) into a wall stops at the wall, and a
+## trackpad teleport never lands behind one. The flat camera stands in for
+## the headset here: moving it is a real step.
+static func _check_real_steps(test: SmokeTest, level: HouseLevel) -> void:
+	var rig: XRPlayerRig = level.rig
+	var walkable: WalkableArea = rig.walkable_area
+	var camera: Camera3D = rig.get_node("%FlatCamera") as Camera3D
+	var camera_position: Vector3 = camera.position
+	var by_the_wall: Vector3 = Vector3(-4.5, 0.0, 0.0)
+	rig.locomotion.teleport_to(by_the_wall, PI * 0.5)
+	rig.locomotion.call("_keep_out_of_walls")
+	# Walk a meter west through the wall, a few centimeters a frame like a real step.
+	for step_index: int in 25:
+		camera.global_position += Vector3(-0.04, 0.0, 0.0)
+		rig.locomotion.call("_keep_out_of_walls")
+	var feet: Vector3 = rig.get_feet_position()
+	# Stopped at the wall's edge (the floor ends a body's width inside it), not through it.
+	test.check(walkable.contains(feet) and feet.x > -4.8 and feet.x < by_the_wall.x and absf(feet.z) < 0.05, "a real step into the outer wall stops at the wall")
+	camera.position = camera_position
+	rig.locomotion.teleport_to(by_the_wall, PI * 0.5)
+	var outside: Vector3 = Vector3(-6.0, 0.0, 0.0)
+	test.check(not rig.locomotion.call("_has_clear_path", rig.get_feet_position(), outside) and rig.locomotion.call("_has_clear_path", rig.get_feet_position(), by_the_wall + Vector3(1.0, 0.0, 0.0)), "a teleport can't go through a wall, only along the floor")
+
+
 static func _check_board_drag(test: SmokeTest, level: HouseLevel) -> void:
 	var office: Office = level.get_front(Office) as Office
 	var screen: WorldScreen = office.get_screen()
@@ -247,8 +273,8 @@ static func _check_office(test: SmokeTest, level: HouseLevel) -> void:
 	test.check(not Profile.upgrades.can_purchase(GameConfig.get_default().find_upgrade(Types.UPGRADE_VIP)), "upgrades stay locked until the reputation is there")
 
 
-## Night 4: the ghost turns up behind the player, freezes when looked at,
-## stares for a second and is gone.
+## A haunted night: the ghost turns up behind the player, lunges when
+## looked at and is gone at once.
 static func _check_ghost(test: SmokeTest, level: HouseLevel) -> void:
 	var rig: XRPlayerRig = level.rig
 	var ghost: Ghost = level.get_ghost()
@@ -258,7 +284,7 @@ static func _check_ghost(test: SmokeTest, level: HouseLevel) -> void:
 	ghost.haunt(rig)
 	await test.frames(10)
 	var to_ghost: Vector3 = ghost.global_position - rig.get_feet_position()
-	test.check(ghost.is_haunting() and not ghost.was_seen() and to_ghost.z > 2.0, "on night 4 a ghost turns up behind the player")
+	test.check(ghost.is_haunting() and not ghost.was_seen() and to_ghost.z > 2.0, "on a haunted night a ghost turns up behind the player")
 	var spot_before: Vector3 = ghost.global_position
 	rig.aim_at_world_point(ghost.get_head_position())
 	await test.frames(6)
