@@ -77,6 +77,11 @@ func has_open_popup() -> bool:
 	return not _popup_stack.is_empty()
 
 
+## The popup on top (the one the player sees), or null.
+func get_top_popup() -> BasePopup:
+	return null if _popup_stack.is_empty() else _popup_stack.back()
+
+
 ## Back-button handling: closes the top-most popup. Returns false if none was open.
 func close_top_popup() -> bool:
 	for stack_index: int in range(_popup_stack.size() - 1, -1, -1):

@@ -1,0 +1,81 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://Scenes/Levels/House/CoopBoard/coop_board.gd" id="board"]
+[ext_resource type="Script" path="res://Scripts/Utils/placeholder_mesh_3d.gd" id="mesh"]
+[ext_resource type="Script" path="res://Scripts/XR/pointer_button.gd" id="button"]
+
+[node name="CoopBoard" type="Node3D"]
+script = ExtResource("board")
+
+[node name="Frame" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.015)
+script = ExtResource("mesh")
+shape_kind = 1
+size = Vector3(0.62, 0.4, 0.03)
+color = Color(0.051, 0.0627, 0.0902, 1)
+cast_shadow = 0
+
+[node name="Panel" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.033)
+script = ExtResource("mesh")
+shape_kind = 1
+size = Vector3(0.58, 0.36, 0.006)
+color = Color(0.102, 0.1255, 0.1882, 1)
+cast_shadow = 0
+
+[node name="Accent" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.172, 0.034)
+script = ExtResource("mesh")
+shape_kind = 1
+size = Vector3(0.58, 0.012, 0.007)
+color = Color(0.357, 0.486, 0.98, 1)
+cast_shadow = 0
+
+[node name="TitleLabel" type="Label3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.115, 0.038)
+pixel_size = 0.0007
+modulate = Color(0.9333, 0.9451, 0.9686, 1)
+outline_modulate = Color(0.051, 0.0627, 0.0902, 0.9)
+text = "Play Together"
+font_size = 64
+outline_size = 8
+visibility_range_end = 10.0
+
+[node name="StatusLabel" type="Label3D" parent="."]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.04, 0.038)
+pixel_size = 0.0005
+modulate = Color(0.5529, 0.5882, 0.6745, 1)
+outline_modulate = Color(0.051, 0.0627, 0.0902, 0.9)
+text = "Host, or join a friend on the same Wi-Fi"
+font_size = 54
+outline_size = 6
+autowrap_mode = 3
+width = 1060.0
+visibility_range_end = 8.0
+
+[node name="ButtonFace" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.085, 0.04)
+script = ExtResource("mesh")
+shape_kind = 1
+size = Vector3(0.34, 0.085, 0.014)
+color = Color(0.357, 0.486, 0.98, 1)
+glow = 0.25
+cast_shadow = 0
+
+[node name="ButtonLabel" type="Label3D" parent="ButtonFace"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.0085)
+pixel_size = 0.0006
+modulate = Color(0.9333, 0.9451, 0.9686, 1)
+outline_modulate = Color(0.051, 0.0627, 0.0902, 0.6)
+text = "Host or join"
+font_size = 48
+outline_size = 4
+visibility_range_end = 10.0
+
+[node name="OpenButton" type="Node3D" parent="."]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.085, 0.05)
+script = ExtResource("button")
+press_radius = 0.12
+has_visual = false

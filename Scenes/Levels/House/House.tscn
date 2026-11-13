@@ -50,6 +50,7 @@
 [ext_resource type="Resource" path="res://Ressources/Renovations/floor.tres" id="renovation_floor"]
 [ext_resource type="Resource" path="res://Ressources/Renovations/facade.tres" id="renovation_facade"]
 [ext_resource type="Resource" path="res://Ressources/Renovations/roof.tres" id="renovation_roof"]
+[ext_resource type="PackedScene" path="res://Scenes/Levels/House/CoopBoard/CoopBoard.tscn" id="coop_board_scene"]
 
 [sub_resource type="ProceduralSkyMaterial" id="sky_material"]
 sky_top_color = Color(0.051, 0.0627, 0.0902, 1)
@@ -186,6 +187,10 @@ unique_name_in_owner = true
 
 [node name="Admin" parent="World/Stage" instance=ExtResource("admin_scene")]
 unique_name_in_owner = true
+
+[node name="CoopBoard" parent="World/Stage" instance=ExtResource("coop_board_scene")]
+unique_name_in_owner = true
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -4.95, 1.4, -2.8)
 
 [node name="SalesWindow" parent="World/Stage" instance=ExtResource("sales_window")]
 unique_name_in_owner = true

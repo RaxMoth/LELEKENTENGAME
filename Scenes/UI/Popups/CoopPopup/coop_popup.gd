@@ -1,10 +1,12 @@
 ## "Play Together": host a co-op game or join one — a game found on the
 ## same Wi-Fi with one click, or any host by address (typed with the keypad,
 ## since a headset has no keyboard). Shows the addresses to give a friend,
-## who is connected, and leaving. Opened from the pause menu; inside a
-## headset it shows on the in-world popup screen like every popup.
+## who is connected, and leaving. Opened from the main menu, the pause menu
+## and the "Play together" board in the house; inside a headset it shows on
+## the in-world popup screen like every popup. Hosting from a menu starts
+## the house right away (the guest comes in once it runs).
 ##
-## Dependencies: BasePopup, Coop, CoopDiscovery
+## Dependencies: BasePopup, Coop, CoopDiscovery, LevelBase, GameConfig
 class_name CoopPopup
 extends BasePopup
 
@@ -136,7 +138,14 @@ func _get_local_address() -> String:
 
 
 func _on_host_button_pressed() -> void:
-	Coop.host()
+	if Coop.host() != OK:
+		return
+	if not Coop.is_coop_scene(get_tree().current_scene):
+		# From a menu: into the house, where the friend joins.
+		var house: LevelData = GameConfig.get_default().get_xr_start_level()
+		close(null)
+		if house != null:
+			LevelBase.start_level(house)
 
 
 func _on_join_button_pressed() -> void:

@@ -1,6 +1,7 @@
 ## Main menu (flat-screen flow, shown when no headset is active): play —
 ## straight into the house, the game's one world, on the day you're on —
-## shop, achievements, daily reward and settings.
+## play together (host or join a friend, CoopPopup), shop, achievements,
+## daily reward and settings.
 ##
 ## Dependencies: Profile, SceneManager, UI, Platform, Audio autoloads, LevelBase
 extends Control
@@ -8,6 +9,7 @@ extends Control
 const SETTINGS_POPUP: PackedScene = preload("res://Scenes/UI/Popups/SettingsPopup/SettingsPopup.tscn")
 const ACHIEVEMENTS_POPUP: PackedScene = preload("res://Scenes/UI/Popups/AchievementsPopup/AchievementsPopup.tscn")
 const REWARD_POPUP: PackedScene = preload("res://Scenes/UI/Popups/RewardPopup/RewardPopup.tscn")
+const COOP_POPUP: PackedScene = preload("res://Scenes/UI/Popups/CoopPopup/CoopPopup.tscn")
 
 @onready var _title_label: Label = %TitleLabel
 @onready var _day_progress: IconLabel = %DayProgress
@@ -35,6 +37,11 @@ func _on_play_button_pressed() -> void:
 	var house: LevelData = GameConfig.get_default().get_xr_start_level()
 	if house != null:
 		LevelBase.start_level(house)
+
+
+## Host a game (it starts the house) or join one on the same Wi-Fi.
+func _on_play_together_button_pressed() -> void:
+	UI.open_popup(COOP_POPUP)
 
 
 func _on_shop_button_pressed() -> void:
