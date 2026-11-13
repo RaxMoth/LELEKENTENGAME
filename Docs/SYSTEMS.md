@@ -270,6 +270,7 @@ into a few textured quads for them.
 `Tools/generate_voices.ps1`), `DialogueData` / `DialogueNodeData` /
 `DialogueReplyData` (conversations), `TownData` (the town),
 `HouseLayout` (one stage of the house: walls, doors, windows, floor, walk regions),
+`SnapshotBuffer` (`Scripts/Coop/`: a synced thing's recent transforms, sampled a moment behind so it glides),
 `ShellRenovation` (one `HouseShell` surface's material per renovation level;
 `HouseShell.apply_renovations(Profile.upgrades)` swaps them without a rebuild).
 

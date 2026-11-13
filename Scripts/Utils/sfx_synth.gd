@@ -34,6 +34,15 @@ const PRESETS: Dictionary[StringName, Array] = {
 static var _cache: Dictionary[StringName, AudioStreamWAV] = {}
 
 
+## The preset [param stream] was made from, or &"" for any other sound
+## (co-op sends sounds by name).
+static func get_preset_name(stream: AudioStream) -> StringName:
+	for preset_name: StringName in _cache:
+		if _cache[preset_name] == stream:
+			return preset_name
+	return &""
+
+
 static func get_preset(preset_name: StringName) -> AudioStreamWAV:
 	if _cache.has(preset_name):
 		return _cache[preset_name]

@@ -117,6 +117,7 @@ func play_sfx_at(stream: AudioStream, world_position: Vector3, pitch_variation: 
 	positional_player.volume_db = volume_db
 	positional_player.pitch_scale = 1.0 + randf_range(-pitch_variation, pitch_variation)
 	positional_player.play()
+	Events.positional_sound_played.emit(stream, world_position, pitch_variation, volume_db)
 
 
 ## Plays one of the built-in synthesized sounds (see SfxSynth presets) on the UI bus.

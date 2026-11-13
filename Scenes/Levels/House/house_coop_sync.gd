@@ -7,7 +7,7 @@
 ## items, customers, raiders) and station looks (Types.GROUP_NET_NODE);
 ## 4 times a second the shared state: cash, operation progress (stash,
 ## reputation), upgrades (which also show the lab's gadgets), heat, time and wrist lines.
-## Announcements, floating texts and the guest's rumbles are relayed.
+## Announcements, floating texts, world sounds and the guest's rumbles are relayed.
 ##
 ## Guest (HouseLevel.is_mirror): its rig forwards trigger, grip and clicks
 ## here instead of acting; walking, turning and menus stay local. It shows
@@ -60,6 +60,8 @@ const WORLD_WRIST_LINES: int = 5
 const SCREEN_RENDER_DISTANCE: float = 7.0
 
 ## Spawned things streamed to (host) or shown from (guest) the other player.
+## Host: sounds sent to the other player so far (tests).
+var sounds_relayed: int = 0
 var entities: NetEntities = NetEntities.new(STREAMED_SCENES)
 
 var _level: HouseLevel = null
@@ -84,6 +86,7 @@ func setup(house_level: HouseLevel) -> void:
 	Coop.players_changed.connect(_on_players_changed)
 	Events.floating_text_shown.connect(_on_floating_text_shown)
 	Events.beam_fired.connect(_on_beam_fired)
+	Events.positional_sound_played.connect(_on_positional_sound_played)
 	if _level.is_mirror:
 		var rig: XRPlayerRig = _level.rig
 		rig.forwards_hand_input = true
@@ -225,6 +228,14 @@ func _receive_beam(from_position: Vector3, to_position: Vector3) -> void:
 @rpc("authority", "unreliable", "call_remote", 0)
 func _receive_floating_text(label_text: String, world_position: Vector3, color: Color) -> void:
 	FloatingText3D.spawn(label_text, world_position, color, Global.get_world_root())
+
+
+## Host -> guest: a sound of the host's world (stations, coins, shots, steps).
+@rpc("authority", "unreliable", "call_remote", 0)
+func _receive_sound(preset_name: StringName, world_position: Vector3, pitch_variation: float, volume_db: float) -> void:
+	var stream: AudioStreamWAV = SfxSynth.get_preset(preset_name)
+	if stream != null:
+		Audio.play_sfx_at(stream, world_position, clampf(pitch_variation, 0.0, 0.5), clampf(volume_db, -40.0, 6.0))
 
 
 ## Host -> guest: their hand bumped into something (grab, put in, refusal).
@@ -407,6 +418,18 @@ func _on_floating_text_shown(label_text: String, world_position: Vector3, color:
 		return
 	for peer_id: int in Coop.get_ready_peers():
 		_receive_floating_text.rpc_id(peer_id, label_text, world_position, color)
+
+
+## Host: the other player hears the host's world too (synthesized sounds, by name).
+func _on_positional_sound_played(stream: AudioStream, world_position: Vector3, pitch_variation: float, volume_db: float) -> void:
+	if not Coop.is_host() or Coop.get_ready_peers().is_empty():
+		return
+	var preset_name: StringName = SfxSynth.get_preset_name(stream)
+	if preset_name.is_empty():
+		return
+	sounds_relayed += 1
+	for peer_id: int in Coop.get_ready_peers():
+		_receive_sound.rpc_id(peer_id, preset_name, world_position, pitch_variation, volume_db)
 
 
 ## Our own hold anchors say whose hand they are, so held items know their holder.
