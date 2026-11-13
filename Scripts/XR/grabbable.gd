@@ -81,6 +81,13 @@ func drop_nowhere() -> void:
 		_on_released_nowhere()
 
 
+## @virtual What it is, in words for the player ("Shrooms ×3 · Okay"),
+## shown while it is in a hand (ViewStatus). Empty: not worth naming (a
+## door handle).
+func get_display_name() -> String:
+	return ""
+
+
 ## @virtual True for an item that acts while held when its holder pulls the
 ## trigger (the extinguisher sprays).
 func is_usable() -> bool:

@@ -42,6 +42,10 @@ func _process(delta: float) -> void:
 
 
 ## It sprays on its holder's trigger.
+func get_display_name() -> String:
+	return tr("Fire extinguisher")
+
+
 func is_usable() -> bool:
 	return true
 
