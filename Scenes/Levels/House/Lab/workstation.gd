@@ -3,7 +3,7 @@
 ## check — a needle sweeping over a bar. Press the plunger while the needle
 ## is in the green zone; the closer to its middle, the better the product.
 ## A bought motor (set_motorized) stops the needle on its own after
-## motor_seconds with a Good result; pressing Stop first can still do better.
+## motor_seconds with motor_accuracy (Good); pressing Stop first can still do better.
 ## State: Idle (waiting for inputs) <-> Running (the gauge sweeps).
 ##
 ## Dependencies: TimingGauge, QualityMath, IngredientItem, BatchItem,
@@ -22,8 +22,6 @@ signal batch_cooked(recipe: RecipeData)
 const BATCH_SCENE: PackedScene = preload("res://Scenes/Levels/House/Lab/BatchItem.tscn")
 const GAUGE_LENGTH: float = 0.5
 const GAUGE_THICKNESS: float = 0.035
-## Accuracy a motor stops the needle at: a Good result, never Perfect.
-const MOTOR_ACCURACY: float = 0.6
 
 @export var step: Types.CraftStep = Types.CraftStep.PROCESS
 @export var station_name: String = "Station"
@@ -31,8 +29,11 @@ const MOTOR_ACCURACY: float = 0.6
 @export var sweeps_per_second: float = 0.6
 ## Width of the sweet zone before equipment upgrades (the cooker uses the recipe's).
 @export var zone_width: float = 0.22
+@export_group("Motor")
 ## Seconds a motor lets the needle sweep before it stops it.
-@export var motor_seconds: float = 4.0
+@export_range(0.5, 20.0, 0.5) var motor_seconds: float = 4.0
+## Accuracy a motor stops the needle at (0.6 = Good, never Perfect).
+@export_range(0.0, 1.0, 0.05) var motor_accuracy: float = 0.6
 
 ## The house's shared state (handed over by the Lab at setup).
 var operation: Operation = null
@@ -105,7 +106,7 @@ func set_active(is_active: bool) -> void:
 	process_mode = Node.PROCESS_MODE_INHERIT if is_active else Node.PROCESS_MODE_DISABLED
 
 
-## A bought motor finishes the skill check on its own (MOTOR_ACCURACY after motor_seconds).
+## A bought motor finishes the skill check on its own (motor_accuracy after motor_seconds).
 func set_motorized(has_motor: bool) -> void:
 	_has_motor = has_motor
 
@@ -179,7 +180,7 @@ func _on_running_state_processing(delta: float) -> void:
 	_needle.position.x = (_gauge.get_needle() - 0.5) * GAUGE_LENGTH
 	_running_seconds += delta
 	if _has_motor and _running_seconds >= motor_seconds:
-		_finish(MOTOR_ACCURACY)
+		_finish(motor_accuracy)
 
 # ============================================
 # INTERNALS

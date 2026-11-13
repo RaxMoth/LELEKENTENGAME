@@ -100,7 +100,7 @@ func apply(entries: Array, parent: Node) -> void:
 			_stand_ins[net_id] = stand_in
 		if not _buffers.has(net_id):
 			_buffers[net_id] = SnapshotBuffer.new()
-		_buffers[net_id].push(_now(), target)
+		_buffers[net_id].push(SnapshotBuffer.now(), target)
 		_holders[net_id] = entry[ENTRY_HOLDER]
 		var state: Array = entry[ENTRY_STATE]
 		if not state.is_empty() and stand_in.has_method(METHOD_APPLY_STATE):
@@ -112,7 +112,7 @@ func apply(entries: Array, parent: Node) -> void:
 
 ## Moves every stand-in to where the host had it a moment ago (held ones to the hand).
 func smooth(_delta: float) -> void:
-	var shown_time: float = _now() - SnapshotBuffer.INTERPOLATION_DELAY
+	var shown_time: float = SnapshotBuffer.now() - SnapshotBuffer.INTERPOLATION_DELAY
 	for net_id: int in _stand_ins:
 		var stand_in: Node3D = _stand_ins[net_id]
 		if not is_instance_valid(stand_in):
@@ -177,8 +177,3 @@ func _remove(net_id: int) -> void:
 	_stand_ins.erase(net_id)
 	_buffers.erase(net_id)
 	_holders.erase(net_id)
-
-
-## Seconds on this machine's clock (snapshots are timed by when they arrive).
-func _now() -> float:
-	return Time.get_ticks_usec() / 1000000.0

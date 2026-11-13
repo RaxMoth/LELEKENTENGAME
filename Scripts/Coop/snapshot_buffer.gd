@@ -5,8 +5,8 @@
 ## or easing at 15–20 Hz. A late snapshot is bridged by carrying on for a
 ## little (MAX_EXTRAPOLATION_SECONDS), then it holds still.
 ##
-##   buffer.push(now, host_transform)                 # on every snapshot
-##   node.global_transform = buffer.sample(now - SnapshotBuffer.INTERPOLATION_DELAY)
+##   buffer.push(SnapshotBuffer.now(), host_transform)   # on every snapshot
+##   node.global_transform = buffer.sample(SnapshotBuffer.now() - SnapshotBuffer.INTERPOLATION_DELAY)
 ##
 ## Dependencies: none
 class_name SnapshotBuffer
@@ -25,6 +25,11 @@ const JUMP_DISTANCE: float = 1.5
 
 var _times: Array[float] = []
 var _transforms: Array[Transform3D] = []
+
+
+## Seconds on this machine's clock: snapshots are timed by when they arrive.
+static func now() -> float:
+	return Time.get_ticks_usec() / 1000000.0
 
 
 ## Adds the transform the host sent, arriving at [param time] (seconds).

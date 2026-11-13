@@ -387,7 +387,7 @@ These are the defaults this build uses; all are easy to change.
 
 - **When the door falls:** the shift (day) is lost and replayed; the stash is
   destroyed and repairs cost 20% of cash; upgrades, crew and banked cash
-  stay (`house_level.gd`, `REPAIR_COST_SHARE`).
+  stay (`house_level.gd`, `repair_cost_share`).
 - **Heat** is the link between sales and police (per-unit heat on each
   product, more cops in the raid at the end of the cycle, cooling over time,
   bribes; reset to 0 after a beaten raid).

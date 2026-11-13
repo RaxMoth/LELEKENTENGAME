@@ -13,9 +13,6 @@ signal nightfall
 const BLEND_SHARE: float = 0.15
 ## Seconds between lighting updates (daylight changes slowly).
 const LIGHTING_INTERVAL_SECONDS: float = 0.25
-## Lamps switch on below this much daylight.
-const LAMPS_ON_BELOW: float = 0.5
-const LAMP_GLOW: float = 1.6
 
 ## Day -> Night chart of this cycle.
 @export var cycle_chart: StateChart
@@ -24,8 +21,15 @@ const LAMP_GLOW: float = 1.6
 @export var start_hour: float = 7.0
 @export var sun: DirectionalLight3D
 @export var world_environment: WorldEnvironment
+@export_group("Lamps")
 ## Its PlaceholderMesh3D children light up at night.
 @export var lamps: Node3D
+## They switch on below this much daylight ...
+@export_range(0.0, 1.0, 0.05) var lamps_on_below: float = 0.5
+## ... and glow this bright.
+@export_range(0.0, 4.0, 0.1) var lamp_glow: float = 1.6
+
+@export_group("Light")
 @export var day_light_energy: float = 1.35
 @export var night_light_energy: float = 0.4
 @export var day_ambient_energy: float = 1.3
@@ -42,7 +46,7 @@ func _ready() -> void:
 	clock = DayClock.new(day_seconds, night_seconds, start_hour)
 	if world_environment != null and world_environment.environment.sky != null:
 		_sky_material = world_environment.environment.sky.sky_material as ProceduralSkyMaterial
-	_set_lamps(get_daylight() < LAMPS_ON_BELOW)
+	_set_lamps(get_daylight() < lamps_on_below)
 	_apply_lighting()
 
 
@@ -100,7 +104,7 @@ func _apply_lighting() -> void:
 		_sky_material.sky_top_color = Palette.SKY_NIGHT.lerp(Palette.SKY_DAY, daylight)
 		_sky_material.sky_horizon_color = Palette.SKY_NIGHT_HORIZON.lerp(Palette.SKY_DAY_HORIZON, daylight)
 		_sky_material.ground_horizon_color = _sky_material.sky_horizon_color
-	var should_light_lamps: bool = daylight < LAMPS_ON_BELOW
+	var should_light_lamps: bool = daylight < lamps_on_below
 	if should_light_lamps != _are_lamps_on:
 		_set_lamps(should_light_lamps)
 
@@ -112,4 +116,4 @@ func _set_lamps(is_on: bool) -> void:
 	for lamp: Node in lamps.get_children():
 		var lamp_mesh: PlaceholderMesh3D = lamp as PlaceholderMesh3D
 		if lamp_mesh != null:
-			lamp_mesh.glow = LAMP_GLOW if is_on else 0.0
+			lamp_mesh.glow = lamp_glow if is_on else 0.0
