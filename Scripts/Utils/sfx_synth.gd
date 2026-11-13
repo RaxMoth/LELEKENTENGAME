@@ -34,6 +34,10 @@ const PRESETS: Dictionary[StringName, Array] = {
 	&"chop": [260.0, 70.0, 0.13, 2, 0.5],
 	&"whoosh": [900.0, 320.0, 0.12, 2, 0.1],
 	&"squeak": [2700.0, 3500.0, 0.08, 0, 0.16],
+	&"crackle": [520.0, 180.0, 0.05, 2, 0.14],
+	&"alarm": [1900.0, 1900.0, 0.11, 1, 0.12],
+	&"spray": [1400.0, 900.0, 0.16, 2, 0.12],
+	&"breaker": [140.0, 60.0, 0.12, 2, 0.5],
 }
 
 static var _cache: Dictionary[StringName, AudioStreamWAV] = {}

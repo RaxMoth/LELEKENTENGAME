@@ -45,6 +45,8 @@ func _on_setup() -> void:
 	for rack: GrowRack in get_racks():
 		rack.setup(context.operation, crop)
 	_picker.setup(get_plants())
+	# A harvesting level-up adds to every hand harvest from now on.
+	context.operation.skill_leveled.connect(func(_skill: int, _level: int) -> void: _apply_cellar())
 	_apply_cellar()
 
 

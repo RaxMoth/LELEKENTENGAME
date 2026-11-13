@@ -6,6 +6,9 @@ class_name LabSmokeChecks
 extends RefCounted
 
 
+const BATCH_SCENE: PackedScene = preload("res://Scenes/Levels/House/Lab/BatchItem.tscn")
+
+
 static func run(test: SmokeTest, level: HouseLevel) -> void:
 	var rig: XRPlayerRig = level.rig
 	var operation: Operation = level.operation
@@ -84,6 +87,45 @@ static func run(test: SmokeTest, level: HouseLevel) -> void:
 	var stock_before: int = operation.stash.get_total()
 	crafter.work_now()
 	test.check(operation.stash.get_total() > stock_before, "a crafter makes product")
+	test.check(Profile.skills.book.get_xp(SkillBook.Skill.CRAFTING) > 0.0 and Profile.skills.book.get_xp(SkillBook.Skill.HARVESTING) > 0.0, "skill checks stopped by hand and hand harvests train crafting and harvesting")
+	await _check_cooker_fire(test, level, lab)
+
+
+## A batch left on the cooker smokes, then catches fire and burns; the
+## extinguisher from the wall (click it, click the fire) puts it out, and a
+## click on its hook hangs it back.
+static func _check_cooker_fire(test: SmokeTest, level: HouseLevel, lab: Lab) -> void:
+	var rig: XRPlayerRig = level.rig
+	var cooker: Workstation = lab.get_station(&"Cooker")
+	var fire: StationFire = lab.get_fire()
+	var tray: ItemSocket = cooker.get_output_socket()
+	var batch: BatchItem = Pools.spawn(BATCH_SCENE, Global.get_world_root(), tray.global_position) as BatchItem
+	var accuracies: Array[float] = [0.9]
+	batch.setup(level.operation.find_recipe(&"glow"), accuracies)
+	batch.home_socket = tray
+	tray.insert(batch)
+	fire.step(fire.warn_seconds + 0.1)
+	await test.frames(2)
+	test.check(fire.is_overheating() and not fire.is_burning(), "a batch left on the cooker starts to smoke")
+	fire.step(fire.ignite_seconds)
+	await test.frames(2)
+	test.check(fire.is_burning() and tray.is_empty() and cooker.is_burning(), "left longer, the cooker catches fire and the batch burns")
+	test.check(lab.get_status_line() == TranslationServer.translate("Fire in the lab!"), "the wrist says the lab is on fire")
+	rig.locomotion.teleport_to(Vector3(-2.0, 0.0, -0.2), 0.0)
+	await test.frames(2)
+	var extinguisher: Extinguisher = lab.get_extinguisher()
+	rig.tap_world_point(extinguisher.get_grab_center())
+	await test.frames(2)
+	test.check(rig.get_held_items().has(extinguisher), "the extinguisher comes off the wall")
+	for burst: int in 6:
+		if not fire.is_burning():
+			break
+		rig.tap_world_point(fire.get_target_position())
+		await test.frames(70)
+	test.check(not fire.is_burning() and not cooker.is_burning(), "foam sprayed at the fire puts it out")
+	rig.tap_world_point(extinguisher.home_socket.global_position)
+	await test.frames(2)
+	test.check(rig.get_held_items().is_empty() and extinguisher.socket == extinguisher.home_socket, "a click on its hook hangs the extinguisher back")
 
 
 ## The VR hand path (as a headset would drive it): point at a crate and pull

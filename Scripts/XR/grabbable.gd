@@ -1,6 +1,8 @@
 ## Something a hand (or the flat simulator's cursor) can pick up, carry and
 ## put into an ItemSocket: ingredients, batches. While held it follows its
-## holder; let go away from a socket it goes back where it belongs.
+## holder; let go away from a socket it goes back where it belongs. A
+## usable item (is_usable: the extinguisher) acts on its holder's trigger
+## instead of being put down by it (the grip puts it down).
 ##
 ##   class_name IngredientItem extends Grabbable
 ##   func _on_released_nowhere() -> void: crate.take_back(self)
@@ -77,6 +79,24 @@ func drop_nowhere() -> void:
 		home_socket.insert(self)
 	else:
 		_on_released_nowhere()
+
+
+## @virtual True for an item that acts while held when its holder pulls the
+## trigger (the extinguisher sprays).
+func is_usable() -> bool:
+	return false
+
+
+## @virtual The holder's trigger went down ([param is_pressed]) or up,
+## aiming along [param pointer].
+func use(_is_pressed: bool, _pointer: XRPointer) -> void:
+	pass
+
+
+## @virtual One use from a click (the flat simulator): a press and a release.
+func use_once(pointer: XRPointer) -> void:
+	use(true, pointer)
+	use(false, pointer)
 
 
 ## @virtual Dropped with no socket to go to. Default: stay where it is.

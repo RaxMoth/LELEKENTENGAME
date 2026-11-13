@@ -1,0 +1,76 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://Scenes/Levels/House/Rats/rat_trap.gd" id="trap"]
+[ext_resource type="Script" path="res://Scripts/Utils/placeholder_mesh_3d.gd" id="mesh"]
+
+[node name="RatTrap" type="Node3D"]
+script = ExtResource("trap")
+grab_radius = 0.12
+hold_offset = Vector3(0, -0.03, -0.08)
+
+[node name="Base" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.007, 0)
+script = ExtResource("mesh")
+shape_kind = 1
+size = Vector3(0.17, 0.014, 0.08)
+color = Color(0.62, 0.46, 0.28, 1)
+cast_shadow = 0
+visibility_range_end = 9.0
+
+[node name="Plate" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.035, 0.016, 0)
+script = ExtResource("mesh")
+shape_kind = 1
+size = Vector3(0.04, 0.004, 0.035)
+color = Color(0.58, 0.6, 0.63, 1)
+cast_shadow = 0
+visibility_range_end = 9.0
+
+[node name="Bait" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.035, 0.024, 0)
+script = ExtResource("mesh")
+shape_kind = 1
+size = Vector3(0.02, 0.012, 0.016)
+color = Color(0.93, 0.76, 0.27, 1)
+cast_shadow = 0
+visibility_range_end = 9.0
+
+[node name="Spring" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.02, 0)
+script = ExtResource("mesh")
+shape_kind = 1
+size = Vector3(0.012, 0.012, 0.066)
+color = Color(0.58, 0.6, 0.63, 1)
+cast_shadow = 0
+visibility_range_end = 9.0
+
+[node name="Bar" type="Node3D" parent="."]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.02, 0)
+
+[node name="SideFront" type="MeshInstance3D" parent="Bar"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.035, 0, 0.033)
+script = ExtResource("mesh")
+shape_kind = 1
+size = Vector3(0.07, 0.004, 0.004)
+color = Color(0.58, 0.6, 0.63, 1)
+cast_shadow = 0
+visibility_range_end = 9.0
+
+[node name="SideBack" type="MeshInstance3D" parent="Bar"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.035, 0, -0.033)
+script = ExtResource("mesh")
+shape_kind = 1
+size = Vector3(0.07, 0.004, 0.004)
+color = Color(0.58, 0.6, 0.63, 1)
+cast_shadow = 0
+visibility_range_end = 9.0
+
+[node name="End" type="MeshInstance3D" parent="Bar"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.07, 0, 0)
+script = ExtResource("mesh")
+shape_kind = 1
+size = Vector3(0.004, 0.004, 0.07)
+color = Color(0.58, 0.6, 0.63, 1)
+cast_shadow = 0
+visibility_range_end = 9.0

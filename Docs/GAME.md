@@ -87,8 +87,10 @@ new day, in co-op the guest comes along (`DaySummaryPopup`).
 | Pick up / put in | Dominant-hand trigger: point at a crate, ingredient or batch and pull; point at a station slot and pull again | Click an item / click where to put it |
 | Carry by hand | Grip (either hand, at the hand or along the beam): hold to carry, let go at — or pointing at — a slot; a quick grip click keeps holding until the next click | — |
 | Use (station buttons, screens, door bolt) | Dominant-hand trigger | Click |
-| Fight with fists, the knife or the axe | Swing a fist (either empty hand) or the blade (the off hand holds it) into a raider within reach; the off-hand trigger also strikes what's in reach along its beam | Click a raider in reach, or right-click |
-| Fire your gun | Off-hand trigger (from the front room, the porch or the garden); the gun sits in that hand; hold it for the SMG | Right-click (hold for the SMG), or click a raider |
+| Draw a weapon | Your weapons hang on your body: the knife at your dominant hip, the axe over your back, the gun across your chest. Close a grip there to draw it into that hand; open the grip and it goes back. One weapon is out at a time | The weapon equipped at the armory is in hand |
+| Fight with fists, the knife or the axe | Swing a fist (an empty hand) or the drawn blade into a raider within reach; a hand's trigger also strikes what's in reach along its beam | Click a raider in reach, or right-click |
+| Fire your gun | Draw it, then pull that hand's trigger (from the front room, the porch or the garden); hold it for the SMG | Right-click (hold for the SMG), or click a raider |
+| Use what you hold | The extinguisher sprays with the trigger of the hand that holds it; the grip puts it down | Click to spray a burst; click its hook to hang it back |
 | Front door | Trigger on a handle swings it fully open / shut; grip a handle to swing it by hand | Click a handle |
 | Talk to someone | Dominant-hand trigger on a person in the street; pick a reply on the panel beside them | Click a person, then a reply |
 | Walk | Dominant-hand stick walks where you look (like VRChat; "Smooth Movement", on by default), easing in and out; push it all the way to sprint | WASD / arrows; 1–4 jump to lab, front, window, office |
@@ -99,6 +101,7 @@ new day, in co-op the guest comes along (`DaySummaryPopup`).
 | Admin (debug builds) | Terminal on the office wall | Same, or F3 |
 | Pause | Menu or B / Y | Esc |
 | Status | Look at your off-hand wrist | Lower left of the view |
+| Your body | Gloved hands whose fingers follow the grip and trigger (a full grip makes a fist); look down to see your torso and legs walk with you | — |
 
 Vive wands: trackpad click up teleports, left / right snap-turns. Bindings:
 `openxr_action_map.tres`.
@@ -331,8 +334,11 @@ house, with the front door, the lab corner, the sales window, the stash
 shelf and the office board in one room (two half walls hold the armory,
 the how-to poster and the lab tables). A few **rats** scurry about the
 cabin's floor; now and then — by pure chance, when one is right at your
-feet — a rat bites: 1 health, each rat only once. They are gone once the
-house is extended. Beside it, planks cover an old
+feet — a rat bites: 1 health, each rat only once. Worse, they go for the
+stash shelf and chew through a bag (a unit lost). A box of **snap traps**
+stands by the shelf: take a trap and let go of it over the floor and it
+is set there; a rat that runs over it is caught for the day (four traps a
+day). The rats are gone once the house is extended. Beside it, planks cover an old
 cellar hatch in the grass. **Extend the House** builds the rest: the
 office with its desk, the stash room (the shelf moves in) and the hallway;
 the hatch is now under the stash-room floor. **Dig the Cellar** (needs the
@@ -399,6 +405,34 @@ Upgrades for you rather than the house: **Running Shoes** (+20% walking
 speed per level, stick, arm swing and keys), **Green Thumb** (+1 shroom per
 level from every plant you harvest by hand, not the picker's) and **Steady
 Hands** (the skill-check needle sweeps 15% slower per level).
+
+### Skills
+
+You get better by doing, shown on the wrist and announced at each level
+(five levels each; numbers in `Ressources/Skills/skill_tuning.tres`):
+
+| Skill | Grows from | Each level gives |
+|---|---|---|
+| Crafting | Stopping a skill check by hand (more for a better stop; not the motor's) | +6% wider green zone |
+| Fighting | Every punch or blade hit that lands | +2 melee damage |
+| Harvesting | Every plant you harvest by hand | +1 unit per hand harvest every two levels |
+
+### Trouble around the house
+
+- **Cooker fire.** A finished batch left on the cooker starts to smoke
+  after 14 s (take it off and it cools down) and catches fire after 26 s:
+  the batch burns, the cooker takes and starts nothing, a smoke alarm
+  beeps and the smoke adds heat. Grab the **extinguisher** from the wall
+  by the cooker, aim and pull the trigger (a click sprays a burst on a
+  screen) until the fire is out; put it down and it hangs back on its
+  hook. A conveyor belt never lets a batch sit, so the lab's automation
+  also prevents fires.
+- **Fuse box.** At night the old wiring may blow the fuses (a chance each
+  night hour, once a night at most). The lamps go dark, the night gets
+  darker, the lab's stations and its automation stop, and the wrist says
+  so, until you flip the lever on the **fuse box** on the front room wall.
+- **Rats** (the cabin only): they bite now and then and chew stash bags;
+  set traps (above).
 
 ### The ghost
 
@@ -535,18 +569,23 @@ raiders as exports on their scenes, the yard's obstacles on `Yard`, pacing on `A
 
 - **Space.** A 10 × 10 m house: every front is a few steps away. Rooms
   connect through doorways; the walkable floor is a handful of rectangles.
-- **Splitting attention.** The wrist panel shows time, cash, reputation,
-  stash, heat, door health and the queue, so you can decide where to go
+- **Splitting attention.** The wrist panel shows time, health, cash,
+  reputation, stash, heat, skills, door health, the lab's trouble and the queue, so you can decide where to go
   next without walking there. Raids, waves, rams and the door
   falling are announced in front of you with sound and a heavy rumble.
 - **Readable yard.** The front room has two wide windows over the yard;
   raiders' glowing visors stand out at night, and cover is big and simple.
-- **Hands.** The dominant trigger picks up and puts in by pointing, like
-  the flat cursor's clicks; grip grabs with either hand (hold to carry, a
-  quick click to keep holding). The off-hand trigger only shoots (the gun
-  sits in that hand) or clicks a screen / button — it never picks anything
-  up, so aiming past the door handle still fires. Distance grab along the
-  beam keeps reach comfortable.
+- **Hands.** Gloved hands follow the controllers' grip and trigger. The
+  dominant trigger picks up and puts in by pointing, like the flat
+  cursor's clicks; grip grabs with either hand (hold to carry, a quick
+  click to keep holding). Weapons hang in holsters on your body and are
+  drawn with a grip there; a drawn weapon's hand fires or strikes with its
+  trigger, an empty hand punches. The off-hand trigger never picks
+  anything up, so aiming past the door handle still strikes or fires.
+  Distance grab along the beam keeps reach comfortable.
+- **Body.** A low-poly torso and legs stand under you and walk as you move
+  (stick, arm swing or real steps; the knees bend when you crouch). The
+  camera never bobs: the legs carry the walking, not the view.
 - **Comfort.** Stick walking where you look plus teleport and snap turning
   on the off-hand stick; smooth turning in Settings. Seated players are
   lifted to standing height (re-measured on recenter). No camera motion the

@@ -16,14 +16,18 @@
 ## put in. The off-hand trigger only clicks screens and buttons or fires.
 ## Grip grabs with either hand; let go after holding it to put the item
 ## down, or click it quickly to keep holding until the next grip click.
+## A level may claim a grip press first (grip_filter: drawing a weapon from
+## a holster). In a headset the hands are gloves whose fingers follow the
+## grip and trigger (GloveHand), and a body stands under the player and
+## walks with them (WalkingBody: look down to see your legs).
 ##
 ## XR: OpenXR must be enabled in Project Settings (see Docs/GAME.md). The
 ## project uses the "Local Floor" reference space, so the player stands on
 ## this node and the runtime handles recentering.
 ##
 ## Dependencies: XRPointer, XRLocomotion, WorldScreen, Grabbable, ItemSocket,
-##               PointerButton, InteractionQuery, Events, UI, Platform,
-##               Settings, Types autoloads
+##               PointerButton, InteractionQuery, GloveHand, WalkingBody,
+##               Events, UI, Platform, Settings, Types autoloads
 class_name XRPlayerRig
 extends XROrigin3D
 
@@ -63,6 +67,8 @@ const POINTER_REACH: float = HandInteractor.POINTER_REACH
 @export_range(0.0, 1.0, 0.01) var popup_drop: float = 0.15
 ## Length of a controller rumble (seconds).
 @export_range(0.01, 0.5, 0.01) var haptic_seconds: float = 0.06
+## Shows the player's own body (torso and walking legs) in a headset.
+@export var shows_body: bool = true
 
 @export_group("XR")
 ## Size of the desktop window while a PC headset is active. The window
@@ -98,6 +104,9 @@ var is_xr_active: bool = false
 ## hand_input_forwarded for the host (which owns the world). Screens and
 ## items are left alone locally; menus, walking and turning stay local.
 var forwards_hand_input: bool = false
+## Claims a grip press before the hands see it (a holster draw): called
+## with (hand: Types.Hand, is_pressed: bool), returns true when it took it.
+var grip_filter: Callable = Callable()
 ## Where the player may stand (set by the level).
 var walkable_area: WalkableArea:
 	get:
@@ -143,6 +152,7 @@ var _flat_press_on_screen: bool = false
 @onready var _flat_weapon_anchor: Node3D = %FlatWeaponAnchor
 @onready var _flat_wrist_anchor: Node3D = %FlatWristAnchor
 @onready var _popup_screen: WorldScreen = %PopupScreen
+@onready var _body: WalkingBody = %Body
 
 
 func _ready() -> void:
@@ -168,6 +178,9 @@ func _ready() -> void:
 	else:
 		_enter_flat_mode()
 	_popup_screen.set_active(false)
+	_body.visible = is_xr_active and shows_body
+	# The hip holster (a knife) sits on the side of the hand that usually draws it.
+	_body.set_hip_side(1.0 if dominant_hand == Types.Hand.RIGHT else -1.0)
 	set_world_space_ui(is_xr_active or force_world_space_ui or ARGUMENT_WORLD_UI in OS.get_cmdline_user_args())
 
 
@@ -186,9 +199,10 @@ func _exit_tree() -> void:
 		UI.set_world_space_enabled(false)
 
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
 	if _needs_height_calibration and _is_head_tracked():
 		_calibrate_standing_view()
+	_body.follow(get_head_transform(), get_feet_position().y, delta)
 	if _uses_world_space_ui:
 		var should_show_popup: bool = UI.has_visible_content()
 		if should_show_popup and not _is_popup_shown:
@@ -276,6 +290,11 @@ func get_active_pointers() -> Array[XRPointer]:
 	return [_left_pointer, _right_pointer]
 
 
+## The body standing under the player (also where holsters hang).
+func get_body() -> WalkingBody:
+	return _body
+
+
 ## Head (camera) transform in world space.
 func get_head_transform() -> Transform3D:
 	return _xr_camera.global_transform if is_xr_active else _flat_camera.global_transform
@@ -309,9 +328,9 @@ func is_grip_down(hand: Types.Hand) -> bool:
 	return is_xr_active and _grip_down[hand]
 
 
-## True while [param hand] holds nothing.
+## True while [param hand] holds nothing (no item, no drawn weapon).
 func is_hand_empty(hand: Types.Hand) -> bool:
-	return _hands.get_held_item(hand) == null
+	return _hands.get_held_item(hand) == null and not _hands.is_hand_busy(hand)
 
 
 ## A controller's transform in the play space (relative to this origin, so
@@ -345,6 +364,8 @@ func handle_controller_button(hand: Types.Hand, action_name: StringName, is_pres
 		Types.XR_ACTION_TRIGGER_CLICK, Types.XR_ACTION_GRIP_CLICK:
 			if action_name == Types.XR_ACTION_GRIP_CLICK:
 				_grip_down[hand] = is_pressed
+				if grip_filter.is_valid() and grip_filter.call(hand, is_pressed):
+					return
 			if forwards_hand_input:
 				hand_input_forwarded.emit(hand, action_name, is_pressed)
 			else:
@@ -717,6 +738,12 @@ func _flat_click() -> void:
 		var socket: ItemSocket = InteractionQuery.find_socket_on_ray(get_tree(), item, origin, direction, POINTER_REACH)
 		if socket != null:
 			_place(item, socket)
+			return
+		if item.is_usable():
+			# A usable item (the extinguisher) acts on the click and stays in hand;
+			# clicking its place puts it back.
+			_flat_held_item = item
+			item.use_once(_flat_pointer)
 			return
 		var refusing_socket: ItemSocket = InteractionQuery.find_refusing_socket_on_ray(get_tree(), item, origin, direction, POINTER_REACH)
 		if refusing_socket != null:

@@ -62,6 +62,11 @@ SHOT_RESOLUTION=$WIDE shot level_22_storm level=house showcase=house_storm stand
 # A new player: rats in the one-room cabin, fists, then a knife and an axe from the armory.
 SHOT_RESOLUTION=$WIDE shot level_23_rats level=house showcase=house_rats stand=-1.9,1.3 look=-1.9,0.0,-0.5 frames=60
 SHOT_RESOLUTION=$WIDE shot level_24_melee level=house showcase=house_melee stand=0.1,-2.9 look=0.1,1.0,-4.3 frames=60
+# A headset player's gear on a stand-in: walking body, holstered knife / axe / pistol, gloves.
+SHOT_RESOLUTION=$WIDE shot level_25_gear level=house showcase=house_gear stand=-0.1,-1.9 look=0.3,1.0,-3.7 frames=30
+# Trouble around the house: the cooker on fire by the extinguisher, a blown fuse box at night.
+SHOT_RESOLUTION=$WIDE shot level_26_fire level=house showcase=house_fire stand=-1.6,0.4 look=-1.9,1.0,-1.7 frames=90
+SHOT_RESOLUTION=$WIDE shot level_27_blackout level=house showcase=house_blackout stand=-3.0,-3.4 look=-4.93,1.4,-3.6 frames=60
 "$TOOLS_DIR/godot.sh" --headless --script "$TOOLS_DIR/contact_sheet.gd" -- "$OUT_DIR/sheet_menus.png" 5 360 640 \
 	"$OUT_DIR"/0*.png >/dev/null 2>&1
 "$TOOLS_DIR/godot.sh" --headless --script "$TOOLS_DIR/contact_sheet.gd" -- "$OUT_DIR/sheet_levels.png" 3 640 360 \

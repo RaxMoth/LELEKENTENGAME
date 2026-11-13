@@ -11,6 +11,7 @@ description = "Dead accurate, armor-piercing rounds that go through one raider i
 cost = 800
 required_weapon_id = &"pistol"
 model_scene = ExtResource("model")
+holster_slot = &"chest"
 damage = 60.0
 fire_interval_seconds = 0.55
 range_meters = 40.0

@@ -1,10 +1,11 @@
 ## What every front of the house gets at the start of a shift: the level (is
 ## a shift running?), the player rig, the shared Operation, the DayCycle and
-## the HouseCycle (selling days or a police raid?). This is the whole
+## the HouseCycle (selling days or a police raid?), and the player's
+## holsters (which weapon a hand drew in a headset). This is the whole
 ## contract between the fronts — a front never reaches into another front's
 ## nodes, only into these.
 ##
-## Dependencies: LevelBase, XRPlayerRig, Operation, DayCycle, HouseCycle
+## Dependencies: LevelBase, XRPlayerRig, Operation, DayCycle, HouseCycle, WeaponHolsters
 class_name HouseContext
 extends RefCounted
 
@@ -21,6 +22,8 @@ var operation: Operation = null
 var day_cycle: DayCycle = null
 ## The 3-day cycle: selling phase or raid (null in scenes without one).
 var cycle: HouseCycle = null
+## The weapons on the player's body and the one a hand drew (null without holsters).
+var holsters: WeaponHolsters = null
 
 
 func _init(shift_level: LevelBase, player_rig: XRPlayerRig, house_operation: Operation, house_day_cycle: DayCycle, house_cycle: HouseCycle = null) -> void:

@@ -1,0 +1,55 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://Scenes/Levels/House/Rats/trap_box.gd" id="box"]
+[ext_resource type="Script" path="res://Scripts/Utils/placeholder_mesh_3d.gd" id="mesh"]
+
+[node name="TrapBox" type="Node3D"]
+script = ExtResource("box")
+
+[node name="Box" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.065, 0)
+script = ExtResource("mesh")
+shape_kind = 1
+size = Vector3(0.26, 0.13, 0.18)
+color = Color(0.55, 0.42, 0.28, 1)
+cast_shadow = 0
+visibility_range_end = 9.0
+
+[node name="FlapFront" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.8660, -0.5, 0, 0.5, 0.8660, 0, 0.135, 0.065)
+script = ExtResource("mesh")
+shape_kind = 1
+size = Vector3(0.26, 0.006, 0.07)
+color = Color(0.42, 0.31, 0.2, 1)
+cast_shadow = 0
+visibility_range_end = 9.0
+
+[node name="FlapBack" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.8660, 0.5, 0, -0.5, 0.8660, 0, 0.135, -0.065)
+script = ExtResource("mesh")
+shape_kind = 1
+size = Vector3(0.26, 0.006, 0.07)
+color = Color(0.42, 0.31, 0.2, 1)
+cast_shadow = 0
+visibility_range_end = 9.0
+
+[node name="TrapTop" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.137, 0)
+script = ExtResource("mesh")
+shape_kind = 1
+size = Vector3(0.17, 0.014, 0.08)
+color = Color(0.62, 0.46, 0.28, 1)
+cast_shadow = 0
+visibility_range_end = 9.0
+
+[node name="Label" type="Label3D" parent="."]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.3, 0)
+billboard = 1
+pixel_size = 0.0007
+modulate = Color(0.9333, 0.9451, 0.9686, 1)
+outline_modulate = Color(0.051, 0.0627, 0.0902, 0.9)
+text = "Rat traps"
+font_size = 36
+outline_size = 8
+visibility_range_end = 7.0

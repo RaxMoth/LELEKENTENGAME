@@ -10,11 +10,14 @@
 ## bought (a real lab to explain). The Automation tab adds motors to the stations (they finish
 ## their own skill checks), conveyor belts between them and an ingredient
 ## hopper (LabAutomation); the Green Thumb perk makes hand-picked plants
-## yield more.
+## yield more. A finished batch left on the cooker too long catches fire
+## (StationFire) — the extinguisher on the wall puts it out; without power
+## (the fuse box tripped) the stations and the automation stand still.
 ##
 ## Dependencies: HouseFront, Workstation, IngredientCrate, ShroomPlant, Worker,
 ##               LabAutomation, RecipeData, RecipeBoard, LabGuideBoard, WorldScreen,
-##               Operation, GameConfig, Profile, Types autoloads
+##               StationFire, Extinguisher, ItemSocket, Operation, GameConfig,
+##               Profile, Palette, Types autoloads
 class_name Lab
 extends HouseFront
 
@@ -28,6 +31,9 @@ extends HouseFront
 @onready var _recipe_screen: WorldScreen = %RecipeScreen
 @onready var _guide_screen: WorldScreen = %GuideScreen
 @onready var _automation: LabAutomation = %Automation
+@onready var _fire: StationFire = %StationFire
+@onready var _extinguisher: Extinguisher = %Extinguisher
+@onready var _extinguisher_hook: ItemSocket = %ExtinguisherHook
 
 
 func _on_setup() -> void:
@@ -41,6 +47,16 @@ func _on_setup() -> void:
 			(child as IngredientCrate).operation = context.operation
 			crates.append(child as IngredientCrate)
 	_automation.setup(context.operation, crates)
+	# A harvesting level-up adds to every hand harvest from now on.
+	context.operation.skill_leveled.connect(func(_skill: int, _level: int) -> void: _apply_gadgets())
+	context.operation.power_changed.connect(_on_power_changed)
+	_fire.setup(context.operation)
+	_fire.overheating.connect(func() -> void: announcement_requested.emit(tr("The cooker is smoking: take the batch off"), Palette.WARNING))
+	_fire.ignited.connect(func() -> void: warning_requested.emit(tr("Fire in the lab! Grab the extinguisher")))
+	_fire.put_out.connect(func() -> void: announcement_requested.emit(tr("The fire is out"), Palette.SUCCESS))
+	_extinguisher_hook.accept_rule = func(item: Grabbable) -> bool: return item is Extinguisher
+	_extinguisher.home_socket = _extinguisher_hook
+	_extinguisher_hook.insert(_extinguisher)
 	for plant: ShroomPlant in get_plants():
 		plant.setup(context.operation, grown_recipe)
 	for crafter: Node in _crafters.get_children():
@@ -55,7 +71,29 @@ func apply_upgrades() -> void:
 
 ## The belts and the hopper only work while the shift runs.
 func _shift_process(delta: float) -> void:
-	_automation.advance(delta)
+	if context.operation.has_power:
+		_automation.advance(delta)
+	_fire.step(delta)
+
+
+## The fire, the smoke or the dark: one line for the wrist.
+func get_status_line() -> String:
+	if _fire.is_burning():
+		return tr("Fire in the lab!")
+	if _fire.is_overheating():
+		return tr("Cooker smoking")
+	if not context.operation.has_power:
+		return tr("Lab: no power")
+	return ""
+
+
+## The cooker's fire (tests).
+func get_fire() -> StationFire:
+	return _fire
+
+
+func get_extinguisher() -> Extinguisher:
+	return _extinguisher
 
 
 func get_recipe_board() -> RecipeBoard:
@@ -103,6 +141,11 @@ func get_plants() -> Array[ShroomPlant]:
 # ============================================
 # INTERNALS
 # ============================================
+
+func _on_power_changed(has_power: bool) -> void:
+	for station_name: StringName in [&"Grinder", &"Cooker", &"Press"]:
+		get_station(station_name).set_powered(has_power)
+
 
 func _apply_gadgets() -> void:
 	var has_grinder: bool = Profile.upgrades.is_owned(Types.UPGRADE_GRINDER)

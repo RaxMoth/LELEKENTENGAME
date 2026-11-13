@@ -196,6 +196,7 @@ the House's sales board and armory, or a `Label3D`), driven by `score_changed`.
 | `UpgradeLook` | UpgradeReaction | A part that shows once an upgrade reaches `min_level` (iron door straps, a steel frame, real shelves); hides the old look it `replaces` and can restyle meshes with another material. The House level applies every look in `Types.GROUP_UPGRADE_LOOK` when upgrades change |
 | `WaveSpawner` | Node | `WaveData` waves; spawns at `Marker3D`s by default; endless scaling; override `_create_enemy()` for other spawn rules |
 | `PlayerVitals` | Node | A player's health (`PlayerHealth`: 100 HP, slow regeneration after a quiet spell) in `Types.GROUP_PLAYER_TARGET`; `take_damage()`, signals `hit_taken`, `health_changed`, `died`; `feet_source` tells raiders where the player is; a co-op guest's mirrors the host's numbers (`apply_net_health`) |
+| `PlayerSkills` (Profile.skills) | ProfileModule | Crafting, fighting, harvesting experience (`SkillBook`, `SkillTuning` in `Ressources/Skills/`); `Operation.record_craft / record_melee_hit / record_hand_harvest` feed it, `Operation.skill_leveled` tells the level |
 | `NpcVoice` | Node3D | An NPC's speech: `say(category, is_important)` plays a `VoiceData` line from its position with a subtitle; `say_last_words()` outlives the NPC; chatter is rationed across NPCs; signal `line_finished` |
 
 Component wiring in scenes uses exported node references (e.g. a hit
@@ -213,10 +214,11 @@ Details and setup: [GAME.md](GAME.md).
 | `Stairs3D` (`Scripts/Utils/`) | MeshInstance3D | A straight flight of stairs (treads and side boards) as one mesh, textured in meters; `get_ramp()` gives the matching WalkableRamp |
 | `GroundHole` (`Scripts/Utils/`) | Node3D | An opening every `GroundPlane3D` leaves out (a stairwell under the lawn and the town's asphalt) |
 | `SightMath` (`Scripts/Utils/`) | static | `is_in_view(eye, point, half_angle, max_distance)`: view-cone checks (the ghost) |
-| `Grabbable` / `ItemSocket` | Node3D | Items a hand or the flat cursor picks up and drops into sockets; sockets decide what they accept (`accept_rule`) and signal `item_inserted` |
+| `Grabbable` / `ItemSocket` | Node3D | Items a hand or the flat cursor picks up and drops into sockets; sockets decide what they accept (`accept_rule`) and signal `item_inserted`. A usable item (`is_usable()`, `use(is_pressed, pointer)`, `use_once()`: the extinguisher) takes its holder's trigger |
+| `GloveHand`, `WalkingBody` | Node3D | The headset player's gloved hands (fingers follow grip / trigger) and the body under them (procedural gait, knee IK, holster anchors `get_holster_anchor()`); `WalkingBody` also walks the co-op partner's avatar |
 | `PointerButton` | Node3D | A 3D button pressed by the pointer ray |
 | `HingeHandle` | Grabbable | A handle on a hinged leaf (door, gate): reports the angle the hand pulls it to; a flat click asks to toggle |
-| `XRPlayerRig` signals | | `primary_action_released` / `secondary_action_released` (held actions: automatic guns, a turret trigger); `is_grip_down(hand)`, `get_hand_local_transform(hand)` for arm-swing running |
+| `XRPlayerRig` signals | | `primary_action_released` / `secondary_action_released` (held actions: automatic guns, a turret trigger); `is_grip_down(hand)`, `get_hand_local_transform(hand)` for arm-swing running; `grip_filter` lets a level claim a grip press (holsters); `get_body()` |
 | `InteractionQuery` | static | Finds grab targets, sockets and buttons by sphere math (no physics) |
 | `XRPointer` | Node3D | Ray along -Z. Clicks `WorldScreen`s itself; game code reads `ray_origin` / `ray_direction` and reports hits with `set_world_hit_distance()`. Controller pointers set `steadying` (0.7): small hand wobbles are smoothed, real aiming is followed at once |
 | `WorldScreen` | Node3D | Shows a Control scene (`content_scene`) or an existing viewport (`attach_viewport`) on a panel in the world and forwards pointer input as mouse events |
@@ -237,8 +239,10 @@ are in `Types.XR_ACTION_*`.
 
 ## Reusable entities (`Scenes/Entities/`)
 
-`XRPlayerRig` (part of every level through `LevelBase`), `FloatingText3D`
-and `PopEffect3D` (pooled effects).
+`XRPlayerRig` (part of every level through `LevelBase`; gloved hands
+`GloveHand` and the walking body `WalkingBody`), `RemotePlayer` (the co-op
+partner, walking on a `WalkingBody` too), `FloatingText3D` and
+`PopEffect3D` (pooled effects).
 
 ## UI controls (`Scripts/UI/`)
 
@@ -286,6 +290,8 @@ AutomationMath.get_missing_ingredients(recipe_ids, present_ids)   # what the hop
 AutomationMath.find_nearest(from, positions, ready_flags)          # the picker's next ripe plant
 heat.add(n) / cool(delta) / get_ratio()
 health.take(amount) / recover(delta) / is_down()   # PlayerHealth: hits, regeneration after a quiet spell
+book.add_xp(SkillBook.Skill.CRAFTING, xp, tuning) / get_level(skill, tuning)   # skills grow by doing
+HolsterRules.assign(catalog, loadout)   # {&"hip": knife, &"back": axe, &"chest": pistol}
 MeleeMath.get_speed(last, hand, delta) / get_distance_to_body(hand, tip, feet, height)   # swings and reach
 loadout.can_buy(axe, catalog) / is_unlocked(pistol, catalog)   # knife → axe → pistol → the other guns
 RaidPlanner.build_raid(data, raid_number, heat_ratio) / is_raid_day(day, data)   # waves of cops, SWAT, rams

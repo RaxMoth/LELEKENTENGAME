@@ -4,6 +4,8 @@
 ## is in the green zone; the closer to its middle, the better the product.
 ## A bought motor (set_motorized) stops the needle on its own after
 ## motor_seconds with motor_accuracy (Good); pressing Stop first can still do better.
+## Without power (the fuse box tripped) it stands still; while it burns
+## (StationFire, the cooker) it takes nothing and starts nothing.
 ## State: Idle (waiting for inputs) <-> Running (the gauge sweeps).
 ##
 ## Dependencies: TimingGauge, QualityMath, IngredientItem, BatchItem,
@@ -44,6 +46,8 @@ var _needle: MeshInstance3D = null
 var _zone: MeshInstance3D = null
 var _has_motor: bool = false
 var _running_seconds: float = 0.0
+var _has_power: bool = true
+var _is_burning: bool = false
 
 @onready var _inputs: Node3D = %Inputs
 @onready var _output: ItemSocket = %Output
@@ -72,6 +76,33 @@ func _ready() -> void:
 # ============================================
 # PUBLIC API
 # ============================================
+
+## Power off (the fuse box tripped): the needle stops where it is and
+## nothing starts until the power is back.
+func set_powered(is_powered: bool) -> void:
+	if is_powered == _has_power:
+		return
+	_has_power = is_powered
+	_stop_button.is_enabled = is_powered and is_running()
+	if is_powered:
+		_try_start.call_deferred()
+	_update_idle_status()
+
+
+## On fire (the cooker with a batch left on it): it takes nothing and
+## starts nothing until the fire is out.
+func set_burning(is_burning: bool) -> void:
+	if is_burning == _is_burning:
+		return
+	_is_burning = is_burning
+	if not is_burning:
+		_try_start.call_deferred()
+	_update_idle_status()
+
+
+func is_burning() -> bool:
+	return _is_burning
+
 
 ## Called by the Lab at the start of a shift.
 func setup(house_operation: Operation) -> void:
@@ -174,7 +205,7 @@ func _on_running_state_entered() -> void:
 
 
 func _on_running_state_processing(delta: float) -> void:
-	if _gauge == null:
+	if _gauge == null or not _has_power:
 		return
 	_gauge.advance(delta)
 	_needle.position.x = (_gauge.get_needle() - 0.5) * GAUGE_LENGTH
@@ -187,7 +218,7 @@ func _on_running_state_processing(delta: float) -> void:
 # ============================================
 
 func _accepts_input(item: Grabbable) -> bool:
-	if is_running() or operation == null:
+	if is_running() or operation == null or _is_burning:
 		return false
 	match step:
 		Types.CraftStep.PROCESS:
@@ -209,7 +240,8 @@ func _accepts_input(item: Grabbable) -> bool:
 
 
 func _try_start() -> void:
-	if operation == null:
+	if operation == null or not _has_power or _is_burning:
+		_update_idle_status()
 		return
 	if is_running() or not _output.is_empty():
 		_update_idle_status()
@@ -235,7 +267,11 @@ func _try_start() -> void:
 func _on_stop_pressed(_button: PointerButton) -> void:
 	if _gauge == null:
 		return
-	_finish(_gauge.stop())
+	var accuracy: float = _gauge.stop()
+	# Stopped by hand (not by the motor): the player's crafting grows.
+	if operation != null:
+		operation.record_craft(accuracy)
+	_finish(accuracy)
 
 
 ## The skill check ended with [param accuracy] (the player's press or the motor).
@@ -323,6 +359,12 @@ func _set_inputs_removable(is_removable: bool) -> void:
 
 
 func _update_idle_status() -> void:
+	if _is_burning:
+		_status_label.text = tr(station_name) + "\n" + tr("On fire! Put it out")
+		return
+	if not _has_power:
+		_status_label.text = tr(station_name) + "\n" + tr("No power: reset the fuse box")
+		return
 	if is_running():
 		return
 	if not _output.is_empty():
@@ -345,6 +387,8 @@ func _update_idle_status() -> void:
 
 ## Why [param item] can't go into this station right now (shown to the player).
 func _explain_refusal(item: Grabbable) -> String:
+	if _is_burning:
+		return tr("On fire! Put it out")
 	if is_running():
 		return tr("Busy: finish the skill check first")
 	var ingredient: IngredientItem = item as IngredientItem

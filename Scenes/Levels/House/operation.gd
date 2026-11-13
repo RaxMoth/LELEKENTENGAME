@@ -4,9 +4,12 @@
 ##
 ## Cash lives in Profile.wallet and reputation in Profile.operation; the
 ## stash and prices are saved to Profile.operation at the end of a shift.
+## It also records what the player does by hand (skill checks, hits, hand
+## harvests) into their skills (Profile.skills), whose bonuses join the
+## upgrades', and whether the house has power (the fuse box).
 ##
 ## Dependencies: Stash, HeatMeter, RecipeData, CustomerOrder, QualityMath,
-##               Profile, Events, Types autoloads
+##               SkillBook, PlayerSkills, Profile, Events, Types autoloads
 class_name Operation
 extends Node
 
@@ -16,6 +19,10 @@ signal heat_changed(heat: float)
 signal sale_made(order: CustomerOrder, units: int, cash_earned: int)
 ## Cash paid for upkeep (ingredients, wages, repairs, bribes).
 signal cash_spent(amount: int, reason: String)
+## The player got better at [param skill] (a SkillBook.Skill) by doing it.
+signal skill_leveled(skill: int, level: int)
+## The power went out (the fuse box tripped) or came back.
+signal power_changed(has_power: bool)
 
 @export var base_stash_capacity: int = 30
 ## Buyers talked into it in the street who may be on their way at once.
@@ -41,6 +48,8 @@ var shift_units_sold: int = 0
 var shift_units_crafted: int = 0
 ## Buyers talked into coming by in the street (the Town), not yet at the window.
 var referred_customers: int = 0
+## False while the fuse box is tripped: the lab and the lamps stand still.
+var has_power: bool = true
 
 var _config: GameConfig = null
 var _is_shift_over: bool = false
@@ -97,9 +106,10 @@ func get_needle_speed_multiplier() -> float:
 	return maxf(0.25, 1.0 - get_upgrade_value(Types.UPGRADE_STEADY_HANDS) / 100.0)
 
 
-## Extra units for every plant the player harvests by hand (Green Thumb).
+## Extra units for every plant the player harvests by hand (Green Thumb
+## and the harvesting skill).
 func get_hand_harvest_bonus() -> int:
-	return roundi(get_upgrade_value(Types.UPGRADE_GREEN_THUMB))
+	return roundi(get_upgrade_value(Types.UPGRADE_GREEN_THUMB)) + Profile.skills.get_harvest_bonus()
 
 
 ## How much faster the cellar's plants grow under the grow lights (1 = base).
@@ -119,9 +129,44 @@ func get_equipment_bonus() -> float:
 	return get_upgrade_value(Types.UPGRADE_EQUIPMENT)
 
 
-## Sweet zones get this much wider with better equipment.
+## Sweet zones get this much wider with better equipment and the crafting skill.
 func get_sweet_zone_multiplier() -> float:
-	return 1.0 + get_upgrade_level(Types.UPGRADE_EQUIPMENT) * 0.2
+	return (1.0 + get_upgrade_level(Types.UPGRADE_EQUIPMENT) * 0.2) * Profile.skills.get_sweet_zone_multiplier()
+
+
+## Added to every punch and blade hit (the fighting skill).
+func get_melee_damage_bonus() -> float:
+	return Profile.skills.get_melee_damage_bonus()
+
+
+## A skill check the player stopped by hand with [param accuracy] (crafting).
+func record_craft(accuracy: float) -> void:
+	var tuning: SkillTuning = Profile.skills.tuning
+	_train(SkillBook.Skill.CRAFTING, tuning.craft_xp + tuning.craft_accuracy_xp * clampf(accuracy, 0.0, 1.0))
+
+
+## A punch or blade hit that landed (fighting).
+func record_melee_hit() -> void:
+	_train(SkillBook.Skill.FIGHTING, Profile.skills.tuning.fight_xp)
+
+
+## A plant picked by hand (harvesting).
+func record_hand_harvest() -> void:
+	_train(SkillBook.Skill.HARVESTING, Profile.skills.tuning.harvest_xp)
+
+
+## Turns the power off (the fuse box tripped) or on again.
+func set_power(is_on: bool) -> void:
+	if is_on == has_power:
+		return
+	has_power = is_on
+	power_changed.emit(has_power)
+
+
+func _train(skill: SkillBook.Skill, amount: float) -> void:
+	var new_level: int = Profile.skills.record(skill, amount)
+	if new_level >= 0:
+		skill_leveled.emit(skill, new_level)
 
 
 func get_batch_size(recipe: RecipeData) -> int:

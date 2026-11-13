@@ -446,3 +446,28 @@ Back in the game,Back in the game,Wieder im Spiel
 Connection lost: reconnecting,Connection lost: reconnecting,Verbindung verloren: verbinde neu
 Lost the connection to the host,Lost the connection to the host,Verbindung zum Host verloren
 Reconnecting (%d of %d),Reconnecting (%d of %d),Verbinde neu (%d von %d)
+On fire! Put it out,On fire! Put it out,Brennt! Lösch es
+No power: reset the fuse box,No power: reset the fuse box,Kein Strom: Sicherung zurücksetzen
+Batch burnt,Batch burnt,Charge verbrannt
+The cooker is smoking: take the batch off,The cooker is smoking: take the batch off,Der Kocher qualmt: nimm die Charge runter
+Fire in the lab! Grab the extinguisher,Fire in the lab! Grab the extinguisher,Feuer im Labor! Hol den Feuerlöscher
+The fire is out,The fire is out,Das Feuer ist aus
+Fire in the lab!,Fire in the lab!,Feuer im Labor!
+Cooker smoking,Cooker smoking,Kocher qualmt
+Lab: no power,Lab: no power,Labor: kein Strom
+Flip the lever,Flip the lever,Hebel umlegen
+Fuses,Fuses,Sicherungen
+The power is back,The power is back,Der Strom ist wieder da
+The fuses blew! Flip the lever on the fuse box,The fuses blew! Flip the lever on the fuse box,Die Sicherung ist raus! Leg den Hebel am Sicherungskasten um
+-1 (rats),-1 (rats),-1 (Ratten)
+Rat traps ×%d,Rat traps ×%d,Rattenfallen ×%d
+Craft,Craft,Herstellen
+Fight,Fight,Kampf
+Harvest,Harvest,Ernte
+Crafting,Crafting,Herstellen
+Fighting,Fighting,Kämpfen
+Harvesting,Harvesting,Ernten
+a wider green zone,a wider green zone,eine breitere grüne Zone
+harder hits,harder hits,härtere Schläge
+more from every hand harvest,more from every hand harvest,mehr bei jeder Handernte
+%s %d: %s,%s %d: %s,%s %d: %s

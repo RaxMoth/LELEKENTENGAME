@@ -12,6 +12,7 @@ kind = 1
 cost = 160
 required_weapon_id = &"knife"
 model_scene = ExtResource("model")
+holster_slot = &"back"
 damage = 45.0
 fire_interval_seconds = 0.75
 range_meters = 2.0

@@ -1,6 +1,6 @@
 ## A small status panel on the off-hand wrist (lower left of the view in the
 ## flat simulator): time of day and the player's health, cash, reputation,
-## stash and heat, plus one line from each front (door health, the queue at
+## stash and heat, the player's skill levels, plus one line from each front (door health, the queue at
 ## the window) — everything the player splits attention between, one glance
 ## away.
 ##
@@ -33,15 +33,19 @@ func attach_to(anchor: Node3D) -> void:
 	transform = Transform3D.IDENTITY
 
 
-## [param front_lines] are the fronts' own short status lines ("Door 80%", "Queue 2/3").
-func show_status(time_text: String, is_night: bool, cash: int, reputation: int, stash_units: int, stash_capacity: int, heat: float, front_lines: PackedStringArray) -> void:
+## [param front_lines] are the fronts' own short status lines ("Door 80%",
+## "Queue 2/3"); [param skills_line] the player's skill levels (empty: none).
+func show_status(time_text: String, is_night: bool, cash: int, reputation: int, stash_units: int, stash_capacity: int, heat: float, front_lines: PackedStringArray, skills_line: String = "") -> void:
 	_time_label.text = "%s  %s" % [time_text, tr("Night") if is_night else tr("Day")]
 	_time_label.modulate = Palette.MOONLIGHT if is_night else Palette.GOLD
-	_details_label.text = "%s $%s   %s %d\n%s %d/%d   %s %d\n%s" % [
-		tr("Cash"), NumberFormat.compact(cash), tr("Rep"), reputation,
-		tr("Stash"), stash_units, stash_capacity, tr("Heat"), roundi(heat),
-		_pair_lines(front_lines),
-	]
+	var rows: PackedStringArray = PackedStringArray([
+		"%s $%s   %s %d" % [tr("Cash"), NumberFormat.compact(cash), tr("Rep"), reputation],
+		"%s %d/%d   %s %d" % [tr("Stash"), stash_units, stash_capacity, tr("Heat"), roundi(heat)],
+	])
+	if not skills_line.is_empty():
+		rows.append(skills_line)
+	rows.append(_pair_lines(front_lines))
+	_details_label.text = "\n".join(rows)
 
 
 ## The player's health (PlayerVitals): plain while fine, amber when hurt,

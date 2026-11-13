@@ -1,6 +1,7 @@
 ## The house's day and night: runs the DayClock and drives the sun / moon
 ## light, sky, ambient and fog colors and the lamps, so the time of day reads
-## at a glance. Tells the level when night falls.
+## at a glance. Tells the level when night falls. Without power (the fuse
+## box tripped) the lamps stay dark and the night gets darker.
 ## State: Day -> Night (a shift ends at the next dawn).
 ##
 ## Dependencies: DayClock, PlaceholderMesh3D, Palette, Types autoload
@@ -28,6 +29,8 @@ const LIGHTING_INTERVAL_SECONDS: float = 0.25
 @export_range(0.0, 1.0, 0.05) var lamps_on_below: float = 0.5
 ## ... and glow this bright.
 @export_range(0.0, 4.0, 0.1) var lamp_glow: float = 1.6
+## Without power the night's ambient light drops to this share.
+@export_range(0.0, 1.0, 0.05) var blackout_ambient_share: float = 0.5
 
 @export_group("Light")
 @export var day_light_energy: float = 1.35
@@ -39,6 +42,7 @@ var clock: DayClock = null
 
 var _sky_material: ProceduralSkyMaterial = null
 var _are_lamps_on: bool = false
+var _has_power: bool = true
 var _seconds_until_lighting: float = 0.0
 
 
@@ -98,7 +102,8 @@ func _apply_lighting() -> void:
 	if world_environment != null:
 		var environment: Environment = world_environment.environment
 		environment.ambient_light_color = Palette.AMBIENT_NIGHT.lerp(Palette.AMBIENT_DAY, daylight)
-		environment.ambient_light_energy = lerpf(night_ambient_energy, day_ambient_energy, daylight)
+		var blackout: float = 1.0 if _has_power else lerpf(blackout_ambient_share, 1.0, daylight)
+		environment.ambient_light_energy = lerpf(night_ambient_energy, day_ambient_energy, daylight) * blackout
 		environment.fog_light_color = Palette.SKY_NIGHT_HORIZON.lerp(Palette.SKY_DAY_HORIZON, daylight)
 	if _sky_material != null:
 		_sky_material.sky_top_color = Palette.SKY_NIGHT.lerp(Palette.SKY_DAY, daylight)
@@ -109,6 +114,16 @@ func _apply_lighting() -> void:
 		_set_lamps(should_light_lamps)
 
 
+## Power on or off (the fuse box): the lamps and the night's light follow.
+func set_power(is_on: bool) -> void:
+	if is_on == _has_power:
+		return
+	_has_power = is_on
+	_set_lamps(_are_lamps_on)
+	if clock != null:
+		_apply_lighting()
+
+
 func _set_lamps(is_on: bool) -> void:
 	_are_lamps_on = is_on
 	if lamps == null:
@@ -116,4 +131,4 @@ func _set_lamps(is_on: bool) -> void:
 	for lamp: Node in lamps.get_children():
 		var lamp_mesh: PlaceholderMesh3D = lamp as PlaceholderMesh3D
 		if lamp_mesh != null:
-			lamp_mesh.glow = lamp_glow if is_on else 0.0
+			lamp_mesh.glow = lamp_glow if is_on and _has_power else 0.0

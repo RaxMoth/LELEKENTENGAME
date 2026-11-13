@@ -3,8 +3,9 @@
 [ext_resource type="Script" path="res://Scenes/Entities/XRPlayerRig/xr_player_rig.gd" id="1_rig"]
 [ext_resource type="Script" path="res://Scripts/XR/xr_pointer.gd" id="2_pointer"]
 [ext_resource type="Script" path="res://Scripts/XR/world_screen.gd" id="3_screen"]
-[ext_resource type="Script" path="res://Scripts/Utils/placeholder_mesh_3d.gd" id="4_mesh"]
 [ext_resource type="Script" path="res://Scripts/XR/xr_locomotion.gd" id="5_locomotion"]
+[ext_resource type="PackedScene" path="res://Scenes/Entities/XRPlayerRig/GloveHand.tscn" id="6_glove"]
+[ext_resource type="PackedScene" path="res://Scenes/Entities/WalkingBody/WalkingBody.tscn" id="7_body"]
 
 [sub_resource type="CylinderMesh" id="teleport_ring"]
 top_radius = 0.28
@@ -28,19 +29,10 @@ tracker = &"left_hand"
 pose = &"aim"
 show_when_tracked = true
 
-[node name="Grip" type="MeshInstance3D" parent="LeftHand"]
-transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0, 0.06)
-script = ExtResource("4_mesh")
-shape_kind = 2
-size = Vector3(0.045, 0.16, 0.045)
-color = Color(0.1412, 0.1686, 0.2431, 1)
-
-[node name="Tip" type="MeshInstance3D" parent="LeftHand"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.03)
-script = ExtResource("4_mesh")
-size = Vector3(0.05, 0.05, 0.05)
-color = Color(0.9608, 0.7216, 0.2549, 1)
-glow = 1.2
+[node name="Glove" parent="LeftHand" node_paths=PackedStringArray("controller") instance=ExtResource("6_glove")]
+controller = NodePath("..")
+is_left = true
+accent_color = Color(0.9608, 0.7216, 0.2549, 1)
 
 [node name="LeftPointer" type="Node3D" parent="LeftHand"]
 unique_name_in_owner = true
@@ -63,19 +55,9 @@ tracker = &"right_hand"
 pose = &"aim"
 show_when_tracked = true
 
-[node name="Grip" type="MeshInstance3D" parent="RightHand"]
-transform = Transform3D(1, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0, 0.06)
-script = ExtResource("4_mesh")
-shape_kind = 2
-size = Vector3(0.045, 0.16, 0.045)
-color = Color(0.1412, 0.1686, 0.2431, 1)
-
-[node name="Tip" type="MeshInstance3D" parent="RightHand"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.03)
-script = ExtResource("4_mesh")
-size = Vector3(0.05, 0.05, 0.05)
-color = Color(0.357, 0.486, 0.98, 1)
-glow = 1.2
+[node name="Glove" parent="RightHand" node_paths=PackedStringArray("controller") instance=ExtResource("6_glove")]
+controller = NodePath("..")
+accent_color = Color(0.357, 0.486, 0.98, 1)
 
 [node name="RightPointer" type="Node3D" parent="RightHand"]
 unique_name_in_owner = true
@@ -89,6 +71,9 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.02, -0.08)
 [node name="RightWristAnchor" type="Node3D" parent="RightHand"]
 unique_name_in_owner = true
 transform = Transform3D(1, 0, 0, 0, 0.7071, 0.7071, 0, -0.7071, 0.7071, 0, 0.07, 0.12)
+
+[node name="Body" parent="." instance=ExtResource("7_body")]
+unique_name_in_owner = true
 
 [node name="FlatCamera" type="Camera3D" parent="."]
 unique_name_in_owner = true

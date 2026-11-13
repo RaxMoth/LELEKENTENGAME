@@ -11,6 +11,7 @@ description = "Full auto: hold the trigger. Fast, light rounds that spread the l
 cost = 350
 required_weapon_id = &"pistol"
 model_scene = ExtResource("model")
+holster_slot = &"chest"
 damage = 12.0
 fire_interval_seconds = 0.08
 range_meters = 25.0

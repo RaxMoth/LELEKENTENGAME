@@ -18,6 +18,8 @@
 [ext_resource type="PackedScene" path="res://Scenes/Levels/House/Cellar/Cellar.tscn" id="cellar_scene"]
 [ext_resource type="PackedScene" path="res://Scenes/Levels/House/Ghost/Ghost.tscn" id="ghost_scene"]
 [ext_resource type="PackedScene" path="res://Scenes/Levels/House/Rats/Rats.tscn" id="rats_scene"]
+[ext_resource type="PackedScene" path="res://Scenes/Levels/House/Holsters/Holsters.tscn" id="holsters_scene"]
+[ext_resource type="PackedScene" path="res://Scenes/Levels/House/FuseBox/FuseBox.tscn" id="fuse_box_scene"]
 [ext_resource type="Script" path="res://Scenes/Levels/House/wrist_status.gd" id="wrist"]
 [ext_resource type="Script" path="res://Scripts/Components/player_vitals.gd" id="player_vitals"]
 [ext_resource type="Script" path="res://Scripts/XR/walkable_area.gd" id="walkable"]
@@ -80,7 +82,7 @@ fog_depth_begin = 14.0
 fog_depth_end = 40.0
 
 [sub_resource type="QuadMesh" id="wrist_quad"]
-size = Vector2(0.26, 0.125)
+size = Vector2(0.26, 0.15)
 
 [node name="House" instance=ExtResource("base")]
 script = ExtResource("level")
@@ -89,7 +91,7 @@ show_intro_countdown = false
 
 [node name="XRPlayerRig" parent="World"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -1.2)
-flat_wrist_half_size = Vector2(0.13, 0.0625)
+flat_wrist_half_size = Vector2(0.13, 0.0875)
 
 [node name="Announcer" parent="World"]
 pixel_size = 0.0035
@@ -167,9 +169,14 @@ unique_name_in_owner = true
 [node name="Ghost" parent="World/Stage" instance=ExtResource("ghost_scene")]
 unique_name_in_owner = true
 
-[node name="Rats" parent="World/Stage" node_paths=PackedStringArray("walkable") instance=ExtResource("rats_scene")]
+[node name="FuseBox" parent="World/Stage" instance=ExtResource("fuse_box_scene")]
+unique_name_in_owner = true
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -4.93, 1.45, -3.6)
+
+[node name="Rats" parent="World/Stage" node_paths=PackedStringArray("walkable", "stash_spot") instance=ExtResource("rats_scene")]
 unique_name_in_owner = true
 walkable = NodePath("../WalkableArea")
+stash_spot = NodePath("../StashShelf")
 
 [node name="Office" parent="World/Stage" instance=ExtResource("office_scene")]
 unique_name_in_owner = true
@@ -380,6 +387,7 @@ script = ExtResource("wrist")
 
 [node name="Backdrop" type="MeshInstance3D" parent="World/Stage/WristStatus"]
 unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.0125, 0)
 mesh = SubResource("wrist_quad")
 cast_shadow = 0
 
@@ -425,6 +433,9 @@ font_size = 32
 vertical_alignment = 0
 outline_size = 8
 
+
+[node name="Holsters" parent="." instance=ExtResource("holsters_scene")]
+unique_name_in_owner = true
 
 [node name="PlayerVitals" type="Node" parent="."]
 unique_name_in_owner = true
