@@ -21,11 +21,10 @@ extends Node3D
 ## Shrooms went into the stash.
 signal harvested(units: int)
 
-## The smallest the crop starts at (share of its full size).
-const SEEDLING_SCALE: float = 0.45
-
 ## Seconds from harvest to the next ripe crop.
 @export var grow_seconds: float = 45.0
+## The smallest the crop starts at (share of its full size).
+@export_range(0.1, 1.0, 0.05) var seedling_scale: float = 0.45
 ## Shows its own "Growing / Ripe" label (a rack shows one for all its plants instead).
 @export var shows_status: bool = true
 
@@ -169,7 +168,7 @@ func _show_growth() -> void:
 		return
 	_crop_root.visible = _is_active
 	_status_label.visible = _is_active and shows_status
-	_crop_root.scale = Vector3.ONE * lerpf(SEEDLING_SCALE, 1.0, _growth)
+	_crop_root.scale = Vector3.ONE * lerpf(seedling_scale, 1.0, _growth)
 	_cap.glow = 0.5 if _is_ripe else 0.0
 	_harvest_button.is_enabled = _is_active and _is_ripe
 	var crop_name: String = tr(crop.display_name) if crop != null else ""

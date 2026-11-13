@@ -191,6 +191,7 @@ the House's sales board and armory, or a `Label3D`), driven by `score_changed`.
 | `HitFlash3DComponent` | Node | Flashes every mesh under a Node3D on damage |
 | `UpgradeReaction` | Node3D | Base of everything that reacts to an upgrade's level; the House level calls `apply_level()` on every one in `Types.GROUP_UPGRADE_LOOK` when upgrades change |
 | `UpgradePlacement` | UpgradeReaction | Moves `target` to the `before` marker until the upgrade reaches `min_level` (the office board hangs in the cabin until the house is extended) |
+| `ProximityCull` | Node3D | Hides a room's contents (drawing only) while the camera is far from `center` and above `below_height`: the cellar is drawn only near its stairwell or inside it |
 | `WalkBlocker` | Node3D | Furniture footprint (`size`, turned with the node) the player can't walk through while it is visible; handed to `WalkableArea.add_obstacle()` |
 | `UpgradeLook` | UpgradeReaction | A part that shows once an upgrade reaches `min_level` (iron door straps, a steel frame, real shelves); hides the old look it `replaces` and can restyle meshes with another material. The House level applies every look in `Types.GROUP_UPGRADE_LOOK` when upgrades change |
 | `WaveSpawner` | Node | `WaveData` waves; spawns at `Marker3D`s by default; endless scaling; override `_create_enemy()` for other spawn rules |
@@ -216,7 +217,7 @@ Details and setup: [GAME.md](GAME.md).
 | `HingeHandle` | Grabbable | A handle on a hinged leaf (door, gate): reports the angle the hand pulls it to; a flat click asks to toggle |
 | `XRPlayerRig` signals | | `primary_action_released` / `secondary_action_released` (held actions: automatic guns, a turret trigger); `is_grip_down(hand)`, `get_hand_local_transform(hand)` for arm-swing running |
 | `InteractionQuery` | static | Finds grab targets, sockets and buttons by sphere math (no physics) |
-| `XRPointer` | Node3D | Ray along -Z. Clicks `WorldScreen`s itself; game code reads `ray_origin` / `ray_direction` and reports hits with `set_world_hit_distance()` |
+| `XRPointer` | Node3D | Ray along -Z. Clicks `WorldScreen`s itself; game code reads `ray_origin` / `ray_direction` and reports hits with `set_world_hit_distance()`. Controller pointers set `steadying` (0.7): small hand wobbles are smoothed, real aiming is followed at once |
 | `WorldScreen` | Node3D | Shows a Control scene (`content_scene`) or an existing viewport (`attach_viewport`) on a panel in the world and forwards pointer input as mouse events |
 | `RayMath` (`Scripts/Utils/`) | static | `intersect_plane` / `intersect_ground` / `intersect_sphere` / `distance_to_point`: picking without physics |
 | `YardNavigation` (`Scripts/Game/`) | static | Steering around round obstacles, overlap, line of sight, cover spots, door spots — no physics |
@@ -269,6 +270,7 @@ into a few textured quads for them.
 `Tools/generate_voices.ps1`), `DialogueData` / `DialogueNodeData` /
 `DialogueReplyData` (conversations), `TownData` (the town),
 `HouseLayout` (one stage of the house: walls, doors, windows, floor, walk regions),
+`SnapshotBuffer` (`Scripts/Coop/`: a synced thing's recent transforms, sampled a moment behind so it glides),
 `ShellRenovation` (one `HouseShell` surface's material per renovation level;
 `HouseShell.apply_renovations(Profile.upgrades)` swaps them without a rebuild).
 

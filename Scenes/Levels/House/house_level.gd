@@ -25,17 +25,21 @@
 class_name HouseLevel
 extends LevelBase
 
-## Announcements appear this far ahead of the player's head, where they look.
-const ANNOUNCE_DISTANCE: float = 3.0
-## Share of the cash lost to repairs when the shift is lost.
-const REPAIR_COST_SHARE: float = 0.2
 ## Seconds between wrist status refreshes.
 const WRIST_REFRESH_SECONDS: float = 0.25
-## Seconds the end of a day lingers before its summary shows.
-const DAY_END_HOLD_SECONDS: float = 1.2
 const DAY_SUMMARY_POPUP: PackedScene = preload("res://Scenes/UI/Popups/DaySummaryPopup/DaySummaryPopup.tscn")
+
+@export_group("Shift")
+## Share of the cash lost to repairs when the shift is lost (the door broke).
+@export_range(0.0, 1.0, 0.05) var repair_cost_share: float = 0.2
+## Seconds the end of a day lingers before its summary shows.
+@export_range(0.0, 10.0, 0.1) var day_end_hold_seconds: float = 1.2
 ## Seconds the "raid beaten" announcement shows before the shift's results.
-const RAID_CLEARED_HOLD_SECONDS: float = 2.5
+@export_range(0.0, 10.0, 0.1) var raid_cleared_hold_seconds: float = 2.5
+
+@export_group("Announcements")
+## Announcements appear this far ahead of the player's head, where they look.
+@export_range(1.0, 8.0, 0.1) var announce_distance: float = 3.0
 
 @export_group("Rendering")
 ## Bloom is a full-screen pass per eye: too expensive on standalone headsets and phones.
@@ -137,6 +141,7 @@ func _level_process(delta: float) -> void:
 
 
 func _on_level_finished(result: LevelResult) -> void:
+	operation.close_shift()
 	for front: HouseFront in _fronts:
 		front.finish_shift(result)
 	var day: int = Profile.operation.day_number
@@ -150,7 +155,7 @@ func _on_level_finished(result: LevelResult) -> void:
 	else:
 		# The house was overrun: the stock is gone and the door needs fixing.
 		units_lost = operation.stash.get_total()
-		repair_cost = roundi(operation.get_cash() * REPAIR_COST_SHARE)
+		repair_cost = roundi(operation.get_cash() * repair_cost_share)
 		operation.stash.clear()
 		operation.spend_cash(repair_cost, "repairs")
 	operation.save()
@@ -170,7 +175,7 @@ func _on_level_finished(result: LevelResult) -> void:
 ## and then the next morning (or the same day again after a loss). In
 ## co-op the guest follows the host into the new day.
 func _present_result(_result: LevelResult) -> void:
-	await Global.wait(DAY_END_HOLD_SECONDS, false)
+	await Global.wait(day_end_hold_seconds, false)
 	await UI.open_popup(DAY_SUMMARY_POPUP, _day_summary).closed
 	restart_level()
 
@@ -237,7 +242,7 @@ func announce(message: String, color: Color = Palette.TEXT, hold_seconds: float 
 	var head: Transform3D = rig.get_head_transform()
 	var forward: Vector3 = Vector3(-head.basis.z.x, 0.0, -head.basis.z.z)
 	forward = forward.normalized() if forward.length() > 0.01 else Vector3.FORWARD
-	announcer.global_transform = Transform3D(Basis.looking_at(forward, Vector3.UP), head.origin + forward * ANNOUNCE_DISTANCE + Vector3(0.0, 0.35, 0.0))
+	announcer.global_transform = Transform3D(Basis.looking_at(forward, Vector3.UP), head.origin + forward * announce_distance + Vector3(0.0, 0.35, 0.0))
 	super(message, color, hold_seconds)
 	if Coop.is_host():
 		_coop_sync.broadcast_announcement(message, color, hold_seconds)
@@ -303,9 +308,9 @@ func _on_raid_wave_cleared(wave: RaidWave, wave_count: int) -> void:
 
 ## The last wave is down: let the announcement land, then the shift is won.
 func _on_raid_cleared(_raid_number: int) -> void:
-	announce(tr("Raid beaten! Back to business"), Palette.SUCCESS, RAID_CLEARED_HOLD_SECONDS)
+	announce(tr("Raid beaten! Back to business"), Palette.SUCCESS, raid_cleared_hold_seconds)
 	Audio.play_sfx(SfxSynth.get_preset(&"coin"))
-	await get_tree().create_timer(RAID_CLEARED_HOLD_SECONDS, false).timeout
+	await get_tree().create_timer(raid_cleared_hold_seconds, false).timeout
 	if is_playing():
 		win()
 

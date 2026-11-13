@@ -18,7 +18,7 @@ const OVER_THE_OPENING: Vector3 = Vector3(2.6, 0.0, 2.1)
 ## A spot on the cellar floor.
 const CELLAR_SPOT: Vector3 = Vector3(2.6, -2.6, 0.0)
 ## Upgrades that work on their own (taken back out after the checks).
-const MACHINES: Array[StringName] = [Types.UPGRADE_GROW_RACKS, Types.UPGRADE_AUTO_PICKER, Types.UPGRADE_GRINDER_MOTOR, Types.UPGRADE_COOKER_MOTOR, Types.UPGRADE_PRESS_MOTOR, Types.UPGRADE_CONVEYOR, Types.UPGRADE_HOPPER]
+const MACHINES: Array[StringName] = [Types.UPGRADE_GROW_RACKS, Types.UPGRADE_GROW_LIGHTS, Types.UPGRADE_AUTO_PICKER, Types.UPGRADE_GRINDER_MOTOR, Types.UPGRADE_COOKER_MOTOR, Types.UPGRADE_PRESS_MOTOR, Types.UPGRADE_CONVEYOR, Types.UPGRADE_HOPPER]
 
 
 static func run(test: SmokeTest, level: HouseLevel) -> void:
@@ -69,6 +69,13 @@ static func _check_stairs(test: SmokeTest, level: HouseLevel) -> void:
 	await _walk_forward(test, 150)
 	var feet: Vector3 = rig.get_feet_position()
 	test.check(feet.x > 4.0 and absf(feet.y - CELLAR_SPOT.y) < 0.15, "walking down the stairs takes the player into the cellar")
+	var near: Node3D = level.get_front(Cellar).get_node("%Near") as Node3D
+	await test.frames(20)
+	test.check(near.visible, "the cellar is drawn while the player is down there")
+	rig.locomotion.travel_to_spot(0)
+	await test.frames(20)
+	test.check(not near.visible, "and not while the player is in the lab")
+	rig.locomotion.teleport_to(feet)
 
 
 static func _check_racks(test: SmokeTest, level: HouseLevel, cellar: Cellar, office: Office) -> void:

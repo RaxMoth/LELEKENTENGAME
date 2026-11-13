@@ -5,7 +5,7 @@
 ## in Types.GROUP_WALK_BLOCKER to the player's WalkableArea whenever
 ## upgrades change (WalkableArea.add_obstacle()).
 ##
-## Dependencies: Types autoload
+## Dependencies: ProximityCull, Types autoload
 class_name WalkBlocker
 extends Node3D
 
@@ -29,6 +29,15 @@ func get_footprint() -> Rect2:
 	return footprint
 
 
-## True when it stands in the world now (bought and shown).
+## True when it stands in the world now (bought and shown). A room hidden
+## only to save drawing (ProximityCull) still has its furniture.
 func is_blocking() -> bool:
-	return is_visible_in_tree()
+	if not is_inside_tree():
+		return false
+	var node: Node = self
+	while node != null:
+		var spatial: Node3D = node as Node3D
+		if spatial != null and not spatial.visible and not spatial is ProximityCull:
+			return false
+		node = node.get_parent()
+	return true

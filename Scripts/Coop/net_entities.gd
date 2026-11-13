@@ -1,7 +1,8 @@
 ## Streams spawned things (lab items, customers, raiders) from the co-op
 ## host to the other player. The host lists what exists, where it is and how
 ## it looks; the guest spawns look-alike stand-ins from the same scenes —
-## frozen, so none of their own game logic runs — moves them smoothly and
+## frozen, so none of their own game logic runs — glides them between the
+## host's snapshots a moment behind (SnapshotBuffer) and
 ## removes them when the host's are gone. An item held by the guest's own
 ## hand is drawn right at that hand, so holding never lags.
 ##
@@ -15,7 +16,7 @@
 ## holder] — holder is Vector2i(peer id, hand) of the hand holding it, taken
 ## from the RemotePlayer.META_HOLDER metadata on hold anchors, or NO_HOLDER.
 ##
-## Dependencies: Grabbable, RemotePlayer, Pools autoload
+## Dependencies: Grabbable, RemotePlayer, SnapshotBuffer, Pools autoload
 class_name NetEntities
 extends RefCounted
 
@@ -24,8 +25,6 @@ const NO_HOLDER: Vector2i = Vector2i(0, -1)
 const METHOD_GET_STATE: StringName = &"get_net_state"
 ## Optional method on the stand-in: take that look.
 const METHOD_APPLY_STATE: StringName = &"apply_net_state"
-## How fast stand-ins catch up with the host's latest positions (1/s).
-const SMOOTHING: float = 14.0
 const ENTRY_ID: int = 0
 const ENTRY_KIND: int = 1
 const ENTRY_TRANSFORM: int = 2
@@ -41,9 +40,9 @@ var local_hold_anchor: Callable = Callable()
 ## Host: net id of every streamed node.
 var _ids: Dictionary[Node, int] = {}
 var _next_id: int = 1
-## Guest: stand-in per net id, where it should be and who holds it.
+## Guest: stand-in per net id, where the host had it lately and who holds it.
 var _stand_ins: Dictionary[int, Node3D] = {}
-var _targets: Dictionary[int, Transform3D] = {}
+var _buffers: Dictionary[int, SnapshotBuffer] = {}
 var _holders: Dictionary[int, Vector2i] = {}
 var _scenes: Dictionary[int, PackedScene] = {}
 
@@ -99,7 +98,9 @@ func apply(entries: Array, parent: Node) -> void:
 		if stand_in == null or not is_instance_valid(stand_in) or Pools.is_in_pool(stand_in):
 			stand_in = _spawn_stand_in(kind, parent, target)
 			_stand_ins[net_id] = stand_in
-		_targets[net_id] = target
+		if not _buffers.has(net_id):
+			_buffers[net_id] = SnapshotBuffer.new()
+		_buffers[net_id].push(SnapshotBuffer.now(), target)
 		_holders[net_id] = entry[ENTRY_HOLDER]
 		var state: Array = entry[ENTRY_STATE]
 		if not state.is_empty() and stand_in.has_method(METHOD_APPLY_STATE):
@@ -109,9 +110,9 @@ func apply(entries: Array, parent: Node) -> void:
 			_remove(net_id)
 
 
-## Moves every stand-in toward where the host has it (held ones to the hand).
-func smooth(delta: float) -> void:
-	var weight: float = clampf(delta * SMOOTHING, 0.0, 1.0)
+## Moves every stand-in to where the host had it a moment ago (held ones to the hand).
+func smooth(_delta: float) -> void:
+	var shown_time: float = SnapshotBuffer.now() - SnapshotBuffer.INTERPOLATION_DELAY
 	for net_id: int in _stand_ins:
 		var stand_in: Node3D = _stand_ins[net_id]
 		if not is_instance_valid(stand_in):
@@ -121,8 +122,8 @@ func smooth(delta: float) -> void:
 			var grabbable: Grabbable = stand_in as Grabbable
 			var offset: Vector3 = grabbable.hold_offset if grabbable != null else Vector3.ZERO
 			stand_in.global_transform = anchor.global_transform * Transform3D(Basis.IDENTITY, offset)
-		else:
-			stand_in.global_transform = stand_in.global_transform.interpolate_with(_targets[net_id], weight)
+		elif _buffers.has(net_id):
+			stand_in.global_transform = _buffers[net_id].sample(shown_time)
 
 
 ## The stand-in the host says [param holder] holds, or null.
@@ -174,5 +175,5 @@ func _remove(net_id: int) -> void:
 		stand_in.process_mode = Node.PROCESS_MODE_INHERIT
 		Pools.despawn(stand_in)
 	_stand_ins.erase(net_id)
-	_targets.erase(net_id)
+	_buffers.erase(net_id)
 	_holders.erase(net_id)

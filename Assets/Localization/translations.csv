@@ -429,3 +429,7 @@ The skill-check needle sweeps 15% slower per level.,The skill-check needle sweep
 -%s%% needle speed,-%s%% needle speed,-%s%% Nadeltempo
 Extend the House,Extend the House,Haus ausbauen
 "Build the cabin out into a real house: an office with a desk, a stash room and a hallway. The old cellar lies under the new stash room.","Build the cabin out into a real house: an office with a desk, a stash room and a hallway. The old cellar lies under the new stash room.","Bau die Hütte zu einem richtigen Haus aus: ein Büro mit Schreibtisch, ein Lagerraum und ein Flur. Unter dem neuen Lagerraum liegt der alte Keller."
+Back in the game,Back in the game,Wieder im Spiel
+Connection lost: reconnecting,Connection lost: reconnecting,Verbindung verloren: verbinde neu
+Lost the connection to the host,Lost the connection to the host,Verbindung zum Host verloren
+Reconnecting (%d of %d),Reconnecting (%d of %d),Verbinde neu (%d von %d)

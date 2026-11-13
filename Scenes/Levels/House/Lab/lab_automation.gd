@@ -22,8 +22,6 @@ extends Node3D
 
 ## Seconds between looks for work (moving items needs no per-frame check).
 const CHECK_SECONDS: float = 0.25
-## Height the hopper lifts ingredients to on their way from the crates.
-const HOPPER_LIFT_HEIGHT: float = 1.8
 
 @export var grinder: Workstation
 @export var cooker: Workstation
@@ -36,6 +34,8 @@ const HOPPER_LIFT_HEIGHT: float = 1.8
 @export var hopper_drop: Node3D
 ## Meters per second an item travels.
 @export var travel_speed: float = 1.4
+## Height the hopper lifts ingredients to on their way from the crates.
+@export var hopper_lift_height: float = 1.8
 
 var operation: Operation = null
 var crates: Array[IngredientCrate] = []
@@ -140,9 +140,9 @@ func _feed_hopper() -> void:
 		crate.take_back(item as IngredientItem)
 		return
 	var start: Vector3 = item.global_position
-	var above_target: Vector3 = Vector3(target.global_position.x, HOPPER_LIFT_HEIGHT, target.global_position.z)
+	var above_target: Vector3 = Vector3(target.global_position.x, hopper_lift_height, target.global_position.z)
 	var via: Vector3 = hopper_drop.global_position if station == grinder and hopper_drop != null else above_target
-	_send(item, target, [Vector3(start.x, HOPPER_LIFT_HEIGHT, start.z), via])
+	_send(item, target, [Vector3(start.x, hopper_lift_height, start.z), via])
 
 
 ## Ingredient ids already in the grinder or cooker, on the grinder's tray

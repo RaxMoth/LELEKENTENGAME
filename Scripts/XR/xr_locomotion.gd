@@ -22,9 +22,6 @@ extends Node
 
 signal teleported(target: Vector3)
 
-const STICK_PRESS_THRESHOLD: float = 0.6
-const STICK_RELEASE_THRESHOLD: float = 0.3
-const STICK_DEADZONE: float = 0.15
 const MARKER_OPACITY: float = 0.7
 
 @export var rig: XRPlayerRig
@@ -35,6 +32,14 @@ const MARKER_OPACITY: float = 0.7
 @export var snap_turn_degrees: float = 30.0
 @export var smooth_turn_degrees_per_second: float = 100.0
 @export var teleport_range: float = 9.0
+
+@export_group("Controller sticks")
+## A stick pushed this far aims a teleport or snap-turns.
+@export_range(0.1, 1.0, 0.05) var stick_press_threshold: float = 0.6
+## ... and counts as let go below this (the next flick needs it).
+@export_range(0.0, 0.9, 0.05) var stick_release_threshold: float = 0.3
+## Stick movement smaller than this is ignored (worn sticks drift).
+@export_range(0.0, 0.5, 0.01) var stick_deadzone: float = 0.15
 
 ## Scales walking speed (stick, arm swing, WASD): faster shoes, an upgrade.
 var speed_multiplier: float = 1.0
@@ -81,7 +86,7 @@ func handle_stick(hand: Types.Hand, value: Vector2, pointer: XRPointer) -> void:
 		return
 	_reposition_stick = value
 	if _aiming_pointer != null:
-		if value.length() <= STICK_RELEASE_THRESHOLD:
+		if value.length() <= stick_release_threshold:
 			_aiming_pointer = null
 			if _is_target_valid:
 				teleport_to(_teleport_target)
@@ -89,10 +94,10 @@ func handle_stick(hand: Types.Hand, value: Vector2, pointer: XRPointer) -> void:
 		return
 	if _is_turn_gesture(value):
 		_handle_snap_turn(value)
-	elif not _is_turn_flicked and value.y >= STICK_PRESS_THRESHOLD:
+	elif not _is_turn_flicked and value.y >= stick_press_threshold:
 		_aiming_pointer = pointer
 		_is_target_valid = false
-	elif _is_turn_flicked and value.length() <= STICK_RELEASE_THRESHOLD:
+	elif _is_turn_flicked and value.length() <= stick_release_threshold:
 		_is_turn_flicked = false
 
 
@@ -158,7 +163,7 @@ func is_smooth_turning() -> bool:
 
 func _step_xr(delta: float) -> void:
 	var target_velocity: Vector3 = Vector3.ZERO
-	if is_smooth_movement() and _walk_stick.length() > STICK_DEADZONE:
+	if is_smooth_movement() and _walk_stick.length() > stick_deadzone:
 		var head_basis: Basis = rig.get_head_transform().basis
 		var forward: Vector3 = Vector3(-head_basis.z.x, 0.0, -head_basis.z.z).normalized()
 		var right: Vector3 = Vector3(head_basis.x.x, 0.0, head_basis.x.z).normalized()
@@ -169,7 +174,7 @@ func _step_xr(delta: float) -> void:
 		target_velocity = swing_velocity
 	_move_with(target_velocity, delta, swing_velocity != Vector3.ZERO)
 	var is_turning_smoothly: bool = is_smooth_turning() and _aiming_pointer == null and _is_turn_gesture(_reposition_stick)
-	if is_turning_smoothly and absf(_reposition_stick.x) > STICK_DEADZONE:
+	if is_turning_smoothly and absf(_reposition_stick.x) > stick_deadzone:
 		turn_by(-_reposition_stick.x * smooth_turn_degrees_per_second * delta)
 	if _aiming_pointer != null:
 		_teleport_target = _find_teleport_target(_aiming_pointer)
@@ -260,10 +265,10 @@ func _is_turn_gesture(stick: Vector2) -> bool:
 func _handle_snap_turn(stick: Vector2) -> void:
 	if is_smooth_turning():
 		return
-	if not _is_turn_flicked and absf(stick.x) >= STICK_PRESS_THRESHOLD:
+	if not _is_turn_flicked and absf(stick.x) >= stick_press_threshold:
 		_is_turn_flicked = true
 		turn_by(-snap_turn_degrees if stick.x > 0.0 else snap_turn_degrees)
-	elif _is_turn_flicked and absf(stick.x) <= STICK_RELEASE_THRESHOLD:
+	elif _is_turn_flicked and absf(stick.x) <= stick_release_threshold:
 		_is_turn_flicked = false
 
 

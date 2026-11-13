@@ -43,6 +43,7 @@ var shift_units_crafted: int = 0
 var referred_customers: int = 0
 
 var _config: GameConfig = null
+var _is_shift_over: bool = false
 
 
 func _ready() -> void:
@@ -174,11 +175,23 @@ func refund_cash(amount: int) -> void:
 
 ## Adds packaged units to the stash; returns how many fit.
 func add_product(recipe: RecipeData, tier: int, units: int) -> int:
+	if _is_shift_over:
+		return 0
 	var stored: int = stash.add(recipe.id, tier, units)
 	shift_units_crafted += stored
 	if stored > 0:
 		Profile.stats.increment(Types.STAT_UNITS_CRAFTED, stored)
 	return stored
+
+
+## The shift is won or lost: nothing more goes into the stash (a crafter's
+## or a motor's batch finishing after the door broke would come back otherwise).
+func close_shift() -> void:
+	_is_shift_over = true
+
+
+func is_shift_over() -> bool:
+	return _is_shift_over
 
 
 ## Thieves and raids: removes random stock; returns units lost.

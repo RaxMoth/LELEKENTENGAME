@@ -53,3 +53,5 @@ signal purchase_failed(product_id: StringName, reason: String)
 signal floating_text_shown(label_text: String, world_position: Vector3, color: Color)
 ## A shot's tracer flashed between two points (the co-op host shows it to the other player too).
 signal beam_fired(from_position: Vector3, to_position: Vector3)
+## A sound played somewhere in the world (the co-op host lets the other player hear it too).
+signal positional_sound_played(stream: AudioStream, world_position: Vector3, pitch_variation: float, volume_db: float)
