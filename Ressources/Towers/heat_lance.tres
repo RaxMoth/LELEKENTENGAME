@@ -9,6 +9,7 @@ display_name = "Heat Lance"
 description = "A heat beam that locks onto one target and burns hotter every second it stays on it. Melts helicopters and armor."
 kind = 2
 cost = 1800
+head_height = 2.3
 color = Color(0.898, 0.2824, 0.302, 1)
 damage = 14.0
 fire_interval_seconds = 0.1

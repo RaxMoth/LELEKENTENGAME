@@ -53,6 +53,10 @@ signal purchase_failed(product_id: StringName, reason: String)
 signal house_breached(door_position: Vector3)
 ## The raid after a break-in is beaten (the alarm dies away).
 signal house_breach_ended
+## The admin terminal asks for police to come now (during a raid): one of
+## AttackerDirector.SPAWN_* (a cop, a squad, SWAT, a ram team, a squad car,
+## the armored vehicle, a helicopter). The defense front sends them.
+signal admin_spawn_requested(kind: StringName)
 
 # --- Co-op ---
 ## A floating number or note appeared in the world (the co-op host shows it

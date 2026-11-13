@@ -23,6 +23,8 @@ enum Kind { GUN, MORTAR, BEAM, SHOCK }
 @export_range(0, 100000) var cost: int = 500
 ## Main color of the tower's model (a Palette color).
 @export var color: Color = Color("#5b7cfa")
+## Height (meters) of its head above the ground (a mortar sits low, a coil stands tall).
+@export var head_height: float = 2.0
 
 @export_group("Fighting")
 ## Damage of one hit (MORTAR: of the blast; BEAM: per second at the start).

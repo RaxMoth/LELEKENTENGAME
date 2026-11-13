@@ -423,6 +423,6 @@ static func _check_turret_seat(test: SmokeTest, level: HouseLevel, turret: House
 	test.check(await test.wait_until(func() -> bool: return target.health_component.current_health < target_health), "the turret fires where the player aims")
 	seat.set_firing(false)
 	target.take_hit(100000.0)
-	rig.tap_world_point(seat.get_exit_button().get_press_center())
+	rig.tap_point_in_view(seat.get_exit_point())
 	await test.frames(3)
 	test.check(not seat.is_active() and rig.get_feet_position().distance_to(desk_feet) < 0.05 and not rig.locomotion.is_locked, "taking the goggles off brings the player back to the desk")

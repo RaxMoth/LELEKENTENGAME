@@ -21,8 +21,16 @@ const ACTION_NEXT_WAVE: StringName = &"next_wave"
 const ACTION_CLEAR_WAVE: StringName = &"clear_wave"
 const ACTION_WIN_SHIFT: StringName = &"win_shift"
 const ACTION_TIME_SCALE: StringName = &"time_scale"
+## During a raid: send police in now (Events.admin_spawn_requested).
+const ACTION_SPAWN_COP: StringName = &"spawn_cop"
+const ACTION_SPAWN_SQUAD: StringName = &"spawn_squad"
+const ACTION_SPAWN_SWAT: StringName = &"spawn_swat"
+const ACTION_SPAWN_RAM: StringName = &"spawn_ram"
+const ACTION_SPAWN_CAR: StringName = &"spawn_car"
+const ACTION_SPAWN_TANK: StringName = &"spawn_tank"
+const ACTION_SPAWN_HELICOPTER: StringName = &"spawn_helicopter"
 
-## Button captions in grid order (two columns).
+## Button captions in grid order (three columns).
 const BUTTONS: Array[Array] = [
 	[ACTION_CASH_SMALL, "+$1,000"],
 	[ACTION_CASH_LARGE, "+$10,000"],
@@ -34,6 +42,13 @@ const BUTTONS: Array[Array] = [
 	[ACTION_REPUTATION, "+50 reputation"],
 	[ACTION_TIME_SCALE, "Time x1 / x3"],
 	[ACTION_WIN_SHIFT, "Win shift"],
+	[ACTION_SPAWN_COP, "Spawn cop"],
+	[ACTION_SPAWN_SQUAD, "Spawn squad"],
+	[ACTION_SPAWN_SWAT, "Spawn SWAT"],
+	[ACTION_SPAWN_RAM, "Spawn ram team"],
+	[ACTION_SPAWN_CAR, "Spawn squad car"],
+	[ACTION_SPAWN_TANK, "Spawn armored vehicle"],
+	[ACTION_SPAWN_HELICOPTER, "Spawn helicopter"],
 ]
 
 var _buttons: Dictionary[StringName, Button] = {}

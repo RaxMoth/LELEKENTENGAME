@@ -477,6 +477,14 @@ func tap_world_point(world_point: Vector3) -> void:
 	_flat_release()
 
 
+## Flat simulator: clicks a point where it is in the view without turning
+## toward it, for UI fixed to the view (the turret goggles' overlay).
+func tap_point_in_view(world_point: Vector3) -> void:
+	set_flat_cursor(_flat_camera.unproject_position(world_point))
+	_flat_press()
+	_flat_release()
+
+
 ## Flat simulator: turns the view toward a world position and points the
 ## cursor ray at it, like a player looking at something before clicking.
 func aim_at_world_point(world_point: Vector3) -> void:

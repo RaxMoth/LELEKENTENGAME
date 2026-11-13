@@ -109,7 +109,14 @@ var _swing_cooldowns: Dictionary[Types.Hand, float] = {Types.Hand.LEFT: 0.0, Typ
 func _on_setup() -> void:
 	context.rig.primary_action_pressed.connect(_on_rig_primary_action_pressed)
 	context.rig.secondary_action_pressed.connect(_on_rig_secondary_action_pressed)
-	context.rig.next_weapon_pressed.connect(switch_weapon)
+	# A / X (Q): the next weapon — or, in the turret goggles, the next turret.
+	context.rig.next_weapon_pressed.connect(func() -> void:
+		if turret_seat.is_active():
+			turret_seat.switch_turret(1)
+		else:
+			switch_weapon())
+	# The admin terminal sends police in during a raid (another front: through Events).
+	Events.admin_spawn_requested.connect(_on_admin_spawn_requested)
 	context.rig.secondary_action_released.connect(func(pointer: XRPointer) -> void:
 		if pointer == _held_trigger_pointer:
 			_stop_trigger()
@@ -144,7 +151,7 @@ func _on_setup() -> void:
 	tower_field.tower_built.connect(security_pc.add_turret)
 	tower_field.setup(context, yard)
 	monitor_wall.setup(security_pc, yard)
-	turret_seat.setup(context.rig)
+	turret_seat.setup(context.rig, security_pc)
 	for guard: Node in _guards.get_children():
 		(guard as Worker).operation = context.operation
 	apply_upgrades()
@@ -285,6 +292,11 @@ func switch_weapon(step: int = 1) -> WeaponData:
 	FloatingText3D.spawn(tr(weapon.display_name), head.origin - head.basis.z * 1.2 - Vector3(0.0, 0.25, 0.0), Palette.TEXT, Global.get_world_root())
 	Audio.play_ui(Audio.UI_CLICK)
 	return weapon
+
+
+func _on_admin_spawn_requested(kind: StringName) -> void:
+	if context.cycle != null and context.cycle.is_raid_active():
+		director.spawn_now(kind, context.cycle.raid_data)
 
 
 ## Upgrade level of [param weapon] bought at the armory (Profile.armory).

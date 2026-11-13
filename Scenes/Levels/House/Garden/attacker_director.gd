@@ -23,6 +23,16 @@ extends Node
 
 ## Vehicles keep to their side of the street (meters right of the middle).
 const VEHICLE_LANE: float = 2.2
+## What the admin terminal can send in (Events.admin_spawn_requested).
+const SPAWN_COP: StringName = &"cop"
+const SPAWN_SQUAD: StringName = &"squad"
+const SPAWN_SWAT: StringName = &"swat"
+const SPAWN_RAM: StringName = &"ram"
+const SPAWN_CAR: StringName = &"car"
+const SPAWN_TANK: StringName = &"tank"
+const SPAWN_HELICOPTER: StringName = &"helicopter"
+## Officers in an admin squad.
+const ADMIN_SQUAD_SIZE: int = 6
 ## Armored vehicles stand within this far (meters) to the side of the door's
 ## line, and this far apart from one another.
 const SHELLING_SPREAD: float = 8.0
@@ -109,7 +119,7 @@ func queue_wave(wave: RaidWave, raid_data: RaidData = null, spawn_interval: floa
 		scenes.append(swat_scene if swat_scene != null else cop_scene)
 	for ram_index: int in wave.ram_count:
 		scenes.append(ram_scene if ram_scene != null else cop_scene)
-	var squad_count: int = maxi(1, ceili(float(scenes.size()) / size))
+	var squad_count: int = ceili(float(scenes.size()) / size)
 	# A lone last officer joins the squad before instead of going it alone.
 	if squad_count > 1 and scenes.size() % size == 1:
 		squad_count -= 1
@@ -160,6 +170,31 @@ func get_raiders_left() -> int:
 ## The squads of the waves in the yard (tests).
 func get_squads() -> Array[RaidSquad]:
 	return _squads
+
+
+## Sends [param kind] (one of SPAWN_*) in now, through the town like a
+## wave would (admin terminal, tests). Returns false for an unknown kind.
+func spawn_now(kind: StringName, raid_data: RaidData = null, health_multiplier: float = 1.0) -> bool:
+	var wave: RaidWave = RaidWave.new(0, 0, 0, health_multiplier, 0)
+	match kind:
+		SPAWN_COP:
+			wave.cop_count = 1
+		SPAWN_SQUAD:
+			wave.cop_count = ADMIN_SQUAD_SIZE
+		SPAWN_SWAT:
+			wave.swat_count = 1
+		SPAWN_RAM:
+			wave.ram_count = 1
+		SPAWN_CAR:
+			wave.car_count = 1
+		SPAWN_TANK:
+			wave.tank_count = 1
+		SPAWN_HELICOPTER:
+			wave.helicopter_count = 1
+		_:
+			return false
+	queue_wave(wave, raid_data)
+	return true
 
 
 ## Forgets officers that have not set off yet (the shift ended, admin).

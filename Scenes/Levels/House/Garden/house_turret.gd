@@ -121,6 +121,21 @@ func step(delta: float) -> void:
 		fire()
 
 
+## What the turret goggles' overlay calls it.
+func get_display_name() -> String:
+	return tr("Roof turret %d") % mount_level
+
+
+## The overlay's ability line: what it does and its state.
+func get_ability_text() -> String:
+	return tr("Machine gun · ready") if _cooldown <= 0.0 else tr("Machine gun · reloading")
+
+
+## 0..1 for the overlay's bar: how ready the next shot is (or how hot a beam burns).
+func get_ability_ready() -> float:
+	return 1.0 - clampf(_cooldown / maxf(0.01, fire_interval_seconds), 0.0, 1.0)
+
+
 ## @virtual The raider to go after (the one nearest the door it can see).
 func _find_target() -> Raider:
 	return _yard.find_raider_nearest_door(_muzzle.global_position, range_meters)

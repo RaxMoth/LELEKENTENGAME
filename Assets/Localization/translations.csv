@@ -505,3 +505,21 @@ Shock Coil,Shock Coil,Schockspule
 A discharge that jumps from officer to officer — great against packed hordes.,A discharge that jumps from officer to officer — great against packed hordes.,"Eine Entladung, die von Polizist zu Polizist springt — stark gegen dichte Horden."
 Monitor Wall,Monitor Wall,Monitorwand
 "Four big screens on the office wall show your turrets and towers live: watch them all, take any one over, aim and fire.","Four big screens on the office wall show your turrets and towers live: watch them all, take any one over, aim and fire.","Vier große Bildschirme an der Bürowand zeigen deine Geschütze und Türme live: alle im Blick, jeden übernehmen, zielen und feuern."
+%d / %d,%d / %d,%d / %d
+Roof turret %d,Roof turret %d,Dachgeschütz %d
+Machine gun · ready,Machine gun · ready,Maschinengewehr · bereit
+Machine gun · reloading,Machine gun · reloading,Maschinengewehr · lädt nach
+Shell · blast %.1f m,Shell · blast %.1f m,Granate · Explosion %.1f m
+Shell · reloading,Shell · reloading,Granate · lädt nach
+Heat beam · ×%.1f,Heat beam · ×%.1f,Hitzestrahl · ×%.1f
+Discharge · jumps to %d,Discharge · jumps to %d,Entladung · springt auf %d
+Discharge · charging,Discharge · charging,Entladung · lädt auf
+Next turret,Next turret,Nächster Turm
+Trigger: fire · A / X (Q): next turret,Trigger: fire · A / X (Q): next turret,Trigger: Feuer · A / X (Q): nächster Turm
+Spawn cop,Spawn cop,Polizist schicken
+Spawn squad,Spawn squad,Trupp schicken
+Spawn SWAT,Spawn SWAT,SWAT schicken
+Spawn ram team,Spawn ram team,Rammteam schicken
+Spawn squad car,Spawn squad car,Streifenwagen schicken
+Spawn armored vehicle,Spawn armored vehicle,Panzerwagen schicken
+Spawn helicopter,Spawn helicopter,Hubschrauber schicken

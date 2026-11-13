@@ -105,7 +105,7 @@ new day, in co-op the guest comes along (`DaySummaryPopup`).
 | Scroll a board's list | Point at the list, hold the trigger and drag it up or down (the scrollbar works too) | Drag the list |
 | Full screen | — | F11, or "Full Screen" in Settings (on by default on a desktop) |
 | Seated play | "Standing View When Seated" (on by default) lifts a seated player to standing eye height (1.8 m); after sitting down or standing up, hold the headset's system button to recenter | — |
-| Admin (debug builds) | Terminal on the office wall | Same, or F3 |
+| Admin (debug builds) | Terminal on the office wall (during a raid it also spawns cops, squads, SWAT, ram teams, squad cars, armored vehicles and helicopters) | Same, or F3 |
 | Pause | Menu or B / Y | Esc |
 | Status | Look at your off-hand wrist | Lower left of the view |
 | Your body | Gloved hands whose fingers follow the grip and trigger (a full grip makes a fist); look down to see your hips, legs and holstered knife walk with you (your own chest stays out of view) | — |
@@ -271,11 +271,14 @@ own again.
 
 **VR in VR:** beside the monitor lie the **turret goggles**. Put them on
 (trigger or click) and you are in the turret on screen: your head where its
-camera sits on the roof, the barrel right below you following your hand,
-either trigger firing it, a visor frame with the turret's name around your
-view. You can't walk while seated and your own gun is put away; the
-"Take off goggles" button floating in front of you (or the end of the
-shift) puts you back at the desk exactly where you stood.
+camera sits, the barrel right below you following your hand, either trigger
+firing it. A clean overlay in the goggles shows which turret you're in
+("2 / 5"), its weapon and a bar for reload or heat at the top, and at the
+bottom buttons to switch to the previous or next turret or field tower and
+to take the goggles off — A / X (Q in the simulator) also jumps to the next
+one. Steering the mortar shows a ring where the shell will land. You can't
+walk while seated and your own gun is put away; taking the goggles off (or
+the end of the shift) puts you back at the desk exactly where you stood.
 
 ### Towers anywhere outside
 
@@ -294,6 +297,13 @@ upgrades: more damage and range).
 | Shock Coil | A discharge that jumps from the target to up to three officers next to it |
 | Mortar | Lobs shells into the street (not closer than 7 m); the blast hits everyone around the impact and pierces armor |
 | Heat Lance | A beam that stays on one target and burns hotter the longer it holds it (up to ×7): melts helicopters and armored vehicles |
+
+Each looks like what it is: the sentry is a twin-barreled gun on a tripod
+behind a shield, the mortar a tube on a base plate behind sandbags, the heat
+lance a finned column with a glowing lens, the shock coil a tesla coil with
+copper windings. Every tower can be steered by hand (goggles, Security PC,
+Monitor Wall) and fires with its own ability: aim the mortar at a spot in
+the street, hold the lance's beam on a target, zap a crowd with the coil.
 
 The **Monitor Wall** (office upgrade after the Security PC) puts four big
 screens on the office wall behind the desk: each shows a roof turret or a

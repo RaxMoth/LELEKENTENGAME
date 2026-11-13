@@ -19,11 +19,11 @@ yard stays quiet.
 | `attacker_director.gd` | Sends each raid wave through the town: squads from different directions along their own street routes (`Scripts/Game/street_routes.gd`, unit-tested), vehicles to the curb / the street in front / over the roofs; door spots, counts who is left |
 | `Vehicles/` (`PoliceVehicle` + `SquadCar`, `ArmoredVehicle`, `PoliceHelicopter`) | Vehicles are Raiders to the rest of the game (registry, hits, wave count) but drive their route and do their own job: unload cops, shell the door, circle and drop SWAT |
 | `crowd_lod.gd` (`CrowdLod`, in `FrontGarden.tscn`) | Draws far-away officers as simple figures in two MultiMeshes (a horde of 50 stays a few draw calls) |
-| `Towers/` (`TowerField`, `FieldTower`, `TowerKit`, `TowerBoard`) | The tower depot by the porch, kits, building towers anywhere outside, the four tower kinds (a `FieldTower` is a `HouseTurret` on a post), upgrades; data in `Ressources/Towers/`, saved in `Profile.towers` (`Scripts/Game/tower_placements.gd`, unit-tested) |
+| `Towers/` (`TowerField`, `FieldTower`, `TowerKit`, `TowerBoard`) | The tower depot by the porch, kits, building towers anywhere outside, the four tower kinds (a `FieldTower` is a `HouseTurret` on a post), upgrades, per-kind models built by `TowerModelBuilder` (`Scripts/Utils/`); data in `Ressources/Towers/`, saved in `Profile.towers` (`Scripts/Game/tower_placements.gd`, unit-tested) |
 | `MonitorWall.tscn`, `monitor_wall.gd`, `TurretMonitor.tscn`, `turret_monitor.gd` | The office's monitor wall (Monitor Wall upgrade): four live turret views to switch, take over, aim and fire |
 | `HouseTurret.tscn`, `house_turret.gd` | Roof turrets (Roof Turrets upgrade): auto-aim at visible raiders, or manual from the PC |
 | `SecurityPc.tscn`, `security_pc.gd`, `TurretConsole.tscn`, `turret_console.gd` | The office desk PC (Security PC upgrade): live turret camera, take control, aim, fire |
-| `TurretSeat.tscn`, `turret_seat.gd` | "VR in VR": the goggles beside the PC put the player into a turret (head at its camera, barrel follows the hand, triggers fire, visor frame) |
+| `TurretSeat.tscn`, `turret_seat.gd` | "VR in VR": the goggles beside the PC put the player into a turret (head at its camera, barrel follows the hand, triggers fire); `TurretHud` (`TurretHudStatus.tscn` / `TurretHudControls.tscn`) is its overlay: status, previous / next turret, take off |
 | `FrontDoor.tscn`, `front_door.gd` (+ `Scripts/XR/hinge_handle.gd`) | The objective and the way out: trigger or grip a handle, bolt it from either side; StateChart Closed { Unlocked ⇄ Locked } ⇄ Open |
 | `BeamTracer.tscn` | Pooled shot tracer |
 | `../Armory/` (+ `Guns/`) | The armory terminal and the animated gun models — also this area |

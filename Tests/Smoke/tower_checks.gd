@@ -20,6 +20,7 @@ static func run(test: SmokeTest, level: HouseLevel) -> void:
 	var garden: FrontGarden = level.get_front(FrontGarden) as FrontGarden
 	Profile.wallet.add(Types.CURRENCY_CASH, 30000)
 	await _check_towers(test, level, garden)
+	await _check_goggles(test, level, garden)
 	await _check_monitor_wall(test, level, garden)
 	# Out of the way of the checks that follow (and the raid).
 	garden.tower_field.remove_all_towers()
@@ -77,6 +78,33 @@ static func _check_towers(test: SmokeTest, level: HouseLevel, garden: FrontGarde
 	var saved: TowerPlacements = TowerPlacements.new()
 	saved.from_dict(Profile.towers.placements.to_dict())
 	test.check(saved.get_count() == built.size(), "the towers are still there the next day (saved)")
+
+
+## The turret goggles on a field tower: the overlay says which tower, the
+## goggles switch tower to tower, and a mortar steered from them lobs its
+## shell where the hand points.
+static func _check_goggles(test: SmokeTest, level: HouseLevel, garden: FrontGarden) -> void:
+	var seat: TurretSeat = garden.turret_seat
+	var field: TowerField = garden.tower_field
+	var mortar: FieldTower = null
+	for tower: FieldTower in field.get_towers():
+		if tower.data.kind == TowerData.Kind.MORTAR:
+			mortar = tower
+	test.check(seat.enter(mortar) and seat.get_turret() == mortar, "the goggles put the player into a field tower")
+	await test.frames(8)
+	var status: TurretHud = seat.get_hud_status()
+	test.check(status.find_child("TitleLabel", true, false).text.contains(TranslationServer.translate(mortar.data.display_name)), "the goggles' overlay names the tower")
+	var cop: Raider = _spawn_cop(garden, mortar.global_position + Vector3(14.0, 0.0, 0.0))
+	level.rig.aim_at_world_point(cop.global_position)
+	seat.set_firing(true)
+	test.check(await test.wait_until(func() -> bool: return not cop.is_alive()), "a mortar steered from the goggles lobs its shell where the hand points")
+	seat.set_firing(false)
+	test.check(seat.switch_turret(1) and seat.get_turret() != mortar and seat.is_active(), "the goggles switch from tower to tower")
+	level.rig.next_weapon_pressed.emit()
+	await test.frames(2)
+	test.check(seat.is_active(), "A / X in the goggles switches turrets, not weapons")
+	seat.leave()
+	test.check(not seat.is_active() and not mortar.is_manual, "taking the goggles off hands every tower back")
 
 
 static func _check_monitor_wall(test: SmokeTest, level: HouseLevel, garden: FrontGarden) -> void:

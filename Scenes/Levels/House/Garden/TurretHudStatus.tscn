@@ -1,0 +1,68 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://Scenes/Levels/House/Garden/turret_hud.gd" id="hud"]
+[ext_resource type="Script" path="res://Scripts/UI/icon_label.gd" id="icon_label"]
+[ext_resource type="Texture2D" path="res://Assets/Icons/bolt.svg" id="bolt"]
+
+[node name="TurretHudStatus" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("hud")
+
+[node name="Panel" type="PanelContainer" parent="."]
+modulate = Color(1, 1, 1, 0.88)
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_type_variation = &"CardPanel"
+
+[node name="Margin" type="MarginContainer" parent="Panel"]
+layout_mode = 2
+theme_override_constants/margin_left = 24
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 24
+theme_override_constants/margin_bottom = 16
+
+[node name="Column" type="VBoxContainer" parent="Panel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Header" type="HBoxContainer" parent="Panel/Margin/Column"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="TitleLabel" type="Label" parent="Panel/Margin/Column/Header"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"HeaderLabel"
+text = "Sentry Gun · Lv 1"
+text_overrun_behavior = 3
+
+[node name="CountLabel" type="Label" parent="Panel/Margin/Column/Header"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"AccentLabel"
+text = "1 / 4"
+
+[node name="AbilityLabel" type="HBoxContainer" parent="Panel/Margin/Column"]
+unique_name_in_owner = true
+layout_mode = 2
+script = ExtResource("icon_label")
+icon = ExtResource("bolt")
+text = "Machine gun · ready"
+icon_size = 32
+
+[node name="ReadyBar" type="ProgressBar" parent="Panel/Margin/Column"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 16)
+layout_mode = 2
+value = 100.0
+show_percentage = false
