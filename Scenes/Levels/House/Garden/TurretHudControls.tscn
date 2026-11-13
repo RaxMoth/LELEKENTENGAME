@@ -1,0 +1,73 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://Scenes/Levels/House/Garden/turret_hud.gd" id="hud"]
+[ext_resource type="Texture2D" path="res://Assets/Icons/back.svg" id="back"]
+[ext_resource type="Texture2D" path="res://Assets/Icons/arrow.svg" id="arrow"]
+[ext_resource type="Texture2D" path="res://Assets/Icons/close.svg" id="close"]
+
+[node name="TurretHudControls" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("hud")
+
+[node name="Panel" type="PanelContainer" parent="."]
+modulate = Color(1, 1, 1, 0.9)
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_type_variation = &"CardPanel"
+
+[node name="Margin" type="MarginContainer" parent="Panel"]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 16
+
+[node name="Column" type="VBoxContainer" parent="Panel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Buttons" type="HBoxContainer" parent="Panel/Margin/Column"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="PreviousButton" type="Button" parent="Panel/Margin/Column/Buttons"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 88)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"SecondaryButton"
+text = "Previous"
+icon = ExtResource("back")
+
+[node name="NextButton" type="Button" parent="Panel/Margin/Column/Buttons"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 88)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Next turret"
+icon = ExtResource("arrow")
+icon_alignment = 2
+
+[node name="ExitButton" type="Button" parent="Panel/Margin/Column/Buttons"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 88)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"GhostButton"
+text = "Take off goggles"
+icon = ExtResource("close")
+
+[node name="HintLabel" type="Label" parent="Panel/Margin/Column"]
+layout_mode = 2
+theme_type_variation = &"SmallLabel"
+text = "Trigger: fire · A / X (Q): next turret"
+horizontal_alignment = 1

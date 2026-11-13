@@ -348,6 +348,8 @@ garden.get_turrets() / security_pc.toggle_control() / turret.set_manual_aim(poin
 garden.director.queue_wave(wave, raid_data) / spawn_raider(scene, health, squad, spot, route) / get_raiders_left()   # AttackerDirector: hordes through the town, vehicles
 raider.march(route, yard) / is_marching()   # Raider: jogging through the streets first; PoliceVehicle (SquadCar, ArmoredVehicle, PoliceHelicopter) extends Raider
 garden.tower_field.buy_kit(tower) / build(tower, spot) / upgrade_tower(tower) / get_towers()   # TowerField: towers anywhere outside
+garden.director.spawn_now(kind, raid_data)   # AttackerDirector: one unit right now (admin spawns arrive via Events.admin_spawn_requested)
+garden.turret_seat.switch_turret(step)   # TurretSeat: previous / next turret while wearing the goggles
 garden.monitor_wall.get_monitors()[0].toggle_control() / aim_at_view(uv)   # MonitorWall (office upgrade)
 garden.switch_weapon() / loadout.upgrade(weapon) / weapon.get_damage(level)   # switching and weapon upgrades
 lab.get_station(&"Cooker") / get_crate(&"glowcap")                                          # Lab

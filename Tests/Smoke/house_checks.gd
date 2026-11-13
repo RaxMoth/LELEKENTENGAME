@@ -451,6 +451,11 @@ static func _check_raid_waves(test: SmokeTest, level: HouseLevel) -> void:
 	test.check(await test.wait_until(func() -> bool: return not cycle.is_wave_active() and cycle.is_raid_active()), "beating every officer ends the wave, the raid goes on")
 	cycle.skip_wave_break()
 	test.check(await test.wait_until(func() -> bool: return cycle.is_wave_active() and cycle.get_wave_number() == 2), "the next wave follows")
+	# The admin terminal sends any kind of police in during the raid.
+	var admin: AdminPanel = level.get_front(AdminPanel) as AdminPanel
+	var left_before: int = garden.director.get_raiders_left()
+	test.check(admin.run_action(AdminBoard.ACTION_SPAWN_TANK) and admin.run_action(AdminBoard.ACTION_SPAWN_HELICOPTER), "admin: spawning an armored vehicle and a helicopter works during a raid")
+	test.check(garden.director.get_raiders_left() >= left_before + 2, "admin: they join the wave")
 
 
 ## Mid-raid the door breaks: it swings open, the shift goes on, and every

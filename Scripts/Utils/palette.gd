@@ -41,6 +41,9 @@ const ENEMY_FAST: Color = Color("#f59e4c")
 const PROJECTILE: Color = Color("#ffe08a")
 const WORLD: Color = Color("#151b28")
 const WORLD_DETAIL: Color = Color("#1e2637")
+## Field tower accents: the shock coil's copper windings and its ceramic insulators.
+const TOWER_COPPER: Color = Color("#b8733a")
+const TOWER_CERAMIC: Color = Color("#dbdbd6")
 
 # World lighting (day / night cycle). Muted on purpose: the world stays calm
 # and dark enough for in-world UI to read in daylight too.

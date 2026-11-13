@@ -37,6 +37,7 @@ var _beam_seconds: float = 0.0
 var _beam_tick: float = 0.0
 var _decor: Node3D = null
 var _barrel_decor: Node3D = null
+var _base_decor: Node3D = null
 ## Counts spawns, so a shell fired before the tower went back to its pool never lands.
 var _generation: int = 0
 ## Taken over: the beam burned this frame (fire() came from the trigger).
@@ -45,6 +46,8 @@ var _burned_this_frame: bool = false
 @onready var _upgrade_button: PointerButton = %UpgradeButton
 @onready var _label: Label3D = %TowerLabel
 @onready var _beam: MeshInstance3D = %Beam
+@onready var _aim_marker: MeshInstance3D = %AimMarker
+@onready var _pole: MeshInstance3D = %Pole
 
 
 func _ready() -> void:
@@ -69,6 +72,8 @@ func configure(tower_data: TowerData, tower_level: int, yard: Yard, next_upgrade
 	# Taken over, it first points where it faces (not where the pool spawned it).
 	_manual_aim_point = get_muzzle_position() + get_aim_direction() * 10.0
 	_build_decor()
+	var blast: float = maxf(1.0, data.splash_radius * 2.0)
+	_aim_marker.scale = Vector3(blast, 1.0, blast)
 	_label.text = "%s · %s" % [tr(data.display_name), tr("Lv %d") % (level + 1)]
 	_upgrade_button.caption = tr("Upgrade $%s") % NumberFormat.with_separators(next_upgrade_cost) if next_upgrade_cost > 0 else tr("Max level")
 	_upgrade_button.is_enabled = next_upgrade_cost > 0
@@ -81,6 +86,7 @@ func _on_pool_spawned() -> void:
 	_beam_tick = 0.0
 	_beam.visible = false
 	_cooldown = 0.0
+	_aim_marker.visible = false
 	_seconds_until_retarget = 0.0
 	_head.rotation = Vector3.ZERO
 	_barrel_pivot.rotation = Vector3.ZERO
@@ -93,6 +99,8 @@ func _on_pool_spawned() -> void:
 ## Taken over or handed back: the beam goes out and cools down.
 func set_manual(should_be_manual: bool) -> void:
 	super(should_be_manual)
+	if _aim_marker != null and not should_be_manual:
+		_aim_marker.visible = false
 	_beam_target = null
 	_beam_seconds = 0.0
 	if _beam != null:
@@ -129,6 +137,58 @@ func fire() -> Raider:
 	return super()
 
 
+## The tower's name and level for the goggles' overlay and the monitors.
+func get_display_name() -> String:
+	return "%s · %s" % [tr(data.display_name), tr("Lv %d") % (level + 1)] if data != null else super()
+
+
+## This kind's ability and whether it is ready (mortar shell, beam heat, discharge).
+func get_ability_text() -> String:
+	if data == null:
+		return super()
+	match data.kind:
+		TowerData.Kind.MORTAR:
+			return tr("Shell · blast %.1f m") % data.splash_radius if _cooldown <= 0.0 else tr("Shell · reloading")
+		TowerData.Kind.BEAM:
+			return tr("Heat beam · ×%.1f") % (_get_beam_damage_per_second() / maxf(0.01, damage))
+		TowerData.Kind.SHOCK:
+			return tr("Discharge · jumps to %d") % data.chain_count if _cooldown <= 0.0 else tr("Discharge · charging")
+	return super()
+
+
+## 0..1: reload or charge; the beam reports how hot it burns.
+func get_ability_ready() -> float:
+	if data != null and data.kind == TowerData.Kind.BEAM:
+		# The beam's bar is its heat.
+		return clampf(_beam_seconds / maxf(0.1, data.beam_ramp_seconds), 0.0, 1.0)
+	return super()
+
+
+## Taken over: the point to aim at. A mortar lobs its shell right there
+## (on the ground, within its range); a ring shows where it lands.
+func set_manual_aim(world_point: Vector3) -> void:
+	super(world_point)
+	if data == null or data.kind != TowerData.Kind.MORTAR:
+		return
+	var impact: Vector3 = _get_manual_impact()
+	_aim_marker.visible = is_manual and impact.is_finite()
+	if _aim_marker.visible:
+		_aim_marker.global_position = impact + Vector3(0.0, 0.04, 0.0)
+
+
+## Where a taken-over mortar's shell lands: the aim point on the ground,
+## pulled into its reach (INF when the aim is behind it or too close).
+func _get_manual_impact() -> Vector3:
+	var ground: Vector3 = Vector3(_manual_aim_point.x, 0.0, _manual_aim_point.z)
+	var base: Vector3 = Vector3(global_position.x, 0.0, global_position.z)
+	var reach: float = base.distance_to(ground)
+	if reach < data.min_range_meters:
+		return Vector3.INF
+	if reach > range_meters:
+		ground = base + (ground - base).normalized() * range_meters
+	return ground
+
+
 func _find_target() -> Raider:
 	return _yard.find_raider_nearest(get_muzzle_position(), range_meters, data.min_range_meters)
 
@@ -137,11 +197,15 @@ func _find_target() -> Raider:
 func _fire_mortar() -> Raider:
 	if _yard == null or _cooldown > 0.0:
 		return null
-	_cooldown = fire_interval_seconds
-	var origin: Vector3 = get_muzzle_position()
-	var impact: Vector3 = _target.global_position if _target != null and _target.is_alive() and not is_manual else _aim_ground_point()
+	# On its own it only fires at a live target; by hand at the aim point (clamped to range).
+	var has_target: bool = _target != null and _target.is_alive()
+	if not is_manual and not has_target:
+		return null
+	var impact: Vector3 = _get_manual_impact() if is_manual else _target.global_position
 	if not impact.is_finite():
 		return null
+	_cooldown = fire_interval_seconds
+	var origin: Vector3 = get_muzzle_position()
 	var effects: Node3D = _yard.get_effects_root()
 	# The shell's way up and down: two tracer legs over the arc's top.
 	var top: Vector3 = (origin + impact) * 0.5 + Vector3(0.0, SHELL_ARC_HEIGHT, 0.0)
@@ -271,47 +335,49 @@ func _show_beam(point: Vector3) -> void:
 	_beam.global_transform = Transform3D(Basis.looking_at(point - origin, Vector3.UP), (origin + point) * 0.5)
 	_beam.scale = Vector3(lerpf(0.4, 1.4, heat), lerpf(0.4, 1.4, heat), length)
 
-
-## Where the barrel points on the ground (INF when it points up).
-func _aim_ground_point() -> Vector3:
-	var origin: Vector3 = get_muzzle_position()
-	var direction: Vector3 = get_aim_direction()
-	var distance: float = _yard.get_ground_distance(origin, direction)
-	if distance == RayMath.NO_HIT:
-		return Vector3.INF
-	return origin + direction * minf(distance, range_meters)
-
 # ============================================
 # LOOKS
 # ============================================
 
 ## Paints the head in the kind's color and adds what makes it recognizable.
 func _build_decor() -> void:
-	for old: Node3D in [_decor, _barrel_decor]:
+	for old: Node3D in [_decor, _barrel_decor, _base_decor]:
 		if old != null:
 			old.queue_free()
 	_decor = Node3D.new()
 	_head.add_child(_decor)
 	_barrel_decor = Node3D.new()
 	_barrel.add_child(_barrel_decor)
-	var housing: PlaceholderMesh3D = _housing as PlaceholderMesh3D
-	if housing != null:
-		housing.color = data.color.darkened(0.25)
+	_base_decor = Node3D.new()
+	add_child(_base_decor)
+	# The turret's generic wall-mount parts give way to the kind's own model.
+	_hide_generic_parts()
+	_head.position.y = data.head_height
+	_muzzle.position = Vector3(0.0, 0.0, -0.1 if data.kind == TowerData.Kind.SHOCK else -0.86)
+	_label.position.y = data.head_height + 0.85
 	(_beam as PlaceholderMesh3D).color = data.color
-	match data.kind:
-		TowerData.Kind.MORTAR:
-			# A fat, short tube.
-			_add_decor(_barrel_decor, Vector3(0.0, 0.0, -0.25), PlaceholderMesh3D.ShapeKind.CYLINDER, Vector3(0.26, 0.55, 0.26), data.color.darkened(0.45), PI * 0.5)
-		TowerData.Kind.BEAM:
-			# A lens at the barrel's end that glows.
-			_add_decor(_barrel_decor, Vector3(0.0, 0.0, -0.72), PlaceholderMesh3D.ShapeKind.SPHERE, Vector3(0.16, 0.16, 0.16), data.color, 0.0, 1.0)
-		TowerData.Kind.SHOCK:
-			# Coil rings around the barrel.
-			for ring_index: int in 3:
-				_add_decor(_barrel_decor, Vector3(0.0, 0.0, -0.2 - ring_index * 0.18), PlaceholderMesh3D.ShapeKind.CYLINDER, Vector3(0.22, 0.04, 0.22), data.color, PI * 0.5, 0.8)
-	# Level stripes on the housing: one per upgrade.
+	TowerModelBuilder.build(data, _base_decor, _decor, _barrel_decor, data.head_height)
+	# Level stripes on the head: one per upgrade.
 	for stripe_index: int in level:
-		_add_decor(_decor, Vector3(0.0, 0.25 + stripe_index * 0.06, 0.3), PlaceholderMesh3D.ShapeKind.BOX, Vector3(0.36, 0.03, 0.02), Palette.GOLD, 0.0, 0.6)
+		_add_decor(_decor, Vector3(0.0, 0.45 + stripe_index * 0.06, 0.22), PlaceholderMesh3D.ShapeKind.BOX, Vector3(0.3, 0.03, 0.02), Palette.GOLD, 0.0, 0.6)
+
+
+## Hides the wall turret's mount, housing, sensor and tube (and the old post).
+func _hide_generic_parts() -> void:
+	_mount_mesh.visible = false
+	_housing.visible = false
+	_sensor.visible = false
+	_pole.visible = false
+	var tube: Node3D = _barrel.get_node_or_null("Tube") as Node3D
+	if tube != null:
+		tube.visible = false
+
+
+## In the goggles the head's model hides so it doesn't block the view.
+func set_seated(is_seated: bool) -> void:
+	_hide_generic_parts()
+	if _decor != null:
+		_decor.visible = not is_seated
 
 
 func _add_decor(parent: Node3D, at: Vector3, shape: PlaceholderMesh3D.ShapeKind, part_size: Vector3, color: Color, roll_x: float = 0.0, glow: float = 0.0) -> void:

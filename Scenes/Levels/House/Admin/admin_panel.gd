@@ -8,7 +8,7 @@
 ## level) and Profile, like every front.
 ##
 ## Dependencies: HouseFront, AdminBoard, HouseCycle, DayCycle, RaidPlanner,
-##               WorldScreen, Profile, Audio, Types autoloads, Palette
+##               WorldScreen, Profile, Audio, Events, Types autoloads, Palette
 class_name AdminPanel
 extends HouseFront
 
@@ -16,6 +16,16 @@ const SMALL_CASH: int = 1000
 const LARGE_CASH: int = 10000
 const REPUTATION_STEP: int = 50
 const FAST_TIME_SCALE: float = 3.0
+## Spawn buttons and what each sends in (the kinds of AttackerDirector.SPAWN_*).
+const SPAWNS: Dictionary[StringName, StringName] = {
+	AdminBoard.ACTION_SPAWN_COP: AttackerDirector.SPAWN_COP,
+	AdminBoard.ACTION_SPAWN_SQUAD: AttackerDirector.SPAWN_SQUAD,
+	AdminBoard.ACTION_SPAWN_SWAT: AttackerDirector.SPAWN_SWAT,
+	AdminBoard.ACTION_SPAWN_RAM: AttackerDirector.SPAWN_RAM,
+	AdminBoard.ACTION_SPAWN_CAR: AttackerDirector.SPAWN_CAR,
+	AdminBoard.ACTION_SPAWN_TANK: AttackerDirector.SPAWN_TANK,
+	AdminBoard.ACTION_SPAWN_HELICOPTER: AttackerDirector.SPAWN_HELICOPTER,
+}
 
 ## Off = show the terminal in release builds as well (never ship that).
 @export var debug_builds_only: bool = true
@@ -85,6 +95,11 @@ func run_action(action_id: StringName) -> bool:
 			Engine.time_scale = FAST_TIME_SCALE if Engine.time_scale < FAST_TIME_SCALE else 1.0
 		AdminBoard.ACTION_WIN_SHIFT:
 			context.level.win()
+		_ when SPAWNS.has(action_id):
+			# Only into a running raid (the wave waits for them to be beaten).
+			did_run = cycle.is_raid_active()
+			if did_run:
+				Events.admin_spawn_requested.emit(SPAWNS[action_id])
 		_:
 			did_run = false
 	Audio.play_ui(Audio.UI_CONFIRM if did_run else Audio.UI_ERROR)

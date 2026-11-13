@@ -9,6 +9,7 @@ display_name = "Shock Coil"
 description = "A discharge that jumps from officer to officer — great against packed hordes."
 kind = 3
 cost = 1100
+head_height = 2.5
 color = Color(0.2353, 0.7843, 0.9098, 1)
 damage = 42.0
 fire_interval_seconds = 1.5
