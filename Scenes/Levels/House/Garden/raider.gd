@@ -53,6 +53,10 @@ const STRIKE_LUNGE: float = 0.25
 const RAM_STRIKE_LUNGE: float = 0.45
 const STRIKE_OUT_SECONDS: float = 0.08
 const STRIKE_BACK_SECONDS: float = 0.22
+## Stuck head-on, a hunting raider tries stepping around at this angle (radians) and twice it.
+const SIDESTEP_ANGLE: float = PI * 0.25
+## Seconds it keeps stepping around an obstacle once it started.
+const SIDESTEP_HOLD_SECONDS: float = 0.4
 
 @export var base_max_health: float = 120.0
 ## Meters per second between covers...
@@ -84,6 +88,11 @@ const STRIKE_BACK_SECONDS: float = 0.22
 @export_group("Through the town")
 ## Meters per second while jogging through the streets to the house.
 @export var march_speed: float = 3.2
+## On the way, a player this close (meters) out in the street draws the
+## officer into a fight...
+@export var street_engage_range: float = 9.0
+## ...and one who gets farther away than this (meters) is let go: back to the march.
+@export var chase_range: float = 28.0
 
 @export_group("Hunting")
 ## Damage each hit does to a player once the door is down.
@@ -129,6 +138,9 @@ var _seconds_until_engage_check: float = 0.0
 var _street_route: PackedVector2Array = PackedVector2Array()
 var _street_index: int = 0
 var _is_far_drawn: bool = false
+## Which side (+1 / -1) it steps around obstacles to.
+var _sidestep_sign: float = 1.0
+var _sidestep_seconds_left: float = 0.0
 var _tween: Tween
 
 @onready var health_component: HealthComponent = %HealthComponent
@@ -318,6 +330,8 @@ func _on_pool_spawned() -> void:
 	_is_hunting = false
 	_route = PackedVector3Array()
 	_seconds_until_engage_check = randf() * ENGAGE_CHECK_SECONDS
+	_sidestep_sign = 1.0
+	_sidestep_seconds_left = 0.0
 	_street_route = PackedVector2Array()
 	_street_index = 0
 	# Every (re)spawn starts in Moving (the chart's initial / respawn state).
@@ -350,7 +364,9 @@ func _on_moving_state_physics_processing(delta: float) -> void:
 		return
 	# On the way through the town it keeps going (it fights in the yard).
 	if is_marching():
-		_step_march(delta)
+		# A player out in the street close by is fought right there.
+		if not _watch_for_players(delta, street_engage_range):
+			_step_march(delta)
 		return
 	if _watch_for_players(delta):
 		return
@@ -432,9 +448,10 @@ func _on_hunting_state_physics_processing(delta: float) -> void:
 	if _yard == null or _is_frozen:
 		_animate_bodies(delta, 0.0)
 		return
-	# While the door holds, a raider out in the yard only fights players out there too.
+	# While the door holds, a raider outside (yard or street) only fights
+	# players outside too, and lets them go once they got away.
 	var is_outdoor_fight: bool = not _yard.is_hunting() and _yard.is_outdoors(global_position)
-	var target: PlayerVitals = _yard.find_hunt_target(global_position, is_outdoor_fight)
+	var target: PlayerVitals = _yard.find_hunt_target(global_position, is_outdoor_fight, chase_range if is_outdoor_fight else INF)
 	if target == null:
 		if is_outdoor_fight:
 			_give_up_hunting()
@@ -474,21 +491,39 @@ func _on_hunting_state_physics_processing(delta: float) -> void:
 
 ## Out in the yard: a player close by draws the raider into a fight
 ## (checked a few times a second). Returns true when it starts hunting.
-func _watch_for_players(delta: float) -> bool:
+func _watch_for_players(delta: float, reach: float = -1.0) -> bool:
 	_seconds_until_engage_check -= delta
 	if _seconds_until_engage_check > 0.0:
 		return false
 	_seconds_until_engage_check = ENGAGE_CHECK_SECONDS
-	if _yard.find_hunt_target(global_position, true, engage_range) == null:
+	if _yard.find_hunt_target(global_position, true, engage_range if reach < 0.0 else reach) == null:
 		return false
-	start_hunting()
+	_engage()
 	return true
+
+
+## Goes after a player out here now (in the yard or the street), dropping
+## its march; it picks the march up again if the player gets away.
+func _engage() -> void:
+	if not is_alive() or _is_hunting:
+		return
+	_street_route = PackedVector2Array()
+	_street_index = 0
+	_is_hunting = true
+	is_staged = false
+	_is_heading_for_door = false
+	state_chart.send_event.call_deferred(Types.EVENT_HUNT)
 
 
 ## Nobody left to fight out here while the door holds: rush the door again.
 func _give_up_hunting() -> void:
 	_is_hunting = false
 	_route = PackedVector3Array()
+	# Out in the town: back through the streets to the yard first.
+	if not _yard.is_in_yard(global_position):
+		state_chart.send_event(Types.EVENT_MOVE)
+		march(_yard.plan_route_to_yard(Vector2(global_position.x, global_position.z)), _yard)
+		return
 	_head_for_door()
 	state_chart.send_event(Types.EVENT_MOVE)
 
@@ -524,7 +559,28 @@ func _walk_toward(point: Vector3, speed: float, delta: float) -> void:
 	var next: Vector3 = global_position + Vector3(direction.x, 0.0, direction.y) * speed * delta
 	var walkable: WalkableArea = _yard.walkable
 	if walkable != null and walkable.contains(global_position):
-		next = walkable.clamp_move(global_position, next)
+		var step_length: float = speed * delta
+		var wanted: Vector3 = next
+		next = walkable.clamp_move(global_position, wanted)
+		# Head-on into a post, a tree or a tower: sliding along an axis goes
+		# nowhere — step around it to the side it went last time, and keep
+		# stepping that way a moment (else it turns straight back into it).
+		if _sidestep_seconds_left > 0.0:
+			_sidestep_seconds_left -= delta
+			var held: Vector2 = direction.rotated(SIDESTEP_ANGLE * 2.0 * _sidestep_sign)
+			var held_step: Vector3 = walkable.clamp_move(global_position, global_position + Vector3(held.x, 0.0, held.y) * step_length)
+			if held_step.distance_to(global_position) >= step_length * 0.2:
+				next = held_step
+		elif next.distance_to(global_position) < step_length * 0.2:
+			for turn: float in [SIDESTEP_ANGLE, SIDESTEP_ANGLE * 2.0]:
+				var side: Vector2 = direction.rotated(turn * _sidestep_sign)
+				var around: Vector3 = walkable.clamp_move(global_position, global_position + Vector3(side.x, 0.0, side.y) * step_length)
+				if around.distance_to(global_position) >= step_length * 0.2:
+					next = around
+					_sidestep_seconds_left = SIDESTEP_HOLD_SECONDS
+					break
+			if next.distance_to(global_position) < step_length * 0.2:
+				_sidestep_sign = -_sidestep_sign
 	global_position = next
 	_last_direction = direction
 	_face(direction, delta)

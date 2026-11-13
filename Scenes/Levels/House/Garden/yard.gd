@@ -34,6 +34,8 @@ const FENCE_HEIGHT: float = 1.1
 const FENCE_POST_SPACING: float = 2.4
 ## The yard counts this far past its bounds as outdoors (the porch).
 const OUTDOOR_MARGIN: float = 0.6
+## Side (meters) of the grid cells the town's buildings are sorted into for line-of-sight checks.
+const BUILDING_CELL_SIZE: float = 16.0
 ## Seconds between two looks at who the players are (they join and leave
 ## rarely; where they stand is read live).
 const HUNT_TARGET_REFRESH_SECONDS: float = 0.25
@@ -55,6 +57,8 @@ const HUNT_TARGET_REFRESH_SECONDS: float = 0.25
 @export var door_spot_distance: float = 0.55
 ## Raiders enter on the far edge and the far halves of the sides.
 @export var side_spawn_share: float = 0.45
+## The house's walls (world X / Z): everything outside them is outdoors.
+@export var house_area: Rect2 = Rect2(-5.0, -5.0, 10.0, 10.0)
 ## Width of the gate in the far fence (meters, centred on the door's line):
 ## the way out of the garden into the street.
 @export var gate_width: float = 2.6:
@@ -64,6 +68,12 @@ const HUNT_TARGET_REFRESH_SECONDS: float = 0.25
 
 ## The player's walkable area (set by the FrontGarden): hunting raiders walk its routes.
 var walkable: WalkableArea = null
+## The town's street grid (set by the AttackerDirector), for ways back to the yard.
+var street_routes: StreetRoutes = null
+var _building_footprints: Array[Rect2] = []
+var _building_heights: PackedFloat32Array = PackedFloat32Array()
+## Grid cell -> indices of the buildings in it (cells of BUILDING_CELL_SIZE).
+var _building_grid: Dictionary[Vector2i, PackedInt32Array] = {}
 
 var _obstacle_circles: Array[Vector3] = []
 var _is_hunting: bool = false
@@ -175,6 +185,8 @@ func clamp_to_bounds(point: Vector2) -> Vector2:
 ## the house, a turret or a guard at a raider in cover). Heights matter:
 ## rocks and bushes hide a crouching body but not from above.
 func is_shot_blocked(from: Vector3, to: Vector3) -> bool:
+	if not _building_grid.is_empty() and _is_shot_blocked_by_buildings(from, to):
+		return true
 	var from_flat: Vector2 = Vector2(from.x, from.z)
 	var segment: Vector2 = Vector2(to.x, to.z) - from_flat
 	var length_squared: float = segment.length_squared()
@@ -274,9 +286,28 @@ func get_alive_count() -> int:
 	return alive
 
 
-## True for a point out in the yard (or on the porch), not in the house.
+## True for a point outside the house: the yard, the porch, the streets of
+## the town around it.
 func is_outdoors(point: Vector3) -> bool:
+	return not house_area.has_point(Vector2(point.x, point.z))
+
+
+## True for a point in the yard (inside its fence, give or take a step).
+func is_in_yard(point: Vector3) -> bool:
 	return bounds.grow(OUTDOOR_MARGIN).has_point(Vector2(point.x, point.z))
+
+
+## A way through the streets from [param from] (world X / Z) back to the
+## yard, ending at a point in it (an officer that chased a player through
+## the town picks up its march again). Straight to the yard without a town.
+func plan_route_to_yard(from: Vector2) -> PackedVector2Array:
+	var route: PackedVector2Array = PackedVector2Array([from])
+	if street_routes != null:
+		var start: int = street_routes.get_nearest_node(from)
+		var goal: int = street_routes.get_nearest_node(bounds.get_center())
+		route.append_array(street_routes.find_route(start, goal, 1.0, _random))
+	route.append(get_spawn_point())
+	return route
 
 
 ## The living raider nearest [param from] that the stretch [param from] →
@@ -359,6 +390,47 @@ func find_raider_nearest_door(point: Vector3, max_distance: float) -> Raider:
 	return best
 
 
+## Living raider nearest [param point] between [param min_distance] and
+## [param max_distance] that it can see (towers out in the field).
+func find_raider_nearest(point: Vector3, max_distance: float, min_distance: float = 0.0) -> Raider:
+	var best: Raider = null
+	var best_distance: float = max_distance
+	for raider: Raider in get_raiders():
+		if not raider.is_alive():
+			continue
+		var distance: float = point.distance_to(raider.get_hit_center())
+		if distance > best_distance or distance < min_distance or is_shot_blocked(point, raider.get_hit_center()):
+			continue
+		best_distance = distance
+		best = raider
+	return best
+
+
+## Living raiders within [param radius] of [param point] (a blast, a jump of a discharge).
+func find_raiders_around(point: Vector3, radius: float) -> Array[Raider]:
+	var found: Array[Raider] = []
+	for raider: Raider in get_raiders():
+		if raider.is_alive() and Vector2(raider.global_position.x - point.x, raider.global_position.z - point.z).length() <= radius:
+			found.append(raider)
+	return found
+
+
+## The town's buildings as cover (footprints, world X / Z, and their
+## heights): shots — the player's, towers', turrets' — don't go through them.
+func set_building_cover(footprints: Array[Rect2], heights: PackedFloat32Array) -> void:
+	_building_footprints = footprints
+	_building_heights = heights
+	_building_grid.clear()
+	for building_index: int in footprints.size():
+		var area: Rect2 = footprints[building_index]
+		for cell_x: int in range(floori(area.position.x / BUILDING_CELL_SIZE), floori(area.end.x / BUILDING_CELL_SIZE) + 1):
+			for cell_y: int in range(floori(area.position.y / BUILDING_CELL_SIZE), floori(area.end.y / BUILDING_CELL_SIZE) + 1):
+				var cell: Vector2i = Vector2i(cell_x, cell_y)
+				var indices: PackedInt32Array = _building_grid.get(cell, PackedInt32Array())
+				indices.append(building_index)
+				_building_grid[cell] = indices
+
+
 ## Stops everyone where they stand (the shift is over).
 func freeze() -> void:
 	for raider: Raider in get_raiders():
@@ -367,6 +439,28 @@ func freeze() -> void:
 # ============================================
 # INTERNALS
 # ============================================
+
+## True when a building tall enough stands between two points.
+func _is_shot_blocked_by_buildings(from: Vector3, to: Vector3) -> bool:
+	var from_flat: Vector2 = Vector2(from.x, from.z)
+	var to_flat: Vector2 = Vector2(to.x, to.z)
+	var length: float = from_flat.distance_to(to_flat)
+	var checked: Dictionary[int, bool] = {}
+	# A quarter cell apart, so a shot clipping a cell's corner still looks into it.
+	var samples: int = maxi(1, ceili(length / (BUILDING_CELL_SIZE * 0.25)))
+	for sample_index: int in samples + 1:
+		var point: Vector2 = from_flat.lerp(to_flat, float(sample_index) / samples)
+		var cell: Vector2i = Vector2i(floori(point.x / BUILDING_CELL_SIZE), floori(point.y / BUILDING_CELL_SIZE))
+		var indices: PackedInt32Array = _building_grid.get(cell, PackedInt32Array())
+		for building_index: int in indices:
+			if checked.has(building_index):
+				continue
+			checked[building_index] = true
+			var along: float = RayMath.segment_enters_rect(from_flat, to_flat, _building_footprints[building_index])
+			if along >= 0.0 and lerpf(from.y, to.y, along) < _building_heights[building_index]:
+				return true
+	return false
+
 
 func _on_raider_defeated(raider: Raider) -> void:
 	raider_defeated.emit(raider)

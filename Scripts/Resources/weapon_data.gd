@@ -84,6 +84,17 @@ enum Kind { GUN, MELEE }
 ## Rounds the player can carry for this gun.
 @export_range(1, 10000) var max_ammo: int = 240
 
+@export_group("Upgrades")
+## Price of each upgrade level at the armory, in order (level 1, 2, ...):
+## its length is how often the weapon can be upgraded.
+@export var upgrade_costs: PackedInt32Array = PackedInt32Array()
+## Each level adds this share of the base damage...
+@export var damage_per_level: float = 0.25
+## ...and fires this share faster (shorter time between shots).
+@export var fire_rate_per_level: float = 0.1
+## Each level adds this many rounds to what the player can carry.
+@export var ammo_per_level: int = 30
+
 
 ## True for the weapon every player starts with (the fists).
 func is_starter() -> bool:
@@ -93,3 +104,28 @@ func is_starter() -> bool:
 ## True for fists, the knife and the axe.
 func is_melee() -> bool:
 	return kind == Kind.MELEE
+
+
+## Upgrade levels this weapon has at the armory.
+func get_max_upgrade_level() -> int:
+	return upgrade_costs.size()
+
+
+## Price of upgrading from [param level] to the next (0 when it can't go higher).
+func get_upgrade_cost(level: int) -> int:
+	return upgrade_costs[level] if level >= 0 and level < upgrade_costs.size() else 0
+
+
+## Damage of one hit (or pellet) at upgrade [param level].
+func get_damage(level: int) -> float:
+	return damage * (1.0 + damage_per_level * maxi(0, level))
+
+
+## Seconds between two shots or swings at upgrade [param level].
+func get_fire_interval(level: int) -> float:
+	return fire_interval_seconds / (1.0 + fire_rate_per_level * maxi(0, level))
+
+
+## Rounds the player can carry at upgrade [param level].
+func get_max_ammo(level: int) -> int:
+	return max_ammo + ammo_per_level * maxi(0, level)

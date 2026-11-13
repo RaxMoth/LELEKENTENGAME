@@ -31,3 +31,4 @@ falloff_start_meters = 12.0
 falloff_end_meters = 25.0
 falloff_min_multiplier = 0.5
 sound_preset = &"shot_smg"
+upgrade_costs = PackedInt32Array(300, 650, 1200)

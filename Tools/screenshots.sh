@@ -71,6 +71,10 @@ SHOT_RESOLUTION=$WIDE shot level_27_blackout level=house showcase=house_blackout
 SHOT_RESOLUTION=$WIDE shot level_28_play_together level=house stand=-3.6,-2.8 look=-4.95,1.35,-2.8 frames=150
 # A police horde coming down the street, with a squad car, the armored vehicle and the helicopter.
 SHOT_RESOLUTION=$WIDE shot level_29_horde level=house showcase=house_horde frames=90
+# Towers built in the garden with the tower depot by the porch, and the office's monitor wall.
+SHOT_RESOLUTION=$WIDE shot level_30_towers level=house showcase=house_towers stand=0.5,-7.5 look=0,1.5,-22 frames=150
+SHOT_RESOLUTION=$WIDE shot level_31_tower_depot level=house showcase=house_towers stand=2.6,-5.9 look=3.4,1.3,-8.0 frames=120
+SHOT_RESOLUTION=$WIDE shot level_32_monitor_wall level=house showcase=house_monitor_wall stand=2.9,-1.0 look=2.9,1.5,1.3 frames=150
 "$TOOLS_DIR/godot.sh" --headless --script "$TOOLS_DIR/contact_sheet.gd" -- "$OUT_DIR/sheet_menus.png" 5 360 640 \
 	"$OUT_DIR"/0*.png >/dev/null 2>&1
 "$TOOLS_DIR/godot.sh" --headless --script "$TOOLS_DIR/contact_sheet.gd" -- "$OUT_DIR/sheet_levels.png" 3 640 360 \

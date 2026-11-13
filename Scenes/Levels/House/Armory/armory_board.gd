@@ -1,6 +1,6 @@
 ## The armory terminal's screen: every weapon for sale with its price (one
 ## not for sale yet says what it needs: "Needs Axe"), the ones owned, and an
-## ammo box for the gun in hand. The fists aren't listed (always there), nor
+## ammo box and the next upgrade for the weapon in hand. The fists aren't listed (always there), nor
 ## a blade the next one replaced (the knife once the axe is owned) unless
 ## it's in hand — the list stays one screen tall. Shown in the world on a WorldScreen. It displays Profile data and
 ## emits signals; the Armory front does the buying.
@@ -13,6 +13,7 @@ extends Control
 signal weapon_buy_requested(weapon: WeaponData)
 signal weapon_equip_requested(weapon: WeaponData)
 signal ammo_buy_requested(weapon: WeaponData)
+signal upgrade_requested(weapon: WeaponData)
 
 const ROW_SCENE: PackedScene = preload("res://Scenes/Menus/Shop/ShopItemRow.tscn")
 const CASH_ICON: Texture2D = preload("res://Assets/Icons/cash.svg")
@@ -54,6 +55,8 @@ func refresh() -> void:
 		_add_weapon_row(weapon, loadout, weapon == equipped)
 		if weapon == equipped and loadout.owns(weapon) and not weapon.has_unlimited_ammo:
 			_add_ammo_row(weapon, loadout)
+		if weapon == equipped and loadout.owns(weapon) and weapon.get_max_upgrade_level() > 0:
+			_add_upgrade_row(weapon, loadout)
 	if equipped != null:
 		_equipped_label.text = tr("In hand: %s · %s") % [tr(equipped.display_name), _describe_ammo(equipped, loadout)]
 
@@ -88,9 +91,24 @@ func _add_weapon_row(weapon: WeaponData, loadout: WeaponLoadout, is_equipped: bo
 		row.buy_pressed.connect(func() -> void: weapon_buy_requested.emit(weapon))
 
 
+## The next upgrade of the weapon in hand (equip another to upgrade that one).
+func _add_upgrade_row(weapon: WeaponData, loadout: WeaponLoadout) -> void:
+	var row: ShopItemRow = _create_row("upgrade:%s" % weapon.id)
+	var level: int = loadout.get_upgrade_level(weapon)
+	var title: String = tr("%s upgrade") % tr(weapon.display_name)
+	var level_text: String = tr("Level %d / %d") % [level, weapon.get_max_upgrade_level()]
+	if not loadout.can_upgrade(weapon):
+		row.setup(title, level_text, _describe_stats(weapon, level), tr("Maxed"), false)
+		return
+	var cost: int = loadout.get_upgrade_cost(weapon)
+	var detail: String = tr("Next: %s") % _describe_stats(weapon, level + 1)
+	row.setup(title, level_text, detail, NumberFormat.with_separators(cost), Profile.wallet.can_afford(Types.CURRENCY_CASH, cost), CASH_ICON)
+	row.buy_pressed.connect(func() -> void: upgrade_requested.emit(weapon))
+
+
 func _add_ammo_row(weapon: WeaponData, loadout: WeaponLoadout) -> void:
 	var row: ShopItemRow = _create_row("ammo:%s" % weapon.id)
-	var detail: String = tr("+%d rounds · %d / %d carried") % [weapon.ammo_pack_size, loadout.get_ammo(weapon), weapon.max_ammo]
+	var detail: String = tr("+%d rounds · %d / %d carried") % [weapon.ammo_pack_size, loadout.get_ammo(weapon), weapon.get_max_ammo(loadout.get_upgrade_level(weapon))]
 	var is_enabled: bool = loadout.can_add_ammo(weapon) and Profile.wallet.can_afford(Types.CURRENCY_CASH, weapon.ammo_pack_cost)
 	row.setup(tr("%s ammo") % tr(weapon.display_name), "", detail, NumberFormat.with_separators(weapon.ammo_pack_cost), is_enabled, CASH_ICON)
 	row.buy_pressed.connect(func() -> void: ammo_buy_requested.emit(weapon))
@@ -113,12 +131,15 @@ func _create_row(key: String) -> ShopItemRow:
 	return row
 
 
-func _describe_stats(weapon: WeaponData) -> String:
+## Damage, rate and range of [param weapon] at upgrade [param level] (-1 = the player's).
+func _describe_stats(weapon: WeaponData, level: int = -1) -> String:
+	if level < 0:
+		level = Profile.armory.loadout.get_upgrade_level(weapon)
 	if weapon.is_melee():
-		var melee_stats: String = tr("Damage %d · %.1f hits/s · Close combat") % [roundi(weapon.damage), 1.0 / maxf(0.01, weapon.fire_interval_seconds)]
+		var melee_stats: String = tr("Damage %d · %.1f hits/s · Close combat") % [roundi(weapon.get_damage(level)), 1.0 / maxf(0.01, weapon.get_fire_interval(level))]
 		return melee_stats + (" · " + tr("Pierces armor") if weapon.pierces_armor else "")
-	var shots_per_second: float = 1.0 / maxf(0.01, weapon.fire_interval_seconds)
-	var stats: String = tr("Damage %d · %.1f shots/s · Range %d m") % [roundi(weapon.damage), shots_per_second, roundi(weapon.range_meters)]
+	var shots_per_second: float = 1.0 / maxf(0.01, weapon.get_fire_interval(level))
+	var stats: String = tr("Damage %d · %.1f shots/s · Range %d m") % [roundi(weapon.get_damage(level)), shots_per_second, roundi(weapon.range_meters)]
 	if weapon.pierces_armor:
 		stats += " · " + tr("Pierces armor")
 	return stats

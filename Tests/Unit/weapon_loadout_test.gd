@@ -153,3 +153,60 @@ func test_a_missing_requirement_keeps_it_locked() -> void:
 	var catalog: WeaponCatalog = _ladder()
 	catalog.find_weapon(&"axe").required_weapon_id = &"unknown"
 	assert_bool(WeaponLoadout.new().is_unlocked(catalog.find_weapon(&"axe"), catalog)).is_false()
+
+
+func test_owned_weapons_can_be_upgraded_to_their_last_level() -> void:
+	var loadout: WeaponLoadout = WeaponLoadout.new()
+	var smg: WeaponData = _catalog().find_weapon(&"smg")
+	smg.upgrade_costs = PackedInt32Array([200, 450])
+	assert_bool(loadout.can_upgrade(smg)).is_false()
+	loadout.buy_weapon(smg)
+	assert_int(loadout.get_upgrade_cost(smg)).is_equal(200)
+	assert_bool(loadout.upgrade(smg)).is_true()
+	assert_int(loadout.get_upgrade_cost(smg)).is_equal(450)
+	assert_bool(loadout.upgrade(smg)).is_true()
+	assert_bool(loadout.upgrade(smg)).is_false()
+	assert_int(loadout.get_upgrade_level(smg)).is_equal(2)
+	assert_int(loadout.get_upgrade_cost(smg)).is_equal(0)
+
+
+func test_upgrades_raise_damage_fire_rate_and_ammo() -> void:
+	var smg: WeaponData = _catalog().find_weapon(&"smg")
+	smg.damage = 20.0
+	smg.fire_interval_seconds = 0.2
+	smg.damage_per_level = 0.25
+	smg.fire_rate_per_level = 0.25
+	smg.ammo_per_level = 10
+	assert_float(smg.get_damage(2)).is_equal_approx(30.0, 0.001)
+	assert_float(smg.get_fire_interval(2)).is_less(0.2)
+	assert_int(smg.get_max_ammo(2)).is_equal(45)
+	var loadout: WeaponLoadout = WeaponLoadout.new()
+	smg.upgrade_costs = PackedInt32Array([1, 1])
+	loadout.buy_weapon(smg)
+	loadout.upgrade(smg)
+	assert_int(loadout.get_ammo_space(smg)).is_equal(35 - loadout.get_ammo(smg))
+
+
+func test_upgrades_survive_saving() -> void:
+	var loadout: WeaponLoadout = WeaponLoadout.new()
+	var smg: WeaponData = _catalog().find_weapon(&"smg")
+	smg.upgrade_costs = PackedInt32Array([1, 1])
+	loadout.buy_weapon(smg)
+	loadout.upgrade(smg)
+	var copy: WeaponLoadout = WeaponLoadout.new()
+	copy.from_dict(loadout.to_dict())
+	assert_int(copy.get_upgrade_level(smg)).is_equal(1)
+
+
+func test_switching_cycles_through_the_owned_weapons() -> void:
+	var catalog: WeaponCatalog = _catalog()
+	catalog.weapons.append(_weapon(&"shotgun", 500))
+	var loadout: WeaponLoadout = WeaponLoadout.new()
+	assert_str(String(loadout.equip_next(catalog).id)).is_equal("pistol")
+	loadout.buy_weapon(catalog.find_weapon(&"smg"))
+	loadout.buy_weapon(catalog.find_weapon(&"shotgun"))
+	loadout.equip(catalog.find_weapon(&"pistol"))
+	assert_str(String(loadout.equip_next(catalog).id)).is_equal("smg")
+	assert_str(String(loadout.equip_next(catalog).id)).is_equal("shotgun")
+	assert_str(String(loadout.equip_next(catalog).id)).is_equal("pistol")
+	assert_str(String(loadout.equip_next(catalog, -1).id)).is_equal("shotgun")

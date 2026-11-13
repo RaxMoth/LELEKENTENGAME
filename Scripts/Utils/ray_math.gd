@@ -71,3 +71,32 @@ static func pixel_to_screen_point(pixel: Vector2, size_meters: Vector2, resoluti
 ## True when [param local_point] lies on a screen of [param size_meters] centered on the origin.
 static func is_on_screen(local_point: Vector2, size_meters: Vector2) -> bool:
 	return absf(local_point.x) <= size_meters.x * 0.5 and absf(local_point.y) <= size_meters.y * 0.5
+
+
+## Where (0..1 along it) the segment [param from] → [param to] first enters
+## [param rect] — 0 when it starts inside — or -1 when it misses (slab test,
+## on the floor plane).
+static func segment_enters_rect(from: Vector2, to: Vector2, rect: Rect2) -> float:
+	var direction: Vector2 = to - from
+	var enter: float = 0.0
+	var leave: float = 1.0
+	for axis: int in 2:
+		var start: float = from[axis]
+		var step: float = direction[axis]
+		var low: float = rect.position[axis]
+		var high: float = rect.end[axis]
+		if absf(step) < 0.00001:
+			if start < low or start > high:
+				return -1.0
+			continue
+		var near: float = (low - start) / step
+		var far: float = (high - start) / step
+		if near > far:
+			var swap: float = near
+			near = far
+			far = swap
+		enter = maxf(enter, near)
+		leave = minf(leave, far)
+		if enter > leave:
+			return -1.0
+	return enter

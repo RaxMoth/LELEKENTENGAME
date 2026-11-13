@@ -7,8 +7,9 @@
 [ext_resource type="Resource" path="res://Ressources/Upgrades/Defense/def_turrets.tres" id="def_turrets"]
 [ext_resource type="Resource" path="res://Ressources/Upgrades/Defense/def_security_pc.tres" id="def_security_pc"]
 [ext_resource type="Resource" path="res://Ressources/Upgrades/Defense/work_guard.tres" id="work_guard"]
+[ext_resource type="Resource" path="res://Ressources/Upgrades/Defense/def_monitor_wall.tres" id="def_monitor_wall"]
 
 [resource]
 script = ExtResource("catalog")
 area_name = "Defense"
-upgrades = Array[ExtResource("upgrade")]([ExtResource("def_door"), ExtResource("def_blaster"), ExtResource("def_turrets"), ExtResource("def_security_pc"), ExtResource("work_guard")])
+upgrades = Array[ExtResource("upgrade")]([ExtResource("def_door"), ExtResource("def_blaster"), ExtResource("def_turrets"), ExtResource("def_security_pc"), ExtResource("def_monitor_wall"), ExtResource("work_guard")])

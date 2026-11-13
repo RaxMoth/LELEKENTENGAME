@@ -47,6 +47,9 @@ const BODY_RADIUS: float = 0.25
 const BLOCKER_CELL_SIZE: float = 16.0
 ## Highest step up or down a move may take; more is a wall, an edge or a ceiling.
 const MAX_STEP: float = 0.35
+## Off every floor, a move may still land on a floor this far up or down
+## (meters) — less than a storey.
+const OFF_FLOOR_STEP: float = 1.2
 ## How far (meters) the body keeps from furniture: less than from a wall,
 ## so the player can stand at a table and work at it.
 const OBSTACLE_MARGIN: float = 0.15
@@ -105,6 +108,13 @@ func add_blockers(circles: Array[Vector3]) -> void:
 	for circle: Vector3 in circles:
 		if not blockers.has(circle):
 			blockers.append(circle)
+	_is_blocker_grid_dirty = true
+
+
+## Takes round blockers away again (a tower taken down).
+func remove_blockers(circles: Array[Vector3]) -> void:
+	for circle: Vector3 in circles:
+		blockers.erase(circle)
 	_is_blocker_grid_dirty = true
 
 
@@ -245,11 +255,16 @@ func get_floor_height_at(world_position: Vector3, max_step: float = MAX_STEP, ig
 ## move at all. The result's y is the floor height there (down a ramp, it
 ## goes down). Nobody gets stuck: from inside furniture that appeared
 ## around the player, furniture is let through (same floor only); from a
-## spot with no floor at all (a hole opened beneath them) any floor counts.
+## spot with no floor at all (a hole opened beneath them) any floor within
+## OFF_FLOOR_STEP counts.
 func clamp_move(from_position: Vector3, to_position: Vector3) -> Vector3:
 	var is_off_floor: bool = is_nan(get_floor_height_at(from_position, MAX_STEP, true))
 	var is_in_furniture: bool = not is_off_floor and is_nan(get_floor_height_at(from_position))
-	var step_limit: float = INF if is_off_floor else MAX_STEP
+	# Off every floor (a hole opened beneath them, or the head leaned past
+	# the edge of a floor in a headset) any floor near that height counts —
+	# but never one a storey up or down: leaning over the cellar's edge must
+	# not lift the player into the room above.
+	var step_limit: float = OFF_FLOOR_STEP if is_off_floor else MAX_STEP
 	var ignores_obstacles: bool = is_off_floor or is_in_furniture
 	var candidates: Array[Vector2] = [Vector2(to_position.x, to_position.z), Vector2(to_position.x, from_position.z), Vector2(from_position.x, to_position.z)]
 	for candidate: Vector2 in candidates:

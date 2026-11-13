@@ -43,6 +43,8 @@ signal primary_action_released(pointer: XRPointer)
 signal secondary_action_released(pointer: XRPointer)
 ## Menu or B / Y button.
 signal menu_pressed
+## The A / X button (headset) or Q (flat simulator): switch to the next weapon.
+signal next_weapon_pressed
 signal item_grabbed(item: Grabbable)
 signal item_placed(item: Grabbable, socket: ItemSocket)
 ## Co-op client: a trigger or grip press (or a flat click, as the dominant
@@ -231,6 +233,9 @@ func _unhandled_input(event: InputEvent) -> void:
 		if event.is_action_pressed(travel_actions[spot_index]):
 			locomotion.travel_to_spot(spot_index)
 			return
+	if event.is_action_pressed(Types.ACTION_NEXT_WEAPON):
+		next_weapon_pressed.emit()
+		return
 	var motion: InputEventMouseMotion = event as InputEventMouseMotion
 	if motion != null:
 		_on_flat_motion(motion)
@@ -375,6 +380,9 @@ func handle_controller_button(hand: Types.Hand, action_name: StringName, is_pres
 		Types.XR_ACTION_MENU_BUTTON, Types.XR_ACTION_SECONDARY_BUTTON:
 			if is_pressed:
 				menu_pressed.emit()
+		Types.XR_ACTION_PRIMARY_BUTTON:
+			if is_pressed:
+				next_weapon_pressed.emit()
 		Types.XR_ACTION_TRACKPAD_CLICK:
 			if is_pressed:
 				locomotion.handle_trackpad_click(_get_controller(hand).get_vector2(Types.XR_ACTION_TRACKPAD), _get_pointer(hand))

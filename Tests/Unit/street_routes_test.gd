@@ -72,3 +72,15 @@ func test_lanes_shift_the_whole_route_sideways() -> void:
 	assert_float(absf(lane[1].y)).is_equal_approx(2.0, 0.001)
 	assert_float(absf(lane[1].x - 50.0)).is_equal_approx(2.0, 0.001)
 	assert_float(absf(lane[2].x - 50.0)).is_equal_approx(2.0, 0.001)
+
+
+func test_a_segment_finds_where_it_enters_a_building() -> void:
+	var building: Rect2 = Rect2(10.0, -5.0, 10.0, 10.0)
+	assert_float(RayMath.segment_enters_rect(Vector2(0.0, 0.0), Vector2(40.0, 0.0), building)).is_equal_approx(0.25, 0.001)
+	# Starting inside counts from the start.
+	assert_float(RayMath.segment_enters_rect(Vector2(15.0, 0.0), Vector2(40.0, 0.0), building)).is_equal(0.0)
+	# Passing beside it, stopping short of it, or running parallel outside: no hit.
+	assert_float(RayMath.segment_enters_rect(Vector2(0.0, 8.0), Vector2(40.0, 8.0), building)).is_equal(-1.0)
+	assert_float(RayMath.segment_enters_rect(Vector2(0.0, 0.0), Vector2(5.0, 0.0), building)).is_equal(-1.0)
+	# Clipping a corner diagonally.
+	assert_float(RayMath.segment_enters_rect(Vector2(5.0, -12.0), Vector2(14.0, -3.0), building)).is_greater(0.0)

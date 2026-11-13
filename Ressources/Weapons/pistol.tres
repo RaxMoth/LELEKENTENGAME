@@ -29,3 +29,4 @@ falloff_start_meters = 18.0
 falloff_end_meters = 30.0
 falloff_min_multiplier = 0.6
 sound_preset = &"shot_pistol"
+upgrade_costs = PackedInt32Array(150, 350, 700)

@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="TowerData" format=3]
+
+[ext_resource type="Script" path="res://Scripts/Resources/tower_data.gd" id="script"]
+
+[resource]
+script = ExtResource("script")
+id = &"mortar"
+display_name = "Mortar"
+description = "Lobs shells into the street. The blast hits everyone around where it lands — and shakes armored vehicles."
+kind = 1
+cost = 1400
+color = Color(0.9608, 0.7216, 0.2549, 1)
+damage = 95.0
+fire_interval_seconds = 3.2
+range_meters = 48.0
+min_range_meters = 7.0
+pierces_armor = true
+turn_speed_degrees = 70.0
+splash_radius = 4.5
+shell_flight_seconds = 0.8
+upgrade_costs = PackedInt32Array(1000, 2000)
+damage_per_level = 0.4
+range_per_level = 6.0

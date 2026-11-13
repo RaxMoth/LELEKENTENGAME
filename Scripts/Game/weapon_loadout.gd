@@ -2,12 +2,15 @@
 ## and the one in their hand. The starter (cost 0: the fists) is always
 ## owned and never runs out, so the player is never unarmed. A weapon is for
 ## sale only once its required weapon is owned (knife → axe → pistol → the
-## other guns).
+## other guns). Owned weapons can be upgraded at the armory (more damage,
+## faster fire, more rounds) and switched through in hand.
 ##
 ##   loadout.can_buy(shotgun, catalog)    # owns the pistol, not the shotgun yet
 ##   loadout.buy_weapon(shotgun)          # after paying for it
 ##   loadout.equip(&"shotgun")
 ##   if loadout.try_fire(shotgun): ...    # takes a round (none for the starter)
+##   loadout.upgrade(shotgun)             # after paying get_upgrade_cost
+##   loadout.equip_next(catalog)          # the next owned weapon in hand
 ##
 ## Pure data (to_dict / from_dict); Profile.armory saves it.
 ## Unit-tested in Tests/Unit/weapon_loadout_test.gd.
@@ -23,6 +26,8 @@ var equipped_id: StringName = &""
 var _owned_ids: Array[StringName] = []
 ## weapon id -> rounds left.
 var _ammo: Dictionary[StringName, int] = {}
+## weapon id -> upgrade level bought at the armory.
+var _upgrades: Dictionary[StringName, int] = {}
 
 
 func owns(weapon: WeaponData) -> bool:
@@ -39,7 +44,7 @@ func has_ammo(weapon: WeaponData) -> bool:
 
 ## Room left for rounds of [param weapon].
 func get_ammo_space(weapon: WeaponData) -> int:
-	return 0 if weapon == null or weapon.has_unlimited_ammo else maxi(0, weapon.max_ammo - get_ammo(weapon))
+	return 0 if weapon == null or weapon.has_unlimited_ammo else maxi(0, weapon.get_max_ammo(get_upgrade_level(weapon)) - get_ammo(weapon))
 
 
 ## True when [param weapon]'s required weapon (in [param catalog]) is owned,
@@ -66,6 +71,57 @@ func buy_weapon(weapon: WeaponData) -> bool:
 	_ammo[weapon.id] = mini(weapon.starting_ammo, weapon.max_ammo)
 	changed.emit()
 	return true
+
+
+## Upgrade level of [param weapon] (0 = as bought).
+func get_upgrade_level(weapon: WeaponData) -> int:
+	return _upgrades.get(weapon.id, 0) if weapon != null else 0
+
+
+## True when [param weapon] is owned and has another upgrade level to buy.
+func can_upgrade(weapon: WeaponData) -> bool:
+	return owns(weapon) and get_upgrade_level(weapon) < weapon.get_max_upgrade_level()
+
+
+## Price of [param weapon]'s next upgrade (0 when it can't be upgraded).
+func get_upgrade_cost(weapon: WeaponData) -> int:
+	return weapon.get_upgrade_cost(get_upgrade_level(weapon)) if can_upgrade(weapon) else 0
+
+
+## Raises [param weapon] one upgrade level (after paying). False when it can't.
+func upgrade(weapon: WeaponData) -> bool:
+	if not can_upgrade(weapon):
+		return false
+	_upgrades[weapon.id] = get_upgrade_level(weapon) + 1
+	changed.emit()
+	return true
+
+
+## Every weapon of [param catalog] the player owns, in catalog order.
+func get_owned_weapons(catalog: WeaponCatalog) -> Array[WeaponData]:
+	var owned: Array[WeaponData] = []
+	if catalog == null:
+		return owned
+	for weapon: WeaponData in catalog.weapons:
+		if owns(weapon):
+			owned.append(weapon)
+	return owned
+
+
+## Puts the next owned weapon (catalog order, [param step] = -1 the one
+## before) in hand, wrapping around; [param guns_only] skips fists and
+## blades. Returns the weapon now in hand (null when there is none).
+func equip_next(catalog: WeaponCatalog, step: int = 1, guns_only: bool = false) -> WeaponData:
+	var owned: Array[WeaponData] = []
+	for weapon: WeaponData in get_owned_weapons(catalog):
+		if not guns_only or not weapon.is_melee():
+			owned.append(weapon)
+	if owned.is_empty():
+		return null
+	var current: int = owned.find(get_equipped(catalog))
+	var next: WeaponData = owned[posmod(current + step, owned.size())]
+	equip(next)
+	return next
 
 
 ## True when an ammo box for [param weapon] would add rounds.
@@ -115,7 +171,7 @@ func try_fire(weapon: WeaponData) -> bool:
 	return true
 
 
-## JSON-friendly: {"equipped": "smg", "owned": ["smg"], "ammo": {"smg": 40}}.
+## JSON-friendly: {"equipped": "smg", "owned": ["smg"], "ammo": {"smg": 40}, "upgrades": {"smg": 1}}.
 func to_dict() -> Dictionary:
 	var ammo_data: Dictionary = {}
 	for weapon_id: StringName in _ammo:
@@ -123,7 +179,10 @@ func to_dict() -> Dictionary:
 	var owned_data: Array[String] = []
 	for weapon_id: StringName in _owned_ids:
 		owned_data.append(String(weapon_id))
-	return {"equipped": String(equipped_id), "owned": owned_data, "ammo": ammo_data}
+	var upgrade_data: Dictionary = {}
+	for weapon_id: StringName in _upgrades:
+		upgrade_data[String(weapon_id)] = _upgrades[weapon_id]
+	return {"equipped": String(equipped_id), "owned": owned_data, "ammo": ammo_data, "upgrades": upgrade_data}
 
 
 func from_dict(data: Dictionary) -> void:
@@ -139,9 +198,14 @@ func from_dict(data: Dictionary) -> void:
 	if ammo_data is Dictionary:
 		for raw_id: Variant in ammo_data:
 			_ammo[StringName(str(raw_id))] = maxi(0, int(ammo_data[raw_id]))
+	var upgrade_data: Variant = data.get("upgrades", {})
+	if upgrade_data is Dictionary:
+		for raw_id: Variant in upgrade_data:
+			_upgrades[StringName(str(raw_id))] = maxi(0, int(upgrade_data[raw_id]))
 
 
 func clear() -> void:
 	equipped_id = &""
 	_owned_ids.clear()
 	_ammo.clear()
+	_upgrades.clear()

@@ -26,3 +26,4 @@ pellets = 1
 spread_degrees = 0.1
 pierce_count = 2
 sound_preset = &"shot_rifle"
+upgrade_costs = PackedInt32Array(600, 1200, 2200)

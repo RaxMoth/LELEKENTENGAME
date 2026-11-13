@@ -31,13 +31,15 @@ static func get_shot_directions(forward: Vector3, weapon: WeaponData, bloom_degr
 	return directions
 
 
-## Damage of one projectile after [param distance] meters: full up to
-## falloff_start_meters, then down to falloff_min_multiplier at falloff_end_meters.
-static func get_damage_at(weapon: WeaponData, distance: float) -> float:
+## Damage of one projectile after [param distance] meters at upgrade
+## [param level]: full up to falloff_start_meters, then down to
+## falloff_min_multiplier at falloff_end_meters.
+static func get_damage_at(weapon: WeaponData, distance: float, level: int = 0) -> float:
+	var damage: float = weapon.get_damage(level)
 	if weapon.falloff_end_meters <= weapon.falloff_start_meters:
-		return weapon.damage
+		return damage
 	var weight: float = clampf((distance - weapon.falloff_start_meters) / (weapon.falloff_end_meters - weapon.falloff_start_meters), 0.0, 1.0)
-	return weapon.damage * lerpf(1.0, weapon.falloff_min_multiplier, weight)
+	return damage * lerpf(1.0, weapon.falloff_min_multiplier, weight)
 
 
 ## Extra spread after [param shots_in_burst] shots in a row (automatic guns

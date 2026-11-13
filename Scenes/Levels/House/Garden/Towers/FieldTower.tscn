@@ -1,0 +1,57 @@
+[gd_scene format=3]
+
+[ext_resource type="PackedScene" path="res://Scenes/Levels/House/Garden/HouseTurret.tscn" id="turret"]
+[ext_resource type="Script" path="res://Scenes/Levels/House/Garden/Towers/field_tower.gd" id="field_tower"]
+[ext_resource type="Script" path="res://Scripts/Utils/placeholder_mesh_3d.gd" id="mesh"]
+[ext_resource type="Script" path="res://Scripts/Utils/blob_shadow_3d.gd" id="shadow"]
+[ext_resource type="Script" path="res://Scripts/XR/pointer_button.gd" id="pointer_button"]
+
+[node name="FieldTower" instance=ExtResource("turret")]
+script = ExtResource("field_tower")
+
+[node name="Mount" parent="."]
+transform = Transform3D(1.6, 0, 0, 0, 2.4, 0, 0, 0, 1.6, 0, 0.12, 0)
+
+[node name="Head" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 0)
+
+[node name="Pole" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.05, 0)
+cast_shadow = 0
+script = ExtResource("mesh")
+shape_kind = 3
+size = Vector3(0.18, 1.9, 0.18)
+color = Color(0.1412, 0.1686, 0.2431, 1)
+
+[node name="Shadow" type="MeshInstance3D" parent="."]
+script = ExtResource("shadow")
+diameter = 1.2
+
+[node name="UpgradeButton" type="Node3D" parent="."]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.42, 0.26, 0.42)
+script = ExtResource("pointer_button")
+press_radius = 0.11
+caption = "Upgrade"
+color = Color(0.9608, 0.7216, 0.2549, 1)
+
+[node name="TowerLabel" type="Label3D" parent="."]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.75, 0)
+visibility_range_end = 14.0
+pixel_size = 0.003
+billboard = 1
+modulate = Color(0.9333, 0.9451, 0.9686, 1)
+outline_modulate = Color(0.051, 0.0627, 0.0902, 1)
+text = "Tower"
+font_size = 40
+outline_size = 12
+
+[node name="Beam" type="MeshInstance3D" parent="."]
+unique_name_in_owner = true
+cast_shadow = 0
+script = ExtResource("mesh")
+shape_kind = 1
+size = Vector3(0.06, 0.06, 1)
+color = Color(0.898, 0.2824, 0.302, 1)
+glow = 1.0

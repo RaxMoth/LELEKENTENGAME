@@ -213,10 +213,16 @@ static func _check_admin(test: SmokeTest, level: HouseLevel) -> void:
 	await test.frames(3)
 	var screen: WorldScreen = admin.get_screen()
 	var board: AdminBoard = admin.get_board()
-	var cash_before: int = level.operation.get_cash()
+	# Count the cash that comes in (wages may go out in the same frames).
+	var cash_in: Array[int] = [0]
+	var on_cash: Callable = func(currency_id: StringName, _amount: int, delta: int) -> void:
+		if currency_id == Types.CURRENCY_CASH and delta > 0:
+			cash_in[0] += delta
+	Events.currency_changed.connect(on_cash)
 	rig.tap_world_point(screen.pixel_to_world(board.get_button(AdminBoard.ACTION_CASH_SMALL).get_global_rect().get_center()))
 	await test.frames(3)
-	test.check(level.operation.get_cash() == cash_before + AdminPanel.SMALL_CASH, "admin: pointing at +$1,000 gives cash")
+	Events.currency_changed.disconnect(on_cash)
+	test.check(cash_in[0] == AdminPanel.SMALL_CASH, "admin: pointing at +$1,000 gives cash")
 	var day_before: int = Profile.operation.day_number
 	rig.tap_world_point(screen.pixel_to_world(board.get_button(AdminBoard.ACTION_DAY_FORWARD).get_global_rect().get_center()))
 	await test.frames(3)
