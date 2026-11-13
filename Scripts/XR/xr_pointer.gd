@@ -24,6 +24,11 @@ const BEAM_OPACITY: float = 0.55
 ## Reticle diameter per meter of distance, so it keeps its apparent size.
 const RETICLE_SIZE_PER_METER: float = 0.012
 const MIN_RETICLE_DISTANCE: float = 0.3
+## Steadying is tuned for this many updates a second (Quest 2); other
+## refresh rates get the same smoothing per second.
+const STEADYING_REFERENCE_RATE: float = 72.0
+## A ray not updated for this long starts afresh (just enabled, tracking back).
+const STEADYING_STALE_SECONDS: float = 0.2
 
 @export var max_distance: float = 40.0
 ## Beam length while pointing at nothing.
@@ -34,14 +39,16 @@ const MIN_RETICLE_DISTANCE: float = 0.3
 ## How much a controller's small wobbles are smoothed out (0 = not at all,
 ## the flat mouse pointer; 0.7 = a steady laser that still follows real moves).
 @export_range(0.0, 0.95, 0.05) var steadying: float = 0.0
-## Turns this large (degrees per frame) follow the hand at once.
-@export_range(1.0, 30.0, 0.5) var steadying_full_follow_degrees: float = 6.0
+## Turning the hand this fast (degrees per second) is followed at once.
+@export_range(60.0, 2000.0, 10.0) var steadying_full_follow_speed: float = 430.0
 
 ## Disabled pointers hide and stop hovering screens.
 var is_enabled: bool = true:
 	set(value):
 		is_enabled = value
 		visible = value
+		# Starts afresh when it comes back, not sweeping in from the old direction.
+		_steadied_direction = Vector3.ZERO
 		if not value:
 			_leave_screen()
 var ray_origin: Vector3 = Vector3.ZERO
@@ -59,6 +66,7 @@ var _interaction_hit_distance: float = RayMath.NO_HIT
 ## Beam and reticle hang under this, turned toward the steadied ray.
 var _visual_root: Node3D = null
 var _steadied_direction: Vector3 = Vector3.ZERO
+var _last_steadied_usec: int = 0
 
 
 func _ready() -> void:
@@ -189,11 +197,22 @@ func _leave_screen() -> void:
 
 ## The aimed direction, its small wobbles smoothed out by [member steadying].
 func _steady(aimed: Vector3) -> Vector3:
-	if steadying <= 0.0 or _steadied_direction == Vector3.ZERO:
+	var now_usec: int = Time.get_ticks_usec()
+	var seconds: float = (now_usec - _last_steadied_usec) / 1000000.0
+	_last_steadied_usec = now_usec
+	return steady_direction(aimed, seconds)
+
+
+## Moves the steadied ray toward [param aimed] for [param seconds]: small,
+## slow wobbles only part of the way, fast turns all the way (tests call it
+## with exact times).
+func steady_direction(aimed: Vector3, seconds: float) -> Vector3:
+	if steadying <= 0.0 or _steadied_direction == Vector3.ZERO or seconds <= 0.0 or seconds > STEADYING_STALE_SECONDS:
 		_steadied_direction = aimed
 		return aimed
-	var wobble_degrees: float = rad_to_deg(_steadied_direction.angle_to(aimed))
-	var follow: float = lerpf(1.0 - steadying, 1.0, clampf(wobble_degrees / steadying_full_follow_degrees, 0.0, 1.0))
+	var turn_speed: float = rad_to_deg(_steadied_direction.angle_to(aimed)) / seconds
+	var follow_per_update: float = lerpf(1.0 - steadying, 1.0, clampf(turn_speed / steadying_full_follow_speed, 0.0, 1.0))
+	var follow: float = 1.0 - pow(1.0 - follow_per_update, seconds * STEADYING_REFERENCE_RATE)
 	_steadied_direction = _steadied_direction.slerp(aimed, follow).normalized()
 	return _steadied_direction
 
