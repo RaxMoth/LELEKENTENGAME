@@ -77,6 +77,11 @@ func _ready() -> void:
 		_town_layout = TownLayout.build(town_data)
 
 
+## The town's streets and buildings (null without town data) — the phone map draws it.
+func get_town_layout() -> TownLayout:
+	return _town_layout
+
+
 func setup(context: HouseContext, yard: Yard) -> void:
 	_context = context
 	_yard = yard

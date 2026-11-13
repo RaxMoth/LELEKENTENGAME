@@ -1,0 +1,33 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://Scenes/Levels/House/Garden/Phone/phone.gd" id="phone"]
+[ext_resource type="Script" path="res://Scripts/Utils/placeholder_mesh_3d.gd" id="mesh"]
+[ext_resource type="Script" path="res://Scripts/XR/world_screen.gd" id="world_screen"]
+[ext_resource type="PackedScene" path="res://Scenes/Levels/House/Garden/Phone/PhoneScreen.tscn" id="phone_screen"]
+
+[node name="Phone" type="Node3D"]
+script = ExtResource("phone")
+
+[node name="Body" type="MeshInstance3D" parent="."]
+cast_shadow = 0
+script = ExtResource("mesh")
+shape_kind = 1
+size = Vector3(0.102, 0.2, 0.01)
+color = Color(0.051, 0.0627, 0.0902, 1)
+
+[node name="Bezel" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.0055)
+cast_shadow = 0
+script = ExtResource("mesh")
+shape_kind = 1
+size = Vector3(0.106, 0.204, 0.004)
+color = Color(0.1804, 0.2118, 0.2941, 1)
+
+[node name="PhoneDisplay" type="Node3D" parent="."]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.0055)
+script = ExtResource("world_screen")
+content_scene = ExtResource("phone_screen")
+resolution = Vector2i(540, 1080)
+width_meters = 0.094
+max_redraws_per_second = 12.0

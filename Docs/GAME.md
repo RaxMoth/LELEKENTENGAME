@@ -98,7 +98,8 @@ new day, in co-op the guest comes along (`DaySummaryPopup`).
 | Use what you hold | The extinguisher sprays with the trigger of the hand that holds it; the grip puts it down | Click to spray a burst; click its hook to hang it back |
 | Front door | Trigger on a handle swings it fully open / shut; grip a handle to swing it by hand | Click a handle |
 | Talk to someone | Dominant-hand trigger on a person in the street; pick a reply on the panel beside them | Click a person, then a reply |
-| Switch weapon | A / X: the next gun you own (a drawn gun is swapped right in your hand) | Q: the next weapon you own |
+| Switch weapon | A / X: the next gun you own, put right into your gun hand; or pick any weapon you own on the phone | Q: the next weapon you own; or pick one on the phone |
+| Phone (map, weapons) | B / Y takes it out into your off-hand and puts it away; tap it with the gun hand's trigger | M; click it |
 | Build a tower | Buy a kit at the tower depot by the porch, carry it outside, point at the ground (a green ring shows the spot) and pull the trigger | Click the kit, then click the ground |
 | Walk | Off-hand stick (or touchpad, pressed) walks toward where that hand points — forward, back and sideways, like WASD — so you can look around while walking ("Walk Where You Look" in Settings follows the head instead); eases in and out, a stick pushed all the way sprints. Nothing teleports | WASD / arrows; 1–4 jump to lab, front, window, office |
 | Run with your arms | Hold both grips (hands empty) and swing your arms like jogging: the harder you swing, the faster you run, toward where your hands point; footsteps and a light tap in both hands every stride | — |
@@ -107,7 +108,7 @@ new day, in co-op the guest comes along (`DaySummaryPopup`).
 | Full screen | — | F11, or "Full Screen" in Settings (on by default on a desktop) |
 | Seated play | "Standing View When Seated" (on by default) lifts a seated player to standing eye height (1.8 m); after sitting down or standing up, hold the headset's system button to recenter | — |
 | Admin (debug builds) | Terminal on the office wall (during a raid it also spawns cops, squads, SWAT, ram teams, squad cars, armored vehicles and helicopters) | Same, or F3 |
-| Pause | Menu or B / Y | Esc |
+| Pause | Menu button (B / Y while paused resumes) | Esc |
 | Status | Look at your off-hand wrist | Lower left of the view |
 | Your body | Gloved hands whose fingers follow the grip and trigger (a full grip makes a fist); look down to see your hips, legs and holstered knife walk with you (your own chest stays out of view) | — |
 
@@ -344,6 +345,14 @@ dry. "Better Rounds" adds damage to every gun. **Upgrades:** the terminal
 also sells the next upgrade of the weapon in hand (up to three levels:
 more damage, faster fire, more rounds carried); equip another weapon to
 upgrade that one. A / X (Q on a screen) switches between the weapons you own.
+
+**The phone:** B / Y (M on a screen) takes your phone out — in a headset it
+lies in your off-hand, tap it with the gun hand's trigger. Two apps: the
+**map** (the town around you, north up: streets, buildings, parks, your
+house in blue, your towers in gold, the police in red — officers out of
+sight sit on the map's edge, so you see where a raid comes from — zoom in
+and out) and the **weapons** (every weapon you own with its ammo; tap one
+and it is in your hand, wherever you are).
 
 **Close combat:** fists, the knife and the axe hit a raider within reach
 anywhere — in the house, on the porch or out in the yard. In a headset you

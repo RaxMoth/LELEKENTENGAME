@@ -41,8 +41,12 @@ signal primary_action_released(pointer: XRPointer)
 ## The off-hand trigger (XR) or the right mouse button (flat) was let go
 ## (automatic guns stop firing).
 signal secondary_action_released(pointer: XRPointer)
-## Menu or B / Y button.
+## The menu button (or B / Y when nothing listens to phone_pressed).
 signal menu_pressed
+## B / Y (headset) or M (flat simulator): take the phone out or put it away.
+## Only while [member has_phone] is set; otherwise, or while paused, B / Y
+## acts as the menu button.
+signal phone_pressed
 ## The A / X button (headset) or Q (flat simulator): switch to the next weapon.
 signal next_weapon_pressed
 signal item_grabbed(item: Grabbable)
@@ -62,6 +66,9 @@ const PAD_STICK_SCALE: float = 0.85
 
 ## Hand that points at UI and uses things; the other hand is the off-hand.
 @export var dominant_hand: Types.Hand = Types.Hand.RIGHT
+## The level gives the player a phone: B / Y takes it out (phone_pressed)
+## instead of opening the pause menu.
+var has_phone: bool = false
 ## Show popups on the in-world screen even without a headset (tests the XR UI path).
 @export var force_world_space_ui: bool = false
 
@@ -243,6 +250,9 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed(Types.ACTION_NEXT_WEAPON):
 		next_weapon_pressed.emit()
 		return
+	if event.is_action_pressed(Types.ACTION_PHONE):
+		phone_pressed.emit()
+		return
 	var motion: InputEventMouseMotion = event as InputEventMouseMotion
 	if motion != null:
 		_on_flat_motion(motion)
@@ -321,6 +331,14 @@ func get_feet_position() -> Vector3:
 	return Vector3(head.x, global_position.y - _standing_lift, head.z)
 
 
+## Where the phone is held: the off-hand controller in a headset, the
+## camera in the flat simulator.
+func get_phone_anchor() -> Node3D:
+	if not is_xr_active:
+		return _flat_camera
+	return _get_controller(_get_offhand())
+
+
 ## Where a wrist display belongs: above the off-hand in a headset, the lower
 ## left of the view in the flat simulator.
 func get_wrist_anchor() -> Node3D:
@@ -384,9 +402,16 @@ func handle_controller_button(hand: Types.Hand, action_name: StringName, is_pres
 				hand_input_forwarded.emit(hand, action_name, is_pressed)
 			else:
 				_hands.handle_button(hand, action_name, is_pressed)
-		Types.XR_ACTION_MENU_BUTTON, Types.XR_ACTION_SECONDARY_BUTTON:
+		Types.XR_ACTION_MENU_BUTTON:
 			if is_pressed:
 				menu_pressed.emit()
+		Types.XR_ACTION_SECONDARY_BUTTON:
+			if is_pressed:
+				# Paused (the pause menu open) B / Y closes the menu again.
+				if get_tree().paused or not has_phone:
+					menu_pressed.emit()
+				else:
+					phone_pressed.emit()
 		Types.XR_ACTION_PRIMARY_BUTTON:
 			if is_pressed:
 				next_weapon_pressed.emit()
