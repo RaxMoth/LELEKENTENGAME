@@ -141,6 +141,7 @@ func _level_process(delta: float) -> void:
 
 
 func _on_level_finished(result: LevelResult) -> void:
+	operation.close_shift()
 	for front: HouseFront in _fronts:
 		front.finish_shift(result)
 	var day: int = Profile.operation.day_number

@@ -79,6 +79,7 @@ static func run_end(test: SmokeTest, level: HouseLevel) -> void:
 	(level.get_front(FrontGarden) as FrontGarden).door.health_component.damage(1000000.0)
 	test.check(await test.wait_until(func() -> bool: return UI.has_open_popup() and level.phase == LevelBase.Phase.FINISHED), "a broken door ends the shift (mid-raid)")
 	test.check(operation.stash.get_total() == 0, "losing the door loses the stash")
+	test.check(operation.is_shift_over() and operation.add_product(operation.recipes[0], 2, 3) == 0, "nothing more goes into the stash once the shift is lost")
 	await test.frames(30)
 	UI.close_top_popup()
 
