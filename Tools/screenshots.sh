@@ -75,6 +75,9 @@ SHOT_RESOLUTION=$WIDE shot level_29_horde level=house showcase=house_horde frame
 SHOT_RESOLUTION=$WIDE shot level_30_towers level=house showcase=house_towers stand=0.5,-7.5 look=0,1.5,-22 frames=150
 SHOT_RESOLUTION=$WIDE shot level_31_tower_depot level=house showcase=house_towers stand=2.6,-5.9 look=3.4,1.3,-8.0 frames=120
 SHOT_RESOLUTION=$WIDE shot level_32_monitor_wall level=house showcase=house_monitor_wall stand=2.9,-1.0 look=2.9,1.5,1.3 frames=150
+# The phone (B / Y, M): the town map during a raid, and the weapons app.
+SHOT_RESOLUTION=$WIDE shot level_33_phone_map level=house showcase=house_phone stand=0.5,-12 look=0.5,1.2,-30 frames=150
+SHOT_RESOLUTION=$WIDE shot level_34_phone_weapons level=house showcase=house_phone_weapons stand=0.5,-7.5 look=0,1.5,-22 frames=120
 "$TOOLS_DIR/godot.sh" --headless --script "$TOOLS_DIR/contact_sheet.gd" -- "$OUT_DIR/sheet_menus.png" 5 360 640 \
 	"$OUT_DIR"/0*.png >/dev/null 2>&1
 "$TOOLS_DIR/godot.sh" --headless --script "$TOOLS_DIR/contact_sheet.gd" -- "$OUT_DIR/sheet_levels.png" 3 640 360 \

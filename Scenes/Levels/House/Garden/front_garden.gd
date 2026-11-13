@@ -10,6 +10,9 @@
 ## the weapons hang on the player's body
 ## (HouseContext.holsters): a hand uses what it drew — its trigger fires it —
 ## or its fist; on a screen the one equipped at the armory is in hand.
+## Every owned weapon can be taken at any time: A / X (Q) cycles them, and
+## the phone (B / Y, M on a screen) lists them all — tap one to take it.
+## The phone's map shows the town, the towers and the police around.
 ##
 ## Selling days are quiet out here; the police come only in a raid
 ## (HouseCycle → on_raid_started / on_raid_wave_started), cross the yard in
@@ -95,6 +98,7 @@ var _swing_cooldowns: Dictionary[Types.Hand, float] = {Types.Hand.LEFT: 0.0, Typ
 @onready var director: AttackerDirector = %AttackerDirector
 @onready var security_pc: SecurityPc = %SecurityPc
 @onready var turret_seat: TurretSeat = %TurretSeat
+@onready var phone: Phone = %Phone
 ## The towers the player builds out in the field (and the depot that sells them).
 @onready var tower_field: TowerField = %TowerField
 ## The office's monitor wall (an upgrade after the Security PC).
@@ -152,6 +156,11 @@ func _on_setup() -> void:
 	tower_field.setup(context, yard)
 	monitor_wall.setup(security_pc, yard)
 	turret_seat.setup(context.rig, security_pc)
+	phone.setup(context.rig)
+	phone.get_screen().get_map().set_town(director.get_town_layout(), yard.house_area)
+	phone.weapon_chosen.connect(select_weapon)
+	context.rig.phone_pressed.connect(phone.toggle)
+	context.rig.has_phone = true
 	for guard: Node in _guards.get_children():
 		(guard as Worker).operation = context.operation
 	apply_upgrades()
@@ -171,6 +180,8 @@ func _shift_process(delta: float) -> void:
 	monitor_wall.step(delta)
 	security_pc.step(delta)
 	turret_seat.step(delta)
+	if phone.step(delta):
+		_refresh_phone()
 	_update_weapon_model()
 	_update_pointers()
 
@@ -271,27 +282,79 @@ func get_garden_region() -> Rect2:
 
 
 ## The next owned weapon in hand (A / X in a headset, Q on a screen). On a
-## screen every owned weapon in turn; in a headset the next gun for the
-## chest holster — a gun already drawn is swapped right in the hand.
-## Returns the weapon now in hand (null when there is nothing to switch to).
+## screen every owned weapon in turn; in a headset the next gun, put right
+## into the gun hand (unless it holds something). Returns the weapon now in
+## hand (null when there is nothing to switch to).
 func switch_weapon(step: int = 1) -> WeaponData:
-	var uses_holsters: bool = _uses_holsters()
-	var hands_with_guns: Array[Types.Hand] = []
-	if uses_holsters:
-		for hand: Types.Hand in HANDS:
-			var drawn: WeaponData = context.holsters.get_drawn(hand)
-			if drawn != null and not drawn.is_melee():
-				hands_with_guns.append(hand)
-	var weapon: WeaponData = Profile.armory.loadout.equip_next(weapon_catalog, step, uses_holsters)
+	var weapon: WeaponData = Profile.armory.loadout.equip_next(weapon_catalog, step, _uses_holsters())
 	if weapon == null:
 		Audio.play_ui(Audio.UI_ERROR)
 		return null
-	for hand: Types.Hand in hands_with_guns:
-		context.holsters.draw(weapon.holster_slot, hand)
+	_take_in_hand(weapon)
+	return weapon
+
+
+## Takes [param weapon] (owned) — the phone's weapons app. Returns false
+## when the player doesn't own it.
+func select_weapon(weapon: WeaponData) -> bool:
+	if not Profile.armory.loadout.equip(weapon):
+		Audio.play_ui(Audio.UI_ERROR)
+		return false
+	_take_in_hand(weapon)
+	if phone.is_open():
+		_refresh_phone()
+	return true
+
+
+## The weapon just equipped goes into the hand: in a headset it is drawn
+## from its holster into the gun hand (fists: whatever is drawn goes back),
+## unless that hand holds an item; a name floats up as feedback.
+func _take_in_hand(weapon: WeaponData) -> void:
+	if _uses_holsters():
+		var hand: Types.Hand = context.rig.dominant_hand
+		if weapon.holster_slot == &"":
+			for any_hand: Types.Hand in HANDS:
+				context.holsters.put_back(any_hand)
+		elif context.holsters.get_drawn(hand) != null or context.rig.is_hand_empty(hand):
+			context.holsters.draw(weapon.holster_slot, hand)
 	var head: Transform3D = context.rig.get_head_transform()
 	FloatingText3D.spawn(tr(weapon.display_name), head.origin - head.basis.z * 1.2 - Vector3(0.0, 0.25, 0.0), Palette.TEXT, Global.get_world_root())
 	Audio.play_ui(Audio.UI_CLICK)
-	return weapon
+
+
+## Feeds the open phone: the clock, the map's markers and the weapons.
+func _refresh_phone() -> void:
+	var screen: PhoneScreen = phone.get_screen()
+	if context.day_cycle != null:
+		screen.show_time(context.day_cycle.clock.format_time())
+	var feet: Vector3 = context.rig.get_feet_position()
+	var look: Vector3 = -context.rig.get_head_transform().basis.z
+	var officers: PackedVector2Array = PackedVector2Array()
+	var vehicles: PackedVector2Array = PackedVector2Array()
+	for raider: Raider in yard.get_raiders():
+		if not raider.is_alive():
+			continue
+		var spot: Vector2 = Vector2(raider.global_position.x, raider.global_position.z)
+		if raider is PoliceVehicle:
+			vehicles.append(spot)
+		else:
+			officers.append(spot)
+	var towers: PackedVector2Array = PackedVector2Array()
+	for tower: FieldTower in tower_field.get_towers():
+		towers.append(Vector2(tower.global_position.x, tower.global_position.z))
+	screen.get_map().set_markers(Vector2(feet.x, feet.z), MapProjection.heading_angle(Vector2(look.x, look.z)), officers, vehicles, towers)
+	screen.show_police_count(officers.size() + vehicles.size())
+	var loadout: WeaponLoadout = Profile.armory.loadout
+	var weapons: Array[WeaponData] = loadout.get_owned_weapons(weapon_catalog)
+	var details: PackedStringArray = PackedStringArray()
+	for weapon: WeaponData in weapons:
+		if weapon.is_melee():
+			details.append(tr("Melee"))
+		elif weapon.has_unlimited_ammo:
+			details.append("")
+		else:
+			details.append("%d / %d" % [loadout.get_ammo(weapon), weapon.get_max_ammo(loadout.get_upgrade_level(weapon))])
+	screen.show_weapons(weapons, details, loadout.get_equipped(weapon_catalog))
 
 
 func _on_admin_spawn_requested(kind: StringName) -> void:

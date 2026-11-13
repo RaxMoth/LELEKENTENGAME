@@ -1,0 +1,158 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://Scenes/Levels/House/Garden/Phone/phone_screen.gd" id="screen"]
+[ext_resource type="Script" path="res://Scenes/Levels/House/Garden/Phone/phone_map_view.gd" id="map_view"]
+[ext_resource type="Texture2D" path="res://Assets/Icons/close.svg" id="close"]
+[ext_resource type="Texture2D" path="res://Assets/Icons/plus.svg" id="plus"]
+[ext_resource type="Texture2D" path="res://Assets/Icons/minus.svg" id="minus"]
+[ext_resource type="Texture2D" path="res://Assets/Icons/map.svg" id="map"]
+[ext_resource type="Texture2D" path="res://Assets/Icons/crosshair.svg" id="crosshair"]
+
+[node name="PhoneScreen" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("screen")
+
+[node name="Background" type="PanelContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_type_variation = &"CardPanel"
+
+[node name="Margin" type="MarginContainer" parent="Background"]
+layout_mode = 2
+theme_override_constants/margin_left = 24
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 24
+theme_override_constants/margin_bottom = 24
+
+[node name="Column" type="VBoxContainer" parent="Background/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="StatusBar" type="HBoxContainer" parent="Background/Margin/Column"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="TimeLabel" type="Label" parent="Background/Margin/Column/StatusBar"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "07:00"
+vertical_alignment = 1
+
+[node name="TitleLabel" type="Label" parent="Background/Margin/Column/StatusBar"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"HeaderLabel"
+text = "Map"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="CloseButton" type="Button" parent="Background/Margin/Column/StatusBar"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(88, 88)
+layout_mode = 2
+theme_type_variation = &"IconButton"
+icon = ExtResource("close")
+icon_alignment = 1
+expand_icon = true
+
+[node name="Pages" type="Control" parent="Background/Margin/Column"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="MapPage" type="VBoxContainer" parent="Background/Margin/Column/Pages"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 16
+
+[node name="MapView" type="Control" parent="Background/Margin/Column/Pages/MapPage"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+script = ExtResource("map_view")
+
+[node name="PoliceLabel" type="Label" parent="Background/Margin/Column/Pages/MapPage"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "No police around"
+horizontal_alignment = 1
+
+[node name="ZoomRow" type="HBoxContainer" parent="Background/Margin/Column/Pages/MapPage"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="ZoomOutButton" type="Button" parent="Background/Margin/Column/Pages/MapPage/ZoomRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(104, 88)
+layout_mode = 2
+theme_type_variation = &"SecondaryButton"
+icon = ExtResource("minus")
+icon_alignment = 1
+
+[node name="SpanLabel" type="Label" parent="Background/Margin/Column/Pages/MapPage/ZoomRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "160 m"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ZoomInButton" type="Button" parent="Background/Margin/Column/Pages/MapPage/ZoomRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(104, 88)
+layout_mode = 2
+theme_type_variation = &"SecondaryButton"
+icon = ExtResource("plus")
+icon_alignment = 1
+
+[node name="WeaponsPage" type="ScrollContainer" parent="Background/Margin/Column/Pages"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+horizontal_scroll_mode = 0
+
+[node name="WeaponList" type="VBoxContainer" parent="Background/Margin/Column/Pages/WeaponsPage"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 16
+
+[node name="TabBar" type="HBoxContainer" parent="Background/Margin/Column"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="MapTab" type="Button" parent="Background/Margin/Column/TabBar"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 96)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Map"
+icon = ExtResource("map")
+
+[node name="WeaponsTab" type="Button" parent="Background/Margin/Column/TabBar"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 96)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"GhostButton"
+text = "Weapons"
+icon = ExtResource("crosshair")

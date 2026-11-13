@@ -23,6 +23,7 @@ yard stays quiet.
 | `MonitorWall.tscn`, `monitor_wall.gd`, `TurretMonitor.tscn`, `turret_monitor.gd` | The office's monitor wall (Monitor Wall upgrade): four live turret views to switch, take over, aim and fire |
 | `HouseTurret.tscn`, `house_turret.gd` | Roof turrets (Roof Turrets upgrade): auto-aim at visible raiders, or manual from the PC |
 | `SecurityPc.tscn`, `security_pc.gd`, `TurretConsole.tscn`, `turret_console.gd` | The office desk PC (Security PC upgrade): live turret camera, take control, aim, fire |
+| `Phone/` (`Phone`, `PhoneScreen`, `PhoneMapView`) | The player's phone (B / Y, M): the town map with the police and towers (`MapProjection`, unit-tested) and the weapons app (take any owned weapon) |
 | `TurretSeat.tscn`, `turret_seat.gd` | "VR in VR": the goggles beside the PC put the player into a turret (head at its camera, barrel follows the hand, triggers fire); `TurretHud` (`TurretHudStatus.tscn` / `TurretHudControls.tscn`) is its overlay: status, previous / next turret, take off |
 | `FrontDoor.tscn`, `front_door.gd` (+ `Scripts/XR/hinge_handle.gd`) | The objective and the way out: trigger or grip a handle, bolt it from either side; StateChart Closed { Unlocked ⇄ Locked } ⇄ Open |
 | `BeamTracer.tscn` | Pooled shot tracer |

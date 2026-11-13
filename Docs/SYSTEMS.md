@@ -350,6 +350,8 @@ raider.march(route, yard) / is_marching()   # Raider: jogging through the street
 garden.tower_field.buy_kit(tower) / build(tower, spot) / upgrade_tower(tower) / get_towers()   # TowerField: towers anywhere outside
 garden.director.spawn_now(kind, raid_data)   # AttackerDirector: one unit right now (admin spawns arrive via Events.admin_spawn_requested)
 garden.turret_seat.switch_turret(step)   # TurretSeat: previous / next turret while wearing the goggles
+garden.select_weapon(weapon) / switch_weapon(step)   # FrontGarden: take an owned weapon (the phone, A / X)
+garden.phone.toggle() / is_open()   # Phone: B / Y (rig.phone_pressed), M on a screen
 garden.monitor_wall.get_monitors()[0].toggle_control() / aim_at_view(uv)   # MonitorWall (office upgrade)
 garden.switch_weapon() / loadout.upgrade(weapon) / weapon.get_damage(level)   # switching and weapon upgrades
 lab.get_station(&"Cooker") / get_crate(&"glowcap")                                          # Lab

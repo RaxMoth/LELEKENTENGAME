@@ -523,3 +523,9 @@ Spawn ram team,Spawn ram team,Rammteam schicken
 Spawn squad car,Spawn squad car,Streifenwagen schicken
 Spawn armored vehicle,Spawn armored vehicle,Panzerwagen schicken
 Spawn helicopter,Spawn helicopter,Hubschrauber schicken
+Map,Map,Karte
+Weapons,Weapons,Waffen
+No police around,No police around,Keine Polizei in der Nähe
+Police out: %d,Police out: %d,Polizei unterwegs: %d
+%d m,%d m,%d m
+Melee,Melee,Nahkampf

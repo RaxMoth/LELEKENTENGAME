@@ -80,6 +80,8 @@ const ACTION_TOGGLE_FULLSCREEN: StringName = &"toggle_fullscreen"
 const ACTION_DEBUG_TOGGLE: StringName = &"debug_toggle"
 ## Flat simulator: the next owned weapon in hand (Q).
 const ACTION_NEXT_WEAPON: StringName = &"next_weapon"
+## M (flat simulator): take the phone out / put it away (B / Y in a headset).
+const ACTION_PHONE: StringName = &"phone"
 
 # ============================================
 # XR (action names in openxr_action_map.tres: Godot's default set)

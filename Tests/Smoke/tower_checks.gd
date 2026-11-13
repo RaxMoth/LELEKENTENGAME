@@ -151,6 +151,36 @@ static func _check_weapons(test: SmokeTest, level: HouseLevel, garden: FrontGard
 	await test.frames(1)
 	test.check(garden.get_equipped_weapon() != switched, "the button keeps switching through the weapons")
 	loadout.equip(pistol)
+	await _check_phone(test, level, garden, smg)
+
+
+## The phone: B / Y (M) takes it out, the map is centered on the player
+## and shows the police, and the weapons app puts a tapped weapon in hand.
+static func _check_phone(test: SmokeTest, level: HouseLevel, garden: FrontGarden, smg: WeaponData) -> void:
+	var rig: XRPlayerRig = level.rig
+	var phone: Phone = garden.phone
+	var screen: PhoneScreen = phone.get_screen()
+	_place_player(rig, Vector3(0.0, 0.0, -9.0), 0.0)
+	var cop: Raider = _spawn_cop(garden, Vector3(6.0, 0.0, -20.0))
+	rig.handle_controller_button(Types.Hand.LEFT, Types.XR_ACTION_SECONDARY_BUTTON, true)
+	await test.frames(2)
+	test.check(phone.is_open() and phone.get_display().is_active, "B / Y takes the phone out")
+	var map: PhoneMapView = screen.get_map()
+	var feet: Vector3 = rig.get_feet_position()
+	test.check(await test.wait_until(func() -> bool: return map.world_to_map(Vector2(feet.x, feet.z)).distance_to(map.size * 0.5) < 2.0), "the phone's map is centered on the player")
+	test.check(await test.wait_until(func() -> bool: return screen.get_police_count() >= 1), "the map shows the police out there")
+	cop.take_hit(100000.0)
+	screen.show_page(PhoneScreen.Page.WEAPONS)
+	test.check(await test.wait_until(func() -> bool: return screen.get_weapon_button(smg) != null), "the weapons app lists every weapon the player owns")
+	await test.frames(3)
+	var button: Button = screen.get_weapon_button(smg)
+	rig.tap_point_in_view(phone.get_display().pixel_to_world(button.get_global_rect().get_center()))
+	await test.frames(3)
+	test.check(garden.get_equipped_weapon() == smg, "tapping a weapon on the phone puts it in hand")
+	rig.phone_pressed.emit()
+	await test.frames(1)
+	test.check(not phone.is_open() and not phone.visible, "pressing it again puts the phone away")
+	screen.show_page(PhoneScreen.Page.MAP)
 
 
 static func _check_street_fight(test: SmokeTest, level: HouseLevel, garden: FrontGarden) -> void:
