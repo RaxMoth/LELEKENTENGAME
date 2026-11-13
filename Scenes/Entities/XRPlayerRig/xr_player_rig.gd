@@ -47,6 +47,8 @@ signal hand_input_forwarded(hand: Types.Hand, action_name: StringName, is_presse
 
 ## Command line user argument that forces the in-world popup screen without a
 ## headset: `godot -- world_ui=1`.
+## The most physics steps per second the flat simulator matches a fast monitor with.
+const MAX_FLAT_PHYSICS_TICKS: int = 144
 const ARGUMENT_WORLD_UI: String = "world_ui=1"
 const HAPTIC_SECONDS: float = 0.06
 ## Pointer grabs and button presses reach this far.
@@ -515,6 +517,15 @@ func _match_physics_to_display() -> void:
 		Engine.physics_ticks_per_second = roundi(refresh_rate)
 
 
+## Flat screens too: walking moves the camera in physics steps, so they tick
+## as often as the monitor refreshes (smooth on 120 / 144 Hz screens).
+## Headless runs (no refresh rate) keep the project's rate.
+func _match_physics_to_monitor() -> void:
+	var refresh_rate: float = DisplayServer.screen_get_refresh_rate()
+	if refresh_rate > 0.0:
+		Engine.physics_ticks_per_second = clampi(roundi(refresh_rate), _default_physics_ticks, MAX_FLAT_PHYSICS_TICKS)
+
+
 ## Puts the popup screen straight ahead of where the player looks right now.
 func _place_popup_in_view() -> void:
 	var head: Transform3D = get_head_transform()
@@ -631,6 +642,7 @@ func _enter_flat_mode() -> void:
 	_apply_flat_fov()
 	get_viewport().size_changed.connect(_apply_flat_fov)
 	set_flat_cursor(get_viewport().get_visible_rect().size * 0.5)
+	_match_physics_to_monitor()
 
 
 func _apply_flat_look() -> void:

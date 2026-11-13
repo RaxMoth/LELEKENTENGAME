@@ -52,6 +52,8 @@ press_radius = 0.14
 has_visual = false
 
 [node name="StatusLabel" type="Label3D" parent="."]
+visibility_range_end = 6.0
+visibility_range_end_margin = 0.5
 unique_name_in_owner = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.52, 0)
 pixel_size = 0.0014

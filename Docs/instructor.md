@@ -244,6 +244,12 @@ See [GAME.md](GAME.md). In short:
   `Theme` (`Assets/Themes/main_theme.tres`).
 - Keep in-world UI viewports few and small; a `WorldScreen` that rarely
   changes should not redraw every frame.
+- There is no occlusion culling: hide a room the player can't see with a
+  `ProximityCull` (the cellar), and give small labels and detail meshes a
+  `visibility_range_end` (plant and station labels 6–9 m, stash bags 12 m).
+- Physics ticks as often as the display refreshes (the headset's rate in
+  VR, the monitor's in the flat simulator), so the walking camera never
+  steps at a different rate than the picture.
 - `preload()` assets that always exist; `load()` optional/runtime ones and null-check.
 
 ---

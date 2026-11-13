@@ -180,6 +180,8 @@ script = ExtResource("blocker")
 size = Vector2(0.6, 0.46)
 
 [node name="CountLabel" type="Label3D" parent="."]
+visibility_range_end = 10.0
+visibility_range_end_margin = 0.5
 unique_name_in_owner = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.2, 0.1)
 pixel_size = 0.0035
