@@ -3,12 +3,15 @@
 ## Dropped anywhere else an unused piece goes back into its crate (and the
 ## cash comes back); a ground piece goes back to its station's tray.
 ##
-## Dependencies: Grabbable, IngredientData, IngredientCrate, InteractionQuery, PlaceholderMesh3D, Pools autoload
+## Looks like the real thing (IngredientLook): a mushroom, a root, a bundle
+## of leaves or crystal chunks; ground, a pile of powder on a tin dish.
+##
+## Dependencies: Grabbable, IngredientData, IngredientCrate, IngredientLook, InteractionQuery, Pools autoload
 class_name IngredientItem
 extends Grabbable
 
-const RAW_SIZE: float = 0.12
-const POWDER_SIZE: Vector3 = Vector3(0.12, 0.06, 0.12)
+## Height of a piece's middle above its base (where hands grab it).
+const GRAB_HEIGHT: float = 0.05
 ## A worked piece dropped nowhere looks this far (meters) for a free slot.
 const RETURN_SEARCH_RADIUS: float = 2.5
 
@@ -18,7 +21,7 @@ var is_processed: bool = false
 var step_accuracies: Array[float] = []
 var crate: IngredientCrate = null
 
-@onready var _body: PlaceholderMesh3D = %Body
+@onready var _body: MeshInstance3D = %Body
 @onready var _name_label: Label3D = %NameLabel
 
 
@@ -39,7 +42,7 @@ func mark_processed(accuracy: float) -> void:
 
 
 func get_grab_center() -> Vector3:
-	return _body.global_position
+	return _body.global_position + Vector3(0.0, GRAB_HEIGHT, 0.0)
 
 
 ## Nowhere to go: an unused piece returns to its crate; a worked piece goes
@@ -83,11 +86,5 @@ func _on_pool_spawned() -> void:
 func _apply_look() -> void:
 	if data == null:
 		return
-	_body.color = data.color
-	if is_processed and data.needs_processing:
-		_body.shape_kind = PlaceholderMesh3D.ShapeKind.CYLINDER
-		_body.size = POWDER_SIZE
-	else:
-		_body.shape_kind = data.shape_kind
-		_body.size = Vector3.ONE * RAW_SIZE
+	_body.mesh = IngredientLook.get_piece_mesh(data.piece_style, data.color, is_processed and data.needs_processing)
 	_name_label.text = data.get_name_for(is_processed)

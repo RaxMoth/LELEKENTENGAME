@@ -88,6 +88,7 @@ Audio.play_sfx(stream, pitch_variation, volume_db)
 Audio.play_sfx_at(stream, world_position)   # Vector3, spatialized for the headset / 3D camera
 Audio.play_ui(Audio.UI_CLICK)    # click / confirm / error / reward
 SfxSynth.get_preset(&"coin")     # placeholder sounds: coin hit shoot jump explosion pop
+MusicSynth.get_chase_loop()      # generated longer sounds: chase track, police siren, stinger (BreachAlarm)
 ```
 
 ### Pools
@@ -275,8 +276,12 @@ old-house board theme from the main theme (`get_theme()`, `to_house_color()`,
 (1.2K, 1,234, 2:05), `TweenFX` (UI tweens: pop, bounce_in, shake, pulse,
 count_label…), `RayMath`, `PlaceholderMesh3D` & `BlobShadow3D`
 (3D art stand-ins), `WorldUVMesh`, `TexturedBox3D`, `GroundPlane3D` and
-`PropScatter3D` (real-art set dressing, see DESIGN.md), `SfxSynth`
-(generated sounds). `Tools/bake_impostor.gd` turns a heavy glTF tree or plant
+`PropScatter3D` (real-art set dressing, see DESIGN.md), `SackMesh3D` (an
+open burlap sack) and `CrateMesh3D` (a slatted wooden crate), one mesh each,
+`IngredientLook` (an ingredient's pieces and the heap in its sack or crate,
+one vertex-colored mesh each), `SfxSynth` (generated sounds) and
+`MusicSynth` (the break-in's siren, chase track and stinger, made on a worker
+thread). `Tools/bake_impostor.gd` turns a heavy glTF tree or plant
 into a few textured quads for them.
 
 ## Data resources (`Scripts/Resources/`)

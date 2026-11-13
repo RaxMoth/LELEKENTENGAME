@@ -71,6 +71,8 @@ static func run_end(test: SmokeTest, level: HouseLevel) -> void:
 	await _check_office(test, level)
 	await _check_board_drag(test, level)
 	_check_real_steps(test, level)
+	await _check_breach_alarm(test, level)
+	_check_ingredient_storage(test, level)
 	await _check_house_looks(test, level)
 	_check_crew_wages(test, level)
 	await _check_controllers(test, level)
@@ -182,6 +184,38 @@ static func _check_rat_traps(test: SmokeTest, level: HouseLevel, rats: RatPack) 
 
 ## A long list on a board (the office's upgrades) scrolls by grabbing it and
 ## pulling, not only by its thin scroll bar.
+## The front door going down sounds the alarm (sirens, music, beacons);
+## beating the raid lets it die away.
+static func _check_breach_alarm(test: SmokeTest, level: HouseLevel) -> void:
+	var alarm: BreachAlarm = level.get_node("%BreachAlarm") as BreachAlarm
+	test.check(alarm != null and not alarm.is_active(), "the breach alarm is quiet until the door breaks")
+	if alarm == null:
+		return
+	Events.house_breached.emit(Vector3(0.0, 0.0, -5.0))
+	await test.frames(70)
+	test.check(alarm.is_active() and Audio.is_music_playing() and (alarm.beacons[0] as Node3D).visible, "a broken door sets off sirens, loud music and the beacons")
+	Events.house_breach_ended.emit()
+	await test.frames(4)
+	test.check(not alarm.is_active(), "beating the raid ends the alarm")
+	Audio.stop_music(0.0)
+
+
+## The lab keeps its ingredients in sacks and crates, as their data says.
+static func _check_ingredient_storage(test: SmokeTest, level: HouseLevel) -> void:
+	var looks_right: bool = true
+	var crate_count: int = 0
+	for node: Node in level.get_tree().get_nodes_in_group(Types.GROUP_GRAB_SOURCE):
+		var source: IngredientCrate = node as IngredientCrate
+		if source == null or source.ingredient == null:
+			continue
+		crate_count += 1
+		var is_sack: bool = source.ingredient.storage == IngredientData.Storage.SACK
+		var sack: Node3D = source.get_node("%Sack") as Node3D
+		var contents: MeshInstance3D = source.get_node("%Contents") as MeshInstance3D
+		looks_right = looks_right and sack.visible == is_sack and contents.mesh != null
+	test.check(crate_count >= 4 and looks_right, "the lab keeps its ingredients in burlap sacks and wooden crates, filled")
+
+
 ## In a headset a real step (or lean) into a wall stops at the wall, and a
 ## trackpad teleport never lands behind one. The flat camera stands in for
 ## the headset here: moving it is a real step.

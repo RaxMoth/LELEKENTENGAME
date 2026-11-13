@@ -1,0 +1,137 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://Scenes/Levels/House/Breach/breach_alarm.gd" id="alarm"]
+[ext_resource type="Script" path="res://Scripts/Utils/placeholder_mesh_3d.gd" id="mesh"]
+[ext_resource type="AudioStream" path="res://Assets/Audio/Voices/polizist/raid_03.wav" id="shout"]
+
+[sub_resource type="StandardMaterial3D" id="red_beam"]
+transparency = 1
+blend_mode = 1
+cull_mode = 2
+shading_mode = 0
+disable_fog = true
+albedo_color = Color(1, 0.16, 0.12, 0.13)
+
+[sub_resource type="StandardMaterial3D" id="blue_beam"]
+transparency = 1
+blend_mode = 1
+cull_mode = 2
+shading_mode = 0
+disable_fog = true
+albedo_color = Color(0.18, 0.38, 1, 0.16)
+
+[sub_resource type="CylinderMesh" id="beam"]
+top_radius = 0.03
+bottom_radius = 0.5
+height = 2.2
+radial_segments = 12
+rings = 1
+cap_top = false
+cap_bottom = false
+
+[node name="BreachAlarm" type="Node3D" node_paths=PackedStringArray("beacons", "rotors", "sirens")]
+script = ExtResource("alarm")
+shout = ExtResource("shout")
+beacons = [NodePath("BeaconFrontRoom"), NodePath("BeaconLab")]
+rotors = [NodePath("BeaconFrontRoom/Rotor"), NodePath("BeaconLab/Rotor")]
+sirens = [NodePath("SirenNear"), NodePath("SirenFar")]
+
+[node name="BeaconFrontRoom" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0, 2.6, -3.5)
+
+[node name="Base" type="MeshInstance3D" parent="BeaconFrontRoom"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.03, 0)
+cast_shadow = 0
+script = ExtResource("mesh")
+shape_kind = 3
+size = Vector3(0.16, 0.06, 0.16)
+color = Color(0.13, 0.14, 0.16, 1)
+
+[node name="Rotor" type="Node3D" parent="BeaconFrontRoom"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.1, 0)
+
+[node name="RedLamp" type="MeshInstance3D" parent="BeaconFrontRoom/Rotor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.045, 0, 0)
+cast_shadow = 0
+script = ExtResource("mesh")
+size = Vector3(0.08, 0.08, 0.08)
+color = Color(1, 0.2, 0.15, 1)
+glow = 2.0
+unshaded = true
+
+[node name="BlueLamp" type="MeshInstance3D" parent="BeaconFrontRoom/Rotor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.045, 0, 0)
+cast_shadow = 0
+script = ExtResource("mesh")
+size = Vector3(0.08, 0.08, 0.08)
+color = Color(0.2, 0.4, 1, 1)
+glow = 2.0
+unshaded = true
+
+[node name="RedBeam" type="MeshInstance3D" parent="BeaconFrontRoom/Rotor"]
+transform = Transform3D(0.2588, -0.9659, 0, 0.9659, 0.2588, 0, 0, 0, 1, 1.0625, -0.3347, 0)
+cast_shadow = 0
+mesh = SubResource("beam")
+surface_material_override/0 = SubResource("red_beam")
+
+[node name="BlueBeam" type="MeshInstance3D" parent="BeaconFrontRoom/Rotor"]
+transform = Transform3D(0.2588, 0.9659, 0, -0.9659, 0.2588, 0, 0, 0, 1, -1.0625, -0.3347, 0)
+cast_shadow = 0
+mesh = SubResource("beam")
+surface_material_override/0 = SubResource("blue_beam")
+
+[node name="BeaconLab" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.9, 2.6, 0.0)
+
+[node name="Base" type="MeshInstance3D" parent="BeaconLab"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.03, 0)
+cast_shadow = 0
+script = ExtResource("mesh")
+shape_kind = 3
+size = Vector3(0.16, 0.06, 0.16)
+color = Color(0.13, 0.14, 0.16, 1)
+
+[node name="Rotor" type="Node3D" parent="BeaconLab"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.1, 0)
+
+[node name="RedLamp" type="MeshInstance3D" parent="BeaconLab/Rotor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.045, 0, 0)
+cast_shadow = 0
+script = ExtResource("mesh")
+size = Vector3(0.08, 0.08, 0.08)
+color = Color(1, 0.2, 0.15, 1)
+glow = 2.0
+unshaded = true
+
+[node name="BlueLamp" type="MeshInstance3D" parent="BeaconLab/Rotor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.045, 0, 0)
+cast_shadow = 0
+script = ExtResource("mesh")
+size = Vector3(0.08, 0.08, 0.08)
+color = Color(0.2, 0.4, 1, 1)
+glow = 2.0
+unshaded = true
+
+[node name="RedBeam" type="MeshInstance3D" parent="BeaconLab/Rotor"]
+transform = Transform3D(0.2588, -0.9659, 0, 0.9659, 0.2588, 0, 0, 0, 1, 1.0625, -0.3347, 0)
+cast_shadow = 0
+mesh = SubResource("beam")
+surface_material_override/0 = SubResource("red_beam")
+
+[node name="BlueBeam" type="MeshInstance3D" parent="BeaconLab/Rotor"]
+transform = Transform3D(0.2588, 0.9659, 0, -0.9659, 0.2588, 0, 0, 0, 1, -1.0625, -0.3347, 0)
+cast_shadow = 0
+mesh = SubResource("beam")
+surface_material_override/0 = SubResource("blue_beam")
+
+[node name="SirenNear" type="AudioStreamPlayer3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9, 1.6, -18)
+unit_size = 14.0
+max_distance = 90.0
+bus = &"SFX"
+
+[node name="SirenFar" type="AudioStreamPlayer3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 1.6, -26)
+unit_size = 14.0
+max_distance = 90.0
+bus = &"SFX"

@@ -643,6 +643,8 @@ func _stop_trigger() -> void:
 func _on_door_broken() -> void:
 	warning_requested.emit(tr("The door is down! They're coming in!"))
 	yard.start_hunting()
+	# The house sounds the alarm (sirens, music, beacons).
+	Events.house_breached.emit(door.global_position)
 
 
 ## The threshold is walkable only while the door stands wide open.

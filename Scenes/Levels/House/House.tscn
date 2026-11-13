@@ -51,6 +51,7 @@
 [ext_resource type="Resource" path="res://Ressources/Renovations/facade.tres" id="renovation_facade"]
 [ext_resource type="Resource" path="res://Ressources/Renovations/roof.tres" id="renovation_roof"]
 [ext_resource type="PackedScene" path="res://Scenes/Levels/House/CoopBoard/CoopBoard.tscn" id="coop_board_scene"]
+[ext_resource type="PackedScene" path="res://Scenes/Levels/House/Breach/BreachAlarm.tscn" id="breach_alarm_scene"]
 
 [sub_resource type="ProceduralSkyMaterial" id="sky_material"]
 sky_top_color = Color(0.051, 0.0627, 0.0902, 1)
@@ -186,6 +187,9 @@ unique_name_in_owner = true
 unique_name_in_owner = true
 
 [node name="Admin" parent="World/Stage" instance=ExtResource("admin_scene")]
+unique_name_in_owner = true
+
+[node name="BreachAlarm" parent="World/Stage" instance=ExtResource("breach_alarm_scene")]
 unique_name_in_owner = true
 
 [node name="CoopBoard" parent="World/Stage" instance=ExtResource("coop_board_scene")]
