@@ -39,6 +39,10 @@ func setup(rat_pack: RatPack, trap_box: TrapBox) -> void:
 
 
 ## A sprung trap stays where it snapped until it clears away.
+func get_display_name() -> String:
+	return tr("Rat trap")
+
+
 func can_grab() -> bool:
 	return not is_sprung and super()
 

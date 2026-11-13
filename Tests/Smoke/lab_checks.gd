@@ -98,18 +98,25 @@ static func run(test: SmokeTest, level: HouseLevel) -> void:
 ## stash shelf; its units go into the stash.
 static func _check_carry_bag_to_stash(test: SmokeTest, level: HouseLevel, bag: ProductBag, stash_before: int) -> void:
 	var rig: XRPlayerRig = level.rig
-	var shelf: StashShelf = level.get_tree().get_first_node_in_group(Types.GROUP_STASH_SHELF) as StashShelf
-	var units: int = bag.units
 	rig.tap_world_point(bag.get_grab_center())
 	await test.frames(2)
 	test.check(rig.get_held_items().has(bag), "the packed bag comes off the press into the hand")
+	await _put_held_bag_in_stash(test, level, bag, stash_before)
+
+
+## The bag in hand into the stash shelf's drop crate: its units are stored.
+static func _put_held_bag_in_stash(test: SmokeTest, level: HouseLevel, bag: ProductBag, stash_before: int) -> void:
+	var rig: XRPlayerRig = level.rig
+	var shelf: StashShelf = level.get_tree().get_first_node_in_group(Types.GROUP_STASH_SHELF) as StashShelf
+	var units: int = bag.units
+	var product_name: String = bag.recipe.display_name if bag.recipe != null else ""
 	var drop: ItemSocket = shelf.get_drop_socket()
 	var in_front: Vector3 = drop.global_position + shelf.global_basis.z * 1.1
 	rig.locomotion.teleport_to(Vector3(in_front.x, 0.0, in_front.z))
 	await test.frames(2)
 	rig.tap_world_point(drop.global_position)
 	await test.frames(4)
-	test.check(units > 0 and rig.get_held_items().is_empty() and level.operation.stash.get_total() == stash_before + units, "put in the stash shelf's drop crate, the bag's units are stored")
+	test.check(units > 0 and rig.get_held_items().is_empty() and level.operation.stash.get_total() == stash_before + units, "put in the stash shelf's drop crate, the %s bag's units are stored" % product_name)
 
 
 ## Automation still needs hands: a hired crafter frees a jammed motor, stops
@@ -258,10 +265,19 @@ static func _check_start_and_gadgets(test: SmokeTest, level: HouseLevel, lab: La
 	test.check(not plant.is_ripe(), "the plant starts growing")
 	plant.grow(plant.grow_seconds)
 	test.check(plant.is_ripe(), "the plant grows shrooms by itself")
-	var shrooms_before: int = operation.stash.count(&"shroom")
-	rig.tap_world_point(plant.get_harvest_button().get_press_center())
+	var stash_before: int = operation.stash.get_total()
+	rig.tap_world_point(plant.get_grab_center())
 	await test.frames(3)
-	test.check(operation.stash.count(&"shroom") > shrooms_before and not plant.is_ripe(), "harvesting puts shrooms into the stash, then it grows again")
+	var held: Array[Grabbable] = rig.get_held_items()
+	var picked: ProductBag = held[0] as ProductBag if held.size() == 1 else null
+	test.check(picked != null and picked.recipe == plant.crop and not plant.is_ripe() and operation.stash.get_total() == stash_before, "picking a ripe plant puts a bag of shrooms in the hand, not in the stash; then it grows again")
+	var view_status: ViewStatus = level.get_view_status()
+	test.check(picked != null and await test.wait_until(func() -> bool: return view_status.get_hands_text() == picked.get_display_name()), "the panel under the view names what the hand holds")
+	if picked != null:
+		var standing_at: Vector3 = rig.get_feet_position()
+		await _put_held_bag_in_stash(test, level, picked, stash_before)
+		rig.locomotion.teleport_to(standing_at)
+		test.check(await test.wait_until(func() -> bool: return view_status.get_hands_text().is_empty()), "with the bag in the stash the panel shows empty hands")
 	var config: GameConfig = GameConfig.get_default()
 	# Bring the money these purchases cost, so the other areas' checks keep their budget.
 	for upgrade_id: StringName in [Types.UPGRADE_GRINDER, Types.UPGRADE_COOKER, Types.UPGRADE_PRESS, Types.UPGRADE_PLANTS]:

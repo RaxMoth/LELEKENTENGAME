@@ -62,6 +62,10 @@ func _on_released_nowhere() -> void:
 
 
 ## Co-op: what the other player needs to draw this piece.
+func get_display_name() -> String:
+	return data.get_name_for(is_processed) if data != null else ""
+
+
 func get_net_state() -> Array:
 	return [data.resource_path if data != null else "", is_processed]
 

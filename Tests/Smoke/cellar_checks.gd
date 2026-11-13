@@ -94,7 +94,10 @@ static func _check_racks(test: SmokeTest, level: HouseLevel, cellar: Cellar, off
 	_buy(office, Types.UPGRADE_GREEN_THUMB)
 	plant.grow(plant.grow_seconds)
 	var shrooms_before: int = operation.stash.count(&"shroom")
-	test.check(plant.harvest() and operation.stash.count(&"shroom") == shrooms_before + operation.get_batch_size(plant.crop) + 1, "Green Thumb: one more shroom from a plant picked by hand")
+	var picked: ProductBag = plant.pick()
+	test.check(picked != null and picked.units == operation.get_batch_size(plant.crop) + 1 and operation.stash.count(&"shroom") == shrooms_before, "Green Thumb: one more shroom in the bag from a plant picked by hand")
+	if picked != null:
+		Pools.despawn(picked)
 	_buy(office, Types.UPGRADE_AUTO_PICKER)
 	var picker: AutoPicker = cellar.get_picker()
 	test.check(picker.visible, "Auto Picker mounts a picker under the cellar ceiling")

@@ -144,7 +144,7 @@ func _on_picking_state_processing(delta: float) -> void:
 	_show_arm(reach * (1.0 - absf(share * 2.0 - 1.0)))
 	if share >= 0.5 and not _has_picked:
 		_has_picked = true
-		if is_instance_valid(_target) and _is_still_worth_picking(_target) and _target.harvest(false):
+		if is_instance_valid(_target) and _is_still_worth_picking(_target) and _target.harvest():
 			picked.emit(_target)
 	if share >= 1.0:
 		state_chart.send_event(Types.EVENT_PICKER_DONE)

@@ -33,6 +33,10 @@ func _on_released_nowhere() -> void:
 
 
 ## Co-op: what the other player needs to draw this batch.
+func get_display_name() -> String:
+	return tr("%s batch") % tr(recipe.display_name) if recipe != null else ""
+
+
 func get_net_state() -> Array:
 	return [recipe.resource_path if recipe != null else ""]
 

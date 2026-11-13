@@ -110,6 +110,7 @@ new day, in co-op the guest comes along (`DaySummaryPopup`).
 | Admin (debug builds) | Terminal on the office wall (during a raid it also spawns cops, squads, SWAT, ram teams, squad cars, armored vehicles and helicopters) | Same, or F3 |
 | Pause | Menu button (B / Y while paused resumes) | Esc |
 | Status | Look at your off-hand wrist | Lower left of the view |
+| Health, what you hold | Always in view: your health (heart and bar) top right, what your hands hold ("Shrooms ×3 · Okay", or "Hands empty") at the bottom center — small panels half a meter ahead that follow your head, drawn over the world | Same, at the window's top-right corner and bottom edge |
 | Your body | Gloved hands whose fingers follow the grip and trigger (a full grip makes a fist); look down to see your hips, legs and holstered knife walk with you (your own chest stays out of view) | — |
 
 Walls hold in the room too: walking or leaning into a wall (or the
@@ -125,8 +126,11 @@ pressed. Bindings: `openxr_action_map.tres` (Quest Touch, Pico, Vive, Index).
 
 **A new operation starts small:** one **shroom plant** (one pot, no empty
 ones) on the grow shelf by the back wall. It grows on its own (about 45 s); when it's ripe, point at
-it and pull the trigger (or click) to harvest the shrooms straight into the
-stash, then sell them at the back window. The office's **Lab** tab sells the
+it and grab it (grip, trigger or click): the shrooms come off as a **bag in
+your hand** — carry it to the drop crate at the stash shelf to put them in
+the stash (let go anywhere else and the bag waits beside its pot), then sell
+them at the back window. The cellar's auto picker is a machine and picks
+straight into the stash. The office's **Lab** tab sells the
 rest, one after the other: **More Plants** (up to three, each a new pot on the shelf), the **Grinder**
 (with the ingredient crates), then the **Cooker**, then the **Press** — each
 shows up in the lab when bought, and the press unlocks Glow.
@@ -621,6 +625,7 @@ Scenes/Levels/House/House.tscn                inherits LevelBase; house_level.gd
     │   ├── SteelDoorFrame     SteelDoorFrame.tscn: steel frame and locks around the front door (Steel Door Frame)
     │   ├── WalkableArea       floor rectangles the player may stand on
     │   ├── TravelSpots        lab, front, window, office (flat keys 1-4)
+    │   ├── ViewStatus         health (top right) and what the hands hold (bottom center), hung on the view camera at setup
     │   └── WristStatus        moved onto the off-hand wrist at setup
     ├── PlayerVitals           this player's health (raiders that got in hit it)
     ├── XRPlayerRig            from LevelBase

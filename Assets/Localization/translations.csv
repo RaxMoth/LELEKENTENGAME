@@ -378,7 +378,7 @@ A grinder and ingredient crates for the lab: grind raw ingredients into dust.,A 
 Cook ground ingredients into a batch of product.,Cook ground ingredients into a batch of product.,Gemahlene Zutaten zu einer Charge Ware kochen.
 Package cooked batches into the stash. Unlocks Glow (Glowcap + Sugarsalt).,Package cooked batches into the stash. Unlocks Glow (Glowcap + Sugarsalt).,Gekochte Chargen ins Lager verpacken. Schaltet Glow frei (Glowcap + Zuckersalz).
 Needs %s first,Needs %s first,Braucht zuerst: %s
-Ripe: harvest,Ripe: harvest,Reif: ernten
+Ripe: grab to pick,Ripe: grab to pick,Reif: greifen zum Pflücken
 Growing %d%%,Growing %d%%,Wächst %d%%
 %d / %d unlocked,%d / %d unlocked,%d / %d freigeschaltet
 Unlock gadgets and recipes in the office.,Unlock gadgets and recipes in the office.,Geräte und Rezepte im Büro freischalten.
@@ -533,3 +533,6 @@ No police around,No police around,Keine Polizei in der Nähe
 Police out: %d,Police out: %d,Polizei unterwegs: %d
 %d m,%d m,%d m
 Melee,Melee,Nahkampf
+Hands empty,Hands empty,Hände leer
+Fire extinguisher,Fire extinguisher,Feuerlöscher
+Rat trap,Rat trap,Rattenfalle

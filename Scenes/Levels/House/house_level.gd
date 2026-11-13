@@ -21,7 +21,7 @@
 ## host's world — time, money, stash, items, stations — instead.
 ##
 ## Dependencies: LevelBase, HouseFront, HouseContext, HouseCycle, Operation, DayCycle,
-##               HouseShell, UpgradeReaction, WalkBlocker, SkillBook, Ghost, RatPack, WeaponHolsters, FuseBox, BreachAlarm, Worker, WristStatus, PlayerVitals, XRPlayerRig, HouseCoopSync, Profile, Audio,
+##               HouseShell, UpgradeReaction, WalkBlocker, SkillBook, Ghost, RatPack, WeaponHolsters, FuseBox, BreachAlarm, Worker, WristStatus, ViewStatus, PlayerVitals, XRPlayerRig, HouseCoopSync, Profile, Audio,
 ##               Events, Platform, Coop, Types autoloads, Palette, SfxSynth
 class_name HouseLevel
 extends LevelBase
@@ -68,6 +68,7 @@ var _mirrored_wrist_lines: PackedStringArray = PackedStringArray()
 ## This player's health (a co-op guest's mirrors the host's numbers).
 @onready var player_vitals: PlayerVitals = %PlayerVitals
 @onready var _wrist_status: WristStatus = %WristStatus
+@onready var _view_status: ViewStatus = %ViewStatus
 @onready var _travel_spots: Node3D = %TravelSpots
 @onready var _world_environment: WorldEnvironment = %WorldEnvironment
 @onready var _coop_sync: HouseCoopSync = %CoopSync
@@ -96,11 +97,14 @@ func _on_level_setup() -> void:
 	player_vitals.is_mirror = is_mirror
 	player_vitals.hit_taken.connect(_on_player_hit)
 	player_vitals.health_changed.connect(_wrist_status.show_health)
+	player_vitals.health_changed.connect(_view_status.show_health)
 	player_vitals.died.connect(report_player_down.bind(""))
 	_rats.feet_source = rig.get_feet_position
 	_rats.player_bitten.connect(hurt_local_player)
 	_rats.stash_chewed.connect(_on_stash_chewed)
 	_wrist_status.show_health(player_vitals.get_health(), player_vitals.get_max_health())
+	_view_status.setup(rig)
+	_view_status.show_health(player_vitals.get_health(), player_vitals.get_max_health())
 	context = HouseContext.new(self, rig, operation, day_cycle, cycle)
 	# A co-op guest's weapons are fired by the host (the armory's one), so
 	# only the host's own player draws from holsters for now.
@@ -282,6 +286,11 @@ func announce(message: String, color: Color = Palette.TEXT, hold_seconds: float 
 	super(message, color, hold_seconds)
 	if Coop.is_host():
 		_coop_sync.broadcast_announcement(message, color, hold_seconds)
+
+
+## The health and in-hand panels in front of the player's view.
+func get_view_status() -> ViewStatus:
+	return _view_status
 
 
 ## The wrist status lines: the cycle's and every front's (co-op streams them).

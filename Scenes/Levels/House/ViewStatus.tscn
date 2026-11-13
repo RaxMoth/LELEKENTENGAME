@@ -1,0 +1,92 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://Scenes/Levels/House/view_status.gd" id="status"]
+[ext_resource type="Texture2D" path="res://Assets/Icons/heart.svg" id="heart"]
+[ext_resource type="Texture2D" path="res://Assets/Icons/bag.svg" id="bag"]
+
+[sub_resource type="QuadMesh" id="health_quad"]
+size = Vector2(0.112, 0.026)
+
+[sub_resource type="QuadMesh" id="bar_quad"]
+size = Vector2(0.054, 0.007)
+
+[sub_resource type="QuadMesh" id="hands_quad"]
+resource_local_to_scene = true
+size = Vector2(0.2, 0.026)
+
+[node name="ViewStatus" type="Node3D"]
+script = ExtResource("status")
+
+[node name="HealthPanel" type="Node3D" parent="."]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.15, 0.11, -0.5)
+
+[node name="HealthBackdrop" type="MeshInstance3D" parent="HealthPanel"]
+unique_name_in_owner = true
+mesh = SubResource("health_quad")
+cast_shadow = 0
+
+[node name="Heart" type="Sprite3D" parent="HealthPanel"]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.043, 0, 0.001)
+cast_shadow = 0
+pixel_size = 0.00016
+texture = ExtResource("heart")
+
+[node name="BarBack" type="MeshInstance3D" parent="HealthPanel"]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.002, 0, 0.001)
+mesh = SubResource("bar_quad")
+cast_shadow = 0
+
+[node name="BarFill" type="MeshInstance3D" parent="HealthPanel"]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.002, 0, 0.002)
+mesh = SubResource("bar_quad")
+cast_shadow = 0
+
+[node name="HealthValue" type="Label3D" parent="HealthPanel"]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.047, 0, 0.002)
+cast_shadow = 0
+pixel_size = 0.00034
+no_depth_test = true
+render_priority = 23
+outline_render_priority = 22
+modulate = Color(0.9333, 0.9451, 0.9686, 1)
+outline_modulate = Color(0.051, 0.0627, 0.0902, 0.9)
+text = "100"
+font_size = 32
+horizontal_alignment = 2
+outline_size = 6
+
+[node name="HandsPanel" type="Node3D" parent="."]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.14, -0.5)
+
+[node name="HandsBackdrop" type="MeshInstance3D" parent="HandsPanel"]
+unique_name_in_owner = true
+mesh = SubResource("hands_quad")
+cast_shadow = 0
+
+[node name="HandsIcon" type="Sprite3D" parent="HandsPanel"]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.08, 0, 0.001)
+cast_shadow = 0
+pixel_size = 0.00015
+texture = ExtResource("bag")
+
+[node name="HandsLabel" type="Label3D" parent="HandsPanel"]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.06, 0, 0.002)
+cast_shadow = 0
+pixel_size = 0.00034
+no_depth_test = true
+render_priority = 23
+outline_render_priority = 22
+modulate = Color(0.5529, 0.5882, 0.6745, 1)
+outline_modulate = Color(0.051, 0.0627, 0.0902, 0.9)
+text = "Hands empty"
+font_size = 32
+horizontal_alignment = 0
+outline_size = 6

@@ -107,10 +107,16 @@ func _run_host() -> void:
 		_check(is_equal_approx(guest_vitals[0].get_health(), guest_vitals[0].get_max_health() - 25.0), "host: a raider's hit lands on the guest")
 	_check(sync.sounds_relayed > 0, "host: the guest hears the host's world (sounds are sent)")
 	# The guest shoots last; then its connection drops (no goodbye) and it must come back by itself.
-	# Its own trigger pull, not any other tracer, and time for the tracer to get back to it.
-	var guest_shots: Array[int] = [0]
-	level.context.guest_fired.connect(func(_pointer: XRPointer, _feet: Vector3, _recoil: Callable) -> void: guest_shots[0] += 1)
-	await _wait_until(func() -> bool: return guest_shots[0] > 0)
+	# Its own trigger pull that really fired (a pull can come while the gun
+	# still cools down: no shot, the guest pulls again), not any other
+	# tracer; then time for the tracer to get back to it.
+	var guest_pulls: Array[int] = [0]
+	var shots_after_pull: Array[int] = [0]
+	level.context.guest_fired.connect(func(_pointer: XRPointer, _feet: Vector3, _recoil: Callable) -> void: guest_pulls[0] += 1)
+	Events.beam_fired.connect(func(_from: Vector3, _to: Vector3) -> void:
+		if guest_pulls[0] > 0:
+			shots_after_pull[0] += 1)
+	await _wait_until(func() -> bool: return shots_after_pull[0] > 0)
 	await _seconds(1.0)
 	var guest_peer_id: int = Coop.get_ready_peers()[0]
 	(multiplayer.multiplayer_peer as ENetMultiplayerPeer).disconnect_peer(guest_peer_id)
