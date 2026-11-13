@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" path="res://Scenes/Levels/House/Rats/rat_pack.gd" id="pack"]
 [ext_resource type="PackedScene" path="res://Scenes/Levels/House/Rats/Rat.tscn" id="rat"]
+[ext_resource type="PackedScene" path="res://Scenes/Levels/House/Rats/TrapBox.tscn" id="trap_box"]
 
 [node name="Rats" type="Node3D"]
 script = ExtResource("pack")
@@ -18,3 +19,7 @@ transform = Transform3D(0.5403, 0, -0.8415, 0, 1, 0, 0.8415, 0, 0.5403, -3.9, 0,
 
 [node name="Rat4" parent="." instance=ExtResource("rat")]
 transform = Transform3D(-0.7259, 0, -0.6878, 0, 1, 0, 0.6878, 0, -0.7259, 0.2, 0, -0.6)
+
+[node name="TrapBox" parent="." instance=ExtResource("trap_box")]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.45, 0, 2.55)

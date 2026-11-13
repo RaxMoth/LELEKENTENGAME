@@ -21,7 +21,7 @@
 ## host's world — time, money, stash, items, stations — instead.
 ##
 ## Dependencies: LevelBase, HouseFront, HouseContext, HouseCycle, Operation, DayCycle,
-##               HouseShell, UpgradeReaction, WalkBlocker, Ghost, RatPack, Worker, WristStatus, PlayerVitals, XRPlayerRig, HouseCoopSync, Profile, Audio,
+##               HouseShell, UpgradeReaction, WalkBlocker, SkillBook, Ghost, RatPack, WeaponHolsters, FuseBox, Worker, WristStatus, PlayerVitals, XRPlayerRig, HouseCoopSync, Profile, Audio,
 ##               Events, Platform, Coop, Types autoloads, Palette, SfxSynth
 class_name HouseLevel
 extends LevelBase
@@ -72,6 +72,8 @@ var _mirrored_wrist_lines: PackedStringArray = PackedStringArray()
 @onready var _house_shell: HouseShell = %HouseShell
 @onready var _ghost: Ghost = %Ghost
 @onready var _rats: RatPack = %Rats
+@onready var _holsters: WeaponHolsters = %Holsters
+@onready var _fuse_box: FuseBox = %FuseBox
 
 # ============================================
 # LEVEL HOOKS
@@ -94,8 +96,14 @@ func _on_level_setup() -> void:
 	player_vitals.died.connect(report_player_down.bind(""))
 	_rats.feet_source = rig.get_feet_position
 	_rats.player_bitten.connect(hurt_local_player)
+	_rats.stash_chewed.connect(_on_stash_chewed)
 	_wrist_status.show_health(player_vitals.get_health(), player_vitals.get_max_health())
 	context = HouseContext.new(self, rig, operation, day_cycle, cycle)
+	# A co-op guest's weapons are fired by the host (the armory's one), so
+	# only the host's own player draws from holsters for now.
+	if not is_mirror:
+		_holsters.setup(rig)
+		context.holsters = _holsters
 	for node: Node in get_tree().get_nodes_in_group(Types.GROUP_HOUSE_FRONT):
 		var front: HouseFront = node as HouseFront
 		if front != null and is_ancestor_of(front):
@@ -112,6 +120,9 @@ func _on_level_setup() -> void:
 	cycle.wave_cleared.connect(_on_raid_wave_cleared)
 	cycle.raid_cleared.connect(_on_raid_cleared)
 	day_cycle.nightfall.connect(_on_nightfall)
+	operation.skill_leveled.connect(_on_skill_leveled)
+	_fuse_box.setup(operation)
+	operation.power_changed.connect(_on_power_changed)
 	Events.upgrade_purchased.connect(func(_upgrade_id: StringName, _level: int) -> void: apply_upgrades())
 	_last_paid_hour = floori(day_cycle.clock.get_hour())
 	apply_upgrades()
@@ -293,6 +304,14 @@ func hurt_local_player(damage: float) -> void:
 		player_vitals.take_damage(damage)
 
 
+## The player's skill levels for the wrist ("Craft 2 · Fight 1 · Harvest 0").
+func get_skills_line() -> String:
+	var parts: PackedStringArray = PackedStringArray()
+	for skill: int in SkillBook.Skill.values():
+		parts.append("%s %d" % [tr(SkillBook.SHORT_NAMES[skill]), Profile.skills.get_level(skill as SkillBook.Skill)])
+	return " · ".join(parts)
+
+
 ## A player went down — this one ([param player_name] empty) or, on the
 ## host, a co-op guest: the shift is lost for everyone.
 func report_player_down(player_name: String) -> void:
@@ -307,6 +326,38 @@ func _warn(message: String) -> void:
 	Audio.play_sfx(SfxSynth.get_preset(&"explosion"), 0.0, -6.0)
 	for pointer: XRPointer in rig.get_active_pointers():
 		rig.pulse(pointer, Types.HapticStrength.HEAVY)
+
+
+## A rat chewed through a bag on the stash shelf: a unit lost (the host's stash).
+func _on_stash_chewed(where: Vector3) -> void:
+	if is_mirror or not is_playing() or operation.lose_stock(1) <= 0:
+		return
+	FloatingText3D.spawn(tr("-1 (rats)"), where + Vector3(0.0, 0.4, 0.0), Palette.DANGER, Global.get_world_root())
+
+
+## The fuse box tripped or was reset: the lamps and the night's light follow.
+func _on_power_changed(has_power: bool) -> void:
+	day_cycle.set_power(has_power)
+	if is_mirror:
+		return
+	if has_power:
+		announce(tr("The power is back"), Palette.SUCCESS)
+	else:
+		_warn(tr("The fuses blew! Flip the lever on the fuse box"))
+	_refresh_wrist()
+
+
+## The fuse box on the front room wall (tests).
+func get_fuse_box() -> FuseBox:
+	return _fuse_box
+
+
+## Got better at something by doing it: say what the new level gives.
+func _on_skill_leveled(skill: int, level: int) -> void:
+	var gains: Array[String] = [tr("a wider green zone"), tr("harder hits"), tr("more from every hand harvest")]
+	announce(tr("%s %d: %s") % [tr(SkillBook.SKILL_NAMES[skill]), level, gains[skill]], Palette.SUCCESS, 1.5)
+	Audio.play_sfx(SfxSynth.get_preset(&"reward"), 0.0, -6.0)
+	_refresh_wrist()
 
 
 ## Hit (a raider, a rat): both controllers rumble — hard for a real blow,
@@ -367,9 +418,10 @@ func _pay_wages_on_the_hour() -> void:
 	_last_paid_hour = current_hour
 	for worker: Node in get_tree().get_nodes_in_group(Types.GROUP_CREW):
 		(worker as Worker).pay_wage()
+	_fuse_box.on_hour_passed(day_cycle.is_night())
 
 
 func _refresh_wrist() -> void:
 	var front_lines: PackedStringArray = _mirrored_wrist_lines if is_mirror else get_wrist_lines()
 	_wrist_status.show_status(day_cycle.clock.format_time(), day_cycle.is_night(), operation.get_cash(), Profile.operation.reputation,
-		operation.stash.get_total(), operation.stash.capacity, operation.heat.value, front_lines)
+		operation.stash.get_total(), operation.stash.capacity, operation.heat.value, front_lines, "" if is_mirror else get_skills_line())

@@ -26,6 +26,9 @@
 [ext_resource type="Material" path="res://Assets/Materials/iron_strap.tres" id="iron"]
 [ext_resource type="Material" path="res://Assets/Materials/steel_frame.tres" id="steel"]
 [ext_resource type="Script" path="res://Scripts/Components/walk_blocker.gd" id="blocker"]
+[ext_resource type="PackedScene" path="res://Scenes/Levels/House/Lab/StationFire.tscn" id="station_fire"]
+[ext_resource type="PackedScene" path="res://Scenes/Levels/House/Lab/Extinguisher.tscn" id="extinguisher"]
+[ext_resource type="Script" path="res://Scripts/XR/item_socket.gd" id="socket"]
 
 [node name="Lab" type="Node3D"]
 script = ExtResource("lab")
@@ -38,6 +41,30 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.4, 0, -1.55)
 [node name="Cooker" parent="." instance=ExtResource("cooker")]
 unique_name_in_owner = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.0, 0, -1.55)
+
+[node name="StationFire" parent="." node_paths=PackedStringArray("station") instance=ExtResource("station_fire")]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.0, 0, -1.55)
+station = NodePath("../Cooker")
+
+[node name="ExtinguisherHook" type="Node3D" parent="."]
+unique_name_in_owner = true
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -1.22, 0.8, -1.84)
+script = ExtResource("socket")
+snap_radius = 0.35
+show_marker = false
+
+[node name="Bracket" type="MeshInstance3D" parent="ExtinguisherHook"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.065, -0.04, 0)
+script = ExtResource("mesh")
+shape_kind = 1
+size = Vector3(0.03, 0.12, 0.09)
+color = Color(0.12, 0.12, 0.13, 1)
+cast_shadow = 0
+
+[node name="Extinguisher" parent="." instance=ExtResource("extinguisher")]
+unique_name_in_owner = true
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -1.22, 0.8, -1.84)
 
 [node name="Press" parent="." instance=ExtResource("press")]
 unique_name_in_owner = true

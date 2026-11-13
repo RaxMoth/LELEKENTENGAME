@@ -1,0 +1,6 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://Scenes/Entities/WalkingBody/walking_body.gd" id="body"]
+
+[node name="WalkingBody" type="Node3D"]
+script = ExtResource("body")

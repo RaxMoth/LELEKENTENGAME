@@ -1,8 +1,11 @@
 ## One rat of the cabin's RatPack: it sniffs about for a while, then
 ## scurries to another spot on the floor (sliding along walls and furniture
 ## like the player), tail swishing. Close to the player's feet it may bite —
-## only once — and then dashes off.
-## State: Roaming { Sniffing <-> Scurrying } -> Biting -> Roaming/Scurrying.
+## only once — and then dashes off. Now and then it heads for the stash
+## shelf and chews through a bag there. Running over an armed snap trap
+## catches it for the day.
+## State: Roaming { Sniffing <-> Scurrying } -> Biting -> Roaming/Scurrying;
+## any -> Caught.
 ##
 ## Dependencies: RatPack, WalkableArea, Audio, Types autoloads, SfxSynth
 class_name Rat
@@ -32,6 +35,11 @@ var pack: RatPack = null
 var _target: Vector3 = Vector3.ZERO
 var _seconds_until_run: float = 0.0
 var _has_bitten: bool = false
+var _is_caught: bool = false
+var _is_heading_to_stash: bool = false
+var _chew_seconds_left: float = 0.0
+## Seconds until it may chew again.
+var _chew_cooldown: float = 0.0
 var _animation_time: float = 0.0
 var _tween: Tween
 var _random: RandomNumberGenerator = RandomNumberGenerator.new()
@@ -50,25 +58,58 @@ func _ready() -> void:
 func has_bitten() -> bool:
 	return _has_bitten
 
+
+## True once a trap caught it.
+func is_caught() -> bool:
+	return _is_caught
+
+
+## True while it chews on the stash shelf.
+func is_chewing() -> bool:
+	return _chew_seconds_left > 0.0
+
+
+## Sends it straight to the stash shelf to chew (tests and the pack).
+func go_for_stash() -> void:
+	var stash: Vector3 = pack.get_stash_point() if pack != null else Vector3.INF
+	if not stash.is_finite():
+		return
+	_target = Vector3(stash.x, global_position.y, stash.z)
+	_is_heading_to_stash = true
+	state_chart.send_event(Types.EVENT_WALK)
+
 # ============================================
 # STATE CHART CALLBACKS (connected in Rat.tscn)
 # ============================================
 
 func _on_sniffing_state_entered() -> void:
 	_seconds_until_run = _random.randf_range(sniff_seconds.x, sniff_seconds.y)
+	if _is_heading_to_stash:
+		_is_heading_to_stash = false
+		if pack != null and pack.get_stash_point().is_finite() and global_position.distance_to(pack.get_stash_point()) < 0.9:
+			_chew_seconds_left = pack.chew_seconds
+			_seconds_until_run = maxf(_seconds_until_run, pack.chew_seconds + 0.5)
 
 
 func _on_sniffing_state_physics_processing(delta: float) -> void:
 	_animate(delta, 0.0)
-	if _try_bite(delta):
+	_chew_cooldown = maxf(0.0, _chew_cooldown - delta)
+	if _try_bite(delta) or _check_trap():
 		return
+	if _chew_seconds_left > 0.0:
+		_chew_seconds_left -= delta
+		if _chew_seconds_left <= 0.0:
+			_chew_cooldown = pack.chew_cooldown_seconds
+			Audio.play_sfx_at(SfxSynth.get_preset(&"squeak"), global_position, 0.2, -8.0)
+			pack.report_chew(global_position)
 	_seconds_until_run -= delta
 	if _seconds_until_run <= 0.0 and _pick_run_target():
 		state_chart.send_event(Types.EVENT_WALK)
 
 
 func _on_scurrying_state_physics_processing(delta: float) -> void:
-	if _try_bite(delta):
+	_chew_cooldown = maxf(0.0, _chew_cooldown - delta)
+	if _try_bite(delta) or _check_trap():
 		return
 	var to_target: Vector3 = Vector3(_target.x - global_position.x, 0.0, _target.z - global_position.z)
 	if to_target.length() <= ARRIVE_DISTANCE:
@@ -99,9 +140,29 @@ func _on_biting_state_entered() -> void:
 	_tween.tween_property(_body, "position:z", 0.0, LUNGE_SECONDS * 0.6).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
 	_tween.tween_callback(_flee_from.bind(feet))
 
+
+func _on_caught_state_entered() -> void:
+	_is_caught = true
+	_chew_seconds_left = 0.0
+	visible = false
+	process_mode = Node.PROCESS_MODE_DISABLED
+
 # ============================================
 # INTERNALS
 # ============================================
+
+## Ran into an armed trap: caught. Returns true when it was.
+func _check_trap() -> bool:
+	if pack == null:
+		return false
+	var trap: RatTrap = pack.find_trap_at(global_position)
+	if trap == null:
+		return false
+	trap.spring()
+	Audio.play_sfx_at(SfxSynth.get_preset(&"squeak"), global_position, 0.1, -2.0)
+	state_chart.send_event(Types.EVENT_DIED)
+	return true
+
 
 ## Close to the player's feet a rat that hasn't bitten yet may bite (a
 ## small chance per second). Returns true when it goes for it.
@@ -141,6 +202,11 @@ func _flee_from(feet: Vector3) -> void:
 func _pick_run_target() -> bool:
 	if pack == null:
 		return false
+	if _chew_cooldown <= 0.0 and _random.randf() < pack.stash_visit_chance and pack.get_stash_point().is_finite():
+		var stash: Vector3 = pack.get_stash_point()
+		_target = Vector3(stash.x + _random.randf_range(-0.25, 0.25), global_position.y, stash.z + _random.randf_range(-0.25, 0.25))
+		_is_heading_to_stash = true
+		return true
 	for attempt: int in SPOT_TRIES:
 		var angle: float = _random.randf() * TAU
 		var distance: float = _random.randf_range(run_distance.x, run_distance.y)

@@ -8,7 +8,7 @@ the same files.
 |---|---|---|---|---|
 | **Defense** (the yard and its raids, the door, roof turrets, the Security PC, the armory) | `Garden/FrontGarden.tscn` · `front_garden.gd` (+ yard, raiders, squads, director, door, turrets, PC), `Armory/Armory.tscn` | `Ressources/Weapons/`, `Ressources/Raids/`, raider exports in `Garden/*.tscn`, yard obstacles | `Ressources/Upgrades/Defense/` | `Tests/Smoke/defense_checks.gd` |
 | **Customers** (back window and yard) | `Sales/SalesWindow.tscn` · `sales_window.gd` (+ `customer_flow.gd`, customers, sales board) | `Ressources/Customers/`, `CustomerFlow` exports | `Ressources/Upgrades/Sales/` | `Tests/Smoke/sales_checks.gd` |
-| **House** (lab, office, stash, crew, the shift, the 3-day cycle) | `House.tscn` · `house_level.gd`, `Cycle/HouseCycle.tscn`, `Lab/Lab.tscn`, `Office/Office.tscn`, `Workers/`, `operation.gd`, `day_cycle.gd`, `house_shell.gd`, `StashShelf.tscn`, `SteelDoorFrame.tscn`, `Cellar/Cellar.tscn`, `Ghost/Ghost.tscn`, `Rats/Rats.tscn` (the cabin's rats), `Surroundings/Surroundings.tscn` (lawn, trees, weeds, junk) | `Ressources/Ingredients/`, `Ressources/Recipes/`, `Ressources/Renovations/`, `Lab.tscn` recipes | `Ressources/Upgrades/Lab/`, `Ressources/Upgrades/House/` | `Tests/Smoke/lab_checks.gd`, `cellar_checks.gd`, `house_checks.gd` |
+| **House** (lab, office, stash, crew, the shift, the 3-day cycle) | `House.tscn` · `house_level.gd`, `Cycle/HouseCycle.tscn`, `Lab/Lab.tscn`, `Office/Office.tscn`, `Workers/`, `operation.gd`, `day_cycle.gd`, `house_shell.gd`, `StashShelf.tscn`, `SteelDoorFrame.tscn`, `Cellar/Cellar.tscn`, `Ghost/Ghost.tscn`, `Rats/Rats.tscn` (the cabin's rats, traps), `FuseBox/FuseBox.tscn`, `Holsters/Holsters.tscn`, `Lab/StationFire.tscn` + `Extinguisher.tscn`, `Surroundings/Surroundings.tscn` (lawn, trees, weeds, junk) | `Ressources/Ingredients/`, `Ressources/Recipes/`, `Ressources/Renovations/`, `Lab.tscn` recipes | `Ressources/Upgrades/Lab/`, `Ressources/Upgrades/House/` | `Tests/Smoke/lab_checks.gd`, `cellar_checks.gd`, `house_checks.gd` |
 | **Town** (the streets around the house, people in them, street talk) | `Town/Town.tscn` · `town.gd` (+ `pedestrian.gd`, `dialogue_board.gd`) | `Ressources/Town/town.tres`, `Ressources/Dialogue/`, voices in `Ressources/Voices/` (generated, see `Tools/generate_voices.ps1`) | — | `Tests/Smoke/town_checks.gd` |
 
 Each area folder has its own README with the details.
@@ -31,6 +31,13 @@ Every front (`FrontGarden`, `SalesWindow`, `Lab`, `Office`, `Armory`, `AdminPane
   through `HouseCycle` the raid hooks `on_raid_started`,
   `on_raid_wave_started(RaidWave)`, `get_raiders_left`, `remove_raiders`,
   `on_raid_cleared`.
+- **The player's holsters** (`HouseContext.holsters`, a `WeaponHolsters`):
+  in a headset a hand uses the weapon it drew from the body (or its fist);
+  the FrontGarden asks `get_drawn(hand)`. The house owns the holsters, the
+  defense side the weapons' firing and models in hand.
+- **Operation** also carries the player's skills (`record_craft`,
+  `record_melee_hit`, `record_hand_harvest`, `get_melee_damage_bonus`,
+  `skill_leveled`) and the power (`has_power`, `power_changed`: the fuse box).
 - **Players' health belongs to the House level**: `PlayerVitals` nodes in
   `Types.GROUP_PLAYER_TARGET` (the host's own, plus one per co-op guest).
   A front may hit them (`take_damage`, the raiders inside the house do).

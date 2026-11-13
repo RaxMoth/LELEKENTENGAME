@@ -23,6 +23,8 @@ var energy: Energy
 var operation: OperationProgress
 ## The player's guns and ammo (armory terminal, front garden).
 var armory: ArmoryProgress
+## Crafting, fighting and harvesting skills, grown by doing.
+var skills: PlayerSkills
 
 var _modules: Array[ProfileModule] = []
 
@@ -56,7 +58,8 @@ func _create_modules() -> void:
 	energy = Energy.new(config)
 	operation = OperationProgress.new(config)
 	armory = ArmoryProgress.new(config)
-	_modules = [meta, wallet, inventory, levels, upgrades, stats, achievements, daily_rewards, energy, operation, armory]
+	skills = PlayerSkills.new(config)
+	_modules = [meta, wallet, inventory, levels, upgrades, stats, achievements, daily_rewards, energy, operation, armory, skills]
 
 
 ## Grants a reward dictionary. Ids matching a CurrencyData go to the wallet,

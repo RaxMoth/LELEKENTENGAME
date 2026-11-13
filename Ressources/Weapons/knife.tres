@@ -11,6 +11,7 @@ description = "A kitchen knife with a real edge. Quick cuts in close."
 kind = 1
 cost = 60
 model_scene = ExtResource("model")
+holster_slot = &"hip"
 damage = 22.0
 fire_interval_seconds = 0.4
 range_meters = 1.7

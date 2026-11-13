@@ -11,6 +11,7 @@ description = "Your first gun: a worn sidearm. Weak, but it never runs dry."
 cost = 200
 required_weapon_id = &"axe"
 model_scene = ExtResource("model")
+holster_slot = &"chest"
 damage = 20.0
 fire_interval_seconds = 0.3
 range_meters = 30.0

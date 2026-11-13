@@ -7,7 +7,8 @@
 ## Dominant trigger: a WorldScreen, then (holding something) putting it into
 ## the slot next to it or under the beam, then a PointerButton, then picking
 ## up the item (or a new one from a crate) at the hand or under the beam,
-## then primary_action_pressed. Off-hand trigger: a screen, a button or
+## then primary_action_pressed. A usable item in a hand (the extinguisher)
+## takes that hand's trigger instead (Grabbable.use). Off-hand trigger: a screen, a button or
 ## secondary_action_pressed (the gun) — never a pickup. Grip: hold to carry
 ## and let go to put down; a quick click keeps holding until the next click.
 ## Fixed things (door handles) only move while the button is held.
@@ -58,6 +59,8 @@ var _held_items: Dictionary[Types.Hand, Grabbable] = {Types.Hand.LEFT: null, Typ
 var _grip_grabbed_at_msec: Dictionary[Types.Hand, int] = {Types.Hand.LEFT: NOT_GRIP_GRABBED, Types.Hand.RIGHT: NOT_GRIP_GRABBED}
 ## The grip press already put the item down; its release must not act again.
 var _ignores_grip_release: Dictionary[Types.Hand, bool] = {Types.Hand.LEFT: false, Types.Hand.RIGHT: false}
+## Hands holding something these rules don't manage (a weapon drawn from a holster): they grab nothing.
+var _busy_hands: Dictionary[Types.Hand, bool] = {Types.Hand.LEFT: false, Types.Hand.RIGHT: false}
 
 
 ## Wires the hands: where each holds things and the beam it points with.
@@ -73,6 +76,17 @@ func handle_button(hand: Types.Hand, action_name: StringName, is_pressed: bool) 
 			_on_trigger(hand, is_pressed)
 		Types.XR_ACTION_GRIP_CLICK:
 			_on_grip(hand, is_pressed)
+
+
+## Marks [param hand] as holding something these rules don't manage (a
+## weapon drawn from a holster), so it grabs nothing meanwhile.
+func set_hand_busy(hand: Types.Hand, is_busy: bool) -> void:
+	_busy_hands[hand] = is_busy
+
+
+## True while [param hand] holds something these rules don't manage (a drawn weapon).
+func is_hand_busy(hand: Types.Hand) -> bool:
+	return _busy_hands[hand]
 
 
 func get_held_item(hand: Types.Hand) -> Grabbable:
@@ -169,8 +183,11 @@ func press_button_on_ray(pointer: XRPointer, hand: Types.Hand) -> bool:
 
 func _on_trigger(hand: Types.Hand, is_pressed: bool) -> void:
 	var pointer: XRPointer = _pointers[hand]
+	var usable_item: Grabbable = _held_items[hand] if _held_items[hand] != null and _held_items[hand].is_usable() else null
 	if not is_pressed:
 		pointer.release()
+		if usable_item != null:
+			usable_item.use(false, pointer)
 		if hand == dominant_hand:
 			primary_action_released.emit(pointer)
 		else:
@@ -181,6 +198,9 @@ func _on_trigger(hand: Types.Hand, is_pressed: bool) -> void:
 			_put_down(hand)
 		return
 	if pointer.press() or get_tree().paused:
+		return
+	if usable_item != null:
+		usable_item.use(true, pointer)
 		return
 	if hand != dominant_hand:
 		if not press_button_on_ray(pointer, hand):
@@ -218,7 +238,7 @@ func _on_grip(hand: Types.Hand, is_pressed: bool) -> void:
 ## Takes the item at the hand, or else under its beam (a crate hands out a
 ## new one and charges for it). Returns true when the hand now holds it.
 func _grab_with_hand(hand: Types.Hand) -> bool:
-	if is_mirror or _held_items[hand] != null or get_tree().paused:
+	if is_mirror or _held_items[hand] != null or _busy_hands[hand] or get_tree().paused:
 		return false
 	var anchor: Node3D = _hold_anchors[hand]
 	var pointer: XRPointer = _pointers[hand]

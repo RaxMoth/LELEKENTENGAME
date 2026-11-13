@@ -1,0 +1,170 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://Scenes/Levels/House/Lab/station_fire.gd" id="fire"]
+[ext_resource type="Script" path="res://Scripts/Utils/placeholder_mesh_3d.gd" id="mesh"]
+[ext_resource type="Script" path="res://addons/godot_state_charts/state_chart.gd" id="chart"]
+[ext_resource type="Script" path="res://addons/godot_state_charts/compound_state.gd" id="compound"]
+[ext_resource type="Script" path="res://addons/godot_state_charts/atomic_state.gd" id="atomic"]
+[ext_resource type="Script" path="res://addons/godot_state_charts/transition.gd" id="transition"]
+
+[node name="StationFire" type="Node3D"]
+script = ExtResource("fire")
+
+[node name="Flames" type="Node3D" parent="."]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.0, 0)
+
+[node name="Embers" type="MeshInstance3D" parent="Flames"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.01, 0)
+script = ExtResource("mesh")
+size = Vector3(0.3, 0.06, 0.24)
+color = Color(0.85, 0.22, 0.06, 1)
+glow = 1.6
+unshaded = true
+cast_shadow = 0
+
+[node name="FlameA" type="Node3D" parent="Flames"]
+transform = Transform3D(0.9903, -0.1392, 0.0000, 0.1388, 0.9879, 0.0698, -0.0097, -0.0691, 0.9976, -0.1, 0, -0.03)
+
+[node name="Cone" type="MeshInstance3D" parent="Flames/FlameA"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.23, 0)
+script = ExtResource("mesh")
+shape_kind = 3
+size = Vector3(0.11, 0.46, 0.11)
+color = Color(0.95, 0.36, 0.08, 0.85)
+glow = 2.0
+unshaded = true
+top_scale = 0.0
+cast_shadow = 0
+
+[node name="FlameB" type="Node3D" parent="Flames"]
+transform = Transform3D(0.9848, 0.1736, 0.0000, -0.1727, 0.9794, -0.1045, -0.0182, 0.1029, 0.9945, 0.08, 0, 0.04)
+
+[node name="Cone" type="MeshInstance3D" parent="Flames/FlameB"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.19, 0)
+script = ExtResource("mesh")
+shape_kind = 3
+size = Vector3(0.1, 0.38, 0.1)
+color = Color(0.98, 0.45, 0.1, 0.85)
+glow = 2.0
+unshaded = true
+top_scale = 0.0
+cast_shadow = 0
+
+[node name="FlameC" type="Node3D" parent="Flames"]
+transform = Transform3D(0.9994, -0.0349, 0.0000, 0.0349, 0.9994, -0.0000, 0.0000, 0.0000, 1.0000, 0.0, 0, 0.0)
+
+[node name="Cone" type="MeshInstance3D" parent="Flames/FlameC"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.275, 0)
+script = ExtResource("mesh")
+shape_kind = 3
+size = Vector3(0.14, 0.55, 0.14)
+color = Color(1.0, 0.52, 0.12, 0.8)
+glow = 2.2
+unshaded = true
+top_scale = 0.0
+cast_shadow = 0
+
+[node name="FlameD" type="Node3D" parent="Flames"]
+transform = Transform3D(0.9945, 0.1045, 0.0000, -0.1029, 0.9794, -0.1736, -0.0182, 0.1727, 0.9848, -0.04, 0, 0.07)
+
+[node name="Cone" type="MeshInstance3D" parent="Flames/FlameD"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.15, 0)
+script = ExtResource("mesh")
+shape_kind = 3
+size = Vector3(0.08, 0.3, 0.08)
+color = Color(1.0, 0.7, 0.2, 0.9)
+glow = 2.4
+unshaded = true
+top_scale = 0.0
+cast_shadow = 0
+
+[node name="FlameE" type="Node3D" parent="Flames"]
+transform = Transform3D(0.9781, -0.2079, 0.0000, 0.2059, 0.9686, 0.1392, -0.0289, -0.1361, 0.9903, 0.05, 0, -0.06)
+
+[node name="Cone" type="MeshInstance3D" parent="Flames/FlameE"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.14, 0)
+script = ExtResource("mesh")
+shape_kind = 3
+size = Vector3(0.07, 0.28, 0.07)
+color = Color(1.0, 0.82, 0.32, 0.9)
+glow = 2.6
+unshaded = true
+top_scale = 0.0
+cast_shadow = 0
+
+[node name="Smoke" type="Node3D" parent="."]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.0, 0)
+
+[node name="PuffA" type="MeshInstance3D" parent="Smoke"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.2, 0)
+script = ExtResource("mesh")
+shape_kind = 0
+size = Vector3(0.2, 0.2, 0.2)
+color = Color(0.32, 0.33, 0.35, 0.5)
+cast_shadow = 0
+
+[node name="PuffB" type="MeshInstance3D" parent="Smoke"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+script = ExtResource("mesh")
+shape_kind = 0
+size = Vector3(0.22, 0.22, 0.22)
+color = Color(0.36, 0.37, 0.39, 0.45)
+cast_shadow = 0
+
+[node name="PuffC" type="MeshInstance3D" parent="Smoke"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, 0)
+script = ExtResource("mesh")
+shape_kind = 0
+size = Vector3(0.24, 0.24, 0.24)
+color = Color(0.4, 0.41, 0.43, 0.4)
+cast_shadow = 0
+
+[node name="StateChart" type="Node" parent="."]
+unique_name_in_owner = true
+script = ExtResource("chart")
+
+[node name="Root" type="Node" parent="StateChart"]
+script = ExtResource("compound")
+initial_state = NodePath("Calm")
+
+[node name="Calm" type="Node" parent="StateChart/Root"]
+script = ExtResource("atomic")
+
+[node name="ToOverheating" type="Node" parent="StateChart/Root/Calm"]
+script = ExtResource("transition")
+to = NodePath("../../Overheating")
+event = &"overheat"
+delay_in_seconds = "0.0"
+
+[node name="Overheating" type="Node" parent="StateChart/Root"]
+script = ExtResource("atomic")
+
+[node name="ToCalm" type="Node" parent="StateChart/Root/Overheating"]
+script = ExtResource("transition")
+to = NodePath("../../Calm")
+event = &"cool_down"
+delay_in_seconds = "0.0"
+
+[node name="ToBurning" type="Node" parent="StateChart/Root/Overheating"]
+script = ExtResource("transition")
+to = NodePath("../../Burning")
+event = &"ignite"
+delay_in_seconds = "0.0"
+
+[node name="Burning" type="Node" parent="StateChart/Root"]
+script = ExtResource("atomic")
+
+[node name="ToCalm" type="Node" parent="StateChart/Root/Burning"]
+script = ExtResource("transition")
+to = NodePath("../../Calm")
+event = &"cool_down"
+delay_in_seconds = "0.0"
+
+[connection signal="state_entered" from="StateChart/Root/Calm" to="." method="_on_calm_state_entered"]
+[connection signal="state_processing" from="StateChart/Root/Calm" to="." method="_on_calm_state_processing"]
+[connection signal="state_entered" from="StateChart/Root/Overheating" to="." method="_on_overheating_state_entered"]
+[connection signal="state_processing" from="StateChart/Root/Overheating" to="." method="_on_overheating_state_processing"]
+[connection signal="state_entered" from="StateChart/Root/Burning" to="." method="_on_burning_state_entered"]
+[connection signal="state_exited" from="StateChart/Root/Burning" to="." method="_on_burning_state_exited"]

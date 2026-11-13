@@ -33,6 +33,12 @@ static func run_start(test: SmokeTest, level: HouseLevel) -> void:
 	await test.physics_frames(20)
 	Input.action_release(Types.ACTION_MOVE_FORWARD)
 	test.check(rig.get_feet_position().distance_to(before) > 0.2 and walkable.contains(rig.get_feet_position()), "walking moves the player and stays on the floor")
+	test.check(rig.get_body().get_stride() > 0.05, "the body under the player strides as they walk")
+	var glove: GloveHand = rig.get_hand_pointer(Types.Hand.LEFT).get_parent_node_3d().find_child("Glove", false, false) as GloveHand
+	test.check(glove != null, "each controller wears a glove")
+	if glove != null:
+		glove.set_curl(1.0, 1.0)
+		test.check(is_equal_approx(glove.get_grip_curl(), 1.0), "a full grip closes the glove into a fist")
 	await _check_house_stages(test, level)
 
 
@@ -77,6 +83,9 @@ static func run_end(test: SmokeTest, level: HouseLevel) -> void:
 	if Profile.operation.day_number != level.get_ghost().night_number:
 		test.check(not level.get_ghost().is_haunting(), "no ghost on other nights")
 	await _check_ghost(test, level)
+	await _check_fuse_box(test, level)
+	_check_skills(test, level)
+	await _check_holsters(test, level)
 	await _check_raid_waves(test, level)
 	await _check_storming_in(test, level)
 	var operation: Operation = level.operation
@@ -123,6 +132,38 @@ static func _check_rats(test: SmokeTest, level: HouseLevel) -> void:
 	rats.bite_chance_per_second = chance_before
 	for rat: Rat in rat_list:
 		rat.process_mode = Node.PROCESS_MODE_INHERIT
+	await _check_rat_traps(test, level, rats)
+
+
+## The rats chew through stash bags; traps from the box beside the shelf,
+## set on the floor, catch them (a trap let go off the floor goes back in).
+static func _check_rat_traps(test: SmokeTest, level: HouseLevel, rats: RatPack) -> void:
+	var rat_list: Array[Rat] = rats.get_rats()
+	var operation: Operation = level.operation
+	operation.add_product(operation.recipes[0], 2, 4)
+	var stash_before: int = operation.stash.get_total()
+	var chewer: Rat = rat_list[1]
+	var chew_before: float = rats.chew_seconds
+	rats.chew_seconds = 0.4
+	chewer.global_position = Vector3(rats.get_stash_point().x - 0.6, 0.0, rats.get_stash_point().z)
+	chewer.go_for_stash()
+	test.check(await test.wait_until(func() -> bool: return operation.stash.get_total() < stash_before), "a rat at the stash shelf chews through a bag")
+	rats.chew_seconds = chew_before
+	var box: TrapBox = rats.get_trap_box()
+	var traps_before: int = box.get_traps_left()
+	var trap: RatTrap = box.take_item() as RatTrap
+	test.check(trap != null and box.get_traps_left() == traps_before - 1, "the box hands out a rat trap")
+	trap.global_position = Vector3(-2.2, 1.0, 0.6)
+	trap.drop_nowhere()
+	test.check(trap.is_armed and absf(trap.global_position.y) < 0.05, "a trap let go over the floor is set on the floor")
+	var caught: Rat = rat_list[2]
+	caught.global_position = trap.global_position + Vector3(0.05, 0.0, 0.0)
+	test.check(await test.wait_until(func() -> bool: return caught.is_caught()), "a rat that runs over a set trap is caught")
+	test.check(rats.get_free_rat_count() == rat_list.size() - 1, "a caught rat is gone for the day")
+	var stray: RatTrap = box.take_item() as RatTrap
+	stray.global_position = Vector3(-2.2, 12.0, 0.6)
+	stray.drop_nowhere()
+	test.check(box.get_traps_left() == traps_before - 1, "a trap let go off the floor goes back into the box")
 
 
 ## The admin terminal in the office (debug builds): cash and day by pointer.
@@ -335,6 +376,64 @@ static func _check_storming_in(test: SmokeTest, level: HouseLevel) -> void:
 	rig.locomotion.teleport_to(Vector3(2.4, 0.0, -0.4), 0.0)
 	await test.frames(2)
 	test.check(not garden.is_in_defense_zone() and garden.can_defend(), "once they stormed in, the gun works anywhere in the house")
+
+
+## At night the fuses may blow: the power goes out (the lab says so) until
+## the lever on the fuse box is flipped back.
+static func _check_fuse_box(test: SmokeTest, level: HouseLevel) -> void:
+	var fuse_box: FuseBox = level.get_fuse_box()
+	var operation: Operation = level.operation
+	var lab: Lab = level.get_front(Lab) as Lab
+	var chance_before: float = fuse_box.trip_chance_per_night_hour
+	fuse_box.trip_chance_per_night_hour = 1.0
+	fuse_box.on_hour_passed(true)
+	fuse_box.trip_chance_per_night_hour = chance_before
+	await test.frames(2)
+	test.check(fuse_box.is_tripped() and not operation.has_power, "at night the old wiring can blow the fuses: the power goes out")
+	test.check(lab.get_status_line() == TranslationServer.translate("Lab: no power"), "without power the lab stands still")
+	level.rig.locomotion.teleport_to(Vector3(-3.9, 0.0, -3.6), -PI * 0.5)
+	await test.frames(3)
+	level.rig.tap_world_point(fuse_box.get_lever_button().get_press_center())
+	await test.frames(3)
+	test.check(not fuse_box.is_tripped() and operation.has_power, "flipping the lever on the fuse box brings the power back")
+
+
+## Skills grow by doing: the day's crafting, harvesting and fighting left
+## experience; a level-up widens the green zone and shows on the wrist.
+static func _check_skills(test: SmokeTest, level: HouseLevel) -> void:
+	var operation: Operation = level.operation
+	test.check(Profile.skills.book.get_xp(SkillBook.Skill.FIGHTING) > 0.0, "landing punches and blade hits trains fighting")
+	var zone_before: float = operation.get_sweet_zone_multiplier()
+	var level_before: int = Profile.skills.get_level(SkillBook.Skill.CRAFTING)
+	var level_ups: Array[int] = []
+	operation.skill_leveled.connect(func(_skill: int, new_level: int) -> void: level_ups.append(new_level))
+	while Profile.skills.get_level(SkillBook.Skill.CRAFTING) == level_before:
+		operation.record_craft(1.0)
+	test.check(level_ups.size() == 1 and operation.get_sweet_zone_multiplier() > zone_before, "a crafting level-up widens the green zone")
+	test.check(level.get_skills_line().contains("%s %d" % [TranslationServer.translate("Craft"), level_before + 1]), "the wrist shows the skill levels")
+
+
+## In a headset the weapons hang on the body: knife at the hip, axe on the
+## back, the gun on the chest. A grip there draws one into that hand; one
+## is out at a time; opening the grip puts it back.
+static func _check_holsters(test: SmokeTest, level: HouseLevel) -> void:
+	var rig: XRPlayerRig = level.rig
+	var holsters: WeaponHolsters = level.context.holsters
+	var catalog: WeaponCatalog = holsters.weapon_catalog
+	test.check(holsters.get_holstered(WalkingBody.HOLSTER_HIP) == catalog.find_weapon(&"knife") and holsters.get_holstered(WalkingBody.HOLSTER_BACK) == catalog.find_weapon(&"axe") and holsters.get_holstered(WalkingBody.HOLSTER_CHEST) != null, "the knife hangs at the hip, the axe on the back, the gun on the chest")
+	var chest_gun: WeaponData = holsters.get_holstered(WalkingBody.HOLSTER_CHEST)
+	var left_hand: Node3D = rig.get_hand_pointer(Types.Hand.LEFT).get_parent_node_3d()
+	var right_hand: Node3D = rig.get_hand_pointer(Types.Hand.RIGHT).get_parent_node_3d()
+	await test.frames(2)
+	left_hand.global_position = holsters.get_holster_position(WalkingBody.HOLSTER_HIP)
+	rig.handle_controller_button(Types.Hand.LEFT, Types.XR_ACTION_GRIP_CLICK, true)
+	test.check(holsters.get_drawn(Types.Hand.LEFT) == catalog.find_weapon(&"knife") and rig.get_held_items().is_empty(), "a grip at the hip draws the knife into that hand")
+	right_hand.global_position = holsters.get_holster_position(WalkingBody.HOLSTER_CHEST)
+	rig.handle_controller_button(Types.Hand.RIGHT, Types.XR_ACTION_GRIP_CLICK, true)
+	test.check(holsters.get_drawn(Types.Hand.RIGHT) == chest_gun and holsters.get_drawn(Types.Hand.LEFT) == null, "drawing the gun puts the knife back: one weapon out at a time")
+	rig.handle_controller_button(Types.Hand.RIGHT, Types.XR_ACTION_GRIP_CLICK, false)
+	rig.handle_controller_button(Types.Hand.LEFT, Types.XR_ACTION_GRIP_CLICK, false)
+	test.check(not holsters.has_drawn(), "opening the grip puts the weapon back")
 
 
 ## Without a headset the controller callbacks are the only way to run the XR input mapping.

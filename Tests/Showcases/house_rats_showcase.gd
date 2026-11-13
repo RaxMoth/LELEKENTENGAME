@@ -1,8 +1,8 @@
 ## The starter cabin with its rats: a fresh operation (one room), the rats
-## gathered on the floor in front of the player.
+## gathered on the floor in front of the player, a snap trap set among them.
 ## Loaded by Tests/screenshot_tool.gd with `showcase=house_rats`.
 ##
-## Dependencies: HouseLevel, RatPack, Rat, Profile autoload
+## Dependencies: HouseLevel, RatPack, Rat, RatTrap, TrapBox, Profile autoload
 extends RefCounted
 
 ## Where the rats sit for the picture (x, z) and which way they look.
@@ -19,3 +19,6 @@ static func apply(scene: Node) -> void:
 		var spot: Vector3 = RAT_SPOTS[rat_index]
 		rats[rat_index].global_position = Vector3(spot.x, 0.0, spot.y)
 		rats[rat_index].rotation.y = spot.z
+	var trap: RatTrap = level.get_rats().get_trap_box().take_item() as RatTrap
+	trap.global_position = Vector3(-1.75, 0.6, -0.7)
+	trap.drop_nowhere()

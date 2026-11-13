@@ -85,6 +85,9 @@ const XR_TRACKER_RIGHT_HAND: StringName = &"right_hand"
 ## Pose that points where the controller aims (use it for rays and pointers).
 const XR_POSE_AIM: StringName = &"aim"
 const XR_ACTION_TRIGGER_CLICK: StringName = &"trigger_click"
+## How far the trigger / grip is pulled (0..1): the gloves' fingers follow them.
+const XR_ACTION_TRIGGER: StringName = &"trigger"
+const XR_ACTION_GRIP: StringName = &"grip"
 ## Grip button: grab and let go of items.
 const XR_ACTION_GRIP_CLICK: StringName = &"grip_click"
 const XR_ACTION_MENU_BUTTON: StringName = &"menu_button"
@@ -256,6 +259,14 @@ const EVENT_PLANT_HARVESTED: StringName = &"plant_harvested"
 const EVENT_PICKER_TARGET: StringName = &"picker_target"
 const EVENT_PICKER_ARRIVED: StringName = &"picker_arrived"
 const EVENT_PICKER_DONE: StringName = &"picker_done"
+## The cooker's fire (Lab/StationFire.tscn): a batch left on it starts to
+## smoke, catches fire, and is put out (or taken off in time).
+const EVENT_OVERHEAT: StringName = &"overheat"
+const EVENT_IGNITE: StringName = &"ignite"
+const EVENT_COOL_DOWN: StringName = &"cool_down"
+## The fuse box (FuseBox/FuseBox.tscn) trips / is reset.
+const EVENT_POWER_OUT: StringName = &"power_out"
+const EVENT_POWER_ON: StringName = &"power_on"
 
 # --- House: crew and the day (Workers/Worker.tscn, House.tscn) ---
 ## Crew: hired, wage paid on time / missed.

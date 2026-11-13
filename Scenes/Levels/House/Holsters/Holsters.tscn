@@ -1,0 +1,8 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://Scenes/Levels/House/Holsters/weapon_holsters.gd" id="holsters"]
+[ext_resource type="Resource" path="res://Ressources/Weapons/weapon_catalog.tres" id="catalog"]
+
+[node name="Holsters" type="Node"]
+script = ExtResource("holsters")
+weapon_catalog = ExtResource("catalog")

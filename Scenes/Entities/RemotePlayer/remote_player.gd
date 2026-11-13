@@ -1,5 +1,6 @@
 ## The other player in a co-op game: their head and hands drawn where that
-## player has them, their beams and their name. Poses arrive about 20 times
+## player has them, a body under the head that walks as they move
+## (WalkingBody), their beams and their name. Poses arrive about 20 times
 ## a second; the drawn pose glides between them a moment behind
 ## (SnapshotBuffer), while button presses use the newest one. On the host it also carries the
 ## player's HandInteractor, so their trigger and grip act in the host's
@@ -10,12 +11,10 @@
 ##   avatars_root.add_child(other)
 ##   other.apply_pose(head, left_hold, left_origin, left_direction, right_hold, ...)
 ##
-## Dependencies: HandInteractor, XRPointer, SnapshotBuffer, PlaceholderMesh3D, Palette, Types autoload
+## Dependencies: HandInteractor, XRPointer, SnapshotBuffer, WalkingBody, PlaceholderMesh3D, Palette, Types autoload
 class_name RemotePlayer
 extends Node3D
 
-## The torso hangs this far below the head and only turns with it (no tilt).
-const NECK_DROP: float = 0.12
 ## Metadata on a hold anchor: Vector2i(peer id, hand) of whoever holds there.
 const META_HOLDER: StringName = &"coop_holder"
 
@@ -37,8 +36,7 @@ var _pointers: Dictionary[Types.Hand, XRPointer] = {}
 @onready var _head: Node3D = %Head
 @onready var _head_mesh: PlaceholderMesh3D = %HeadMesh
 @onready var _name_label: Label3D = %NameLabel
-@onready var _body: Node3D = %Body
-@onready var _collar: PlaceholderMesh3D = %Collar
+@onready var _body: WalkingBody = %Body
 @onready var _left_hand: Node3D = %LeftHand
 @onready var _right_hand: Node3D = %RightHand
 @onready var _left_tip: PlaceholderMesh3D = %LeftTip
@@ -57,7 +55,7 @@ func setup(player_peer_id: int, player_name: String, player_index: int, acts_in_
 func _ready() -> void:
 	visible = false
 	_head_mesh.color = _color
-	_collar.color = _color
+	_body.accent_color = _color
 	_left_tip.color = _color
 	_right_tip.color = _color
 	_name_label.text = _player_name
@@ -79,12 +77,12 @@ func _ready() -> void:
 		hands.setup({Types.Hand.LEFT: _left_hand, Types.Hand.RIGHT: _right_hand}, _pointers)
 
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
 	if not _has_pose:
 		return
 	var shown_time: float = SnapshotBuffer.now() - SnapshotBuffer.INTERPOLATION_DELAY
 	_head.global_transform = _head_buffer.sample(shown_time)
-	_place_body()
+	_body.follow(_head.global_transform, global_position.y, delta)
 	for hand: Types.Hand in _hand_buffers:
 		_get_hand(hand).global_transform = _hand_buffers[hand].sample(shown_time)
 
@@ -114,7 +112,7 @@ func apply_pose(head: Transform3D, left_hold: Transform3D, left_origin: Vector3,
 ## so the grab happens exactly where the player's hand is).
 func snap_to_pose() -> void:
 	_head.global_transform = _target_head
-	_place_body()
+	_body.follow(_head.global_transform, global_position.y, 0.0)
 	for hand: Types.Hand in _target_hands:
 		_get_hand(hand).global_transform = _target_hands[hand]
 
@@ -140,12 +138,6 @@ func get_feet_position() -> Vector3:
 	var head: Vector3 = _target_head.origin
 	return Vector3(head.x, global_position.y, head.z)
 
-
-## Under the head, turned the way the head faces (looking down doesn't bend the body).
-func _place_body() -> void:
-	var forward: Vector3 = -_head.global_transform.basis.z
-	var yaw: float = atan2(-forward.x, -forward.z)
-	_body.global_transform = Transform3D(Basis(Vector3.UP, yaw), _head.global_position + Vector3(0.0, -NECK_DROP, 0.0))
 
 
 func _get_hand(hand: Types.Hand) -> Node3D:

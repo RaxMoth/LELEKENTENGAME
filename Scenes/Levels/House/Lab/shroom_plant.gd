@@ -116,6 +116,8 @@ func harvest(is_by_hand: bool = true) -> bool:
 	FloatingText3D.spawn("+%d %s" % [stored, tr(crop.display_name)], _harvest_button.get_press_center() + Vector3(0.0, 0.2, 0.0), Palette.GOLD, Global.get_world_root())
 	Audio.play_sfx_at(SfxSynth.get_preset(&"pop"), global_position, 0.05, -4.0)
 	state_chart.send_event(Types.EVENT_PLANT_HARVESTED)
+	if is_by_hand:
+		operation.record_hand_harvest()
 	harvested.emit(stored)
 	return true
 
