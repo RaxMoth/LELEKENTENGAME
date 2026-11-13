@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="TowerData" format=3]
+
+[ext_resource type="Script" path="res://Scripts/Resources/tower_data.gd" id="script"]
+
+[resource]
+script = ExtResource("script")
+id = &"sentry"
+display_name = "Sentry Gun"
+description = "Fast machine gun on a post. Shreds officers on foot."
+kind = 0
+cost = 600
+color = Color(0.3569, 0.4863, 0.9804, 1)
+damage = 16.0
+fire_interval_seconds = 0.22
+range_meters = 26.0
+turn_speed_degrees = 200.0
+upgrade_costs = PackedInt32Array(450, 900)
+damage_per_level = 0.4
+range_per_level = 3.0

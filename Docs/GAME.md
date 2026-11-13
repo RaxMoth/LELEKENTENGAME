@@ -89,10 +89,12 @@ new day, in co-op the guest comes along (`DaySummaryPopup`).
 | Use (station buttons, screens, door bolt) | Dominant-hand trigger | Click |
 | Draw a weapon | Your weapons hang on your body: the knife at your dominant hip, the axe over your back, the gun across your chest. Close a grip there to draw it into that hand; open the grip and it goes back. One weapon is out at a time | The weapon equipped at the armory is in hand |
 | Fight with fists, the knife or the axe | Swing a fist (an empty hand) or the drawn blade into a raider or a rat within reach; a hand's trigger also strikes what's in reach along its beam | Click a raider or rat in reach, or right-click |
-| Fire your gun | Draw it, then pull that hand's trigger (from the front room, the porch or the garden; a rat in the way is hit anywhere); hold it for the SMG | Right-click (hold for the SMG), or click a raider |
+| Fire your gun | Draw it, then pull that hand's trigger (from the front room or anywhere outside — porch, garden, the streets; a rat in the way is hit anywhere); hold it for the SMG | Right-click (hold for the SMG), or click a raider |
 | Use what you hold | The extinguisher sprays with the trigger of the hand that holds it; the grip puts it down | Click to spray a burst; click its hook to hang it back |
 | Front door | Trigger on a handle swings it fully open / shut; grip a handle to swing it by hand | Click a handle |
 | Talk to someone | Dominant-hand trigger on a person in the street; pick a reply on the panel beside them | Click a person, then a reply |
+| Switch weapon | A / X: the next gun you own (a drawn gun is swapped right in your hand) | Q: the next weapon you own |
+| Build a tower | Buy a kit at the tower depot by the porch, carry it outside, point at the ground (a green ring shows the spot) and pull the trigger | Click the kit, then click the ground |
 | Walk | Off-hand stick walks where you look — forward, back and sideways, like WASD — easing in and out; push it all the way to sprint. The sticks never teleport | WASD / arrows; 1–4 jump to lab, front, window, office |
 | Run with your arms | Hold both grips (hands empty) and swing your arms like jogging: the harder you swing, the faster you run, toward where your hands point; footsteps and a light tap in both hands every stride | — |
 | Turn | Dominant-hand stick left / right: 30° snaps (or smooth turning) | Drag |
@@ -265,6 +267,34 @@ view. You can't walk while seated and your own gun is put away; the
 "Take off goggles" button floating in front of you (or the end of the
 shift) puts you back at the desk exactly where you stood.
 
+### Towers anywhere outside
+
+The **tower depot** stands in the garden by the porch: a terminal and a
+table. Buy a kit there, carry it outside — the garden or anywhere in the
+streets — point at the ground and pull the trigger: the tower goes up right
+there (a ring on the ground shows the spot: green where it may stand, red
+where not — not in the house, on buildings, trees or cars, right by the
+front door or next to another tower). Towers stay standing and are still
+there the next day. Each has an **upgrade button on its post** (two
+upgrades: more damage and range).
+
+| Tower | What it does |
+|---|---|
+| Sentry Gun | Fast machine gun: shreds officers on foot |
+| Shock Coil | A discharge that jumps from the target to up to three officers next to it |
+| Mortar | Lobs shells into the street (not closer than 7 m); the blast hits everyone around the impact and pierces armor |
+| Heat Lance | A beam that stays on one target and burns hotter the longer it holds it (up to ×7): melts helicopters and armored vehicles |
+
+The **Monitor Wall** (office upgrade after the Security PC) puts four big
+screens on the office wall behind the desk: each shows a roof turret or a
+field tower live — switch, take over, aim and fire from any of them. The
+Security PC and the goggles can take over field towers too.
+
+Shots — yours, the towers' and the turrets' — don't go through the town's
+buildings. Officers jogging through the streets go after a player who
+comes within 9 m out there and let them go beyond 28 m (then they find
+their way back to the yard through the streets).
+
 ### The front door
 
 The door between the front room and the porch swings on a hinge. Pull the
@@ -287,7 +317,10 @@ only their **fists**. The terminal sells one weapon after the other: the
 **knife** first, then the **axe** (needs the knife), then the **pistol**
 (needs the axe), then the other guns (need the pistol); one not for sale
 yet shows a lock and what it needs. Fists, blades and the pistol never run
-dry. "Better Rounds" adds damage to every gun.
+dry. "Better Rounds" adds damage to every gun. **Upgrades:** the terminal
+also sells the next upgrade of the weapon in hand (up to three levels:
+more damage, faster fire, more rounds carried); equip another weapon to
+upgrade that one. A / X (Q on a screen) switches between the weapons you own.
 
 **Close combat:** fists, the knife and the axe hit a raider within reach
 anywhere — in the house, on the porch or out in the yard. In a headset you

@@ -25,3 +25,4 @@ ammo_pack_size = 1
 ammo_pack_cost = 0
 max_ammo = 1
 swing_reach_meters = 0.5
+upgrade_costs = PackedInt32Array(200, 420, 800)

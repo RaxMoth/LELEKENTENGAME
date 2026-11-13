@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="TowerData" format=3]
+
+[ext_resource type="Script" path="res://Scripts/Resources/tower_data.gd" id="script"]
+
+[resource]
+script = ExtResource("script")
+id = &"shock"
+display_name = "Shock Coil"
+description = "A discharge that jumps from officer to officer — great against packed hordes."
+kind = 3
+cost = 1100
+color = Color(0.2353, 0.7843, 0.9098, 1)
+damage = 42.0
+fire_interval_seconds = 1.5
+range_meters = 18.0
+turn_speed_degrees = 240.0
+chain_count = 4
+chain_range = 6.0
+upgrade_costs = PackedInt32Array(800, 1600)
+damage_per_level = 0.35
+range_per_level = 2.5

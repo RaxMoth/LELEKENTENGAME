@@ -78,6 +78,8 @@ const ACTION_TRAVEL_4: StringName = &"travel_4"
 ## Desktop: full screen on / off (F11).
 const ACTION_TOGGLE_FULLSCREEN: StringName = &"toggle_fullscreen"
 const ACTION_DEBUG_TOGGLE: StringName = &"debug_toggle"
+## Flat simulator: the next owned weapon in hand (Q).
+const ACTION_NEXT_WEAPON: StringName = &"next_weapon"
 
 # ============================================
 # XR (action names in openxr_action_map.tres: Godot's default set)
@@ -97,6 +99,8 @@ const XR_ACTION_GRIP_CLICK: StringName = &"grip_click"
 const XR_ACTION_MENU_BUTTON: StringName = &"menu_button"
 ## B / Y button: second way to open the pause menu.
 const XR_ACTION_SECONDARY_BUTTON: StringName = &"by_button"
+## A / X button: the next owned gun in hand.
+const XR_ACTION_PRIMARY_BUTTON: StringName = &"ax_button"
 const XR_ACTION_THUMBSTICK: StringName = &"primary"
 ## Trackpads (HTC Vive wands) are bound to the "secondary" slot.
 const XR_ACTION_TRACKPAD: StringName = &"secondary"
@@ -167,6 +171,8 @@ const UPGRADE_BLASTER: StringName = &"def_blaster"
 const UPGRADE_TURRETS: StringName = &"def_turrets"
 ## The office PC that takes turrets over by hand.
 const UPGRADE_SECURITY_PC: StringName = &"def_security_pc"
+## Four big screens in the office: watch and steer turrets and field towers.
+const UPGRADE_MONITOR_WALL: StringName = &"def_monitor_wall"
 ## Hired guards (level = how many).
 const UPGRADE_GUARD: StringName = &"work_guard"
 

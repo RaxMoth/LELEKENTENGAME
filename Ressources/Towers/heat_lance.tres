@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="TowerData" format=3]
+
+[ext_resource type="Script" path="res://Scripts/Resources/tower_data.gd" id="script"]
+
+[resource]
+script = ExtResource("script")
+id = &"heat_lance"
+display_name = "Heat Lance"
+description = "A heat beam that locks onto one target and burns hotter every second it stays on it. Melts helicopters and armor."
+kind = 2
+cost = 1800
+color = Color(0.898, 0.2824, 0.302, 1)
+damage = 14.0
+fire_interval_seconds = 0.1
+range_meters = 22.0
+pierces_armor = true
+turn_speed_degrees = 120.0
+beam_ramp_seconds = 4.0
+beam_max_multiplier = 7.0
+upgrade_costs = PackedInt32Array(1300, 2600)
+damage_per_level = 0.35
+range_per_level = 3.0

@@ -95,6 +95,10 @@ var _swing_cooldowns: Dictionary[Types.Hand, float] = {Types.Hand.LEFT: 0.0, Typ
 @onready var director: AttackerDirector = %AttackerDirector
 @onready var security_pc: SecurityPc = %SecurityPc
 @onready var turret_seat: TurretSeat = %TurretSeat
+## The towers the player builds out in the field (and the depot that sells them).
+@onready var tower_field: TowerField = %TowerField
+## The office's monitor wall (an upgrade after the Security PC).
+@onready var monitor_wall: MonitorWall = %MonitorWall
 @onready var _turret_root: Node3D = %Turrets
 @onready var _guards: Node3D = %Guards
 
@@ -105,6 +109,7 @@ var _swing_cooldowns: Dictionary[Types.Hand, float] = {Types.Hand.LEFT: 0.0, Typ
 func _on_setup() -> void:
 	context.rig.primary_action_pressed.connect(_on_rig_primary_action_pressed)
 	context.rig.secondary_action_pressed.connect(_on_rig_secondary_action_pressed)
+	context.rig.next_weapon_pressed.connect(switch_weapon)
 	context.rig.secondary_action_released.connect(func(pointer: XRPointer) -> void:
 		if pointer == _held_trigger_pointer:
 			_stop_trigger()
@@ -135,6 +140,10 @@ func _on_setup() -> void:
 		_turrets.append(turret)
 	security_pc.setup(_turrets, yard)
 	security_pc.goggles_used.connect(func(turret: HouseTurret) -> void: turret_seat.enter(turret))
+	# Field towers can be watched and taken over from the PC like the roof turrets.
+	tower_field.tower_built.connect(security_pc.add_turret)
+	tower_field.setup(context, yard)
+	monitor_wall.setup(security_pc, yard)
 	turret_seat.setup(context.rig)
 	for guard: Node in _guards.get_children():
 		(guard as Worker).operation = context.operation
@@ -151,6 +160,8 @@ func _shift_process(delta: float) -> void:
 	director.step(delta)
 	for turret: HouseTurret in _turrets:
 		turret.step(delta)
+	tower_field.step(delta)
+	monitor_wall.step(delta)
 	security_pc.step(delta)
 	turret_seat.step(delta)
 	_update_weapon_model()
@@ -158,6 +169,8 @@ func _shift_process(delta: float) -> void:
 
 
 func _refresh_displays() -> void:
+	tower_field.refresh_display(self)
+	monitor_wall.refresh_display(self)
 	if security_pc.is_available():
 		update_screen_rendering(security_pc.get_screen())
 
@@ -171,6 +184,7 @@ func apply_upgrades() -> void:
 	for turret: HouseTurret in _turrets:
 		turret.set_mounted(turret_level >= turret.mount_level)
 	security_pc.set_available(context.operation.get_upgrade_level(Types.UPGRADE_SECURITY_PC) > 0)
+	monitor_wall.set_available(context.operation.get_upgrade_level(Types.UPGRADE_MONITOR_WALL) > 0)
 
 
 func finish_shift(_result: LevelResult) -> void:
@@ -180,6 +194,7 @@ func finish_shift(_result: LevelResult) -> void:
 	_guest_trigger_pointer = null
 	turret_seat.leave()
 	security_pc.release_control()
+	tower_field.refund_kits()
 	for pointer: XRPointer in context.rig.get_active_pointers():
 		pointer.set_world_hit_distance(RayMath.NO_HIT)
 
@@ -227,15 +242,16 @@ func is_in_defense_zone() -> bool:
 	return _is_defense_spot(context.rig.get_feet_position())
 
 
-## True where the player's shots hit raiders: in the front room, on the
-## porch or in the garden — and anywhere in the house once they stormed in.
+## True where the player's shots hit raiders: in the front room, anywhere
+## outside (porch, garden, the streets) — and anywhere in the house once
+## they stormed in.
 func can_defend() -> bool:
 	return is_in_defense_zone() or yard.is_hunting()
 
 
 func _is_defense_spot(feet: Vector3) -> bool:
 	var floor_point: Vector2 = Vector2(feet.x, feet.z)
-	return defense_zone.has_point(floor_point) or porch_region.has_point(floor_point) or get_garden_region().has_point(floor_point)
+	return defense_zone.has_point(floor_point) or porch_region.has_point(floor_point) or yard.is_outdoors(feet)
 
 
 ## The walkable garden (world X / Z): the yard inside its fence, from the
@@ -245,6 +261,35 @@ func get_garden_region() -> Rect2:
 	var start: Vector2 = bounds.position + Vector2(garden_fence_margin, garden_fence_margin)
 	var house_side_z: float = porch_region.end.y
 	return Rect2(start, Vector2(bounds.size.x - garden_fence_margin * 2.0, house_side_z - start.y))
+
+
+## The next owned weapon in hand (A / X in a headset, Q on a screen). On a
+## screen every owned weapon in turn; in a headset the next gun for the
+## chest holster — a gun already drawn is swapped right in the hand.
+## Returns the weapon now in hand (null when there is nothing to switch to).
+func switch_weapon(step: int = 1) -> WeaponData:
+	var uses_holsters: bool = _uses_holsters()
+	var hands_with_guns: Array[Types.Hand] = []
+	if uses_holsters:
+		for hand: Types.Hand in HANDS:
+			var drawn: WeaponData = context.holsters.get_drawn(hand)
+			if drawn != null and not drawn.is_melee():
+				hands_with_guns.append(hand)
+	var weapon: WeaponData = Profile.armory.loadout.equip_next(weapon_catalog, step, uses_holsters)
+	if weapon == null:
+		Audio.play_ui(Audio.UI_ERROR)
+		return null
+	for hand: Types.Hand in hands_with_guns:
+		context.holsters.draw(weapon.holster_slot, hand)
+	var head: Transform3D = context.rig.get_head_transform()
+	FloatingText3D.spawn(tr(weapon.display_name), head.origin - head.basis.z * 1.2 - Vector3(0.0, 0.25, 0.0), Palette.TEXT, Global.get_world_root())
+	Audio.play_ui(Audio.UI_CLICK)
+	return weapon
+
+
+## Upgrade level of [param weapon] bought at the armory (Profile.armory).
+func _get_upgrade_level(weapon: WeaponData) -> int:
+	return Profile.armory.loadout.get_upgrade_level(weapon) if weapon != null else 0
 
 
 ## The weapon [param pointer]'s hand uses: on a screen the one equipped at
@@ -283,7 +328,7 @@ func fire_weapon(pointer: XRPointer) -> Raider:
 		return strike(pointer)
 	if not context.is_playing() or weapon == null or _weapon_cooldown > 0.0:
 		return null
-	_weapon_cooldown = weapon.fire_interval_seconds
+	_weapon_cooldown = weapon.get_fire_interval(_get_upgrade_level(weapon))
 	if not Profile.armory.loadout.try_fire(weapon):
 		_stop_trigger()
 		Audio.play_ui(Audio.UI_ERROR)
@@ -310,7 +355,7 @@ func strike(pointer: XRPointer) -> Raider:
 	var weapon: WeaponData = get_weapon_for(pointer)
 	if not context.is_playing() or weapon == null or not weapon.is_melee() or _weapon_cooldown > 0.0:
 		return null
-	_weapon_cooldown = weapon.fire_interval_seconds
+	_weapon_cooldown = weapon.get_fire_interval(_get_upgrade_level(weapon))
 	if _shown_weapon != null:
 		_shown_weapon.play_use()
 	var raider: Raider = yard.pick_raider(pointer.ray_origin, pointer.ray_direction, weapon.range_meters)
@@ -359,7 +404,7 @@ func _fire_projectiles(pointer: XRPointer, muzzle: Vector3, weapon: WeaponData, 
 			hits = hits_before_target
 		for hit: Array in hits:
 			var raider: Raider = hit[0] as Raider
-			raider.take_hit(WeaponBallistics.get_damage_at(weapon, float(hit[1])) + bonus, self, false, weapon.pierces_armor)
+			raider.take_hit(WeaponBallistics.get_damage_at(weapon, float(hit[1]), _get_upgrade_level(weapon)) + bonus, self, false, weapon.pierces_armor)
 			PopEffect3D.spawn(raider.get_hit_center(), Palette.PROJECTILE, 0.3, yard.get_effects_root())
 			if first_hit == null:
 				first_hit = raider
@@ -368,7 +413,7 @@ func _fire_projectiles(pointer: XRPointer, muzzle: Vector3, weapon: WeaponData, 
 			shot_end = (hits[hits.size() - 1][0] as Raider).get_hit_center()
 		elif target != null:
 			shot_end = target.get_hit_center()
-			target.take_hit(weapon.damage + bonus, self)
+			target.take_hit(weapon.get_damage(_get_upgrade_level(weapon)) + bonus, self)
 		var tracer: BeamTracer = Pools.spawn(TRACER_SCENE, yard.get_effects_root(), muzzle) as BeamTracer
 		tracer.fire(muzzle, shot_end)
 	return first_hit
@@ -419,9 +464,9 @@ func _on_rig_secondary_action_pressed(pointer: XRPointer) -> void:
 func _step_trigger() -> void:
 	var weapon: WeaponData = get_weapon_for(_held_trigger_pointer)
 	var guest_weapon: WeaponData = get_equipped_weapon()
-	if weapon != null and _seconds_since_shot > weapon.fire_interval_seconds * 2.5:
+	if weapon != null and _seconds_since_shot > weapon.get_fire_interval(_get_upgrade_level(weapon)) * 2.5:
 		_shots_in_burst = 0
-	if guest_weapon != null and _guest_seconds_since_shot > guest_weapon.fire_interval_seconds * 2.5:
+	if guest_weapon != null and _guest_seconds_since_shot > guest_weapon.get_fire_interval(_get_upgrade_level(guest_weapon)) * 2.5:
 		_guest_shots_in_burst = 0
 	if _held_trigger_pointer != null and weapon != null and weapon.is_automatic:
 		fire_weapon(_held_trigger_pointer)
@@ -444,7 +489,7 @@ func _fire_for_guest() -> void:
 	var pointer: XRPointer = _guest_trigger_pointer
 	if pointer == null or not context.is_playing() or weapon == null or _guest_weapon_cooldown > 0.0:
 		return
-	_guest_weapon_cooldown = weapon.fire_interval_seconds
+	_guest_weapon_cooldown = weapon.get_fire_interval(_get_upgrade_level(weapon))
 	if weapon.is_melee():
 		_strike_for_guest(pointer, weapon)
 		return
@@ -502,7 +547,7 @@ func _step_swings(delta: float) -> void:
 		var target: HitTarget = null if raider != null else _find_hit_target_in_reach(grip.origin, tip)
 		if raider == null and target == null:
 			continue
-		_swing_cooldowns[hand] = weapon.fire_interval_seconds
+		_swing_cooldowns[hand] = weapon.get_fire_interval(_get_upgrade_level(weapon))
 		if raider != null:
 			_land_strike(raider, weapon)
 		else:
@@ -522,7 +567,7 @@ func _can_swing_hand(hand: Types.Hand, weapon: WeaponData) -> bool:
 ## unless it's the axe), a pop where it struck and the weapon's sound; the
 ## player's fighting grows.
 func _land_strike(raider: Raider, weapon: WeaponData) -> void:
-	raider.take_hit(weapon.damage + context.operation.get_melee_damage_bonus(), self, false, weapon.pierces_armor)
+	raider.take_hit(weapon.get_damage(_get_upgrade_level(weapon)) + context.operation.get_melee_damage_bonus(), self, false, weapon.pierces_armor)
 	context.operation.record_melee_hit()
 	PopEffect3D.spawn(raider.get_hit_center(), Palette.PROJECTILE, 0.25, yard.get_effects_root())
 	Audio.play_sfx_at(SfxSynth.get_preset(weapon.sound_preset), raider.get_hit_center(), 0.12, -2.0)
@@ -546,7 +591,7 @@ func _get_pointer_hand(pointer: XRPointer) -> Types.Hand:
 ## A strike lands on something that isn't a raider (a rat).
 func _land_strike_on(target: HitTarget, weapon: WeaponData) -> void:
 	var where: Vector3 = target.get_hit_center()
-	target.take_hit(weapon.damage, self)
+	target.take_hit(weapon.get_damage(_get_upgrade_level(weapon)), self)
 	Audio.play_sfx_at(SfxSynth.get_preset(weapon.sound_preset), where, 0.12, -4.0)
 
 

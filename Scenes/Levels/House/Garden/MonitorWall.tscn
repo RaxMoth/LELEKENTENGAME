@@ -1,0 +1,19 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://Scenes/Levels/House/Garden/monitor_wall.gd" id="wall"]
+[ext_resource type="PackedScene" path="res://Scenes/Levels/House/Garden/TurretMonitor.tscn" id="monitor"]
+
+[node name="MonitorWall" type="Node3D"]
+script = ExtResource("wall")
+
+[node name="MonitorTopLeft" parent="." instance=ExtResource("monitor")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.68, 0.45, 0)
+
+[node name="MonitorTopRight" parent="." instance=ExtResource("monitor")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.68, 0.45, 0)
+
+[node name="MonitorBottomLeft" parent="." instance=ExtResource("monitor")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.68, -0.45, 0)
+
+[node name="MonitorBottomRight" parent="." instance=ExtResource("monitor")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.68, -0.45, 0)

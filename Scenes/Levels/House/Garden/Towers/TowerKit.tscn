@@ -1,0 +1,39 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://Scenes/Levels/House/Garden/Towers/tower_kit.gd" id="kit"]
+[ext_resource type="Script" path="res://Scripts/Utils/placeholder_mesh_3d.gd" id="mesh"]
+
+[node name="TowerKit" type="Node3D"]
+script = ExtResource("kit")
+grab_radius = 0.22
+hold_offset = Vector3(0, -0.05, -0.18)
+
+[node name="Box" type="MeshInstance3D" parent="."]
+unique_name_in_owner = true
+cast_shadow = 0
+script = ExtResource("mesh")
+shape_kind = 1
+size = Vector3(0.36, 0.24, 0.3)
+color = Color(0.1412, 0.1686, 0.2431, 1)
+
+[node name="Stripe" type="MeshInstance3D" parent="."]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.02, 0)
+cast_shadow = 0
+script = ExtResource("mesh")
+shape_kind = 1
+size = Vector3(0.37, 0.05, 0.31)
+color = Color(0.3569, 0.4863, 0.9804, 1)
+glow = 0.4
+
+[node name="KitLabel" type="Label3D" parent="."]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.24, 0)
+visibility_range_end = 6.0
+pixel_size = 0.0018
+billboard = 1
+modulate = Color(0.9333, 0.9451, 0.9686, 1)
+outline_modulate = Color(0.051, 0.0627, 0.0902, 1)
+text = "Tower"
+font_size = 40
+outline_size = 10

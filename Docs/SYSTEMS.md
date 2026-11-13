@@ -342,6 +342,9 @@ garden.fire_weapon(pointer) / yard.spawn_raider(scene) / yard.pick_raider(origin
 garden.get_turrets() / security_pc.toggle_control() / turret.set_manual_aim(point)             # roof turrets, Security PC
 garden.director.queue_wave(wave, raid_data) / spawn_raider(scene, health, squad, spot, route) / get_raiders_left()   # AttackerDirector: hordes through the town, vehicles
 raider.march(route, yard) / is_marching()   # Raider: jogging through the streets first; PoliceVehicle (SquadCar, ArmoredVehicle, PoliceHelicopter) extends Raider
+garden.tower_field.buy_kit(tower) / build(tower, spot) / upgrade_tower(tower) / get_towers()   # TowerField: towers anywhere outside
+garden.monitor_wall.get_monitors()[0].toggle_control() / aim_at_view(uv)   # MonitorWall (office upgrade)
+garden.switch_weapon() / loadout.upgrade(weapon) / weapon.get_damage(level)   # switching and weapon upgrades
 lab.get_station(&"Cooker") / get_crate(&"glowcap")                                          # Lab
 GameConfig.get_default().get_upgrades() / find_upgrade(id)   # all area catalogs
 ```

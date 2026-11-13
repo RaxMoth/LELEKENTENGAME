@@ -17,7 +17,7 @@
 ##   director.get_raiders_left()            # pending + still standing; 0 = wave beaten
 ##
 ## Dependencies: HouseContext, Yard, Raider, RaidSquad, RaidWave, RaidData,
-##               TownData, StreetRoutes
+##               TownData, TownLayout, StreetRoutes
 class_name AttackerDirector
 extends Node
 
@@ -56,6 +56,7 @@ var _yard: Yard = null
 var _pending_spawns: Array[Dictionary] = []
 var _squads: Array[RaidSquad] = []
 var _streets: StreetRoutes = null
+var _town_layout: TownLayout = null
 var _random: RandomNumberGenerator = RandomNumberGenerator.new()
 
 
@@ -63,11 +64,18 @@ func _ready() -> void:
 	_random.randomize()
 	if town_data != null:
 		_streets = StreetRoutes.new(town_data.street_x, town_data.street_z)
+		_town_layout = TownLayout.build(town_data)
 
 
 func setup(context: HouseContext, yard: Yard) -> void:
 	_context = context
 	_yard = yard
+	yard.street_routes = _streets
+	# The town's buildings block shots like the yard's trees do.
+	if _town_layout != null:
+		yard.set_building_cover(_town_layout.building_footprints, _town_layout.building_heights)
+		# Outdoors starts at the same walls the town's floor stops at.
+		yard.house_area = town_data.house_footprint
 
 
 ## One frame: lets queued officers go and moves the squads' plans on

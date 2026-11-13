@@ -37,9 +37,19 @@ func _ready() -> void:
 	_feed_viewport.render_target_update_mode = SubViewport.UPDATE_DISABLED
 
 
+# The console shows the feed texture from another viewport: let go of it
+# and stop rendering before both are freed (freeing a viewport whose texture
+# is still shown elsewhere can crash the engine on shutdown).
+func _exit_tree() -> void:
+	_feed_viewport.render_target_update_mode = SubViewport.UPDATE_DISABLED
+	var console: TurretConsole = get_console()
+	if console != null:
+		console.set_feed(null)
+
+
 ## Called by the FrontGarden at setup with every turret mount on the house.
 func setup(turrets: Array[HouseTurret], yard: Yard) -> void:
-	_turrets = turrets
+	_turrets = turrets.duplicate()
 	_yard = yard
 	var console: TurretConsole = get_console()
 	console.set_feed(_feed_viewport.get_texture())
@@ -50,6 +60,18 @@ func setup(turrets: Array[HouseTurret], yard: Yard) -> void:
 	console.control_toggled.connect(toggle_control)
 	_goggles_button.pressed.connect(func(_button: PointerButton) -> void: use_goggles())
 	_refresh_console()
+
+
+## Adds a turret to look through and take over (a tower built in the field).
+func add_turret(turret: HouseTurret) -> void:
+	if not _turrets.has(turret):
+		_turrets.append(turret)
+	_refresh_console()
+
+
+## Every turret it can show (roof turrets and field towers, mounted or not).
+func get_turrets() -> Array[HouseTurret]:
+	return _turrets
 
 
 ## Puts the goggles on: asks to seat the player in the turret on screen.

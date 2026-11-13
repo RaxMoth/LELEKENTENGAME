@@ -172,6 +172,7 @@ func _test_house(level_data: LevelData) -> void:
 	await SalesSmokeChecks.run(self, level)
 	await TownSmokeChecks.run(self, level)
 	await DefenseSmokeChecks.run(self, level)
+	await TowerSmokeChecks.run(self, level)
 	await HouseSmokeChecks.run_end(self, level)
 	# run_end loses the shift (the door breaks): no day is counted as done.
 	var lost_day: int = Profile.operation.day_number

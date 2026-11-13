@@ -113,12 +113,17 @@ func step(delta: float) -> void:
 	_seconds_until_retarget -= delta
 	if _seconds_until_retarget <= 0.0 or _target == null or not _target.is_alive():
 		_seconds_until_retarget = retarget_interval_seconds
-		_target = _yard.find_raider_nearest_door(_muzzle.global_position, range_meters)
+		_target = _find_target()
 	if _target == null:
 		return
 	var aligned: bool = _swing_toward(_target.get_hit_center(), delta)
 	if aligned:
 		fire()
+
+
+## @virtual The raider to go after (the one nearest the door it can see).
+func _find_target() -> Raider:
+	return _yard.find_raider_nearest_door(_muzzle.global_position, range_meters)
 
 
 ## Fires one shot along the barrel when ready. Returns the raider hit, or null.

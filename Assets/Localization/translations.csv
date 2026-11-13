@@ -477,3 +477,29 @@ Hosting: waiting for a friend,Hosting: waiting for a friend,Du hostest: warte au
 Police helicopter incoming!,Police helicopter incoming!,Polizeihubschrauber im Anflug!
 Armored vehicle incoming!,Armored vehicle incoming!,Panzerwagen im Anmarsch!
 Squad cars incoming!,Squad cars incoming!,Streifenwagen im Anmarsch!
+%s upgrade,%s upgrade,%s-Upgrade
+Level %d / %d,Level %d / %d,Stufe %d / %d
+Maxed,Maxed,Maximal
+Next: %s,Next: %s,Nächste: %s
+%s upgraded to level %d,%s upgraded to level %d,%s auf Stufe %d verbessert
+Towers standing: %d,Towers standing: %d,Türme aufgestellt: %d
+Damage %d · Range %d m,Damage %d · Range %d m,Schaden %d · Reichweite %d m
+Blast %.1f m,Blast %.1f m,Explosion %.1f m
+Heats up to ×%d,Heats up to ×%d,Heizt auf bis ×%d
+Jumps to %d,Jumps to %d,Springt auf %d
+%.1f shots/s,%.1f shots/s,%.1f Schuss/s
+Tower depot,Tower depot,Turm-Depot
+"Carry a kit outside, point at the ground and pull the trigger to build. The button on a tower's post upgrades it.","Carry a kit outside, point at the ground and pull the trigger to build. The button on a tower's post upgrades it.","Trag einen Bausatz nach draußen, zeig auf den Boden und drück den Trigger zum Bauen. Der Knopf am Mast eines Turms verbessert ihn."
+Lv %d,Lv %d,St. %d
+Upgrade $%s,Upgrade $%s,Verbessern %s $
+Max level,Max level,Höchste Stufe
+Sentry Gun,Sentry Gun,Wachgeschütz
+Fast machine gun on a post. Shreds officers on foot.,Fast machine gun on a post. Shreds officers on foot.,Schnelles Maschinengewehr auf einem Mast. Zerlegt Polizisten zu Fuß.
+Mortar,Mortar,Mörser
+"Lobs shells into the street. The blast hits everyone around where it lands — and shakes armored vehicles.","Lobs shells into the street. The blast hits everyone around where it lands — and shakes armored vehicles.","Schießt Granaten in hohem Bogen auf die Straße. Die Explosion trifft alle um den Einschlag — auch Panzerwagen."
+Heat Lance,Heat Lance,Hitzelanze
+A heat beam that locks onto one target and burns hotter every second it stays on it. Melts helicopters and armor.,A heat beam that locks onto one target and burns hotter every second it stays on it. Melts helicopters and armor.,"Ein Hitzestrahl, der auf einem Ziel bleibt und mit jeder Sekunde heißer brennt. Schmilzt Hubschrauber und Panzerung."
+Shock Coil,Shock Coil,Schockspule
+A discharge that jumps from officer to officer — great against packed hordes.,A discharge that jumps from officer to officer — great against packed hordes.,"Eine Entladung, die von Polizist zu Polizist springt — stark gegen dichte Horden."
+Monitor Wall,Monitor Wall,Monitorwand
+"Four big screens on the office wall show your turrets and towers live: watch them all, take any one over, aim and fire.","Four big screens on the office wall show your turrets and towers live: watch them all, take any one over, aim and fire.","Vier große Bildschirme an der Bürowand zeigen deine Geschütze und Türme live: alle im Blick, jeden übernehmen, zielen und feuern."

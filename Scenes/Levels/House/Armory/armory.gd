@@ -26,6 +26,7 @@ func _on_setup() -> void:
 	board.weapon_buy_requested.connect(buy_weapon)
 	board.weapon_equip_requested.connect(equip_weapon)
 	board.ammo_buy_requested.connect(buy_ammo)
+	board.upgrade_requested.connect(upgrade_weapon)
 	# Shots change the ammo count many times a second: redraw the board at
 	# the display refresh rate instead of on every shot.
 	Profile.armory.loadout.changed.connect(_on_loadout_changed)
@@ -79,6 +80,20 @@ func buy_ammo(weapon: WeaponData) -> bool:
 		return false
 	loadout.add_ammo(weapon, weapon.ammo_pack_size)
 	Audio.play_ui(Audio.UI_CONFIRM)
+	get_board().refresh()
+	return true
+
+
+## Buys the next upgrade of an owned weapon (more damage, faster, more
+## rounds). Returns true on success.
+func upgrade_weapon(weapon: WeaponData) -> bool:
+	var loadout: WeaponLoadout = Profile.armory.loadout
+	if not loadout.can_upgrade(weapon) or not context.operation.spend_cash(loadout.get_upgrade_cost(weapon), "weapons"):
+		Audio.play_ui(Audio.UI_ERROR)
+		return false
+	loadout.upgrade(weapon)
+	Audio.play_ui(Audio.UI_CONFIRM)
+	announcement_requested.emit(tr("%s upgraded to level %d") % [tr(weapon.display_name), loadout.get_upgrade_level(weapon)], Palette.SUCCESS)
 	get_board().refresh()
 	return true
 

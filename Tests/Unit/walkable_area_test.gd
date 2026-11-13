@@ -60,3 +60,17 @@ func test_walking_into_a_wall_slides_along_it() -> void:
 	var building: Array[Rect2] = [Rect2(5.0, 5.0, 4.0, 4.0)]
 	# Diagonally into the west wall: the move along the wall is kept.
 	assert_vector(WalkableArea.resolve_move(town, Vector2(4.6, 6.0), Vector2(4.9, 6.4), [], building)).is_equal(Vector2(4.6, 6.4))
+
+
+func test_leaning_past_the_cellar_edge_never_lifts_to_the_room_above() -> void:
+	var area: WalkableArea = WalkableArea.new()
+	area.regions = [Rect2(0.0, 0.0, 10.0, 10.0)]
+	area.add_floor(WalkableFloor.create(-2.6, [Rect2(2.0, 2.0, 3.0, 3.0)]))
+	# Feet just past the cellar floor's edge (a head leaning out in a headset).
+	var past_the_edge: Vector3 = Vector3(5.1, -2.6, 3.0)
+	var moved: Vector3 = area.clamp_move(past_the_edge, past_the_edge + Vector3(0.1, 0.0, 0.0))
+	assert_float(moved.y).is_equal_approx(-2.6, 0.001)
+	# Stepping back onto the cellar floor works.
+	var back: Vector3 = area.clamp_move(past_the_edge, Vector3(4.9, -2.6, 3.0))
+	assert_vector(back).is_equal_approx(Vector3(4.9, -2.6, 3.0), Vector3(0.001, 0.001, 0.001))
+	area.free()

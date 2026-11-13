@@ -84,6 +84,8 @@ func _exit_tree() -> void:
 	PlaceholderMesh3D.clear_cache()
 	TexturedBox3D.clear_cache()
 	BlobShadow3D.clear_cache()
+	# The town's generated window textures: freed before the renderer shuts down.
+	TownMeshBuilder.clear_cache()
 
 
 func get_idle_count() -> int:
