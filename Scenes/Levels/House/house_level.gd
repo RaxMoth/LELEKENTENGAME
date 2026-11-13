@@ -1,7 +1,8 @@
 ## The House: one shift (a day and a night) of running the operation. Craft
 ## in the Lab, sell at the SalesWindow, hold the FrontGarden — all at once,
 ## walking between them; spend cash at the Office. The shift is won at dawn
-## and lost when a front says so (the front door breaking): the stash is
+## and lost when a player goes down (PlayerVitals: raiders that got in
+## through a broken front door hit them) or a front says so: the stash is
 ## lost and repairs cost cash; upgrades and banked cash stay.
 ##
 ## Shifts run in 3-day cycles (HouseCycle): days 1-3 only bring customers;
@@ -20,7 +21,7 @@
 ## host's world — time, money, stash, items, stations — instead.
 ##
 ## Dependencies: LevelBase, HouseFront, HouseContext, HouseCycle, Operation, DayCycle,
-##               HouseShell, UpgradeReaction, WalkBlocker, Ghost, Worker, WristStatus, XRPlayerRig, HouseCoopSync, Profile, Audio,
+##               HouseShell, UpgradeReaction, WalkBlocker, Ghost, Worker, WristStatus, PlayerVitals, XRPlayerRig, HouseCoopSync, Profile, Audio,
 ##               Events, Platform, Coop, Types autoloads, Palette, SfxSynth
 class_name HouseLevel
 extends LevelBase
@@ -60,6 +61,8 @@ var _mirrored_wrist_lines: PackedStringArray = PackedStringArray()
 @onready var operation: Operation = %Operation
 @onready var day_cycle: DayCycle = %DayCycle
 @onready var cycle: HouseCycle = %HouseCycle
+## This player's health (a co-op guest's mirrors the host's numbers).
+@onready var player_vitals: PlayerVitals = %PlayerVitals
 @onready var _wrist_status: WristStatus = %WristStatus
 @onready var _travel_spots: Node3D = %TravelSpots
 @onready var _world_environment: WorldEnvironment = %WorldEnvironment
@@ -81,6 +84,12 @@ func _on_level_setup() -> void:
 		spots.append(spot as Node3D)
 	rig.locomotion.travel_spots = spots
 	_wrist_status.attach_to(rig.get_wrist_anchor())
+	player_vitals.feet_source = rig.get_feet_position
+	player_vitals.is_mirror = is_mirror
+	player_vitals.hit_taken.connect(_on_player_hit)
+	player_vitals.health_changed.connect(_wrist_status.show_health)
+	player_vitals.died.connect(report_player_down.bind(""))
+	_wrist_status.show_health(player_vitals.get_health(), player_vitals.get_max_health())
 	context = HouseContext.new(self, rig, operation, day_cycle, cycle)
 	for node: Node in get_tree().get_nodes_in_group(Types.GROUP_HOUSE_FRONT):
 		var front: HouseFront = node as HouseFront
@@ -262,6 +271,12 @@ func get_wrist_lines() -> PackedStringArray:
 func set_mirrored_wrist_lines(lines: PackedStringArray) -> void:
 	_mirrored_wrist_lines = lines
 
+
+## A player went down — this one ([param player_name] empty) or, on the
+## host, a co-op guest: the shift is lost for everyone.
+func report_player_down(player_name: String) -> void:
+	_on_shift_lost(tr("You're down") if player_name.is_empty() else tr("%s is down") % player_name)
+
 # ============================================
 # INTERNALS
 # ============================================
@@ -269,6 +284,12 @@ func set_mirrored_wrist_lines(lines: PackedStringArray) -> void:
 func _warn(message: String) -> void:
 	announce(message, Palette.DANGER)
 	Audio.play_sfx(SfxSynth.get_preset(&"explosion"), 0.0, -6.0)
+	for pointer: XRPointer in rig.get_active_pointers():
+		rig.pulse(pointer, Types.HapticStrength.HEAVY)
+
+
+## Hit by a raider: both controllers rumble (the wrist shows what's left).
+func _on_player_hit(_amount: float, _current: float) -> void:
 	for pointer: XRPointer in rig.get_active_pointers():
 		rig.pulse(pointer, Types.HapticStrength.HEAVY)
 

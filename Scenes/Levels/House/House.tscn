@@ -18,6 +18,7 @@
 [ext_resource type="PackedScene" path="res://Scenes/Levels/House/Cellar/Cellar.tscn" id="cellar_scene"]
 [ext_resource type="PackedScene" path="res://Scenes/Levels/House/Ghost/Ghost.tscn" id="ghost_scene"]
 [ext_resource type="Script" path="res://Scenes/Levels/House/wrist_status.gd" id="wrist"]
+[ext_resource type="Script" path="res://Scripts/Components/player_vitals.gd" id="player_vitals"]
 [ext_resource type="Script" path="res://Scripts/XR/walkable_area.gd" id="walkable"]
 [ext_resource type="Script" path="res://Scripts/Utils/placeholder_mesh_3d.gd" id="mesh"]
 [ext_resource type="Script" path="res://addons/godot_state_charts/state_chart.gd" id="chart"]
@@ -379,7 +380,7 @@ cast_shadow = 0
 
 [node name="TimeLabel" type="Label3D" parent="World/Stage/WristStatus"]
 unique_name_in_owner = true
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.044, 0.002)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.118, 0.044, 0.002)
 pixel_size = 0.0004
 no_depth_test = true
 render_priority = 6
@@ -388,6 +389,21 @@ modulate = Color(0.9333, 0.9451, 0.9686, 1)
 outline_modulate = Color(0.051, 0.0627, 0.0902, 0.9)
 text = "07:00  Day"
 font_size = 56
+horizontal_alignment = 0
+outline_size = 8
+
+[node name="HealthLabel" type="Label3D" parent="World/Stage/WristStatus"]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.118, 0.044, 0.002)
+pixel_size = 0.0004
+no_depth_test = true
+render_priority = 6
+outline_render_priority = 5
+modulate = Color(0.9333, 0.9451, 0.9686, 1)
+outline_modulate = Color(0.051, 0.0627, 0.0902, 0.9)
+text = "Health 100"
+font_size = 36
+horizontal_alignment = 2
 outline_size = 8
 
 [node name="DetailsLabel" type="Label3D" parent="World/Stage/WristStatus"]
@@ -404,6 +420,10 @@ font_size = 32
 vertical_alignment = 0
 outline_size = 8
 
+
+[node name="PlayerVitals" type="Node" parent="."]
+unique_name_in_owner = true
+script = ExtResource("player_vitals")
 
 [node name="CoopSync" type="Node" parent="."]
 unique_name_in_owner = true

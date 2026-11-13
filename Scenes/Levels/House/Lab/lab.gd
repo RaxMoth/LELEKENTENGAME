@@ -6,7 +6,8 @@
 ## the Operation at setup, so the sales side knows what exists), hands the
 ## operation to its plants, stations, crates and crew, and keeps the recipe
 ## book (every recipe, open, with what it still needs) and the how-to poster
-## up to date. The Automation tab adds motors to the stations (they finish
+## up to date — both go up on the walls once the grinder and the cooker are
+## bought (a real lab to explain). The Automation tab adds motors to the stations (they finish
 ## their own skill checks), conveyor belts between them and an ingredient
 ## hopper (LabAutomation); the Green Thumb perk makes hand-picked plants
 ## yield more.
@@ -22,6 +23,8 @@ extends HouseFront
 
 @onready var _crafters: Node3D = %Crafters
 @onready var _plants: Node3D = %Plants
+@onready var _recipe_book: Node3D = %RecipeBook
+@onready var _guide_poster: Node3D = %GuidePoster
 @onready var _recipe_screen: WorldScreen = %RecipeScreen
 @onready var _guide_screen: WorldScreen = %GuideScreen
 @onready var _automation: LabAutomation = %Automation
@@ -61,6 +64,11 @@ func get_recipe_board() -> RecipeBoard:
 
 func get_guide_board() -> LabGuideBoard:
 	return _guide_screen.content as LabGuideBoard
+
+
+## True once the recipe book and the how-to poster hang on the walls.
+func are_posters_up() -> bool:
+	return _recipe_book.visible and _guide_poster.visible
 
 
 ## The belts and the hopper (tests).
@@ -117,6 +125,12 @@ func _apply_gadgets() -> void:
 	for plant_index: int in plants.size():
 		plants[plant_index].set_active(plant_index < plant_count)
 		plants[plant_index].hand_harvest_bonus = hand_bonus
+	# The posters go up with the grinder and the cooker; hidden, their screens don't render.
+	var has_posters: bool = has_grinder and has_cooker
+	_recipe_book.visible = has_posters
+	_guide_poster.visible = has_posters
+	_recipe_screen.set_active(has_posters)
+	_guide_screen.set_active(has_posters)
 	get_guide_board().show_progress(has_grinder, has_cooker, has_press)
 	_guide_screen.request_redraw.call_deferred()
 	_refresh_recipe_book()

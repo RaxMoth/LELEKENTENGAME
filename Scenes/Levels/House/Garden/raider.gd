@@ -6,11 +6,15 @@
 ## hammers it. A battering-ram team skips cover, waits for the rush and hits
 ## the door very hard. Officers differ by exports (health, armor, speed,
 ## door damage). Pooled.
-## State: Alive { Moving <-> InCover, Attacking } -> Dead, Dead -> Alive on
-## respawn (pool reuse).
+## Once the door is down (Yard.start_hunting) it hunts the nearest living
+## player into the house — along WalkableArea routes, sliding along walls and
+## furniture like the player does — and hits them when in reach.
+## State: Alive { Moving <-> InCover, Attacking, Hunting } -> Dead, Dead ->
+## Alive on respawn (pool reuse).
 ##
 ## Dependencies: Yard, RaidSquad, FrontDoor, YardNavigation, HealthComponent,
-##               HitFlash3DComponent, NpcVoice, VoiceLineData, Pools, Profile,
+##               HitFlash3DComponent, NpcVoice, VoiceLineData, WalkableArea,
+##               PlayerVitals, Pools, Profile,
 ##               Events, Audio, Types autoloads, SfxSynth
 class_name Raider
 extends Node3D
@@ -31,6 +35,18 @@ const SUPPRESSION_SECONDS: float = 2.5
 const TURN_SPEED: float = 8.0
 ## Hit spheres of a crouching raider sit this much lower.
 const CROUCHED_HIT_SCALE: float = 0.7
+## Hunting: seconds between two routes to the player (they keep moving) ...
+const ROUTE_SECONDS: float = 0.5
+## ... and how close a waypoint counts as reached.
+const WAYPOINT_REACHED: float = 0.35
+## A player more than this far above or below (another floor) is out of reach.
+const STRIKE_HEIGHT: float = 1.2
+## A strike: how far the body lunges (a ram team further), and the lunge's
+## out and back seconds.
+const STRIKE_LUNGE: float = 0.25
+const RAM_STRIKE_LUNGE: float = 0.45
+const STRIKE_OUT_SECONDS: float = 0.08
+const STRIKE_BACK_SECONDS: float = 0.22
 
 @export var base_max_health: float = 120.0
 ## Meters per second between covers...
@@ -59,6 +75,12 @@ const CROUCHED_HIT_SCALE: float = 0.7
 ## A battering-ram team: no cover, waits at the stage line, rams the door.
 @export var is_battering_ram: bool = false
 
+@export_group("Hunting")
+## Damage each hit does to a player once the door is down.
+@export var player_damage: float = 10.0
+## How close (meters, across the floor) a player must be to be hit.
+@export var strike_range: float = 1.3
+
 @export_group("Body")
 ## Radius of the sphere shots hit.
 @export var hit_radius: float = 0.45
@@ -86,6 +108,10 @@ var _seconds_until_hit: float = 0.0
 var _last_direction: Vector2 = Vector2.ZERO
 var _has_been_used: bool = false
 var _is_frozen: bool = false
+var _is_hunting: bool = false
+## Hunting: the waypoints still ahead (WalkableArea.find_path).
+var _route: PackedVector3Array = PackedVector3Array()
+var _seconds_until_route: float = 0.0
 var _tween: Tween
 
 @onready var health_component: HealthComponent = %HealthComponent
@@ -115,6 +141,25 @@ func _ready() -> void:
 func enter_yard(yard: Yard) -> void:
 	_yard = yard
 	_plan_next_move()
+	if yard.is_hunting():
+		start_hunting()
+
+
+## The front door is down: from now on it goes after the nearest player.
+func start_hunting() -> void:
+	if not is_alive() or _is_hunting:
+		return
+	_is_hunting = true
+	is_staged = false
+	_is_heading_for_door = false
+	# Deferred: a raider spawned this frame enters its chart's first state
+	# only at the end of the frame, and an event before that is lost.
+	state_chart.send_event.call_deferred(Types.EVENT_HUNT)
+
+
+## True once it is going after the players.
+func is_hunting() -> bool:
+	return _is_hunting
 
 
 ## Scales the raider (later raids). Speed is kept: tougher, not faster.
@@ -196,6 +241,8 @@ func _on_pool_spawned() -> void:
 	is_staged = false
 	door_spot_index = 0
 	_is_heading_for_door = false
+	_is_hunting = false
+	_route = PackedVector3Array()
 	# Every (re)spawn starts in Moving (the chart's initial / respawn state).
 	_is_in_motion = true
 	_is_frozen = false
@@ -285,14 +332,94 @@ func _on_attacking_state_physics_processing(delta: float) -> void:
 	# An open or unbolted front door gives way faster (FrontDoor.get_damage_multiplier).
 	_yard.door.health_component.damage(door_damage * _yard.door.get_damage_multiplier(), self)
 	Audio.play_sfx_at(SfxSynth.get_preset(&"hit"), global_position, 0.15, -2.0 if is_battering_ram else -6.0)
+	_play_strike(RAM_STRIKE_LUNGE if is_battering_ram else STRIKE_LUNGE)
+
+
+func _on_hunting_state_entered() -> void:
+	_is_in_motion = true
+	_set_crouched(false)
+	_route = PackedVector3Array()
+	# Spread over the interval, so a whole squad doesn't plan its routes in the same frame.
+	_seconds_until_route = randf() * ROUTE_SECONDS
+	_seconds_until_hit = hit_interval_seconds * 0.5
+	voice.say(VoiceLineData.ADVANCE)
+
+
+func _on_hunting_state_physics_processing(delta: float) -> void:
+	if _yard == null or _is_frozen:
+		_animate_bodies(delta, 0.0)
+		return
+	var target: PlayerVitals = _yard.find_hunt_target(global_position)
+	if target == null:
+		_animate_bodies(delta, 0.0)
+		return
+	var target_feet: Vector3 = target.get_feet_position()
+	var to_target: Vector3 = target_feet - global_position
+	if Vector2(to_target.x, to_target.z).length() <= strike_range and absf(to_target.y) < STRIKE_HEIGHT:
+		_animate_bodies(delta, 0.0)
+		_face_toward(Vector2(target_feet.x, target_feet.z), clampf(TURN_SPEED * delta, 0.0, 1.0))
+		_seconds_until_hit -= delta
+		if _seconds_until_hit <= 0.0:
+			_seconds_until_hit = hit_interval_seconds
+			_strike_player(target)
+		return
+	var walkable: WalkableArea = _yard.walkable
+	if walkable == null or not walkable.contains(global_position):
+		# Off the player's floors (beyond the garden fence, in a bush): no
+		# route from here — make for the front door, the floors start on the way.
+		var door_point: Vector2 = _yard.get_door_point()
+		_walk_toward(Vector3(door_point.x, global_position.y, door_point.y), rush_speed, delta)
+		return
+	_seconds_until_route -= delta
+	if _seconds_until_route <= 0.0:
+		_seconds_until_route = ROUTE_SECONDS
+		_route = walkable.find_path(global_position, target_feet)
+	# No route (the player is somewhere it can't reach yet): close in along the walls.
+	var waypoint: Vector3 = target_feet
+	while not _route.is_empty():
+		waypoint = _route[0]
+		if _route.size() == 1 or Vector2(waypoint.x - global_position.x, waypoint.z - global_position.z).length() > WAYPOINT_REACHED:
+			break
+		_route.remove_at(0)
+	_walk_toward(waypoint, rush_speed, delta)
+
+
+## Hits [param player] (the same blow as at the door).
+func _strike_player(player: PlayerVitals) -> void:
+	player.take_damage(player_damage, self)
+	Audio.play_sfx_at(SfxSynth.get_preset(&"hit"), global_position, 0.15, -4.0)
+	_play_strike(STRIKE_LUNGE)
+
+
+## The blow itself (at the door or at a player): every body swings and the
+## raider lunges [param lunge] meters forward and back.
+func _play_strike(lunge: float) -> void:
 	if _tween != null:
 		_tween.kill()
 	_tween = create_tween()
-	var lunge: float = 0.45 if is_battering_ram else 0.25
 	for body: RaiderBody in _bodies:
 		body.play_strike()
-	_tween.tween_property(_visual, "position:z", lunge, 0.08).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-	_tween.tween_property(_visual, "position:z", 0.0, 0.22).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN_OUT)
+	_tween.tween_property(_visual, "position:z", lunge, STRIKE_OUT_SECONDS).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	_tween.tween_property(_visual, "position:z", 0.0, STRIKE_BACK_SECONDS).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN_OUT)
+
+
+## One step toward [param point]. On the player's floors, walls, holes and
+## furniture stop it like they stop the player (it slides along them) and
+## stairs carry it up or down; off them it walks freely (onto them).
+func _walk_toward(point: Vector3, speed: float, delta: float) -> void:
+	var direction: Vector2 = Vector2(point.x - global_position.x, point.z - global_position.z)
+	if direction.length() < 0.01:
+		_animate_bodies(delta, 0.0)
+		return
+	direction = direction.normalized()
+	var next: Vector3 = global_position + Vector3(direction.x, 0.0, direction.y) * speed * delta
+	var walkable: WalkableArea = _yard.walkable
+	if walkable != null and walkable.contains(global_position):
+		next = walkable.clamp_move(global_position, next)
+	global_position = next
+	_last_direction = direction
+	_face(direction, delta)
+	_animate_bodies(delta, speed / maxf(0.1, move_speed))
 
 
 func _on_dead_state_entered() -> void:

@@ -23,7 +23,13 @@
 ## reaches the host's defense through HouseContext.guest_fired; every
 ## tracer, theirs included, is relayed back.
 ##
+## Health: the host keeps a PlayerVitals on each guest's stand-in (raiders
+## that got in hunt them too) and sends the guest its numbers — on every hit
+## and, while it heals, a few times a second; a guest going down ends the
+## shift on the host.
+##
 ## Dependencies: HouseLevel, RemotePlayer, NetEntities, HandInteractor, Lab,
+##               PlayerVitals,
 ##               WorldScreen, ControlMirror, FloatingText3D, Coop, Profile,
 ##               Events, Global, Types autoloads
 class_name HouseCoopSync
@@ -76,6 +82,9 @@ var _board_hashes: Dictionary[String, int] = {}
 var _known_ready_peers: Array[int] = []
 var _last_world_hash: int = 0
 var _seconds_since_world_sent: float = 0.0
+## Host: each guest's health (on their stand-in) and the whole points last sent to them.
+var _vitals: Dictionary[int, PlayerVitals] = {}
+var _sent_health: Dictionary[int, int] = {}
 
 
 ## Called by the House level at setup (after its fronts are set up).
@@ -114,6 +123,7 @@ func _process(delta: float) -> void:
 			_seconds_until_world = WORLD_INTERVAL_SECONDS
 			_send_world()
 			_send_changed_boards()
+			_send_changed_health()
 	elif _level.is_mirror:
 		entities.smooth(delta)
 		_mirror_held_items()
@@ -138,6 +148,14 @@ func get_remote_players() -> Array[RemotePlayer]:
 	for peer_id: int in _players:
 		players.append(_players[peer_id])
 	return players
+
+## Host: the guests' health, one per guest (tests).
+func get_remote_vitals() -> Array[PlayerVitals]:
+	var vitals_list: Array[PlayerVitals] = []
+	for peer_id: int in _vitals:
+		if is_instance_valid(_vitals[peer_id]):
+			vitals_list.append(_vitals[peer_id])
+	return vitals_list
 
 # ============================================
 # MESSAGES
@@ -196,6 +214,14 @@ func _receive_world(world: Array) -> void:
 	operation.heat.value = float(world[WORLD_HEAT])
 	_level.day_cycle.sync_elapsed(float(world[WORLD_TIME]))
 	_level.set_mirrored_wrist_lines(world[WORLD_WRIST_LINES])
+
+
+## Host -> guest: their own health (the host keeps it: raiders hit them there).
+@rpc("authority", "reliable", "call_remote", 0)
+func _receive_health(current: float, maximum: float) -> void:
+	if _level == null or not _level.is_mirror or not is_finite(current) or not is_finite(maximum) or maximum <= 0.0:
+		return
+	_level.player_vitals.apply_net_health(clampf(current, 0.0, maximum), maximum)
 
 
 ## Host -> guest: a board's new look.
@@ -369,6 +395,42 @@ func _send_world() -> void:
 		_receive_world.rpc_id(peer_id, world)
 
 
+## Host: sends each guest their health when its whole points changed.
+func _send_changed_health() -> void:
+	for peer_id: int in _vitals:
+		_send_health(peer_id)
+
+
+func _send_health(peer_id: int) -> void:
+	var entry: Object = _vitals.get(peer_id)
+	if not is_instance_valid(entry) or not Coop.get_ready_peers().has(peer_id):
+		return
+	var vitals: PlayerVitals = entry as PlayerVitals
+	var whole_points: int = ceili(vitals.get_health())
+	if _sent_health.get(peer_id, -1) == whole_points:
+		return
+	_sent_health[peer_id] = whole_points
+	_receive_health.rpc_id(peer_id, vitals.get_health(), vitals.get_max_health())
+
+
+## Host: a health of their own for a guest's stand-in, tuned like the host's
+## (HouseLevel.player_vitals); raiders find it in Types.GROUP_PLAYER_TARGET.
+func _add_vitals(peer_id: int, player: RemotePlayer) -> void:
+	var template: PlayerVitals = _level.player_vitals
+	var vitals: PlayerVitals = PlayerVitals.new()
+	vitals.name = "Vitals"
+	vitals.max_health = template.max_health
+	vitals.regen_delay_seconds = template.regen_delay_seconds
+	vitals.regen_per_second = template.regen_per_second
+	vitals.feet_source = player.get_feet_position
+	vitals.display_name = Coop.get_player_name(peer_id)
+	player.add_child(vitals)
+	vitals.hit_taken.connect(func(_amount: float, _current: float) -> void: _send_health(peer_id))
+	vitals.died.connect(func() -> void: _level.report_player_down(vitals.display_name))
+	_vitals[peer_id] = vitals
+	_sent_health.erase(peer_id)
+
+
 ## The guest's trigger / grip / click goes to the host with the pose it was made at.
 func _on_local_hand_input(hand: Types.Hand, action_name: StringName, is_pressed: bool) -> void:
 	if Coop.is_client() and Coop.is_level_acknowledged():
@@ -390,6 +452,8 @@ func _get_or_create_player(peer_id: int) -> RemotePlayer:
 			_level.context.guest_fired.emit(pointer, player.get_feet_position(), recoil))
 		player.hands.secondary_action_released.connect(func(_pointer: XRPointer) -> void:
 			_level.context.guest_trigger_released.emit())
+	if Coop.is_host():
+		_add_vitals(peer_id, player)
 	_players[peer_id] = player
 	return player
 
@@ -405,6 +469,8 @@ func _on_players_changed() -> void:
 				player.hands.release_all()
 			player.queue_free()
 		_players.erase(peer_id)
+		_vitals.erase(peer_id)
+		_sent_health.erase(peer_id)
 
 
 func _on_beam_fired(from_position: Vector3, to_position: Vector3) -> void:

@@ -146,6 +146,7 @@ static func _check_start_and_gadgets(test: SmokeTest, level: HouseLevel, lab: La
 	var recipe_board: RecipeBoard = lab.get_recipe_board()
 	test.check(recipe_board.get_row_count() == lab.recipes.size() and recipe_board.get_unlocked_count() == 1, "the recipe book shows every recipe, open; only shrooms are unlocked")
 	test.check(not lab.get_guide_board().is_step_unlocked(&"Grind"), "the poster points to the office for the grinder")
+	test.check(not lab.are_posters_up(), "no recipe book or how-to poster in a lab without gadgets")
 	var plant: ShroomPlant = plants[0]
 	test.check(not plant.is_ripe(), "the plant starts growing")
 	plant.grow(plant.grow_seconds)
@@ -161,9 +162,13 @@ static func _check_start_and_gadgets(test: SmokeTest, level: HouseLevel, lab: La
 	test.check(not Profile.upgrades.can_purchase(config.find_upgrade(Types.UPGRADE_COOKER)), "the cooker needs the grinder first")
 	var grinder_floor: Vector3 = Vector3(grinder.global_position.x, 0.0, grinder.global_position.z)
 	test.check(level.rig.walkable_area.contains(grinder_floor), "a station not bought yet takes no room")
-	for gadget_id: StringName in [Types.UPGRADE_GRINDER, Types.UPGRADE_COOKER, Types.UPGRADE_PRESS]:
+	test.check(Profile.upgrades.purchase(config.find_upgrade(Types.UPGRADE_GRINDER)), "the office sells the grinder")
+	level.apply_upgrades()
+	test.check(not lab.are_posters_up(), "the grinder alone doesn't put the posters up")
+	for gadget_id: StringName in [Types.UPGRADE_COOKER, Types.UPGRADE_PRESS]:
 		test.check(Profile.upgrades.purchase(config.find_upgrade(gadget_id)), "the office sells the %s" % gadget_id)
 	level.apply_upgrades()
+	test.check(lab.are_posters_up(), "with the grinder and the cooker the recipe book and the how-to poster go up")
 	await test.frames(2)
 	test.check(not level.rig.walkable_area.contains(grinder_floor), "a bought station can't be walked through")
 	test.check(grinder.visible and cooker.visible and press.visible and lab.get_crate(&"glowcap").visible, "bought gadgets and the ingredient crates show up in the lab")
