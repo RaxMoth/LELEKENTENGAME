@@ -1,11 +1,14 @@
-# Runs the unit tests and the headless smoke test on every pull request and
-# every push to main. Both must pass before a PR is merged.
+# Pull requests run the core: the unit tests and the core smoke test (side
+# by side, after one import), plus the co-op test when the PR touches the
+# co-op code. Pushes to main (and a manual run) run everything: the full
+# smoke test and the co-op test. See Tools/test.sh.
 name: Tests
 
 on:
   pull_request:
   push:
     branches: [main]
+  workflow_dispatch:
 
 concurrency:
   group: tests-${{ github.ref }}
@@ -20,6 +23,9 @@ jobs:
       GODOT_VERSION: 4.7.2
     steps:
       - uses: actions/checkout@v4
+        with:
+          # The base branch too, to see which files a pull request changes.
+          fetch-depth: 0
 
       - name: Install Godot
         run: |
@@ -28,14 +34,20 @@ jobs:
           unzip -q "$RUNNER_TEMP/godot.zip" -d "$RUNNER_TEMP/godot"
           echo "GODOT=$RUNNER_TEMP/godot/Godot_v${GODOT_VERSION}-stable_linux.x86_64" >> "$GITHUB_ENV"
 
-      - name: Unit tests
-        run: Tools/unit_tests.sh
+      - name: Pick the suites
+        id: scope
+        run: |
+          if [ "${{ github.event_name }}" != "pull_request" ]; then
+            echo "mode=full" >> "$GITHUB_OUTPUT"
+          elif git diff --name-only "origin/${{ github.base_ref }}...HEAD" \
+              | grep -qiE 'coop|remote_?player|net_entities|house_coop_sync|control_mirror'; then
+            echo "mode=core" >> "$GITHUB_OUTPUT"
+          else
+            echo "mode=quick" >> "$GITHUB_OUTPUT"
+          fi
 
-      - name: Smoke test
-        run: Tools/smoke_test.sh
-
-      - name: Co-op test (host + guest over 127.0.0.1)
-        run: Tools/coop_test.sh
+      - name: Tests (${{ steps.scope.outputs.mode }})
+        run: Tools/test.sh "${{ steps.scope.outputs.mode }}"
 
       - name: Upload test reports
         if: failure()

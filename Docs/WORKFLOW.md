@@ -51,7 +51,7 @@ files. Remove finished worktrees with `git worktree remove <folder>`.
 ## Pull requests
 
 ```bash
-Tools/unit_tests.sh && Tools/smoke_test.sh     # both must exit 0
+Tools/test.sh                                  # unit + core smoke + co-op; must exit 0
 git push -u origin anna/sales-loyalty
 gh pr create --fill                            # or ask Claude to open it
 ```
@@ -59,8 +59,10 @@ gh pr create --fill                            # or ask Claude to open it
 - The template asks what changed, which area, which tests ran, screenshots
   for visual changes and which shared files (contract, hotspots) were
   touched.
-- **CI** (`.github/workflows/tests.yml`) runs the unit tests and the smoke
-  test on Linux for every PR and every push to `main`.
+- **CI** (`.github/workflows/tests.yml`, Linux) runs the core on every PR —
+  the unit tests and the core smoke test, plus the co-op test when the PR
+  touches co-op code — and everything (full smoke test, co-op) on every push
+  to `main` and on a manual run (Actions → Tests → Run workflow).
 - **Review:** the other person reviews (Claude can do a first pass with the
   `godot-reviewer` agent or `/code-review`, but a human approves).
 - **Merge:** squash-merge, then delete the branch. Pull `main` afterwards.
@@ -133,7 +135,7 @@ version rewrites many files at once.
    points at an existing id.
 2. For a property both sides changed, pick one value.
 3. Open the scene in Godot, check it, save it, and run
-   `Tools/smoke_test.sh` before committing the resolution.
+   `Tools/test.sh` before committing the resolution.
 
 Turn on `git config rerere.enabled true` so Git remembers resolutions you
 already made once.

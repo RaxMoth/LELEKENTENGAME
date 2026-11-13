@@ -50,7 +50,7 @@ res://
 │   ├── XR/          # XR building blocks (pointer, screens, locomotion, grab, sockets, buttons)
 │   └── Utils/       # Helpers, ray / lane math, 3D placeholders
 ├── Tests/           # Smoke test, screenshot tool, Unit/ gdUnit4 suites (excluded from exports)
-├── Tools/           # Shell helpers: godot.sh, smoke_test.sh, screenshots.sh (ignored by Godot)
+├── Tools/           # Shell helpers: godot.sh, test.sh (+ unit / smoke / co-op), screenshots.sh (ignored by Godot)
 └── addons/
     ├── godot_state_charts/   # State chart library — always use this for state management
     └── gdUnit4/              # Unit test framework (editor/tests only, excluded from exports)
@@ -335,5 +335,5 @@ Every `.gd` script starts with a `##` doc comment: purpose, usage, dependencies.
 - [ ] New tunable data lives in a Resource / `game_config.tres`
 - [ ] Doc comments on all public API
 - [ ] Visual changes follow `Docs/DESIGN.md` and were checked with screenshots
-- [ ] New pure logic has a gdUnit4 suite in `Tests/Unit/`; `Tools/unit_tests.sh` passes
-- [ ] `Tools/smoke_test.sh` passes
+- [ ] New pure logic has a gdUnit4 suite in `Tests/Unit/`
+- [ ] `Tools/test.sh` passes (unit, core smoke, co-op)
