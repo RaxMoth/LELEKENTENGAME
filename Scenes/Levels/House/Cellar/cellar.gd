@@ -23,6 +23,10 @@ extends HouseFront
 @export var stairwell_hole: Rect2 = Rect2(1.76, 1.62, 2.54, 1.0)
 ## Where the player can walk on the cellar floor (around the racks, not under the stairs).
 @export var floor_regions: Array[Rect2] = []
+## How far the walkable part of the stairs keeps from their side boards: a
+## railing and a wall hold the player there, so the stairs stay almost their
+## full width (a whole body radius left only a narrow lane down the middle).
+@export var stairs_side_margin: float = 0.1
 ## What the racks grow (the grown recipe, shrooms).
 @export var crop: RecipeData
 
@@ -42,7 +46,7 @@ var _stairs_ramp: WalkableRamp = null
 
 func _on_setup() -> void:
 	_cellar_floor = WalkableFloor.create(floor_height, floor_regions)
-	_stairs_ramp = _stairs.get_ramp(WalkableArea.BODY_RADIUS)
+	_stairs_ramp = _stairs.get_ramp(stairs_side_margin)
 	for rack: GrowRack in get_racks():
 		rack.setup(context.operation, crop)
 	_picker.setup(get_plants())

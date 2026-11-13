@@ -237,7 +237,7 @@ static func _check_real_steps(test: SmokeTest, level: HouseLevel) -> void:
 	camera.position = camera_position
 	rig.locomotion.teleport_to(by_the_wall, PI * 0.5)
 	var outside: Vector3 = Vector3(-6.0, 0.0, 0.0)
-	test.check(not rig.locomotion.call("_has_clear_path", rig.get_feet_position(), outside) and rig.locomotion.call("_has_clear_path", rig.get_feet_position(), by_the_wall + Vector3(1.0, 0.0, 0.0)), "a teleport can't go through a wall, only along the floor")
+	test.check(not rig.locomotion.call("_has_clear_path", rig.get_feet_position(), outside) and rig.locomotion.call("_has_clear_path", rig.get_feet_position(), by_the_wall + Vector3(1.0, 0.0, 0.0)), "a step can't cross a wall, only go along the floor")
 
 
 static func _check_board_drag(test: SmokeTest, level: HouseLevel) -> void:
@@ -576,6 +576,19 @@ static func _check_controllers(test: SmokeTest, level: HouseLevel) -> void:
 	rig.call("_on_left_hand_input_vector2_changed", String(Types.XR_ACTION_THUMBSTICK), Vector2(0.0, 1.0))
 	test.check(rig.locomotion.get_walk_stick().is_equal_approx(Vector2(0.0, 1.0)), "the off-hand stick walks like WASD (no teleport)")
 	rig.call("_on_left_hand_input_vector2_changed", String(Types.XR_ACTION_THUMBSTICK), Vector2.ZERO)
+	# A touchpad (Vive, Index) walks while pressed toward where it is pressed.
+	rig.call("_on_left_hand_input_vector2_changed", String(Types.XR_ACTION_TRACKPAD), Vector2(0.0, 1.0))
+	var pad_resting_still: bool = rig.locomotion.get_walk_stick() == Vector2.ZERO
+	rig.call("_on_left_hand_button_pressed", String(Types.XR_ACTION_TRACKPAD_CLICK))
+	var pad_walks: bool = rig.locomotion.get_walk_stick().y > 0.5
+	rig.call("_on_left_hand_button_released", String(Types.XR_ACTION_TRACKPAD_CLICK))
+	test.check(pad_resting_still and pad_walks and rig.locomotion.get_walk_stick() == Vector2.ZERO, "pressing the touchpad walks that way, letting go stops (no teleport)")
+	# Forward is where the walking hand points, not where the head looks.
+	var walk_pointer: XRPointer = rig.get_hand_pointer(Types.Hand.LEFT if rig.dominant_hand == Types.Hand.RIGHT else Types.Hand.RIGHT)
+	var hand_basis: Basis = walk_pointer.global_basis
+	walk_pointer.global_basis = Basis.looking_at(Vector3.RIGHT, Vector3.UP)
+	test.check(rig.locomotion.get_walk_forward().is_equal_approx(Vector3.RIGHT), "the walking stick heads where that hand points")
+	walk_pointer.global_basis = hand_basis
 	rig.call("_on_right_hand_input_vector2_changed", String(Types.XR_ACTION_THUMBSTICK), Vector2(0.9, 0.0))
 	rig.call("_on_right_hand_input_vector2_changed", String(Types.XR_ACTION_THUMBSTICK), Vector2.ZERO)
 	var forward_after: Vector3 = -rig.get_head_transform().basis.z

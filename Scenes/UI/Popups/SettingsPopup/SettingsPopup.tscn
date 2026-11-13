@@ -117,6 +117,12 @@ custom_minimum_size = Vector2(0, 60)
 layout_mode = 2
 text = "Smooth Turning"
 
+[node name="WalkWhereLookingToggle" type="CheckButton" parent="CenterContainer/Panel/Content"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 60)
+layout_mode = 2
+text = "Walk Where You Look"
+
 [node name="StandingViewToggle" type="CheckButton" parent="CenterContainer/Panel/Content"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 60)
