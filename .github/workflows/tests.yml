@@ -35,7 +35,7 @@ jobs:
           unzip -q "$RUNNER_TEMP/godot.zip" -d "$RUNNER_TEMP/godot"
           echo "GODOT=$RUNNER_TEMP/godot/Godot_v${GODOT_VERSION}-stable_linux.x86_64" >> "$GITHUB_ENV"
 
-      - name: Tests (pull request: what it touches)
+      - name: "Tests (pull request: what it touches)"
         if: github.event_name == 'pull_request'
         run: Tools/test.sh "origin/${{ github.base_ref }}"
 

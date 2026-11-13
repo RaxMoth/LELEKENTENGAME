@@ -17,6 +17,9 @@ extends Node
 
 const HOUSE_SCENE: String = "res://Scenes/Levels/House/House.tscn"
 const TIMEOUT_MSEC: int = 30000
+## Tries of the guest's gun trigger, and how long each waits for the tracer.
+const SHOT_ATTEMPTS: int = 6
+const SHOT_WAIT_MSEC: int = 1500
 const LAB_SPOT: int = 0
 const FRONT_SPOT: int = 1
 const WINDOW_SPOT: int = 2
@@ -104,10 +107,11 @@ func _run_host() -> void:
 		_check(is_equal_approx(guest_vitals[0].get_health(), guest_vitals[0].get_max_health() - 25.0), "host: a raider's hit lands on the guest")
 	_check(sync.sounds_relayed > 0, "host: the guest hears the host's world (sounds are sent)")
 	# The guest shoots last; then its connection drops (no goodbye) and it must come back by itself.
-	var shots: Array[int] = [0]
-	Events.beam_fired.connect(func(_from: Vector3, _to: Vector3) -> void: shots[0] += 1)
-	await _wait_until(func() -> bool: return shots[0] > 0)
-	await _seconds(0.5)
+	# Its own trigger pull, not any other tracer, and time for the tracer to get back to it.
+	var guest_shots: Array[int] = [0]
+	level.context.guest_fired.connect(func(_pointer: XRPointer, _feet: Vector3, _recoil: Callable) -> void: guest_shots[0] += 1)
+	await _wait_until(func() -> bool: return guest_shots[0] > 0)
+	await _seconds(1.0)
 	var guest_peer_id: int = Coop.get_ready_peers()[0]
 	(multiplayer.multiplayer_peer as ENetMultiplayerPeer).disconnect_peer(guest_peer_id)
 	_check(await _wait_until(func() -> bool: return Coop.get_ready_peers().is_empty()), "host: the guest's connection dropped")
@@ -181,11 +185,19 @@ func _run_guest() -> void:
 	var tracers: Array[int] = [0]
 	Events.beam_fired.connect(func(_from: Vector3, _to: Vector3) -> void: tracers[0] += 1)
 	var cop: Node3D = sync.entities.get_stand_ins_of(COP_SCENE.resource_path)[0]
-	rig.aim_at_world_point(cop.global_position + Vector3(0.0, 1.0, 0.0))
 	var off_hand: Types.Hand = Types.Hand.LEFT if rig.dominant_hand == Types.Hand.RIGHT else Types.Hand.RIGHT
-	rig.handle_controller_button(off_hand, Types.XR_ACTION_TRIGGER_CLICK, true)
-	rig.handle_controller_button(off_hand, Types.XR_ACTION_TRIGGER_CLICK, false)
-	_check(await _wait_until(func() -> bool: return tracers[0] > 0), "guest: my gun trigger fires (the host's shot comes back as a tracer)")
+	# Like a player: aim, pull, and pull again if nothing came of it. One press
+	# can miss on a loaded runner (the host still had the guest's older aim,
+	# or the tracer packet was lost); the host keeps the connection until it
+	# saw a shot.
+	for attempt: int in SHOT_ATTEMPTS:
+		rig.aim_at_world_point(cop.global_position + Vector3(0.0, 1.0, 0.0))
+		await _frames(3)
+		rig.handle_controller_button(off_hand, Types.XR_ACTION_TRIGGER_CLICK, true)
+		rig.handle_controller_button(off_hand, Types.XR_ACTION_TRIGGER_CLICK, false)
+		if await _wait_until(func() -> bool: return tracers[0] > 0, SHOT_WAIT_MSEC):
+			break
+	_check(tracers[0] > 0, "guest: my gun trigger fires (the host's shot comes back as a tracer)")
 	_check(await _wait_until(func() -> bool: return reconnections[0] > 0), "guest: after a dropped connection I'm back in on my own")
 	_check(await _wait_until(func() -> bool: return _get_house() != null and _get_house().is_mirror and Coop.is_level_acknowledged()), "guest: and see the host's house again")
 
