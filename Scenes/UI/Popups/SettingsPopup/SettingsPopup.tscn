@@ -111,12 +111,6 @@ custom_minimum_size = Vector2(0, 60)
 layout_mode = 2
 text = "Controller Haptics"
 
-[node name="SmoothMoveToggle" type="CheckButton" parent="CenterContainer/Panel/Content"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 60)
-layout_mode = 2
-text = "Smooth Movement"
-
 [node name="SmoothTurnToggle" type="CheckButton" parent="CenterContainer/Panel/Content"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 60)
