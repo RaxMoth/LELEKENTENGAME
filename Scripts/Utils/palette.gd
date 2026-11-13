@@ -53,6 +53,23 @@ const MOONLIGHT: Color = Color("#8fa4d8")
 const AMBIENT_DAY: Color = Color("#aab3c7")
 const AMBIENT_NIGHT: Color = Color("#4b5675")
 
+# Boards hanging in the house (HouseBoardStyle): the app's colors re-done in
+# dark stained wood, cream ink and brass, so wall boards look old, not like a phone.
+const BOARD_BACKGROUND: Color = Color("#17120e")
+const BOARD_BACKGROUND_RAISED: Color = Color("#1e1712")
+const BOARD_SURFACE: Color = Color("#2a2119")
+const BOARD_SURFACE_RAISED: Color = Color("#352a20")
+const BOARD_STROKE: Color = Color("#4b3c2c")
+const BOARD_INK: Color = Color("#efe5d0")
+const BOARD_INK_MUTED: Color = Color("#b1a287")
+const BOARD_INK_FAINT: Color = Color("#7c6e5a")
+## The boards' accent (instead of PRIMARY blue).
+const BRASS: Color = Color("#c08d45")
+const BOARD_SUCCESS: Color = Color("#6f9a50")
+const BOARD_DANGER: Color = Color("#b4513b")
+## Wooden frames around boards.
+const BOARD_FRAME: Color = Color("#3a2a1c")
+
 ## Distinct, evenly bright hues for puzzle pieces, teams and categories.
 const CATEGORY: Array[Color] = [
 	Color("#f06a6a"),

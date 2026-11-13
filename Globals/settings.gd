@@ -8,7 +8,9 @@
 ## Settings.get_value / set_value. Changes are applied immediately, persisted
 ## and broadcast through Events.setting_changed.
 ##
-## Dependencies: Events autoload
+## Desktop builds start full screen (KEY_FULLSCREEN, F11 toggles it).
+##
+## Dependencies: Events, Platform, Types autoloads
 extends Node
 
 const SETTINGS_PATH: String = "user://settings.cfg"
@@ -19,7 +21,7 @@ const KEY_MUSIC_VOLUME: StringName = &"music_volume"
 const KEY_SFX_VOLUME: StringName = &"sfx_volume"
 const KEY_HAPTICS_ENABLED: StringName = &"haptics_enabled"
 const KEY_SHOW_FPS: StringName = &"show_fps"
-## Comfort: the dominant-hand stick walks (the off-hand stick always teleports).
+## Comfort: the off-hand stick walks like WASD; off: it aims a teleport instead.
 const KEY_SMOOTH_MOVEMENT: StringName = &"smooth_movement"
 ## Comfort: continuous turning instead of 30° snaps.
 const KEY_SMOOTH_TURNING: StringName = &"smooth_turning"
@@ -31,6 +33,10 @@ const KEY_STANDING_VIEW: StringName = &"standing_view"
 const KEY_FRESH_START_IN_DEV: StringName = &"fresh_start_in_dev"
 ## Empty string = follow the device language.
 const KEY_LOCALE: StringName = &"locale"
+## Desktop: the game fills the screen (F11 switches); off: a window.
+const KEY_FULLSCREEN: StringName = &"fullscreen"
+## Command-line user argument that keeps the window windowed (screenshots).
+const ARGUMENT_WINDOWED: String = "windowed=1"
 
 const DEFAULTS: Dictionary[StringName, Variant] = {
 	KEY_MASTER_VOLUME: 1.0,
@@ -43,6 +49,7 @@ const DEFAULTS: Dictionary[StringName, Variant] = {
 	KEY_STANDING_VIEW: true,
 	KEY_FRESH_START_IN_DEV: true,
 	KEY_LOCALE: "",
+	KEY_FULLSCREEN: true,
 }
 
 const BUS_MASTER: StringName = &"Master"
@@ -109,6 +116,28 @@ func _apply(setting_key: StringName, value: Variant) -> void:
 			if locale_code.is_empty():
 				locale_code = OS.get_locale_language()
 			TranslationServer.set_locale(locale_code if locale_code in SUPPORTED_LOCALES else "en")
+		KEY_FULLSCREEN:
+			_apply_window_mode(bool(value))
+
+
+## True on a desktop with a real window (not a phone, not inside a running
+## headset session, not a headless test run, not a screenshot run that asked
+## for a window).
+func has_desktop_window() -> bool:
+	return DisplayServer.get_name() != "headless" and not OS.has_feature("mobile") \
+		and not Platform.is_xr_active() and not ARGUMENT_WINDOWED in OS.get_cmdline_user_args()
+
+
+func _apply_window_mode(is_fullscreen: bool) -> void:
+	if not has_desktop_window():
+		return
+	DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_FULLSCREEN if is_fullscreen else DisplayServer.WINDOW_MODE_WINDOWED)
+
+
+func _unhandled_input(event: InputEvent) -> void:
+	if event.is_action_pressed(Types.ACTION_TOGGLE_FULLSCREEN) and has_desktop_window():
+		set_value(KEY_FULLSCREEN, not get_bool(KEY_FULLSCREEN))
+		get_viewport().set_input_as_handled()
 
 
 func _set_bus_volume(bus_name: StringName, linear_volume: float) -> void:

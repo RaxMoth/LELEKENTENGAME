@@ -12,6 +12,7 @@ script = ExtResource("admin")
 unique_name_in_owner = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.85, 1.95, -1.9)
 script = ExtResource("screen")
+uses_house_style = true
 content_scene = ExtResource("admin_board")
 resolution = Vector2i(1100, 860)
 width_meters = 1.0

@@ -3,13 +3,15 @@
 ## like the player), tail swishing. Close to the player's feet it may bite —
 ## only once — and then dashes off. Now and then it heads for the stash
 ## shelf and chews through a bag there. Running over an armed snap trap
-## catches it for the day.
+## catches it for the day, and any hit — a punch, a blade, a shot — kills it
+## (it is a HitTarget).
 ## State: Roaming { Sniffing <-> Scurrying } -> Biting -> Roaming/Scurrying;
 ## any -> Caught.
 ##
-## Dependencies: RatPack, WalkableArea, Audio, Types autoloads, SfxSynth
+## Dependencies: HitTarget, RatPack, WalkableArea, PopEffect3D, Palette,
+##               Audio, Types autoloads, SfxSynth
 class_name Rat
-extends Node3D
+extends HitTarget
 
 ## Meters per second while scurrying.
 @export var run_speed: float = 1.5
@@ -28,6 +30,8 @@ const TURN_SPEED: float = 14.0
 ## The bite: a short lunge forward and back (meters, seconds).
 const LUNGE_DISTANCE: float = 0.05
 const LUNGE_SECONDS: float = 0.12
+## Hits land in a sphere this big around its body (generous: it is small and quick).
+const HIT_RADIUS: float = 0.13
 
 ## The pack it belongs to (set by the RatPack).
 var pack: RatPack = null
@@ -50,6 +54,7 @@ var _random: RandomNumberGenerator = RandomNumberGenerator.new()
 
 
 func _ready() -> void:
+	super()
 	_random.randomize()
 	_animation_time = _random.randf() * 10.0
 
@@ -59,9 +64,30 @@ func has_bitten() -> bool:
 	return _has_bitten
 
 
-## True once a trap caught it.
+## True once it is gone for the day (a trap caught it, or it was killed).
 func is_caught() -> bool:
 	return _is_caught
+
+
+func get_hit_center() -> Vector3:
+	return global_position + Vector3(0.0, 0.04, 0.0)
+
+
+func get_hit_radius() -> float:
+	return HIT_RADIUS
+
+
+func is_alive() -> bool:
+	return not _is_caught and is_visible_in_tree()
+
+
+## Any hit (a punch, a blade, a shot) kills it.
+func take_hit(_amount: float, _source: Node = null) -> void:
+	if not is_alive():
+		return
+	Audio.play_sfx_at(SfxSynth.get_preset(&"squeak"), global_position, 0.25, -2.0)
+	PopEffect3D.spawn(get_hit_center(), Palette.TEXT_MUTED, 0.2, get_parent())
+	state_chart.send_event(Types.EVENT_DIED)
 
 
 ## True while it chews on the stash shelf.

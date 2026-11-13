@@ -179,6 +179,8 @@ func _ready() -> void:
 		_enter_flat_mode()
 	_popup_screen.set_active(false)
 	_body.visible = is_xr_active and shows_body
+	# Your own torso would hide your hips and legs when you look down.
+	_body.shows_upper_body = false
 	# The hip holster (a knife) sits on the side of the hand that usually draws it.
 	_body.set_hip_side(1.0 if dominant_hand == Types.Hand.RIGHT else -1.0)
 	set_world_space_ui(is_xr_active or force_world_space_ui or ARGUMENT_WORLD_UI in OS.get_cmdline_user_args())

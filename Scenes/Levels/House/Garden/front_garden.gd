@@ -5,7 +5,9 @@
 ## the armory sells a knife, an axe, then guns. Melee weapons hit a raider in
 ## reach anywhere — swung at them in a headset, or with the trigger / a
 ## click; guns fire from the front room, the porch or the garden (the
-## defense zone). In a headset the weapons hang on the player's body
+## defense zone). Other things in reach of a strike or a shot — the
+## cabin's rats (HitTarget) — are hit anywhere in the house. In a headset
+## the weapons hang on the player's body
 ## (HouseContext.holsters): a hand uses what it drew — its trigger fires it —
 ## or its fist; on a screen the one equipped at the armory is in hand.
 ##
@@ -25,7 +27,7 @@
 ## the broken door are warnings, stopped raiders are score.
 ##
 ## Dependencies: HouseFront, Yard, Raider, FrontDoor, HouseTurret, SecurityPc,
-##               AttackerDirector, WeaponModel, WeaponCatalog, WeaponData, MeleeMath, WeaponHolsters,
+##               AttackerDirector, WeaponModel, WeaponCatalog, WeaponData, MeleeMath, WeaponHolsters, HitTarget,
 ##               RaidWave, BeamTracer, PopEffect3D, FloatingText3D, RayMath,
 ##               WalkableArea, Pools, Profile, Audio, Types autoloads,
 ##               Palette, SfxSynth
@@ -34,6 +36,9 @@ extends HouseFront
 
 const TRACER_SCENE: PackedScene = preload("res://Scenes/Levels/House/Garden/BeamTracer.tscn")
 const HANDS: Array[Types.Hand] = [Types.Hand.LEFT, Types.Hand.RIGHT]
+## A strike at something small on the floor (a rat) reaches this much further
+## than the weapon: a stomp or a low swing, where a raider would be hit at chest height.
+const LOW_TARGET_REACH: float = 0.6
 
 ## Every gun there is (the player fires the one equipped in Profile.armory).
 @export var weapon_catalog: WeaponCatalog
@@ -289,7 +294,7 @@ func fire_weapon(pointer: XRPointer) -> Raider:
 	var bloom: float = WeaponBallistics.get_bloom(weapon, _shots_in_burst)
 	_shots_in_burst += 1
 	_seconds_since_shot = 0.0
-	var first_hit: Raider = _fire_projectiles(pointer, _get_muzzle_position(pointer), weapon, bloom, can_defend())
+	var first_hit: Raider = _fire_projectiles(pointer, _get_muzzle_position(pointer), weapon, bloom, can_defend(), true)
 	if _shown_weapon != null:
 		_shown_weapon.play_use()
 	Audio.play_sfx_at(SfxSynth.get_preset(weapon.sound_preset), pointer.ray_origin, 0.06, -3.0)
@@ -310,7 +315,12 @@ func strike(pointer: XRPointer) -> Raider:
 		_shown_weapon.play_use()
 	var raider: Raider = yard.pick_raider(pointer.ray_origin, pointer.ray_direction, weapon.range_meters)
 	if raider == null:
-		Audio.play_sfx_at(SfxSynth.get_preset(&"whoosh"), pointer.ray_origin, 0.1, -6.0)
+		var target: HitTarget = _pick_hit_target(pointer.ray_origin, pointer.ray_direction, weapon.range_meters + LOW_TARGET_REACH)
+		if target != null:
+			_land_strike_on(target, weapon)
+			context.rig.pulse(pointer, weapon.recoil as Types.HapticStrength)
+		else:
+			Audio.play_sfx_at(SfxSynth.get_preset(&"whoosh"), pointer.ray_origin, 0.1, -6.0)
 		return null
 	_land_strike(raider, weapon)
 	context.rig.pulse(pointer, weapon.recoil as Types.HapticStrength)
@@ -320,9 +330,11 @@ func strike(pointer: XRPointer) -> Raider:
 ## The projectiles of one shot from [param muzzle] along [param pointer]'s
 ## ray (WeaponBallistics: pellets in a cone widened by [param bloom],
 ## damage falling off with distance, piercing, cover). Hits raiders only
-## when [param can_hit] (fired from the front room or porch). Returns the
-## first raider hit, or null.
-func _fire_projectiles(pointer: XRPointer, muzzle: Vector3, weapon: WeaponData, bloom: float, can_hit: bool) -> Raider:
+## when [param can_hit] (fired from the front room or porch); a rat in the
+## way anywhere only when [param can_hit_local_targets] (the rats are this
+## player's own: a co-op guest's shot can't see them). Returns the first
+## raider hit, or null.
+func _fire_projectiles(pointer: XRPointer, muzzle: Vector3, weapon: WeaponData, bloom: float, can_hit: bool, can_hit_local_targets: bool) -> Raider:
 	# Better Rounds is per shot: a shotgun shares it among its pellets.
 	var bonus: float = context.operation.get_upgrade_value(Types.UPGRADE_BLASTER) / maxf(1.0, weapon.pellets)
 	var first_hit: Raider = null
@@ -334,15 +346,29 @@ func _fire_projectiles(pointer: XRPointer, muzzle: Vector3, weapon: WeaponData, 
 		var hits: Array[Array] = []
 		if can_hit:
 			hits = yard.pick_raiders(pointer.ray_origin, direction, weapon.range_meters, weapon.pierce_count)
+		# A rat in the way takes the round before any raider behind it.
+		var target: HitTarget = null
+		if can_hit_local_targets:
+			target = _pick_hit_target(pointer.ray_origin, direction, pointer.ray_origin.distance_to(shot_end))
+		if target != null:
+			var target_distance: float = RayMath.intersect_sphere(pointer.ray_origin, direction, target.get_hit_center(), target.get_hit_radius())
+			var hits_before_target: Array[Array] = []
+			for hit: Array in hits:
+				if float(hit[1]) < target_distance:
+					hits_before_target.append(hit)
+			hits = hits_before_target
 		for hit: Array in hits:
 			var raider: Raider = hit[0] as Raider
 			raider.take_hit(WeaponBallistics.get_damage_at(weapon, float(hit[1])) + bonus, self, false, weapon.pierces_armor)
 			PopEffect3D.spawn(raider.get_hit_center(), Palette.PROJECTILE, 0.3, yard.get_effects_root())
 			if first_hit == null:
 				first_hit = raider
-		# The projectile stops in the last raider it can reach.
 		if not hits.is_empty() and hits.size() >= weapon.pierce_count:
+			# The projectile stops in the last raider it can reach.
 			shot_end = (hits[hits.size() - 1][0] as Raider).get_hit_center()
+		elif target != null:
+			shot_end = target.get_hit_center()
+			target.take_hit(weapon.damage + bonus, self)
 		var tracer: BeamTracer = Pools.spawn(TRACER_SCENE, yard.get_effects_root(), muzzle) as BeamTracer
 		tracer.fire(muzzle, shot_end)
 	return first_hit
@@ -370,9 +396,13 @@ func _on_rig_primary_action_pressed(pointer: XRPointer) -> void:
 			fire_weapon(pointer)
 		return
 	var weapon: WeaponData = get_equipped_weapon()
-	# Fists and blades hit what's in reach anywhere; guns fire from the defense zone.
+	var weapon_range: float = _get_weapon_range(weapon)
+	# Fists and blades hit what's in reach anywhere; guns fire at raiders from
+	# the defense zone — and at a rat anywhere in the house.
 	var can_use: bool = can_defend() or (weapon != null and weapon.is_melee())
-	if can_use and yard.pick_raider(pointer.ray_origin, pointer.ray_direction, _get_weapon_range(weapon)) != null:
+	if can_use and yard.pick_raider(pointer.ray_origin, pointer.ray_direction, weapon_range) != null:
+		fire_weapon(pointer)
+	elif _pick_hit_target(pointer.ray_origin, pointer.ray_direction, weapon_range + (LOW_TARGET_REACH if weapon != null and weapon.is_melee() else 0.0)) != null:
 		fire_weapon(pointer)
 
 
@@ -426,14 +456,15 @@ func _fire_for_guest() -> void:
 	var bloom: float = WeaponBallistics.get_bloom(weapon, _guest_shots_in_burst)
 	_guest_shots_in_burst += 1
 	_guest_seconds_since_shot = 0.0
-	_fire_projectiles(pointer, pointer.ray_origin, weapon, bloom, _is_defense_spot(_guest_feet) or yard.is_hunting())
+	_fire_projectiles(pointer, pointer.ray_origin, weapon, bloom, _is_defense_spot(_guest_feet) or yard.is_hunting(), false)
 	Audio.play_sfx_at(SfxSynth.get_preset(weapon.sound_preset), pointer.ray_origin, 0.06, -3.0)
 	if _guest_recoil.is_valid():
 		_guest_recoil.call(weapon.recoil as Types.HapticStrength)
 
 
 ## The other player's trigger with fists, the knife or the axe: a strike
-## along their beam (one per pull).
+## along their beam (one per pull). Raiders only: the rats here are this
+## player's own, the guest has theirs.
 func _strike_for_guest(pointer: XRPointer, weapon: WeaponData) -> void:
 	_guest_trigger_pointer = null
 	var raider: Raider = yard.pick_raider(pointer.ray_origin, pointer.ray_direction, weapon.range_meters)
@@ -468,10 +499,14 @@ func _step_swings(delta: float) -> void:
 		if _shown_weapon != null and hand == _get_model_hand():
 			tip = _shown_weapon.get_tip_position()
 		var raider: Raider = yard.find_raider_in_reach(grip.origin, tip, melee_margin)
-		if raider == null:
+		var target: HitTarget = null if raider != null else _find_hit_target_in_reach(grip.origin, tip)
+		if raider == null and target == null:
 			continue
 		_swing_cooldowns[hand] = weapon.fire_interval_seconds
-		_land_strike(raider, weapon)
+		if raider != null:
+			_land_strike(raider, weapon)
+		else:
+			_land_strike_on(target, weapon)
 		rig.pulse(rig.get_hand_pointer(hand), weapon.recoil as Types.HapticStrength)
 
 
@@ -506,6 +541,42 @@ func _get_hand_weapon(hand: Types.Hand) -> WeaponData:
 
 func _get_pointer_hand(pointer: XRPointer) -> Types.Hand:
 	return Types.Hand.LEFT if pointer == context.rig.get_hand_pointer(Types.Hand.LEFT) else Types.Hand.RIGHT
+
+
+## A strike lands on something that isn't a raider (a rat).
+func _land_strike_on(target: HitTarget, weapon: WeaponData) -> void:
+	var where: Vector3 = target.get_hit_center()
+	target.take_hit(weapon.damage, self)
+	Audio.play_sfx_at(SfxSynth.get_preset(weapon.sound_preset), where, 0.12, -4.0)
+
+
+## The nearest living HitTarget (a rat) along a ray within [param max_distance], or null.
+func _pick_hit_target(ray_origin: Vector3, ray_direction: Vector3, max_distance: float) -> HitTarget:
+	var nearest: HitTarget = null
+	var nearest_distance: float = max_distance
+	for node: Node in get_tree().get_nodes_in_group(Types.GROUP_HIT_TARGET):
+		var target: HitTarget = node as HitTarget
+		if target == null or not target.is_alive():
+			continue
+		var distance: float = RayMath.intersect_sphere(ray_origin, ray_direction, target.get_hit_center(), target.get_hit_radius())
+		if distance != RayMath.NO_HIT and distance < nearest_distance:
+			nearest_distance = distance
+			nearest = target
+	return nearest
+
+
+## A living HitTarget the stretch [param from] → [param to] (a fist, a blade) touches, or null.
+func _find_hit_target_in_reach(from: Vector3, to: Vector3) -> HitTarget:
+	for node: Node in get_tree().get_nodes_in_group(Types.GROUP_HIT_TARGET):
+		var target: HitTarget = node as HitTarget
+		if target == null or not target.is_alive():
+			continue
+		var center: Vector3 = target.get_hit_center()
+		var reach: float = target.get_hit_radius() + melee_margin
+		for sample_index: int in MeleeMath.STRETCH_SAMPLES + 1:
+			if from.lerp(to, float(sample_index) / float(MeleeMath.STRETCH_SAMPLES)).distance_to(center) <= reach:
+				return target
+	return null
 
 
 ## The hand the weapon's model is in: the one that drew it from a holster,
