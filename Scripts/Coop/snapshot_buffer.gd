@@ -19,6 +19,9 @@ const INTERPOLATION_DELAY: float = 0.1
 const MAX_EXTRAPOLATION_SECONDS: float = 0.1
 ## Snapshots kept (the newest ones).
 const MAX_SNAPSHOTS: int = 4
+## A move this long between two snapshots is a jump (into a slot, a
+## respawn): it cuts instead of gliding across the room.
+const JUMP_DISTANCE: float = 1.5
 
 var _times: Array[float] = []
 var _transforms: Array[Transform3D] = []
@@ -30,6 +33,9 @@ func push(time: float, transform: Transform3D) -> void:
 		# Same instant (or out of order): the newer value wins.
 		_transforms[_transforms.size() - 1] = transform
 		return
+	if not _transforms.is_empty() and _transforms.back().origin.distance_to(transform.origin) > JUMP_DISTANCE:
+		_times.clear()
+		_transforms.clear()
 	_times.append(time)
 	_transforms.append(transform)
 	if _times.size() > MAX_SNAPSHOTS:

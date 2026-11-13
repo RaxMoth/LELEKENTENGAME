@@ -53,6 +53,8 @@ const UPNP_TIMEOUT_MILLISECONDS: int = 2500
 ## killed without closing it; a session longer than that renews it.
 const UPNP_LEASE_SECONDS: int = 4 * 60 * 60
 const UPNP_DESCRIPTION: String = "Porchlight VR"
+## The local id of a guest that is reconnecting (no id with the host).
+const NO_PEER: int = 0
 ## A guest whose connection drops tries this many times to get back in ...
 const RECONNECT_ATTEMPTS: int = 5
 ## ... this many seconds apart.
@@ -149,7 +151,11 @@ func is_client() -> bool:
 	return mode == Mode.CLIENT
 
 
+## Our network id: 1 when hosting or offline, NO_PEER while a dropped guest
+## reconnects (it has no id with the host then).
 func get_local_peer_id() -> int:
+	if _is_reconnecting:
+		return NO_PEER
 	return multiplayer.get_unique_id() if is_online() else 1
 
 
