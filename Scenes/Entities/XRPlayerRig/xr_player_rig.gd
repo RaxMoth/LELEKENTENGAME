@@ -47,20 +47,22 @@ signal hand_input_forwarded(hand: Types.Hand, action_name: StringName, is_presse
 
 ## Command line user argument that forces the in-world popup screen without a
 ## headset: `godot -- world_ui=1`.
-## The most physics steps per second the flat simulator matches a fast monitor with.
-const MAX_FLAT_PHYSICS_TICKS: int = 144
 const ARGUMENT_WORLD_UI: String = "world_ui=1"
-const HAPTIC_SECONDS: float = 0.06
 ## Pointer grabs and button presses reach this far.
 const POINTER_REACH: float = HandInteractor.POINTER_REACH
-## Where the popup screen appears: this far ahead of the head and this much lower.
-const POPUP_DISTANCE: float = 1.9
-const POPUP_DROP: float = 0.15
 
 ## Hand that points at UI and uses things; the other hand is the off-hand.
 @export var dominant_hand: Types.Hand = Types.Hand.RIGHT
 ## Show popups on the in-world screen even without a headset (tests the XR UI path).
 @export var force_world_space_ui: bool = false
+
+@export_group("Comfort")
+## Where the popup screen appears: this far ahead of the head ...
+@export_range(0.8, 4.0, 0.05) var popup_distance: float = 1.9
+## ... and this much lower than the eyes.
+@export_range(0.0, 1.0, 0.01) var popup_drop: float = 0.15
+## Length of a controller rumble (seconds).
+@export_range(0.01, 0.5, 0.01) var haptic_seconds: float = 0.06
 
 @export_group("XR")
 ## Size of the desktop window while a PC headset is active. The window
@@ -72,6 +74,9 @@ const POPUP_DROP: float = 0.15
 @export var standing_eye_height: float = 1.8
 
 @export_group("Flat simulator")
+## The most physics steps per second the flat simulator matches a fast
+## monitor with (smooth walking on 120 / 144 Hz screens).
+@export_range(60, 240) var max_flat_physics_ticks: int = 144
 @export var flat_eye_height: float = 1.8
 @export var flat_pitch_degrees: float = -12.0
 ## Vertical field of view for wide and tall windows.
@@ -394,7 +399,7 @@ func pulse(pointer: XRPointer, strength: Types.HapticStrength = Types.HapticStre
 			amplitude = 0.6
 		Types.HapticStrength.HEAVY:
 			amplitude = 1.0
-	controller.trigger_haptic_pulse(Types.XR_ACTION_HAPTIC, 0.0, amplitude, HAPTIC_SECONDS, 0.0)
+	controller.trigger_haptic_pulse(Types.XR_ACTION_HAPTIC, 0.0, amplitude, haptic_seconds, 0.0)
 
 
 ## Moves the play space (and the player with it).
@@ -523,7 +528,7 @@ func _match_physics_to_display() -> void:
 func _match_physics_to_monitor() -> void:
 	var refresh_rate: float = DisplayServer.screen_get_refresh_rate()
 	if refresh_rate > 0.0:
-		Engine.physics_ticks_per_second = clampi(roundi(refresh_rate), _default_physics_ticks, MAX_FLAT_PHYSICS_TICKS)
+		Engine.physics_ticks_per_second = clampi(roundi(refresh_rate), _default_physics_ticks, max_flat_physics_ticks)
 
 
 ## Puts the popup screen straight ahead of where the player looks right now.
@@ -531,7 +536,7 @@ func _place_popup_in_view() -> void:
 	var head: Transform3D = get_head_transform()
 	var forward: Vector3 = Vector3(-head.basis.z.x, 0.0, -head.basis.z.z)
 	forward = forward.normalized() if forward.length() > 0.01 else Vector3.FORWARD
-	var screen_position: Vector3 = head.origin + forward * POPUP_DISTANCE + Vector3(0.0, -POPUP_DROP, 0.0)
+	var screen_position: Vector3 = head.origin + forward * popup_distance + Vector3(0.0, -popup_drop, 0.0)
 	_popup_screen.global_transform = Transform3D(Basis.looking_at(forward, Vector3.UP), screen_position)
 
 

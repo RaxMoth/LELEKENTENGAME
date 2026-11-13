@@ -82,7 +82,7 @@ func _ready() -> void:
 func _process(_delta: float) -> void:
 	if not _has_pose:
 		return
-	var shown_time: float = _now() - SnapshotBuffer.INTERPOLATION_DELAY
+	var shown_time: float = SnapshotBuffer.now() - SnapshotBuffer.INTERPOLATION_DELAY
 	_head.global_transform = _head_buffer.sample(shown_time)
 	_place_body()
 	for hand: Types.Hand in _hand_buffers:
@@ -98,7 +98,7 @@ func apply_pose(head: Transform3D, left_hold: Transform3D, left_origin: Vector3,
 	_target_head = head
 	_target_hands[Types.Hand.LEFT] = left_hold
 	_target_hands[Types.Hand.RIGHT] = right_hold
-	var now: float = _now()
+	var now: float = SnapshotBuffer.now()
 	_head_buffer.push(now, head)
 	_hand_buffers[Types.Hand.LEFT].push(now, left_hold)
 	_hand_buffers[Types.Hand.RIGHT].push(now, right_hold)
@@ -150,8 +150,3 @@ func _place_body() -> void:
 
 func _get_hand(hand: Types.Hand) -> Node3D:
 	return _left_hand if hand == Types.Hand.LEFT else _right_hand
-
-
-## Seconds on this machine's clock (poses are timed by when they arrive).
-func _now() -> float:
-	return Time.get_ticks_usec() / 1000000.0

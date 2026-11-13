@@ -14,8 +14,6 @@ class_name Worker
 extends Node3D
 
 const TRACER_SCENE: PackedScene = preload("res://Scenes/Levels/House/Garden/BeamTracer.tscn")
-## Skill (training level) at which crafters make Pure instead of Street.
-const SKILLED_TRAINING_LEVEL: int = 2
 
 @export var role: Types.WorkerRole = Types.WorkerRole.CRAFTER
 ## Hired once the role's hire upgrade reaches this level.
@@ -24,6 +22,8 @@ const SKILLED_TRAINING_LEVEL: int = 2
 @export var work_interval_seconds: float = 18.0
 ## Each training level makes work this much faster.
 @export var training_speedup: float = 0.15
+## Crew Training level at which crafters make Pure instead of Street.
+@export_range(0, 10) var skilled_training_level: int = 2
 
 @export_group("Guard")
 @export var guard_damage: float = 16.0
@@ -140,7 +140,7 @@ func _craft() -> void:
 	var recipe: RecipeData = recipes[0]
 	if not operation.spend_cash(recipe.get_ingredient_cost(), "ingredients"):
 		return
-	var tier: int = 3 if operation.get_upgrade_level(Types.UPGRADE_TRAINING) >= SKILLED_TRAINING_LEVEL else 2
+	var tier: int = 3 if operation.get_upgrade_level(Types.UPGRADE_TRAINING) >= skilled_training_level else 2
 	var units: int = operation.add_product(recipe, tier, recipe.base_batch_size)
 	FloatingText3D.spawn("%s ×%d" % [tr(QualityMath.get_tier_name(tier)), units], global_position + Vector3(0.0, 2.1, 0.0), Palette.GOLD, Global.get_world_root())
 
