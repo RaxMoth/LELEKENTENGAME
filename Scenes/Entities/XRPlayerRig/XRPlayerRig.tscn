@@ -46,6 +46,7 @@ glow = 1.2
 unique_name_in_owner = true
 script = ExtResource("2_pointer")
 beam_color = Color(0.9608, 0.7216, 0.2549, 1)
+steadying = 0.7
 
 [node name="LeftHoldAnchor" type="Node3D" parent="LeftHand"]
 unique_name_in_owner = true
@@ -79,6 +80,7 @@ glow = 1.2
 [node name="RightPointer" type="Node3D" parent="RightHand"]
 unique_name_in_owner = true
 script = ExtResource("2_pointer")
+steadying = 0.7
 
 [node name="RightHoldAnchor" type="Node3D" parent="RightHand"]
 unique_name_in_owner = true

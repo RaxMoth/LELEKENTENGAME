@@ -7,7 +7,10 @@
 ##   if not pointer.is_over_screen():
 ##       var distance: float = RayMath.intersect_ground(pointer.ray_origin, pointer.ray_direction)
 ##
-## The ray leaves along the node's local -Z (the OpenXR "aim" pose).
+## The ray leaves along the node's local -Z (the OpenXR "aim" pose). A
+## controller pointer can steady it ([member steadying]): a shaky hand's
+## small wobbles move the ray slowly, real aiming moves it at once, so small
+## buttons are easy to hit; the beam follows the steadied ray.
 ##
 ## Dependencies: WorldScreen, RayMath, PlaceholderMesh3D, Palette, Types autoload
 class_name XRPointer
@@ -28,6 +31,11 @@ const MIN_RETICLE_DISTANCE: float = 0.3
 @export var beam_color: Color = Palette.PRIMARY
 ## Off for the flat simulator, where the ray starts at the camera.
 @export var is_beam_visible: bool = true
+## How much a controller's small wobbles are smoothed out (0 = not at all,
+## the flat mouse pointer; 0.7 = a steady laser that still follows real moves).
+@export_range(0.0, 0.95, 0.05) var steadying: float = 0.0
+## Turns this large (degrees per frame) follow the hand at once.
+@export_range(1.0, 30.0, 0.5) var steadying_full_follow_degrees: float = 6.0
 
 ## Disabled pointers hide and stop hovering screens.
 var is_enabled: bool = true:
@@ -48,9 +56,14 @@ var _is_pressing_screen: bool = false
 var _screen_hit_distance: float = RayMath.NO_HIT
 var _world_hit_distance: float = RayMath.NO_HIT
 var _interaction_hit_distance: float = RayMath.NO_HIT
+## Beam and reticle hang under this, turned toward the steadied ray.
+var _visual_root: Node3D = null
+var _steadied_direction: Vector3 = Vector3.ZERO
 
 
 func _ready() -> void:
+	_visual_root = Node3D.new()
+	add_child(_visual_root)
 	var beam_mesh: BoxMesh = BoxMesh.new()
 	beam_mesh.size = Vector3.ONE
 	_beam = _create_visual(beam_mesh, Color(beam_color, BEAM_OPACITY))
@@ -129,7 +142,7 @@ func release() -> bool:
 ## Recomputes the ray and what it hovers right now (runs every frame on its own).
 func update_ray() -> void:
 	ray_origin = global_position
-	ray_direction = -global_transform.basis.z.normalized()
+	ray_direction = _steady(-global_transform.basis.z.normalized())
 	_update_screen_hover()
 	_update_visuals()
 
@@ -174,9 +187,23 @@ func _leave_screen() -> void:
 		screen_exited.emit(previous_screen)
 
 
+## The aimed direction, its small wobbles smoothed out by [member steadying].
+func _steady(aimed: Vector3) -> Vector3:
+	if steadying <= 0.0 or _steadied_direction == Vector3.ZERO:
+		_steadied_direction = aimed
+		return aimed
+	var wobble_degrees: float = rad_to_deg(_steadied_direction.angle_to(aimed))
+	var follow: float = lerpf(1.0 - steadying, 1.0, clampf(wobble_degrees / steadying_full_follow_degrees, 0.0, 1.0))
+	_steadied_direction = _steadied_direction.slerp(aimed, follow).normalized()
+	return _steadied_direction
+
+
 func _update_visuals() -> void:
 	if _beam == null:
 		return
+	var local_direction: Vector3 = (global_transform.basis.inverse() * ray_direction).normalized()
+	if local_direction.dot(Vector3.FORWARD) > -0.99:
+		_visual_root.basis = Basis(Quaternion(Vector3.FORWARD, local_direction))
 	var hit_distance: float = _screen_hit_distance
 	if hit_distance == RayMath.NO_HIT:
 		hit_distance = _nearest_hit(_interaction_hit_distance, _world_hit_distance)
@@ -211,5 +238,5 @@ func _create_visual(visual_mesh: Mesh, color: Color) -> MeshInstance3D:
 	material.render_priority = 10
 	visual.material_override = material
 	visual.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	add_child(visual)
+	_visual_root.add_child(visual)
 	return visual

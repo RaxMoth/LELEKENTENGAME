@@ -6,6 +6,8 @@ class_name StashShelf
 extends Node3D
 
 const BAG_SIZE: Vector3 = Vector3(0.14, 0.18, 0.12)
+## Bags farther than this from the camera aren't drawn (32 small boxes).
+const BAG_DRAW_DISTANCE: float = 12.0
 
 @export var operation: Operation
 @export var columns: int = 8
@@ -27,6 +29,7 @@ func _ready() -> void:
 			bag.size = BAG_SIZE
 			bag.position = first_bag_offset + Vector3(column * spacing.x, row * spacing.y, 0.0)
 			bag.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+			bag.visibility_range_end = BAG_DRAW_DISTANCE
 			bag.visible = false
 			add_child(bag)
 			_bags.append(bag)
