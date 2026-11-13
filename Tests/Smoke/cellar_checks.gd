@@ -18,7 +18,7 @@ const OVER_THE_OPENING: Vector3 = Vector3(2.6, 0.0, 2.1)
 ## A spot on the cellar floor.
 const CELLAR_SPOT: Vector3 = Vector3(2.6, -2.6, 0.0)
 ## Upgrades that work on their own (taken back out after the checks).
-const MACHINES: Array[StringName] = [Types.UPGRADE_GROW_RACKS, Types.UPGRADE_AUTO_PICKER, Types.UPGRADE_GRINDER_MOTOR, Types.UPGRADE_COOKER_MOTOR, Types.UPGRADE_PRESS_MOTOR, Types.UPGRADE_CONVEYOR, Types.UPGRADE_HOPPER]
+const MACHINES: Array[StringName] = [Types.UPGRADE_GROW_RACKS, Types.UPGRADE_GROW_LIGHTS, Types.UPGRADE_AUTO_PICKER, Types.UPGRADE_GRINDER_MOTOR, Types.UPGRADE_COOKER_MOTOR, Types.UPGRADE_PRESS_MOTOR, Types.UPGRADE_CONVEYOR, Types.UPGRADE_HOPPER]
 
 
 static func run(test: SmokeTest, level: HouseLevel) -> void:
