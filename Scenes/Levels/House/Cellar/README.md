@@ -13,8 +13,10 @@ auto picker come with the next Automation upgrades.
 | `Ressources/Upgrades/Lab/lab_cellar.tres` … `lab_auto_picker.tres` | Its upgrades (in the Lab catalog, branch `automation`) |
 | `Tests/Smoke/cellar_checks.gd` | Smoke checks (stairs, racks, picker, the lab's motors, belts and hopper, perks) |
 
-The stairwell is the rect `(1.0, 1.62) – (4.3, 2.62)` (x, z) in three places:
-`House.tscn` (`HouseShell.floor_openings`), `Cellar.tscn` (the cellar
+The stairwell is the rect `(1.55, 1.62) – (4.3, 2.62)` (x, z) in three places:
+`Ressources/HouseLayouts/house.tres` (`floor_openings`), `Cellar.tscn` (the cellar
 shell's `ceiling_openings` and the `StairwellHole` `GroundHole` that keeps
 the lawn and the town's asphalt out of it) and `cellar.gd`
 (`stairwell_hole`, the part the player can't stand on). Move them together.
+West of it, between the wall and the railing, a landing about 0.7 m wide
+leads onto the top step: keep it that wide, or players can't find the way down.

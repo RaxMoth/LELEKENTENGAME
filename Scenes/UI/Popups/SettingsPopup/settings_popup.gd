@@ -12,7 +12,6 @@ const LOCALE_OPTIONS: PackedStringArray = ["", "en", "de"]
 @onready var _music_slider: HSlider = %MusicSlider
 @onready var _sfx_slider: HSlider = %SfxSlider
 @onready var _haptics_toggle: CheckButton = %HapticsToggle
-@onready var _smooth_move_toggle: CheckButton = %SmoothMoveToggle
 @onready var _smooth_turn_toggle: CheckButton = %SmoothTurnToggle
 @onready var _standing_view_toggle: CheckButton = %StandingViewToggle
 @onready var _fresh_start_toggle: CheckButton = %FreshStartToggle
@@ -27,7 +26,6 @@ func _on_opened(_data: Dictionary) -> void:
 	_music_slider.value = Settings.get_float(Settings.KEY_MUSIC_VOLUME)
 	_sfx_slider.value = Settings.get_float(Settings.KEY_SFX_VOLUME)
 	_haptics_toggle.button_pressed = Settings.get_bool(Settings.KEY_HAPTICS_ENABLED)
-	_smooth_move_toggle.button_pressed = Settings.get_bool(Settings.KEY_SMOOTH_MOVEMENT)
 	_smooth_turn_toggle.button_pressed = Settings.get_bool(Settings.KEY_SMOOTH_TURNING)
 	_standing_view_toggle.button_pressed = Settings.get_bool(Settings.KEY_STANDING_VIEW)
 	# A development switch: exported release builds always load the save.
@@ -48,7 +46,6 @@ func _on_opened(_data: Dictionary) -> void:
 	_music_slider.value_changed.connect(func(value: float) -> void: Settings.set_value(Settings.KEY_MUSIC_VOLUME, value))
 	_sfx_slider.value_changed.connect(_on_sfx_slider_changed)
 	_haptics_toggle.toggled.connect(func(enabled: bool) -> void: Settings.set_value(Settings.KEY_HAPTICS_ENABLED, enabled))
-	_smooth_move_toggle.toggled.connect(func(enabled: bool) -> void: Settings.set_value(Settings.KEY_SMOOTH_MOVEMENT, enabled))
 	_smooth_turn_toggle.toggled.connect(func(enabled: bool) -> void: Settings.set_value(Settings.KEY_SMOOTH_TURNING, enabled))
 	_standing_view_toggle.toggled.connect(func(enabled: bool) -> void: Settings.set_value(Settings.KEY_STANDING_VIEW, enabled))
 	_fresh_start_toggle.toggled.connect(func(enabled: bool) -> void: Settings.set_value(Settings.KEY_FRESH_START_IN_DEV, enabled))

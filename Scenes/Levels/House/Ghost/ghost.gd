@@ -1,4 +1,6 @@
-## A ghost on the night of day 4, for the player alone. When night falls it
+## A ghost that haunts now and then at night (GhostOdds: a small chance a
+## night, not on the first night, never two close together), for the player
+## alone. When night falls it
 ## turns up somewhere behind them (on their floor, in plain sight once they
 ## turn around): a dark, hooded figure with a pale face and arms reaching
 ## out, turned away, whispering now and then. The moment the player looks at
@@ -8,9 +10,9 @@
 ## co-op each player meets their own.
 ## State: Waiting -> Lurking (somewhere near, unseen) -> Seen (lunges, vanishes) -> Gone.
 ##
-##   ghost.haunt(rig)   # HouseLevel on nightfall when Profile.operation.day_number == ghost.night_number
+##   if ghost.rolls_tonight(day_number, last_ghost_night): ghost.haunt(rig)   # HouseLevel on nightfall
 ##
-## Dependencies: XRPlayerRig, XRPointer, WalkableArea, SightMath, Audio, Types autoloads, SfxSynth
+## Dependencies: XRPlayerRig, XRPointer, WalkableArea, SightMath, GhostOdds, Audio, Types autoloads, SfxSynth
 class_name Ghost
 extends Node3D
 
@@ -19,8 +21,14 @@ const SIGHT_SAMPLES: int = 16
 ## Where it may turn up relative to where the player looks (degrees, behind first).
 const APPEAR_ANGLES: Array[float] = [180.0, 155.0, 205.0, 130.0, 230.0, 105.0, 255.0]
 
-## The day whose night it haunts.
-@export var night_number: int = 4
+@export_group("How often")
+## Chance a night that it comes.
+@export_range(0.0, 1.0, 0.01) var haunt_chance: float = 0.15
+## The first day whose night it may haunt.
+@export var first_haunt_night: int = 2
+## Nights it waits after a haunting before it may come again.
+@export var min_nights_between: int = 4
+@export_group("")
 ## Seconds from being seen to gone (it lunges and fades meanwhile).
 @export var vanish_seconds: float = 0.22
 ## How far it lunges at the player as it vanishes (meters).
@@ -75,6 +83,12 @@ func haunt(rig: XRPlayerRig) -> void:
 	_has_haunted = true
 	_rig = rig
 	state_chart.send_event(Types.EVENT_GHOST_APPEAR)
+
+
+## Rolls whether it haunts the night of [param day_number] (the last
+## haunting was on [param last_ghost_night], 0 = never).
+func rolls_tonight(day_number: int, last_ghost_night: int) -> bool:
+	return GhostOdds.haunts_tonight(day_number, last_ghost_night, randf(), haunt_chance, first_haunt_night, min_nights_between)
 
 
 ## True while it is out there (lurking, not yet seen).

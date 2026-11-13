@@ -111,7 +111,7 @@ primitives in `Palette` colors — matte, lit from above, grounded by a
   quality `GOLD` / `SUCCESS`; products use one distinct hue each.
 - Each raider has its own silhouette, not just a color (cop: riot shield
   and cap; SWAT: helmet and vest; the ram team: two officers and a ram).
-- The night-4 ghost is the only translucent figure: a dark hooded shroud
+- The ghost (a rare night) is the only translucent figure: a dark hooded shroud
   (unshaded, about 70% opaque) with a pale face, two small red eyes, a dark
   mouth and long reaching arms — scary, never cartoonish or gory. Seen, it
   lunges half a meter and fades out within a quarter second; no screen

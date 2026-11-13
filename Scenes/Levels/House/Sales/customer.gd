@@ -27,6 +27,8 @@ var has_greeted: bool = false
 var has_complained: bool = false
 
 var _target: Vector3 = Vector3.ZERO
+## The patience bar's current color band (its material is set only on a change).
+var _patience_color: Color = Color.TRANSPARENT
 var _exit_point: Vector3 = Vector3.ZERO
 var _has_been_used: bool = false
 
@@ -170,4 +172,8 @@ func _update_patience_bar() -> void:
 	var ratio: float = get_patience_ratio()
 	_patience_fill.scale.x = maxf(0.001, ratio)
 	_patience_fill.position.x = -PATIENCE_BAR_WIDTH * 0.5 * (1.0 - ratio)
-	_patience_fill.material_override = PlaceholderMesh3D.get_shared_material(Palette.SUCCESS if ratio > 0.5 else (Palette.WARNING if ratio > 0.25 else Palette.DANGER), 0.5, true)
+	var color: Color = Palette.SUCCESS if ratio > 0.5 else (Palette.WARNING if ratio > 0.25 else Palette.DANGER)
+	# Runs every frame while waiting: the material only changes with the color band.
+	if color != _patience_color:
+		_patience_color = color
+		_patience_fill.material_override = PlaceholderMesh3D.get_shared_material(color, 0.5, true)

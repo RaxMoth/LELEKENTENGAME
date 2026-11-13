@@ -116,6 +116,9 @@ func remove_item() -> Grabbable:
 ## Ring state while the player holds something: it fits (blue), it doesn't
 ## (red), or nothing to show.
 func set_highlight(state: Highlight) -> void:
+	# Called every frame while an item is held: only a change redraws.
+	if state == _highlight:
+		return
 	_highlight = state
 	_update_marker()
 
