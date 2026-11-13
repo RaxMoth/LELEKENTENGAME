@@ -39,8 +39,8 @@ func setup(rat_pack: RatPack, trap_box: TrapBox) -> void:
 
 
 ## A sprung trap stays where it snapped until it clears away.
-func get_display_name() -> String:
-	return tr("Rat trap")
+func get_icon() -> Texture2D:
+	return preload("res://Assets/Icons/box.svg")
 
 
 func can_grab() -> bool:

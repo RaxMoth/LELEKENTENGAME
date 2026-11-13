@@ -15,7 +15,7 @@ Run from the project root (exit code 0 = pass):
   and their areas; shared code runs everything), then the co-op test when
   co-op code changed, and prints one line per suite with its time — what CI
   runs on a PR. `Tools/test.sh quick` (unit + core smoke), `core` (+ co-op),
-  `full` (every area + co-op, as CI does on `main`).
+  `full` (every area + co-op; CI never runs it). After a change run only `Tools/test.sh` (what the change touches).
 - One part only: `Tools/unit_tests.sh` (one suite:
   `Tools/unit_tests.sh -a res://Tests/Unit/lane_grid_test.gd`),
   `Tools/smoke_test.sh [core|full|areas=lab,sales]`, `Tools/coop_test.sh`. Set

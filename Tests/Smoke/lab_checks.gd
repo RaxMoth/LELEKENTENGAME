@@ -224,7 +224,7 @@ static func _check_vr_hands(test: SmokeTest, rig: XRPlayerRig, operation: Operat
 	_click(rig, hand, Types.XR_ACTION_GRIP_CLICK)
 	await test.frames(2)
 	var held_items: Array[Grabbable] = rig.get_held_items()
-	test.check(held_items.size() == 1 and held_items[0] == ground, "a quick VR grip click keeps holding the item")
+	test.check(held_items.size() == 1 and held_items[0] == ground, "a VR grip press picks the item up and the hand keeps it")
 	var cooker_slot: ItemSocket = cooker.get_input_sockets()[0]
 	_point_hand(rig, hand, cooker_slot.global_position)
 	_click(rig, hand, Types.XR_ACTION_GRIP_CLICK)
@@ -272,12 +272,12 @@ static func _check_start_and_gadgets(test: SmokeTest, level: HouseLevel, lab: La
 	var picked: ProductBag = held[0] as ProductBag if held.size() == 1 else null
 	test.check(picked != null and picked.recipe == plant.crop and not plant.is_ripe() and operation.stash.get_total() == stash_before, "picking a ripe plant puts a bag of shrooms in the hand, not in the stash; then it grows again")
 	var view_status: ViewStatus = level.get_view_status()
-	test.check(picked != null and await test.wait_until(func() -> bool: return view_status.get_hands_text() == picked.get_display_name()), "the panel under the view names what the hand holds")
+	test.check(picked != null and await test.wait_until(func() -> bool: return view_status.get_hand_icon(rig.dominant_hand) == picked.get_icon()), "the hand's box under the view shows the bag's icon")
 	if picked != null:
 		var standing_at: Vector3 = rig.get_feet_position()
 		await _put_held_bag_in_stash(test, level, picked, stash_before)
 		rig.locomotion.teleport_to(standing_at)
-		test.check(await test.wait_until(func() -> bool: return view_status.get_hands_text().is_empty()), "with the bag in the stash the panel shows empty hands")
+		test.check(await test.wait_until(func() -> bool: return view_status.get_hand_icon(rig.dominant_hand) == null), "with the bag in the stash the hand's box is empty again")
 	var config: GameConfig = GameConfig.get_default()
 	# Bring the money these purchases cost, so the other areas' checks keep their budget.
 	for upgrade_id: StringName in [Types.UPGRADE_GRINDER, Types.UPGRADE_COOKER, Types.UPGRADE_PRESS, Types.UPGRADE_PLANTS]:

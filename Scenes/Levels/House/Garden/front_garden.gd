@@ -44,6 +44,9 @@ const HANDS: Array[Types.Hand] = [Types.Hand.LEFT, Types.Hand.RIGHT]
 ## than the weapon: a stomp or a low swing, where a raider would be hit at chest height.
 const LOW_TARGET_REACH: float = 0.6
 
+## A raider this close (meters) around the doorway counts as coming through it.
+const ALARM_DOORWAY_MARGIN: float = 0.4
+
 ## Every gun there is (the player fires the one equipped in Profile.armory).
 @export var weapon_catalog: WeaponCatalog
 
@@ -81,6 +84,8 @@ var _random: RandomNumberGenerator = RandomNumberGenerator.new()
 ## Co-op: the other player's own trigger — same gun and ammo, own pace,
 ## own burst spread, held for automatic guns (HouseContext.guest_fired).
 var _guest_trigger_pointer: XRPointer = null
+## The raiders storm in, but none has come through the doorway yet (no alarm so far).
+var _is_alarm_pending: bool = false
 var _guest_feet: Vector3 = Vector3.ZERO
 var _guest_recoil: Callable = Callable()
 var _guest_weapon_cooldown: float = 0.0
@@ -186,6 +191,7 @@ func _shift_process(delta: float) -> void:
 	_update_weapon_model()
 	_update_pointers()
 	_let_raiders_through_open_door()
+	_sound_alarm_once_inside()
 
 
 func _refresh_displays() -> void:
@@ -732,12 +738,26 @@ func _let_raiders_through_open_door() -> void:
 			return
 
 
-## The raiders go after the players through the house; the alarm goes off.
+## The raiders go after the players through the house; the alarm goes off
+## once the first of them comes through the doorway.
 func _storm_in(message: String) -> void:
 	warning_requested.emit(message)
 	yard.start_hunting()
-	# The house sounds the alarm (sirens, music, beacons).
-	Events.house_breached.emit(door.global_position)
+	_is_alarm_pending = true
+
+
+## The first raider through the door (open or broken) sounds the house's
+## alarm (sirens, music, beacons) — not the raid itself, not the door alone.
+func _sound_alarm_once_inside() -> void:
+	if not _is_alarm_pending or not yard.is_hunting():
+		return
+	var threshold: Rect2 = doorway_region.grow(ALARM_DOORWAY_MARGIN)
+	for raider: Raider in yard.get_raiders():
+		var feet: Vector3 = raider.global_position
+		if raider.is_alive() and threshold.has_point(Vector2(feet.x, feet.z)):
+			_is_alarm_pending = false
+			Events.house_breached.emit(door.global_position)
+			return
 
 
 ## The threshold is walkable only while the door stands wide open.

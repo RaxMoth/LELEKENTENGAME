@@ -103,7 +103,6 @@ func _on_level_setup() -> void:
 	_rats.player_bitten.connect(hurt_local_player)
 	_rats.stash_chewed.connect(_on_stash_chewed)
 	_wrist_status.show_health(player_vitals.get_health(), player_vitals.get_max_health())
-	_view_status.setup(rig)
 	_view_status.show_health(player_vitals.get_health(), player_vitals.get_max_health())
 	context = HouseContext.new(self, rig, operation, day_cycle, cycle)
 	# A co-op guest's weapons are fired by the host (the armory's one), so
@@ -111,6 +110,7 @@ func _on_level_setup() -> void:
 	if not is_mirror:
 		_holsters.setup(rig)
 		context.holsters = _holsters
+	_view_status.setup(rig, _get_weapon_in_hand)
 	for node: Node in get_tree().get_nodes_in_group(Types.GROUP_HOUSE_FRONT):
 		var front: HouseFront = node as HouseFront
 		if front != null and is_ancestor_of(front):
@@ -291,6 +291,18 @@ func announce(message: String, color: Color = Palette.TEXT, hold_seconds: float 
 ## The health and in-hand panels in front of the player's view.
 func get_view_status() -> ViewStatus:
 	return _view_status
+
+
+## The weapon [param hand] holds, for its box under the view: in a headset
+## the one drawn from a holster; in the flat simulator the equipped one, in
+## the off hand (the gun hand), while that hand carries no item.
+func _get_weapon_in_hand(hand: Types.Hand) -> WeaponData:
+	if rig.is_xr_active and context != null and context.holsters != null:
+		return context.holsters.get_drawn(hand)
+	var garden: FrontGarden = get_front(FrontGarden) as FrontGarden
+	if garden == null or hand == rig.dominant_hand or rig.is_weapon_hand_busy():
+		return null
+	return garden.get_equipped_weapon()
 
 
 ## The wrist status lines: the cycle's and every front's (co-op streams them).

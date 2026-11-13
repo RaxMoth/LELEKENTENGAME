@@ -32,8 +32,8 @@ func setup(tower_data: TowerData, tower_field: TowerField, resting_at: Vector3) 
 
 
 ## The trigger builds the tower (the grip puts the kit down).
-func get_display_name() -> String:
-	return tr(data.display_name) if data != null else ""
+func get_icon() -> Texture2D:
+	return preload("res://Assets/Icons/box.svg")
 
 
 func is_usable() -> bool:

@@ -20,7 +20,7 @@
    import, the unit tests and the smoke test for just the areas your
    changes touch (`Tools/affected_areas.sh`; shared code runs everything),
    the co-op test when co-op code changed — what CI runs on a PR.
-   `Tools/test.sh full` runs everything (CI on `main`). New pure logic gets
+   `Tools/test.sh full` runs everything (locally only; CI runs just the PR scope). New pure logic gets
    a gdUnit4 suite in `Tests/Unit/`; a new area folder gets a line in
    `Tools/affected_areas.sh`.
 5. **Data over code.** Tunables in Resources / `Ressources/game_config.tres`.

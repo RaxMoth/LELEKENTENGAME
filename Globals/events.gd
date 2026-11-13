@@ -48,8 +48,8 @@ signal purchase_completed(product_id: StringName)
 signal purchase_failed(product_id: StringName, reason: String)
 
 # --- The house ---
-## The police broke the front door down: all or nothing (sirens, music,
-## beacons — BreachAlarm). The co-op host passes it on to the guest.
+## The first raider came in through the front door (broken or open): all or
+## nothing (sirens, music, beacons — BreachAlarm). The co-op host passes it on to the guest.
 signal house_breached(door_position: Vector3)
 ## The raid after a break-in is beaten (the alarm dies away).
 signal house_breach_ended

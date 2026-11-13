@@ -81,11 +81,10 @@ func drop_nowhere() -> void:
 		_on_released_nowhere()
 
 
-## @virtual What it is, in words for the player ("Shrooms ×3 · Okay"),
-## shown while it is in a hand (ViewStatus). Empty: not worth naming (a
-## door handle).
-func get_display_name() -> String:
-	return ""
+## @virtual Small icon of it (Assets/Icons), shown in its hand's box while
+## it is held (ViewStatus). Null: nothing to show (a door handle).
+func get_icon() -> Texture2D:
+	return null
 
 
 ## @virtual True for an item that acts while held when its holder pulls the

@@ -9,9 +9,10 @@
 ## up the item (or a new one from a crate) at the hand or under the beam,
 ## then primary_action_pressed. A usable item in a hand (the extinguisher)
 ## takes that hand's trigger instead (Grabbable.use). Off-hand trigger: a screen, a button or
-## secondary_action_pressed (the gun) — never a pickup. Grip: hold to carry
-## and let go to put down; a quick click keeps holding until the next click.
-## Fixed things (door handles) only move while the button is held.
+## secondary_action_pressed (the gun) — never a pickup. Grip: one press
+## picks up, the item stays in the hand (no need to hold the grip), the next
+## press puts it down. Fixed things (door handles) only move while the
+## button is held.
 ##
 ##   hands.setup({Types.Hand.LEFT: left_anchor, Types.Hand.RIGHT: right_anchor},
 ##       {Types.Hand.LEFT: left_pointer, Types.Hand.RIGHT: right_pointer})
@@ -39,11 +40,6 @@ signal pulse_requested(hand: Types.Hand, strength: Types.HapticStrength)
 const HAND_GRAB_REACH: float = 0.12
 ## Pointer grabs and button presses reach this far.
 const POINTER_REACH: float = 4.5
-## A grip let go sooner than this after picking something up was a click:
-## the hand keeps the item until the next grip click or trigger.
-const GRIP_CLICK_SECONDS: float = 0.35
-## _grip_grabbed_at_msec value of a hand whose item the grip didn't pick up.
-const NOT_GRIP_GRABBED: int = -1
 
 ## Hand whose trigger uses things; the other trigger is the gun.
 var dominant_hand: Types.Hand = Types.Hand.RIGHT
@@ -54,9 +50,6 @@ var is_mirror: bool = false
 var _hold_anchors: Dictionary[Types.Hand, Node3D] = {}
 var _pointers: Dictionary[Types.Hand, XRPointer] = {}
 var _held_items: Dictionary[Types.Hand, Grabbable] = {Types.Hand.LEFT: null, Types.Hand.RIGHT: null}
-## When each hand's grip picked up what it holds (Time ticks, ms), or
-## NOT_GRIP_GRABBED (the trigger took it: a grip release leaves it alone).
-var _grip_grabbed_at_msec: Dictionary[Types.Hand, int] = {Types.Hand.LEFT: NOT_GRIP_GRABBED, Types.Hand.RIGHT: NOT_GRIP_GRABBED}
 ## The grip press already put the item down; its release must not act again.
 var _ignores_grip_release: Dictionary[Types.Hand, bool] = {Types.Hand.LEFT: false, Types.Hand.RIGHT: false}
 ## Hands holding something these rules don't manage (a weapon drawn from a holster): they grab nothing.
@@ -221,17 +214,15 @@ func _on_grip(hand: Types.Hand, is_pressed: bool) -> void:
 		if _held_items[hand] != null:
 			_put_down(hand)
 			_ignores_grip_release[hand] = true
-		elif _grab_with_hand(hand):
-			_grip_grabbed_at_msec[hand] = Time.get_ticks_msec()
+		else:
+			_grab_with_hand(hand)
 		return
 	if _ignores_grip_release[hand]:
 		_ignores_grip_release[hand] = false
 		return
+	# Items stay in the hand; only something fixed (a door handle) lets go with the grip.
 	var held_item: Grabbable = _held_items[hand]
-	if held_item == null or get_tree().paused or _grip_grabbed_at_msec[hand] == NOT_GRIP_GRABBED:
-		return
-	var held_milliseconds: int = Time.get_ticks_msec() - _grip_grabbed_at_msec[hand]
-	if held_item.is_fixed or held_milliseconds >= roundi(GRIP_CLICK_SECONDS * 1000.0):
+	if held_item != null and held_item.is_fixed and not get_tree().paused:
 		_put_down(hand)
 
 
@@ -250,8 +241,6 @@ func _grab_with_hand(hand: Types.Hand) -> bool:
 		return false
 	item.attach_to(anchor)
 	_held_items[hand] = item
-	# The grip stamps its own grabs right after this; a trigger grab stays unstamped.
-	_grip_grabbed_at_msec[hand] = NOT_GRIP_GRABBED
 	pulse_requested.emit(hand, Types.HapticStrength.LIGHT)
 	item_grabbed.emit(item)
 	return true

@@ -1,15 +1,16 @@
-## Two small panels that move with the player's view: their health in the
-## top right (a heart, a bar and the points) and what their hands hold at
-## the bottom center ("Shrooms ×3 · Okay"). They hang half a meter in front
-## of the camera — the headset's or the flat simulator's — near the edge of
-## the view (in a headset well inside the lenses' clear area), drawn over
-## the world so a wall in front of the face never hides them. Nothing here
-## moves the camera; the panels follow the head.
+## Small panels that move with the player's view: their health in the top
+## right (a heart, a bar and the points) and, at the bottom center, one box
+## per hand — left and right — with the icon of what that hand holds (an
+## item, or a weapon drawn from a holster; empty box: empty hand). They
+## hang half a meter in front of the camera — the headset's or the flat
+## simulator's — near the edge of the view (in a headset well inside the
+## lenses' clear area), drawn over the world so a wall in front of the face
+## never hides them. Nothing here moves the camera; the panels follow the head.
 ##
-##   view_status.setup(rig)                      # hangs on rig.get_view_camera()
+##   view_status.setup(rig, holsters.get_drawn)   # hangs on rig.get_view_camera()
 ##   vitals.health_changed.connect(view_status.show_health)
 ##
-## Dependencies: XRPlayerRig, Grabbable, Palette
+## Dependencies: XRPlayerRig, Grabbable, WeaponData, Palette
 class_name ViewStatus
 extends Node3D
 
@@ -20,24 +21,25 @@ const LOW_HEALTH_RATIO: float = WristStatus.LOW_HEALTH_RATIO
 const RENDER_PRIORITY: int = 20
 ## Seconds between two looks at the hands (a held item has no signal for every way it leaves a hand).
 const HANDS_POLL_SECONDS: float = 0.2
+const HANDS: Array[Types.Hand] = [Types.Hand.LEFT, Types.Hand.RIGHT]
 
 ## Meters in front of the eyes.
 @export var depth: float = 0.5
 ## Headset: how far up/right of center the health panel sits, and down the
-## hands panel (degrees; the lenses are clear within about 20°).
+## hand boxes (degrees; the lenses are clear within about 20°).
 @export var headset_health_angles_degrees: Vector2 = Vector2(17.0, 13.0)
 @export var headset_hands_angle_degrees: float = 16.0
-## Headset: the panels drawn this much larger (text needs ~1.5° to read in lenses).
+## Headset: the panels drawn this much larger (they need ~1.5° to read in lenses).
 @export var headset_scale: float = 1.4
 ## Flat simulator: gap to the window's edge (pixels).
 @export var flat_margin_pixels: float = 24.0
-## Empty space left and right of the hands panel's text (meters).
-@export var hands_padding: float = 0.012
 
 var _rig: XRPlayerRig = null
 var _camera: Camera3D = null
+## Returns the weapon a hand holds (Callable(hand: Types.Hand) -> WeaponData), or invalid: none.
+var _weapon_source: Callable = Callable()
 var _shown_health: int = -1
-var _shown_hands: String = "\n"
+var _shown_icons: Dictionary[Types.Hand, Texture2D] = {Types.Hand.LEFT: null, Types.Hand.RIGHT: null}
 var _seconds_until_hands_poll: float = 0.0
 
 @onready var _health_panel: Node3D = %HealthPanel
@@ -47,19 +49,23 @@ var _seconds_until_hands_poll: float = 0.0
 @onready var _bar_fill: MeshInstance3D = %BarFill
 @onready var _health_label: Label3D = %HealthValue
 @onready var _hands_panel: Node3D = %HandsPanel
-@onready var _hands_backdrop: MeshInstance3D = %HandsBackdrop
-@onready var _hands_icon: Sprite3D = %HandsIcon
-@onready var _hands_label: Label3D = %HandsLabel
+@onready var _hand_boxes: Dictionary[Types.Hand, MeshInstance3D] = {Types.Hand.LEFT: %LeftBox, Types.Hand.RIGHT: %RightBox}
+@onready var _hand_icons: Dictionary[Types.Hand, Sprite3D] = {Types.Hand.LEFT: %LeftIcon, Types.Hand.RIGHT: %RightIcon}
 
 
 func _ready() -> void:
-	_health_backdrop.material_override = _make_overlay_material(Color(Palette.BACKGROUND, 0.82), RENDER_PRIORITY)
-	_hands_backdrop.material_override = _make_overlay_material(Color(Palette.BACKGROUND, 0.82), RENDER_PRIORITY)
+	var backdrop: StandardMaterial3D = _make_overlay_material(Color(Palette.BACKGROUND, 0.82), RENDER_PRIORITY)
+	_health_backdrop.material_override = backdrop
+	for hand: Types.Hand in HANDS:
+		_hand_boxes[hand].material_override = backdrop
+		_hand_icons[hand].no_depth_test = true
+		_hand_icons[hand].render_priority = RENDER_PRIORITY + 2
+		_hand_icons[hand].modulate = Palette.TEXT
+		_hand_icons[hand].visible = false
 	_bar_back.material_override = _make_overlay_material(Palette.SURFACE_RAISED, RENDER_PRIORITY + 1)
 	_bar_fill.material_override = _make_overlay_material(Palette.SUCCESS, RENDER_PRIORITY + 2)
-	for sprite: Sprite3D in [_heart, _hands_icon]:
-		sprite.no_depth_test = true
-		sprite.render_priority = RENDER_PRIORITY + 2
+	_heart.no_depth_test = true
+	_heart.render_priority = RENDER_PRIORITY + 2
 	set_process(false)
 
 
@@ -74,9 +80,12 @@ func _process(delta: float) -> void:
 # PUBLIC API
 # ============================================
 
-## Hangs the panels in front of [param rig]'s camera and starts watching its hands.
-func setup(rig: XRPlayerRig) -> void:
+## Hangs the panels in front of [param rig]'s camera and starts watching its
+## hands; [param weapon_source] (hand -> WeaponData) says which weapon a
+## hand holds, if any.
+func setup(rig: XRPlayerRig, weapon_source: Callable = Callable()) -> void:
 	_rig = rig
+	_weapon_source = weapon_source
 	_camera = rig.get_view_camera()
 	if get_parent() != null:
 		get_parent().remove_child(self)
@@ -106,9 +115,9 @@ func show_health(current: float, maximum: float) -> void:
 	_health_label.text = str(whole_points)
 
 
-## What the hands hold now, in words (empty: nothing).
-func get_hands_text() -> String:
-	return _shown_hands
+## The icon [param hand]'s box shows now (null: the hand is empty).
+func get_hand_icon(hand: Types.Hand) -> Texture2D:
+	return _shown_icons[hand]
 
 # ============================================
 # INTERNALS
@@ -117,41 +126,32 @@ func get_hands_text() -> String:
 func _refresh_hands() -> void:
 	if _rig == null:
 		return
-	var names: PackedStringArray = PackedStringArray()
-	for item: Grabbable in _rig.get_held_items():
-		if is_instance_valid(item):
-			var item_name: String = item.get_display_name()
-			if not item_name.is_empty():
-				names.append(item_name)
-	var hands_text: String = "   ".join(names)
-	if hands_text == _shown_hands:
-		return
-	_shown_hands = hands_text
-	var is_empty: bool = names.is_empty()
-	_hands_label.text = tr("Hands empty") if is_empty else hands_text
-	_hands_label.modulate = Palette.TEXT_MUTED if is_empty else Palette.TEXT
-	_hands_icon.modulate = Palette.TEXT_MUTED if is_empty else Palette.GOLD
-	_fit_hands_panel()
+	for hand: Types.Hand in HANDS:
+		var icon: Texture2D = _find_icon(hand)
+		if icon == _shown_icons[hand]:
+			continue
+		_shown_icons[hand] = icon
+		_hand_icons[hand].texture = icon
+		_hand_icons[hand].visible = icon != null
 
 
-## Sizes the hands panel's backdrop to its text and centers icon + text.
-func _fit_hands_panel() -> void:
-	var font: Font = _hands_label.font if _hands_label.font != null else ThemeDB.fallback_font
-	var text_width: float = font.get_string_size(_hands_label.text, HORIZONTAL_ALIGNMENT_LEFT, -1, _hands_label.font_size).x * _hands_label.pixel_size
-	var icon_width: float = _hands_icon.texture.get_width() * _hands_icon.pixel_size if _hands_icon.texture != null else 0.0
-	var gap: float = hands_padding * 0.6
-	var content_width: float = icon_width + gap + text_width
-	var quad: QuadMesh = _hands_backdrop.mesh as QuadMesh
-	quad.size.x = content_width + hands_padding * 2.0
-	_hands_icon.position.x = -content_width * 0.5 + icon_width * 0.5
-	_hands_label.position.x = -content_width * 0.5 + icon_width + gap
+## An item in the hand wins; otherwise the weapon it holds (none for fists).
+func _find_icon(hand: Types.Hand) -> Texture2D:
+	var item: Grabbable = _rig.get_held_item(hand)
+	if item != null and is_instance_valid(item) and item.get_icon() != null:
+		return item.get_icon()
+	if _weapon_source.is_valid():
+		var weapon: WeaponData = _weapon_source.call(hand) as WeaponData
+		if weapon != null:
+			return weapon.icon
+	return null
 
 
 func _place_panels() -> void:
 	if _camera == null or not is_inside_tree():
 		return
 	var health_half: Vector2 = (_health_backdrop.mesh as QuadMesh).size * 0.5
-	var hands_half_height: float = (_hands_backdrop.mesh as QuadMesh).size.y * 0.5
+	var hands_half_height: float = (_hand_boxes[Types.Hand.LEFT].mesh as QuadMesh).size.y * 0.5
 	var panel_scale: float = headset_scale if _rig.is_xr_active else 1.0
 	_health_panel.scale = Vector3.ONE * panel_scale
 	_hands_panel.scale = Vector3.ONE * panel_scale

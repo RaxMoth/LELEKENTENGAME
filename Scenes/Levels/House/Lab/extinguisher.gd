@@ -42,8 +42,8 @@ func _process(delta: float) -> void:
 
 
 ## It sprays on its holder's trigger.
-func get_display_name() -> String:
-	return tr("Fire extinguisher")
+func get_icon() -> Texture2D:
+	return preload("res://Assets/Icons/flame.svg")
 
 
 func is_usable() -> bool:

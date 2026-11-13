@@ -27,6 +27,8 @@ enum Kind { GUN, MELEE }
 @export var required_weapon_id: StringName = &""
 ## The animated model held in the hand (a WeaponModel scene); none for fists.
 @export var model_scene: PackedScene
+## Small icon of it (Assets/Icons) shown while it is in a hand; none for fists.
+@export var icon: Texture2D
 ## Where it hangs on the player's body in a headset ("hip", "chest" or
 ## "back", WalkingBody.HOLSTER_*); empty for the fists. Grip near it to draw.
 @export var holster_slot: StringName = &""

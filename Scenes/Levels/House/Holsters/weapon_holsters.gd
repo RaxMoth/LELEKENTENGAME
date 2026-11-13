@@ -1,7 +1,8 @@
 ## The weapons hanging on the player's body in a headset: the knife on the
 ## hip, the axe on the back, the gun across the chest (HolsterRules picks
-## which). Close a hand's grip near one to draw it — the weapon is in that
-## hand while the grip is held, and goes back when it opens. One weapon is
+## which). Press a hand's grip near one to draw it — the weapon stays in
+## that hand (no need to hold the grip) until the next grip press puts it
+## back into its holster. One weapon is
 ## out at a time (drawing another puts the first one back); an empty hand
 ## fights with its fist. The holstered models hang on the rig's WalkingBody
 ## and show only in a headset; the drawn weapon's model in the hand, its
@@ -118,14 +119,14 @@ func refresh() -> void:
 # INTERNALS
 # ============================================
 
-## Grip near a holster with an empty hand draws; opening the grip puts it back.
+## A grip press near a holster with an empty hand draws; the weapon stays
+## drawn, and that hand's next grip press puts it back.
 func _on_grip(hand: Types.Hand, is_pressed: bool) -> bool:
 	if not is_pressed:
-		if _drawn[hand] == null:
-			return false
-		put_back(hand)
-		return true
+		# The weapon stays in the hand; nothing else acts on this release.
+		return _drawn[hand] != null
 	if _drawn[hand] != null:
+		put_back(hand)
 		return true
 	if not _rig.is_hand_empty(hand):
 		return false

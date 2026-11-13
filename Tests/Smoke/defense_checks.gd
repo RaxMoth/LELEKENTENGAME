@@ -34,6 +34,8 @@ static func run(test: SmokeTest, level: HouseLevel) -> void:
 	rig.tap_world_point(cop.get_hit_center())
 	await test.frames(3)
 	test.check(cop.health_component.current_health < cop_health, "clicking a raider fires the gun")
+	var health_bar: HealthBar3D = cop.get_node("%HealthBar") as HealthBar3D
+	test.check(health_bar.visible and is_equal_approx(health_bar.get_shown_ratio(), cop.health_component.get_health_ratio()) and health_bar.get_shown_ratio() < 1.0, "the bar over a raider's head shows the health it has left")
 	test.check(garden.get_shown_weapon() != null and garden.get_shown_weapon().is_visible_in_tree(), "the gun shows in hand while defending")
 	var hidden: Raider = _spawn_at(garden, BEHIND_CAR)
 	var head: Vector3 = rig.get_head_transform().origin
