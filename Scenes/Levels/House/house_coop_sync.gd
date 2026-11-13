@@ -106,6 +106,8 @@ func setup(house_level: HouseLevel) -> void:
 	Events.floating_text_shown.connect(_on_floating_text_shown)
 	Events.beam_fired.connect(_on_beam_fired)
 	Events.positional_sound_played.connect(_on_positional_sound_played)
+	Events.house_breached.connect(_on_house_breached)
+	Events.house_breach_ended.connect(_on_house_breach_ended)
 	Coop.reconnecting.connect(_on_reconnecting)
 	if _level.is_mirror:
 		var rig: XRPlayerRig = _level.rig
@@ -287,6 +289,20 @@ func _receive_beam(from_position: Vector3, to_position: Vector3) -> void:
 @rpc("authority", "unreliable", "call_remote", 0)
 func _receive_floating_text(label_text: String, world_position: Vector3, color: Color) -> void:
 	FloatingText3D.spawn(label_text, world_position, color, Global.get_world_root())
+
+
+## Host -> guest: the front door broke (the guest's alarm goes off too).
+@rpc("authority", "reliable", "call_remote", 0)
+func _receive_breach(door_position: Vector3) -> void:
+	if _level != null and _level.is_mirror:
+		Events.house_breached.emit(door_position)
+
+
+## Host -> guest: the raid after the break-in is beaten.
+@rpc("authority", "reliable", "call_remote", 0)
+func _receive_breach_ended() -> void:
+	if _level != null and _level.is_mirror:
+		Events.house_breach_ended.emit()
 
 
 ## Host -> guest: a sound of the host's world (stations, coins, shots, steps).
@@ -527,6 +543,20 @@ func _on_reconnecting(attempt: int, attempts: int) -> void:
 
 
 ## Host: the other player hears the host's world too (synthesized sounds, by name).
+func _on_house_breached(door_position: Vector3) -> void:
+	if not Coop.is_host():
+		return
+	for peer_id: int in Coop.get_ready_peers():
+		_receive_breach.rpc_id(peer_id, door_position)
+
+
+func _on_house_breach_ended() -> void:
+	if not Coop.is_host():
+		return
+	for peer_id: int in Coop.get_ready_peers():
+		_receive_breach_ended.rpc_id(peer_id)
+
+
 func _on_positional_sound_played(stream: AudioStream, world_position: Vector3, pitch_variation: float, volume_db: float) -> void:
 	if not Coop.is_host() or Coop.get_ready_peers().is_empty():
 		return

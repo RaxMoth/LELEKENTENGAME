@@ -1,21 +1,18 @@
 [gd_scene format=3]
 
 [ext_resource type="Script" path="res://Scenes/Levels/House/Lab/ingredient_item.gd" id="item"]
-[ext_resource type="Script" path="res://Scripts/Utils/placeholder_mesh_3d.gd" id="mesh"]
 
 [node name="IngredientItem" type="Node3D"]
 script = ExtResource("item")
 
 [node name="Body" type="MeshInstance3D" parent="."]
 unique_name_in_owner = true
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.06, 0)
 cast_shadow = 0
-script = ExtResource("mesh")
-size = Vector3(0.12, 0.12, 0.12)
-color = Color(0.2392, 0.8627, 0.5922, 1)
 
 [node name="NameLabel" type="Label3D" parent="."]
 unique_name_in_owner = true
+visibility_range_end = 6.0
+visibility_range_end_margin = 0.5
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.19, 0)
 pixel_size = 0.0011
 billboard = 1

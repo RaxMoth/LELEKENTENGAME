@@ -147,6 +147,8 @@ primitives in `Palette` colors — matte, lit from above, grounded by a
 | Boxes with a real surface (door leaf, fence, gate) | `TexturedBox3D` (`is_grain_vertical` for posts) |
 | Renovated surfaces | A `ShellRenovation` per surface (`Ressources/Renovations/`): the shell's material per upgrade level, two steps (patched up, well kept); the next material is a cleaner texture or the same one less grimy, kept muted and warm |
 | Stairs | `Stairs3D` (treads between closed side boards, one mesh) with a `WalkableRamp` over it |
+| Ingredient storage | `SackMesh3D` (burlap, `burlap.tres`, a generated weave) or `CrateMesh3D` (`wood_trim`), filled by `IngredientLook` (pieces in the ingredient's color on straw, dirt or a mound of the same): never a plain colored box |
+| Police beacons (a break-in) | Spinning red and blue lamps with additive, faint light cones (no real lights); a slow sweep under 1 Hz, never a strobe |
 | Parts an upgrade adds (door straps, steel frame, shelves, crates) | An `UpgradeLook` node with `TexturedBox3D` children in real materials (`iron_strap`, `steel_frame`, `wood_refinished`), not Palette primitives |
 | Lawn, lanes, path, yard | `GroundPlane3D` (soft darker patches in vertex colors break up the tile); the lane board multiplies its cell checker over `ground_material` |
 | Trees and weeds | Impostors from `Tools/bake_impostor.gd`, placed with `PropScatter3D` (one draw call per kind) in `Scenes/Levels/House/Surroundings/` |

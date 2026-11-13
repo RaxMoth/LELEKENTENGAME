@@ -8,5 +8,6 @@ id = &"sugarsalt"
 display_name = "Sugarsalt"
 cost = 3
 color = Color(0.9333, 0.9451, 0.9686, 1)
-shape_kind = 1
+piece_style = 3
+storage = 0
 needs_processing = false

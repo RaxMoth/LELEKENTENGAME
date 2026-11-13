@@ -21,7 +21,7 @@
 ## host's world — time, money, stash, items, stations — instead.
 ##
 ## Dependencies: LevelBase, HouseFront, HouseContext, HouseCycle, Operation, DayCycle,
-##               HouseShell, UpgradeReaction, WalkBlocker, SkillBook, Ghost, RatPack, WeaponHolsters, FuseBox, Worker, WristStatus, PlayerVitals, XRPlayerRig, HouseCoopSync, Profile, Audio,
+##               HouseShell, UpgradeReaction, WalkBlocker, SkillBook, Ghost, RatPack, WeaponHolsters, FuseBox, BreachAlarm, Worker, WristStatus, PlayerVitals, XRPlayerRig, HouseCoopSync, Profile, Audio,
 ##               Events, Platform, Coop, Types autoloads, Palette, SfxSynth
 class_name HouseLevel
 extends LevelBase
@@ -39,6 +39,8 @@ const DAY_SUMMARY_POPUP: PackedScene = preload("res://Scenes/UI/Popups/DaySummar
 @export_range(0.0, 10.0, 0.1) var day_end_hold_seconds: float = 1.2
 ## Seconds the "raid beaten" announcement shows before the shift's results.
 @export_range(0.0, 10.0, 0.1) var raid_cleared_hold_seconds: float = 2.5
+## After the door breaks: the warning first, then "All or nothing!".
+@export_range(0.0, 5.0, 0.1) var breach_announce_delay_seconds: float = 1.6
 
 @export_group("Announcements")
 ## Announcements appear this far ahead of the player's head, where they look.
@@ -74,6 +76,7 @@ var _mirrored_wrist_lines: PackedStringArray = PackedStringArray()
 @onready var _rats: RatPack = %Rats
 @onready var _holsters: WeaponHolsters = %Holsters
 @onready var _fuse_box: FuseBox = %FuseBox
+@onready var _breach_alarm: BreachAlarm = %BreachAlarm
 
 # ============================================
 # LEVEL HOOKS
@@ -123,6 +126,9 @@ func _on_level_setup() -> void:
 	operation.skill_leveled.connect(_on_skill_leveled)
 	_fuse_box.setup(operation)
 	operation.power_changed.connect(_on_power_changed)
+	_breach_alarm.setup(rig)
+	Events.house_breached.connect(_on_house_breached)
+	Events.house_breach_ended.connect(_breach_alarm.stop)
 	Events.upgrade_purchased.connect(func(_upgrade_id: StringName, _level: int) -> void: apply_upgrades())
 	_last_paid_hour = floori(day_cycle.clock.get_hour())
 	apply_upgrades()
@@ -404,11 +410,23 @@ func _on_raid_wave_cleared(wave: RaidWave, wave_count: int) -> void:
 
 ## The last wave is down: let the announcement land, then the shift is won.
 func _on_raid_cleared(_raid_number: int) -> void:
+	Events.house_breach_ended.emit()
 	announce(tr("Raid beaten! Back to business"), Palette.SUCCESS, raid_cleared_hold_seconds)
 	Audio.play_sfx(SfxSynth.get_preset(&"coin"))
 	await get_tree().create_timer(raid_cleared_hold_seconds, false).timeout
 	if is_playing():
 		win()
+
+
+## The front door is down: the alarm goes off, and after the warning a
+## big "All or nothing!" (the host's announcements reach the guest).
+func _on_house_breached(door_position: Vector3) -> void:
+	_breach_alarm.start(door_position)
+	if is_mirror:
+		return
+	await get_tree().create_timer(breach_announce_delay_seconds, false).timeout
+	if is_playing():
+		announce(tr("All or nothing!"), Palette.DANGER, 2.5)
 
 
 ## Crew are paid every in-game hour; unpaid crew strike until the next payday.

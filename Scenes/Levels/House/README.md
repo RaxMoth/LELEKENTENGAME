@@ -35,6 +35,11 @@ Every front (`FrontGarden`, `SalesWindow`, `Lab`, `Office`, `Armory`, `AdminPane
   in a headset a hand uses the weapon it drew from the body (or its fist);
   the FrontGarden asks `get_drawn(hand)`. The house owns the holsters, the
   defense side the weapons' firing and models in hand.
+- **A break-in:** when the front door breaks, the FrontGarden emits
+  `Events.house_breached(door_position)`; the House level sounds the
+  `BreachAlarm` (Breach/) and says "All or nothing!". The level emits
+  `Events.house_breach_ended` when the raid is beaten. The co-op host passes
+  both on to the guest.
 - **Other things the weapons can hit** (the house's rats) are `HitTarget`s
   in `Types.GROUP_HIT_TARGET`. The FrontGarden's strikes and shots try
   raiders first and fall back to the nearest live hit target in reach or

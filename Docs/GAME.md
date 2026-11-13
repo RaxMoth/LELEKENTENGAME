@@ -38,7 +38,11 @@ The game runs in **3-day cycles** (`HouseCycle`, tuned by
    **bolt the front door**, then hold it with your guns and turrets. A wave
    ends when every raider is down; a short break follows, then the next.
    If the door breaks, the raiders **storm in and hunt you** through the
-   house (and every raider after them). You have **100 health**; it comes
+   house (and every raider after them). It is **all or nothing** now: a
+   stinger hit, a shouted "Zugriff!" at the door and a hard rumble in both
+   hands, then sirens wail in the street, a loud chase track kicks in and
+   police beacons sweep red and blue across the ceilings until the raid is
+   beaten (no camera move, no screen flash). You have **100 health**; it comes
    back slowly a few seconds after the last hit. Your gun now hits from
    anywhere in the house. Beat them all and the night goes on; the door is
    fixed by morning.
@@ -124,7 +128,12 @@ rest, one after the other: **More Plants** (up to three), the **Grinder**
 (with the ingredient crates), then the **Cooker**, then the **Press** — each
 shows up in the lab when bought, and the press unlocks Glow.
 
-Ingredient crates charge their price when you take a piece (refunded if it
+The ingredients stand against the lab wall the way they would in a real
+house: Duskleaf leaves and Sugarsalt crystals in open burlap sacks, Fizzroot
+roots in dirt and Glowcap mushrooms on straw in slatted wooden crates. A
+piece in the hand looks like one too (a mushroom on its stem, a root, a
+bundle of leaves, crystal chunks; ground, a pile of powder on a tin dish).
+They charge their price when you take a piece (refunded if it
 goes back unused). Ground pieces and batches dropped away from a station go
 back to its tray, or — when that is taken — into the nearest free station
 slot that takes them; nothing you worked on is ever destroyed or left

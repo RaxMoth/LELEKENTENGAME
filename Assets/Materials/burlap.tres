@@ -1,0 +1,10 @@
+[gd_resource type="StandardMaterial3D" format=3]
+
+[ext_resource type="Texture2D" path="res://Assets/Textures/Fabric/Burlap/Burlap_Color.png" id="color"]
+
+[resource]
+resource_name = "Burlap"
+cull_mode = 2
+albedo_texture = ExtResource("color")
+roughness = 1.0
+uv1_scale = Vector3(10, 10, 1)
