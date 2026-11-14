@@ -1,5 +1,5 @@
-## The house's alarm once the police break the front door down: it is all or
-## nothing now. A stinger hit, a shouted "Zugriff!" at the door and a hard
+## The house's alarm once the first raider comes through the front door
+## (broken or left open; FrontGarden): it is all or nothing now. A stinger hit, a shouted "Zugriff!" at the door and a hard
 ## rumble in both hands jolt the player (a jump scare by sound and touch —
 ## never a camera move or a screen flash); then sirens wail out in the
 ## street, a loud chase track kicks in and police beacons turn on the
@@ -7,7 +7,7 @@
 ## too expensive on a standalone headset) — until the raid is beaten.
 ##
 ##   alarm.setup(rig)
-##   alarm.start(door.global_position)   # HouseLevel on Events.house_breached
+##   alarm.start(door.global_position)   # HouseLevel on Events.house_breached (a raider came in)
 ##   alarm.stop()                        # on Events.house_breach_ended
 ##
 ## The sounds are made by MusicSynth on a worker thread at level start.

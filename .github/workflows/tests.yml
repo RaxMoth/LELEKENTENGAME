@@ -1,15 +1,12 @@
 # Pull requests run what they touch: the unit tests, the smoke test for
 # just the areas the changed files belong to (Tools/affected_areas.sh;
 # shared code runs everything, docs-only runs no smoke test) and the co-op
-# test when co-op code changed. Pushes to main (and a manual run) run
-# everything: the full smoke test and the co-op test. See Tools/test.sh.
+# test when co-op code changed. Nothing else runs (no full run on main);
+# `Tools/test.sh full` runs everything locally. See Tools/test.sh.
 name: Tests
 
 on:
   pull_request:
-  push:
-    branches: [main]
-  workflow_dispatch:
 
 concurrency:
   group: tests-${{ github.ref }}
@@ -35,13 +32,8 @@ jobs:
           unzip -q "$RUNNER_TEMP/godot.zip" -d "$RUNNER_TEMP/godot"
           echo "GODOT=$RUNNER_TEMP/godot/Godot_v${GODOT_VERSION}-stable_linux.x86_64" >> "$GITHUB_ENV"
 
-      - name: "Tests (pull request: what it touches)"
-        if: github.event_name == 'pull_request'
+      - name: "Tests (what the pull request touches)"
         run: Tools/test.sh "origin/${{ github.base_ref }}"
-
-      - name: Tests (everything)
-        if: github.event_name != 'pull_request'
-        run: Tools/test.sh full
 
       - name: Upload test reports
         if: failure()

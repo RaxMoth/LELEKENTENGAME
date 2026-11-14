@@ -2,7 +2,6 @@
 
 [ext_resource type="Script" path="res://Scenes/Levels/House/view_status.gd" id="status"]
 [ext_resource type="Texture2D" path="res://Assets/Icons/heart.svg" id="heart"]
-[ext_resource type="Texture2D" path="res://Assets/Icons/bag.svg" id="bag"]
 
 [sub_resource type="QuadMesh" id="health_quad"]
 size = Vector2(0.112, 0.026)
@@ -11,8 +10,7 @@ size = Vector2(0.112, 0.026)
 size = Vector2(0.054, 0.007)
 
 [sub_resource type="QuadMesh" id="hands_quad"]
-resource_local_to_scene = true
-size = Vector2(0.2, 0.026)
+size = Vector2(0.034, 0.034)
 
 [node name="ViewStatus" type="Node3D"]
 script = ExtResource("status")
@@ -64,29 +62,26 @@ outline_size = 6
 unique_name_in_owner = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.14, -0.5)
 
-[node name="HandsBackdrop" type="MeshInstance3D" parent="HandsPanel"]
+[node name="LeftBox" type="MeshInstance3D" parent="HandsPanel"]
 unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.019, 0, 0)
 mesh = SubResource("hands_quad")
 cast_shadow = 0
 
-[node name="HandsIcon" type="Sprite3D" parent="HandsPanel"]
+[node name="LeftIcon" type="Sprite3D" parent="HandsPanel"]
 unique_name_in_owner = true
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.08, 0, 0.001)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.019, 0, 0.001)
 cast_shadow = 0
-pixel_size = 0.00015
-texture = ExtResource("bag")
+pixel_size = 0.00024
 
-[node name="HandsLabel" type="Label3D" parent="HandsPanel"]
+[node name="RightBox" type="MeshInstance3D" parent="HandsPanel"]
 unique_name_in_owner = true
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.06, 0, 0.002)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.019, 0, 0)
+mesh = SubResource("hands_quad")
 cast_shadow = 0
-pixel_size = 0.00034
-no_depth_test = true
-render_priority = 23
-outline_render_priority = 22
-modulate = Color(0.5529, 0.5882, 0.6745, 1)
-outline_modulate = Color(0.051, 0.0627, 0.0902, 0.9)
-text = "Hands empty"
-font_size = 32
-horizontal_alignment = 0
-outline_size = 6
+
+[node name="RightIcon" type="Sprite3D" parent="HandsPanel"]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.019, 0, 0.001)
+cast_shadow = 0
+pixel_size = 0.00024

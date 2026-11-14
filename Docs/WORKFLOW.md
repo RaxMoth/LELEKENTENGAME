@@ -63,8 +63,9 @@ gh pr create --fill                            # or ask Claude to open it
   touches: the unit tests, the smoke test for the areas of the changed files
   (lab, cellar, sales, town, defense, towers — `Tools/affected_areas.sh`;
   a change to shared code runs every area, a docs-only PR none) and the
-  co-op test when co-op code changed. Every push to `main` and a manual run
-  (Actions → Tests → Run workflow) run everything.
+  co-op test when co-op code changed. That is all CI runs: nothing on
+  pushes to `main`. Locally, run `Tools/test.sh` (the same scope) after a
+  change; `Tools/test.sh full` only when you want everything.
 - **Review:** the other person reviews (Claude can do a first pass with the
   `godot-reviewer` agent or `/code-review`, but a human approves).
 - **Merge:** squash-merge, then delete the branch. Pull `main` afterwards.

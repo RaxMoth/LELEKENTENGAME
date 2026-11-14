@@ -429,6 +429,14 @@ func get_held_items() -> Array[Grabbable]:
 	return held
 
 
+## What [param hand] holds (null: nothing). The flat simulator's cursor
+## holds for the dominant hand.
+func get_held_item(hand: Types.Hand) -> Grabbable:
+	if hand == dominant_hand and _flat_held_item != null:
+		return _flat_held_item
+	return _hands.get_held_item(hand)
+
+
 ## The hands' rules (co-op mirrors what the host says they hold).
 func get_hands() -> HandInteractor:
 	return _hands

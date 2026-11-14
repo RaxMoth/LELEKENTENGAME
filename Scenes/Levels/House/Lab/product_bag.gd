@@ -28,10 +28,8 @@ func setup(bag_recipe: RecipeData, bag_tier: int, bag_units: int) -> void:
 	_apply_look()
 
 
-func get_display_name() -> String:
-	if recipe == null:
-		return ""
-	return "%s ×%d · %s" % [tr(recipe.display_name), units, tr(QualityMath.get_tier_name(tier))]
+func get_icon() -> Texture2D:
+	return preload("res://Assets/Icons/bag.svg")
 
 
 ## Co-op: what the other player needs to draw this bag.

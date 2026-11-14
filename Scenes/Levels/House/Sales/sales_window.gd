@@ -21,8 +21,9 @@ const CUSTOMER_SCENE: PackedScene = preload("res://Scenes/Levels/House/Sales/Cus
 ## Share of patience left when the customer at the window starts complaining.
 const IMPATIENT_RATIO: float = 0.3
 
-## Customers that can wait at once before upgrades.
-@export var base_capacity: int = 3
+## Customers that can wait at once before upgrades: a new operation starts
+## slow, one customer at a time (no line); the Queue upgrade adds spots.
+@export var base_capacity: int = 1
 
 ## The house's shared state (from the context at setup).
 var operation: Operation = null

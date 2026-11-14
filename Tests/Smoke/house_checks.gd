@@ -184,16 +184,16 @@ static func _check_rat_traps(test: SmokeTest, level: HouseLevel, rats: RatPack) 
 
 ## A long list on a board (the office's upgrades) scrolls by grabbing it and
 ## pulling, not only by its thin scroll bar.
-## The front door going down sounds the alarm (sirens, music, beacons);
+## A raider coming through the front door sounds the alarm (sirens, music, beacons);
 ## beating the raid lets it die away.
 static func _check_breach_alarm(test: SmokeTest, level: HouseLevel) -> void:
 	var alarm: BreachAlarm = level.get_node("%BreachAlarm") as BreachAlarm
-	test.check(alarm != null and not alarm.is_active(), "the breach alarm is quiet until the door breaks")
+	test.check(alarm != null and not alarm.is_active(), "the breach alarm is quiet until raiders come in")
 	if alarm == null:
 		return
 	Events.house_breached.emit(Vector3(0.0, 0.0, -5.0))
 	await test.frames(70)
-	test.check(alarm.is_active() and Audio.is_music_playing() and (alarm.beacons[0] as Node3D).visible, "a broken door sets off sirens, loud music and the beacons")
+	test.check(alarm.is_active() and Audio.is_music_playing() and (alarm.beacons[0] as Node3D).visible, "a break-in sets off sirens, loud music and the beacons")
 	Events.house_breach_ended.emit()
 	await test.frames(4)
 	test.check(not alarm.is_active(), "beating the raid ends the alarm")
@@ -493,6 +493,8 @@ static func _check_storming_in(test: SmokeTest, level: HouseLevel) -> void:
 	test.check(not garden.yard.is_hunting(), "while the door is shut the raiders stay outside")
 	door.open_fully()
 	test.check(await test.wait_until(func() -> bool: return garden.yard.is_hunting()), "an open door in a raid lets the raiders in")
+	var alarm: BreachAlarm = level.get_node("%BreachAlarm") as BreachAlarm
+	test.check(not alarm.is_active(), "no siren while the raiders are only in the yard")
 	door.health_component.damage(1000000.0)
 	test.check(await test.wait_until(func() -> bool: return door.is_passable()), "a broken door bursts wide open")
 	test.check(level.is_playing() and door.is_broken(), "a broken door doesn't end the shift")
@@ -514,6 +516,7 @@ static func _check_storming_in(test: SmokeTest, level: HouseLevel) -> void:
 	raiders[0].global_position = Vector3(0.0, 0.0, -7.5)
 	test.check(await test.wait_until(func() -> bool: return vitals.get_health() < vitals.get_max_health()), "a raider follows the player through the doorway into the house and hits them")
 	test.check(raiders[0].global_position.z > door.global_position.z, "it came in through the front door")
+	test.check(alarm.is_active(), "the siren goes off once a raider comes through the door")
 	test.check(vitals.is_alive(), "one hit doesn't put the player down")
 	rig.locomotion.teleport_to(Vector3(2.4, 0.0, -0.4), 0.0)
 	await test.frames(2)
@@ -559,8 +562,8 @@ static func _check_skills(test: SmokeTest, level: HouseLevel) -> void:
 
 
 ## In a headset the weapons hang on the body: knife at the hip, axe on the
-## back, the gun on the chest. A grip there draws one into that hand; one
-## is out at a time; opening the grip puts it back.
+## back, the gun on the chest. A grip there draws one into that hand and it
+## stays there; one is out at a time; the next grip press puts it back.
 static func _check_holsters(test: SmokeTest, level: HouseLevel) -> void:
 	var rig: XRPlayerRig = level.rig
 	var holsters: WeaponHolsters = level.context.holsters
@@ -586,7 +589,10 @@ static func _check_holsters(test: SmokeTest, level: HouseLevel) -> void:
 	test.check(holsters.get_drawn(Types.Hand.RIGHT) == chest_gun and holsters.get_drawn(Types.Hand.LEFT) == null, "drawing the gun puts the knife back: one weapon out at a time")
 	rig.handle_controller_button(Types.Hand.RIGHT, Types.XR_ACTION_GRIP_CLICK, false)
 	rig.handle_controller_button(Types.Hand.LEFT, Types.XR_ACTION_GRIP_CLICK, false)
-	test.check(not holsters.has_drawn(), "opening the grip puts the weapon back")
+	test.check(holsters.get_drawn(Types.Hand.RIGHT) == chest_gun, "the gun stays in the hand with the grip open")
+	rig.handle_controller_button(Types.Hand.RIGHT, Types.XR_ACTION_GRIP_CLICK, true)
+	rig.handle_controller_button(Types.Hand.RIGHT, Types.XR_ACTION_GRIP_CLICK, false)
+	test.check(not holsters.has_drawn(), "the next grip press puts the weapon back")
 
 
 ## Without a headset the controller callbacks are the only way to run the XR input mapping.

@@ -39,7 +39,8 @@ The game runs in **3-day cycles** (`HouseCycle`, tuned by
    your guns and turrets. A wave
    ends when every raider is down; a short break follows, then the next.
    If the door breaks, the raiders **storm in and hunt you** through the
-   house (and every raider after them). It is **all or nothing** now: a
+   house (and every raider after them). When the first of them comes
+   through the doorway it is **all or nothing**: a
    stinger hit, a shouted "Zugriff!" at the door and a hard rumble in both
    hands, then sirens wail in the street, a loud chase track kicks in and
    police beacons sweep red and blue across the ceilings until the raid is
@@ -182,7 +183,9 @@ Fizz"). An upgrade that builds on another (the cooker on the grinder) shows
 ### Back window (inside, west-back)
 
 Customers walk into the yard, queue and wait as long as their patience
-lasts. The board inside the window shows the one at the front: what they
+lasts. A new operation starts slow: one customer at a time, no line — the
+next one only comes once the window is free. **Bigger Yard** (the Queue
+upgrade) lets more wait at once. The board inside the window shows the one at the front: what they
 want, how much, the minimum quality and what you'd hand over from the
 stash. You set the price per unit (−/+), then **Sell** or **Decline**.
 
@@ -333,7 +336,8 @@ step onto the porch and back. There is no lock: the door is open or shut.
 In a raid that is all that matters — **shut**, the raiders have to break it
 down (the **Steel Door Frame** upgrade takes 25% off every hit per level);
 **open**, the raiders in the yard walk straight in and hunt you through the
-house (the alarm goes off, as when it breaks). Shut it again and those
+house (the alarm goes off as the first one comes through the doorway —
+open or broken, the raid alone never sets it off). Shut it again and those
 still outside go back to hammering it. When its health runs out the door
 **breaks**: it swings wide open and can't be shut again that day.
 

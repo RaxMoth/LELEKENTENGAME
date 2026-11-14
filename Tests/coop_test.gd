@@ -18,6 +18,8 @@ extends Node
 const HOUSE_SCENE: String = "res://Scenes/Levels/House/House.tscn"
 const TIMEOUT_MSEC: int = 30000
 ## Tries of the guest's gun trigger, and how long each waits for the tracer.
+## A guest's muzzle is this close (meters, level) to their feet.
+const GUEST_MUZZLE_REACH: float = 2.0
 const SHOT_ATTEMPTS: int = 6
 const SHOT_WAIT_MSEC: int = 1500
 const LAB_SPOT: int = 0
@@ -107,17 +109,19 @@ func _run_host() -> void:
 		_check(is_equal_approx(guest_vitals[0].get_health(), guest_vitals[0].get_max_health() - 25.0), "host: a raider's hit lands on the guest")
 	_check(sync.sounds_relayed > 0, "host: the guest hears the host's world (sounds are sent)")
 	# The guest shoots last; then its connection drops (no goodbye) and it must come back by itself.
-	# Its own trigger pull that really fired (a pull can come while the gun
-	# still cools down: no shot, the guest pulls again), not any other
-	# tracer; then time for the tracer to get back to it.
-	var guest_pulls: Array[int] = [0]
-	var shots_after_pull: Array[int] = [0]
-	level.context.guest_fired.connect(func(_pointer: XRPointer, _feet: Vector3, _recoil: Callable) -> void: guest_pulls[0] += 1)
-	Events.beam_fired.connect(func(_from: Vector3, _to: Vector3) -> void:
-		if guest_pulls[0] > 0:
-			shots_after_pull[0] += 1)
-	await _wait_until(func() -> bool: return shots_after_pull[0] > 0)
+	# A shot of its own that really fired (a pull can come while the gun
+	# still cools down: no shot, the guest pulls again): a tracer starting
+	# at the guest's hand, not any other; then time for it to get back.
+	var guest_shots: Array[int] = [0]
+	Events.beam_fired.connect(func(from_position: Vector3, _to_position: Vector3) -> void:
+		var players: Array[RemotePlayer] = sync.get_remote_players()
+		if players.size() == 1 and _is_near_feet(from_position, players[0].get_feet_position()):
+			guest_shots[0] += 1)
+	_check(await _wait_until(func() -> bool: return guest_shots[0] > 0), "host: the guest's own shot fired")
 	await _seconds(1.0)
+	if Coop.get_ready_peers().is_empty():
+		_check(false, "host: the guest is still connected before the drop")
+		return
 	var guest_peer_id: int = Coop.get_ready_peers()[0]
 	(multiplayer.multiplayer_peer as ENetMultiplayerPeer).disconnect_peer(guest_peer_id)
 	_check(await _wait_until(func() -> bool: return Coop.get_ready_peers().is_empty()), "host: the guest's connection dropped")
@@ -206,6 +210,11 @@ func _run_guest() -> void:
 	_check(tracers[0] > 0, "guest: my gun trigger fires (the host's shot comes back as a tracer)")
 	_check(await _wait_until(func() -> bool: return reconnections[0] > 0), "guest: after a dropped connection I'm back in on my own")
 	_check(await _wait_until(func() -> bool: return _get_house() != null and _get_house().is_mirror and Coop.is_level_acknowledged()), "guest: and see the host's house again")
+
+
+## True when a shot's muzzle at [param point] is a player's hand standing at [param feet].
+static func _is_near_feet(point: Vector3, feet: Vector3) -> bool:
+	return Vector2(point.x - feet.x, point.z - feet.z).length() < GUEST_MUZZLE_REACH and point.y > feet.y - 0.5
 
 
 ## Retries until the host is up (it loads the house first).

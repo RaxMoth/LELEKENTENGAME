@@ -1,10 +1,12 @@
 [gd_resource type="Resource" script_class="WeaponData" format=3]
 
 [ext_resource type="Script" path="res://Scripts/Resources/weapon_data.gd" id="script"]
+[ext_resource type="Texture2D" path="res://Assets/Icons/knife.svg" id="icon"]
 [ext_resource type="PackedScene" path="res://Scenes/Levels/House/Armory/Melee/Knife.tscn" id="model"]
 
 [resource]
 script = ExtResource("script")
+icon = ExtResource("icon")
 id = &"knife"
 display_name = "Knife"
 description = "A kitchen knife with a real edge. Quick cuts in close."

@@ -62,8 +62,8 @@ func _on_released_nowhere() -> void:
 
 
 ## Co-op: what the other player needs to draw this piece.
-func get_display_name() -> String:
-	return data.get_name_for(is_processed) if data != null else ""
+func get_icon() -> Texture2D:
+	return preload("res://Assets/Icons/sprout.svg")
 
 
 func get_net_state() -> Array:

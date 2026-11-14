@@ -33,8 +33,8 @@ func _on_released_nowhere() -> void:
 
 
 ## Co-op: what the other player needs to draw this batch.
-func get_display_name() -> String:
-	return tr("%s batch") % tr(recipe.display_name) if recipe != null else ""
+func get_icon() -> Texture2D:
+	return preload("res://Assets/Icons/box.svg")
 
 
 func get_net_state() -> Array:
